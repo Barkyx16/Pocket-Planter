@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Pocket Planter",
+    "slug": "pocket-planter",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#f6f8fb"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pocketplanter.app",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
+      }
+    },
+    "android": {
+      "package": "com.pocketplanter.app"
+    },
+    "plugins": [
+      "expo-notifications"
+    ]
+  }
+}
