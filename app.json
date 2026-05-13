@@ -14,18 +14,25 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pocketplanter.app",
+      "bundleIdentifier": "com.alexrafalski.pocketplanter",
       "infoPlist": {
         "UIBackgroundModes": [
+          "remote-notification",
           "remote-notification"
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.pocketplanter.app"
+      "package": "com.alexrafalski.pocketplanter"
     },
     "plugins": [
       "expo-notifications"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "f1f8933e-cbd9-42a2-9c1b-1585c8139bd0"
+      }
+    }
   }
 }
