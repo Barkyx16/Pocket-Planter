@@ -1,4 +1,5 @@
 node_modules
 .expo
 .env
-.DS_Store
+.DS_Store.expo/
+.expo/

@@ -1,0 +1,18 @@
+export const STORAGE_KEYS = {
+  zip: "pp_zip",
+  savedPlants: "pp_savedPlants",
+  followedPlants: "pp_followedPlants",
+  journalEntries: "pp_journalEntries",
+  selectedMonth: "pp_selectedMonth",
+  selectedType: "pp_selectedType",
+  remindersOn: "pp_remindersOn",
+  frostAlertsOn: "pp_frostAlertsOn",
+  appearanceMode: "pp_appearanceMode",
+  subscriptionPlan: "pp_subscriptionPlan",
+  premiumUnlocked: "pp_premiumUnlocked",
+  gardenMap: "pp_gardenMap",
+  wateredPlants: "pp_wateredPlants",
+  wateringReminders: "pp_wateringReminders",
+  streakData: "pp_streakData",
+  seenPremiumIntro: "pp_seenPremiumIntro",
+};

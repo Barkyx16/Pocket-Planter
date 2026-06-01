@@ -5,13 +5,19 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+
+    "icon": "./assets/icon.png",
+
     "splash": {
+      "image": "./assets/loading-screen.png",
       "resizeMode": "contain",
-      "backgroundColor": "#f6f8fb"
+      "backgroundColor": "#041b11"
     },
+
     "assetBundlePatterns": [
       "**/*"
     ],
+
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.alexrafalski.pocketplanter",
@@ -23,12 +29,16 @@
         "ITSAppUsesNonExemptEncryption": false
       }
     },
+
     "android": {
       "package": "com.alexrafalski.pocketplanter"
     },
+
     "plugins": [
-      "expo-notifications"
+      "expo-notifications",
+      "expo-font"
     ],
+
     "extra": {
       "eas": {
         "projectId": "f1f8933e-cbd9-42a2-9c1b-1585c8139bd0"
