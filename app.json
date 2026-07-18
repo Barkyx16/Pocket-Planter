@@ -2,43 +2,48 @@
   "expo": {
     "name": "Pocket Planter",
     "slug": "pocket-planter",
-    "version": "1.0.0",
+    "scheme": "pocketplanter",
+    "version": "1.0.9",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-
     "icon": "./assets/icon.png",
-
     "splash": {
       "image": "./assets/loading-screen.png",
       "resizeMode": "contain",
       "backgroundColor": "#041b11"
     },
-
     "assetBundlePatterns": [
       "**/*"
     ],
-
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.alexrafalski.pocketplanter",
       "infoPlist": {
         "UIBackgroundModes": [
-          "remote-notification",
           "remote-notification"
         ],
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Pocket Planter uses your photo library to let you add progress photos to your garden journal. For example, you can document how your tomato plant grows over time.",
+        "NSCameraUsageDescription": "Pocket Planter uses your camera to capture garden photos for your journal.",
+        "NSLocationWhenInUseUsageDescription": "Pocket Planter uses your location to automatically detect your ZIP code and growing zone."
       }
     },
-
     "android": {
-      "package": "com.alexrafalski.pocketplanter"
+      "package": "com.alexrafalski.pocketplanter",
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "SCHEDULE_EXACT_ALARM"
+      ]
     },
-
     "plugins": [
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "color": "#8effab"
+        }
+      ],
       "expo-font"
     ],
-
     "extra": {
       "eas": {
         "projectId": "f1f8933e-cbd9-42a2-9c1b-1585c8139bd0"
