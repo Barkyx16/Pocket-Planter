@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 
-export function SmartReminderHomeCard({ theme, remindersOn, frostAlertsOn, monthlyPlantingOn, dailyWateringOn, onPress }) {
+export const SmartReminderHomeCard = memo(function SmartReminderHomeCard({ theme, remindersOn, frostAlertsOn, monthlyPlantingOn, dailyWateringOn, onPress }) {
   const enabledCount = [remindersOn, frostAlertsOn, monthlyPlantingOn, dailyWateringOn].filter(Boolean).length;
   return (
     <Pressable onPress={onPress} style={[styles.smartReminderHomeCard, { backgroundColor: theme.card, borderColor: enabledCount === 4 ? "#5cff89" : "#ffd86b" }]}>
@@ -14,4 +15,4 @@ export function SmartReminderHomeCard({ theme, remindersOn, frostAlertsOn, month
       <Text style={styles.smartReminderHomeArrow}>›</Text>
     </Pressable>
   );
-}
+})

@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
 import { countInSeason, getSeasonForMonth } from "../core";
 
-export function SeasonComparisonCard({ theme, harvestLog, journalEntries, wateringHistory }) {
+export const SeasonComparisonCard = memo(function SeasonComparisonCard({ theme, harvestLog, journalEntries, wateringHistory }) {
   const now = new Date();
   const season = getSeasonForMonth(now.getMonth() + 1);
   const thisYear = now.getFullYear();
@@ -53,4 +54,4 @@ return (
       )}
     </View>
   );
-}
+})

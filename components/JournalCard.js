@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { useState } from "react";
 import { Alert, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { styles } from "../styles";
 
-export function JournalCard({ theme, journalEntries, onAddGeneralPhoto, onDeleteEntry, uploadingPhoto }) {
+export const JournalCard = memo(function JournalCard({ theme, journalEntries, onAddGeneralPhoto, onDeleteEntry, uploadingPhoto }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPlant, setFilterPlant] = useState("All");
   const [filterStage, setFilterStage] = useState("All");
@@ -142,28 +143,30 @@ return (
     <View>
 
       {/* ── DASHBOARD STATS ── */}
-      <View style={styles.journalDashGrid}>
-        <View style={[styles.journalDashTile, { borderColor: "rgba(92,255,137,0.25)" }]}>
-          <Text style={styles.journalDashTileIcon}>📸</Text>
-          <Text style={styles.journalDashTileValue}>{totalPhotos}</Text>
-          <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>Total Photos</Text>
+      {totalPhotos > 0 ? (
+        <View style={styles.journalDashGrid}>
+          <View style={[styles.journalDashTile, { borderColor: "rgba(92,255,137,0.25)" }]}>
+            <Text style={styles.journalDashTileIcon}>📸</Text>
+            <Text style={styles.journalDashTileValue}>{totalPhotos}</Text>
+            <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>Total Photos</Text>
+          </View>
+          <View style={[styles.journalDashTile, { borderColor: "rgba(255,216,107,0.25)" }]}>
+            <Text style={styles.journalDashTileIcon}>🌿</Text>
+            <Text style={styles.journalDashTileValue}>{plantsDocumented}</Text>
+            <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>Plants Documented</Text>
+          </View>
+          <View style={[styles.journalDashTile, { borderColor: "rgba(107,199,255,0.25)" }]}>
+            <Text style={styles.journalDashTileIcon}>📅</Text>
+            <Text style={styles.journalDashTileValue}>{thisMonthEntries}</Text>
+            <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>This Month</Text>
+          </View>
+          <View style={[styles.journalDashTile, { borderColor: "rgba(255,107,107,0.25)" }]}>
+            <Text style={styles.journalDashTileIcon}>🚜</Text>
+            <Text style={styles.journalDashTileValue}>{harvestEntries}</Text>
+            <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>Harvests</Text>
+          </View>
         </View>
-        <View style={[styles.journalDashTile, { borderColor: "rgba(255,216,107,0.25)" }]}>
-          <Text style={styles.journalDashTileIcon}>🌿</Text>
-          <Text style={styles.journalDashTileValue}>{plantsDocumented}</Text>
-          <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>Plants Documented</Text>
-        </View>
-        <View style={[styles.journalDashTile, { borderColor: "rgba(107,199,255,0.25)" }]}>
-          <Text style={styles.journalDashTileIcon}>📅</Text>
-          <Text style={styles.journalDashTileValue}>{thisMonthEntries}</Text>
-          <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>This Month</Text>
-        </View>
-        <View style={[styles.journalDashTile, { borderColor: "rgba(255,107,107,0.25)" }]}>
-          <Text style={styles.journalDashTileIcon}>🚜</Text>
-          <Text style={styles.journalDashTileValue}>{harvestEntries}</Text>
-          <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>Harvests</Text>
-        </View>
-      </View>
+      ) : null}
 
       {/* ── GROWTH CHART ── */}
       {totalPhotos > 0 ? (
@@ -220,19 +223,21 @@ return (
       ) : null}
 
       {/* ── ACHIEVEMENTS ── */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.journalAchievementScroll}>
-        {journalAchievements.map((a) => (
-          <View key={a.title} style={[styles.journalAchievementBadgeV2, {
-            opacity: a.unlocked ? 1 : 0.3,
-            borderColor: a.unlocked ? "rgba(92,255,137,0.35)" : "rgba(255,255,255,0.08)",
-            backgroundColor: a.unlocked ? "rgba(92,255,137,0.10)" : "rgba(255,255,255,0.04)",
-          }]}>
-            <Text style={styles.journalAchievementIconV2}>{a.icon}</Text>
-            <Text numberOfLines={1} style={styles.journalAchievementTextV2}>{a.title}</Text>
-            {a.unlocked ? <Text style={styles.journalAchievementCheck}>✓</Text> : null}
-          </View>
-        ))}
-      </ScrollView>
+      {totalPhotos > 0 ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.journalAchievementScroll}>
+          {journalAchievements.map((a) => (
+            <View key={a.title} style={[styles.journalAchievementBadgeV2, {
+              opacity: a.unlocked ? 1 : 0.3,
+              borderColor: a.unlocked ? "rgba(92,255,137,0.35)" : "rgba(255,255,255,0.08)",
+              backgroundColor: a.unlocked ? "rgba(92,255,137,0.10)" : "rgba(255,255,255,0.04)",
+            }]}>
+              <Text style={styles.journalAchievementIconV2}>{a.icon}</Text>
+              <Text numberOfLines={1} style={styles.journalAchievementTextV2}>{a.title}</Text>
+              {a.unlocked ? <Text style={styles.journalAchievementCheck}>✓</Text> : null}
+            </View>
+          ))}
+        </ScrollView>
+      ) : null}
 
       {/* ── TAB SWITCHER ── */}
       {totalPhotos > 0 ? (
@@ -254,14 +259,47 @@ return (
       {/* ── EMPTY STATE ── */}
       {journalEntries.length === 0 ? (
         <View style={styles.journalEmptyState}>
-          <Text style={styles.journalEmptyStateEmoji}>📸</Text>
-          <Text style={styles.journalEmptyStateTitle}>Start Your Garden Story!</Text>
+          <View style={styles.journalEmptyIconRing}>
+            <Text style={styles.journalEmptyStateEmoji}>📸</Text>
+          </View>
+          <Text style={styles.journalEmptyStateTitle}>Start Your Garden Story</Text>
           <Text style={[styles.journalEmptyStateText, { color: theme.secondaryText }]}>
-            Add your first photo to start documenting your garden's journey. Every great garden has a story worth telling.
+            Snap a photo whenever something changes. In a few weeks you'll have a beautiful timeline of your garden growing from seed to harvest — with progress bars, streaks, and badges along the way.
           </Text>
-          <Pressable style={styles.journalHeroButton} onPress={onAddGeneralPhoto}>
-            <Text style={styles.journalHeroButtonText}>+ Add First Photo</Text>
+
+          <Pressable disabled={uploadingPhoto} style={styles.journalHeroButton} onPress={onAddGeneralPhoto}>
+            <Text style={styles.journalHeroButtonText}>{uploadingPhoto ? "Uploading…" : "📷  Add Your First Photo"}</Text>
           </Pressable>
+          <Text style={styles.journalEmptyHint}>Takes 5 seconds · no green thumb required</Text>
+
+          {/* ── MOMENTS TO CAPTURE ── */}
+          <Text style={styles.journalEmptySectionLabel}>✨ GREAT MOMENTS TO CAPTURE</Text>
+          <View style={styles.journalIdeaGrid}>
+            {[
+              { icon: "🌱", label: "First sprout" },
+              { icon: "🌿", label: "New leaves" },
+              { icon: "💧", label: "Watering day" },
+              { icon: "🌸", label: "First flower" },
+              { icon: "🍅", label: "Fruit forming" },
+              { icon: "🎉", label: "Harvest day" },
+            ].map((idea) => (
+              <Pressable key={idea.label} disabled={uploadingPhoto} onPress={onAddGeneralPhoto} style={styles.journalIdeaChip}>
+                <Text style={styles.journalIdeaChipIcon}>{idea.icon}</Text>
+                <Text style={styles.journalIdeaChipLabel}>{idea.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {/* ── BADGES TO UNLOCK ── */}
+          <Text style={styles.journalEmptySectionLabel}>🏆 BADGES TO UNLOCK</Text>
+          <View style={styles.journalUnlockGrid}>
+            {journalAchievements.map((a) => (
+              <View key={a.title} style={styles.journalUnlockChip}>
+                <Text style={styles.journalUnlockIcon}>{a.icon}</Text>
+                <Text numberOfLines={1} style={styles.journalUnlockLabel}>{a.title}</Text>
+              </View>
+            ))}
+          </View>
         </View>
       ) : (
         <>
@@ -580,4 +618,4 @@ return (
       )}
     </View>
   );
-}
+})

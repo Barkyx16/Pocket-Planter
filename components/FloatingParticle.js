@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { useEffect, useRef } from "react";
 import { Animated } from "react-native";
 import { styles } from "../styles";
 
-export function FloatingParticle({ symbol, index, mode }) {
+export const FloatingParticle = memo(function FloatingParticle({ symbol, index, mode }) {
   const fall = useRef(new Animated.Value(0)).current;
   const drift = useRef(new Animated.Value(0)).current;
   const glow = useRef(new Animated.Value(0)).current;
@@ -22,4 +23,4 @@ export function FloatingParticle({ symbol, index, mode }) {
       {symbol}
     </Animated.Text>
   );
-}
+})

@@ -1,9 +1,10 @@
+import { memo } from "react";
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { styles } from "../styles";
-import { getTodayKey, tapHaptic } from "../core";
+import { getDateKey, getTodayKey, tapHaptic } from "../core";
 
-export function SoilCareLogCard({ theme, savedPlants, careLog, setCareLog, onFertilizerLogged, onUndoToast }) {
+export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlants, careLog, setCareLog, onFertilizerLogged, onUndoToast }) {
   const [selectedPlant, setSelectedPlant] = useState("Garden");
   const [customNote, setCustomNote] = useState("");
   const [showAddPanel, setShowAddPanel] = useState(false);
@@ -93,14 +94,14 @@ export function SoilCareLogCard({ theme, savedPlants, careLog, setCareLog, onFer
     return careLog.filter(e => e.date === dateStr && (filterPlant === "All" || e.plant === filterPlant));
   };
 
-  const getDateKey = (day) => {
+  const getDayKey = (day) => {
     const d = new Date(calendarYear, calendarMonth, day);
-    return d.toISOString().slice(0, 10);
+    return getDateKey(d);
   };
 
-  const hasEntries = (day) => getEntriesForDate(getDateKey(day)).length > 0;
+  const hasEntries = (day) => getEntriesForDate(getDayKey(day)).length > 0;
   const getEntryColor = (day) => {
-    const entries = getEntriesForDate(getDateKey(day));
+    const entries = getEntriesForDate(getDayKey(day));
     if (!entries.length) return null;
     return entries[0].actionColor;
   };
@@ -126,12 +127,17 @@ export function SoilCareLogCard({ theme, savedPlants, careLog, setCareLog, onFer
     return CARE_ACTIONS.find(a => a.id === top[0]);
   })();
   const plantsLogged = new Set(careLog.map(e => e.plant).filter(p => p !== "Garden")).size;
+  const lastEntry = careLog.length ? careLog.reduce((a, b) => (new Date(b.createdAt) > new Date(a.createdAt) ? b : a)) : null;
+  const lastAgo = (() => {
+    if (!lastEntry) return "";
+    const then = new Date(lastEntry.createdAt); then.setHours(0, 0, 0, 0);
+    const now = new Date(); now.setHours(0, 0, 0, 0);
+    const days = Math.round((now - then) / 86400000);
+    return days <= 0 ? "today" : days === 1 ? "yesterday" : `${days} days ago`;
+  })();
 
 return (
     <View>
-
-      {/* HEADER */}
-      <Text style={[styles.cardTitle, { color: theme.text }]}>Garden Care Tracker</Text>
 
       {/* STATS ROW */}
       <View style={styles.careLogStatsRow}>
@@ -156,12 +162,12 @@ return (
         </View>
       </View>
 
-      {/* MONTHLY SUMMARY */}
-      {thisMonthEntries > 0 ? (
-        <View style={{ marginBottom: 14, backgroundColor: "rgba(107,199,255,0.08)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(107,199,255,0.20)" }}>
-          <Text style={{ color: "#6bc7ff", fontSize: 13, fontWeight: "900", lineHeight: 19 }}>
-            📊 {thisMonthEntries} care action{thisMonthEntries === 1 ? "" : "s"} logged this month
-            {mostCommonAction ? ` • most often ${mostCommonAction.icon} ${mostCommonAction.label}` : ""}
+      {/* LAST ACTIVITY */}
+      {lastEntry ? (
+        <View style={{ marginBottom: 12, flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(107,199,255,0.08)", borderRadius: 14, paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1, borderColor: "rgba(107,199,255,0.20)" }}>
+          <Text style={{ fontSize: 17 }}>🕒</Text>
+          <Text style={{ color: "#6bc7ff", fontSize: 12.5, fontWeight: "800", flex: 1, lineHeight: 17 }}>
+            Last: {lastEntry.actionIcon} {lastEntry.actionLabel} · {lastEntry.plant === "Garden" ? "whole garden" : lastEntry.plant} · {lastAgo}
           </Text>
         </View>
       ) : null}
@@ -322,7 +328,7 @@ return (
                   <View key={`empty-${i}`} style={styles.careLogCalendarCell} />
                 ))}
                 {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
-                  const dateKey = getDateKey(day);
+                  const dateKey = getDayKey(day);
                   const isToday = dateKey === getTodayKey();
                   const isSelected = dateKey === selectedDate;
                   const hasLog = hasEntries(day);
@@ -434,4 +440,4 @@ return (
       )}
     </View>
   );
-}
+})

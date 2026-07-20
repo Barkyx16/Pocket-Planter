@@ -1,10 +1,10 @@
-import { Alert, Image, Pressable, Text, Vibration, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { styles } from "../styles";
-import { SCREEN_WIDTH, WHATS_NEW_ITEMS, WHATS_NEW_VERSION, getRainSkipToday, getTodayKey, getUpcomingFrost, homeBuddyImage, successHaptic } from "../core";
+import { SCREEN_WIDTH, WHATS_NEW_ITEMS, WHATS_NEW_VERSION, formatTemp, getRainSkipToday, getTodayKey, getUpcomingFrost, homeBuddyImage, isMonthlyChecklistComplete, zoneIsFrostFree } from "../core";
 import { CollapsibleCard } from "../components/CollapsibleCard";
+import { TabHero } from "../components/TabHero";
 import { DailyBonusCard } from "../components/DailyBonusCard";
-import { DailyQuestsCard } from "../components/DailyQuestsCard";
 import { DaylightCard } from "../components/DaylightCard";
 import { EmptyGardenStarterCard } from "../components/EmptyGardenStarterCard";
 import { FrostChecklistCard } from "../components/FrostChecklistCard";
@@ -13,26 +13,24 @@ import { FrostWindowCard } from "../components/FrostWindowCard";
 import { GardenStatsDashboard } from "../components/GardenStatsDashboard";
 import { HarvestReadyCard } from "../components/HarvestReadyCard";
 import { MonthlyChecklistCard } from "../components/MonthlyChecklistCard";
-import { MostLovedPlantsCard } from "../components/MostLovedPlantsCard";
 import { MyGardenTodayCard } from "../components/MyGardenTodayCard";
 import { OnThisDayCard } from "../components/OnThisDayCard";
 import { PestWatchCard } from "../components/PestWatchCard";
 import { PlantAnniversaryCard } from "../components/PlantAnniversaryCard";
 import { PlantTodayHero } from "../components/PlantTodayHero";
 import { PremiumIntroCard } from "../components/PremiumIntroCard";
-import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { RescueModeCard } from "../components/RescueModeCard";
 import { SavedPlantsCard } from "../components/SavedPlantsCard";
 import { SeasonTransitionCard } from "../components/SeasonTransitionCard";
+import { PlantingCalendarCard } from "../components/PlantingCalendarCard";
 import { SeedStartingCard } from "../components/SeedStartingCard";
 import { SuccessionSowingCard } from "../components/SuccessionSowingCard";
 import { TodaysGamePlanCard } from "../components/TodaysGamePlanCard";
+import { ToggleSection } from "../components/ToggleSection";
 import { WaterTriageCard } from "../components/WaterTriageCard";
-import { WateringRhythmCard } from "../components/WateringRhythmCard";
 import { WateringStreakNudge } from "../components/WateringStreakNudge";
-import { WeeklyWateringGrid } from "../components/WeeklyWateringGrid";
 
-export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, completedQuestIds, dailyBonusClaimed, dailyBonusDate, dailyQuests, dismissPremiumIntro, fertilizerTrackers, frostChecklist, frostDatesHidden, frostOverrides, gardenXP, harvestLog, harvestTrackers, homeBannerDismissedDate, journalEntries, jumpToTab, markPlantWatered, monthlyChecklist, monthlySuggestions, openPlantFromList, pickJournalPhoto, pinnedPlants, plantFolders, plantSaveDates, premiumUnlocked, record, savedPlants, scrollRef, setCompletedQuestIds, setFrostChecklist, setFrostDatesHidden, setFrostOverrides, setHomeBannerDismissedDate, setMonthlyChecklist, setQuestXP, setShowWhatsNew, setSowLog, setXpPopups, setZip, showPremiumIntro, showWhatsNew, snoozedPlants, sowLog, streakData, streakFreeze, theme, togglePinnedPlant, uploadingPhoto, useStreakFreeze, waterAllPlants, waterPlant, wateredPlants, wateringAmounts, wateringHistory, wateringSectionY, weather, zipCoords, zone }) {
+export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, completedQuestIds, dailyBonusClaimed, dailyBonusDate, dailyQuests, dismissPremiumIntro, fertilizerTrackers, frostChecklist, frostDatesHidden, frostOverrides, gardenXP, harvestLog, harvestTrackers, homeBannerDismissedDate, journalEntries, jumpToTab, markPlantWatered, monthlyChecklist, monthlySuggestions, onOpenSearch, openPlantFromList, openPest, pickJournalPhoto, pinnedPlants, plantFolders, plantPickDismissedDate, plantSaveDates, premiumUnlocked, record, savedPlants, scrollRef, setPlantPickDismissedDate, setCompletedQuestIds, setFrostChecklist, setFrostDatesHidden, setFrostOverrides, setHomeBannerDismissedDate, setMonthlyChecklist, setQuestXP, setShowWhatsNew, setSowLog, setXpPopups, setZip, showPremiumIntro, showWhatsNew, snoozedPlants, sowLog, streakData, streakFreeze, theme, togglePinnedPlant, unitSystem, uploadingPhoto, useStreakFreeze, waterAllPlants, waterPlant, wateredPlants, wateringAmounts, wateringHistory, wateringSectionY, weather, zipCoords, zone }) {
   return (
 <>
 {(() => {
@@ -62,7 +60,7 @@ export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, 
                 <Text style={{ color: "#6bc7ff", fontSize: 13, fontWeight: "900" }}>{countdownText}</Text>
               </View>
               <Text style={styles.frostBannerText}>
-                Low of {Math.round(frost.minTempF)}°F coming — cover tender plants, move containers to shelter, and hold off on transplanting.
+                Low of {formatTemp(frost.minTempF, unitSystem, true)} coming — cover tender plants, move containers to shelter, and hold off on transplanting.
               </Text>
             </View>
            <Pressable onPress={dismissBanner} hitSlop={10} style={{ padding: 4 }}>
@@ -78,7 +76,7 @@ export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, 
             <View style={{ flex: 1 }}>
               <Text style={[styles.frostBannerTitle, { color: "#ff7b7b" }]}>Extreme heat today</Text>
               <Text style={styles.frostBannerText}>
-                High of {Math.round(weather.maxTempF)}°F — water before 9 AM, shade young plants, add mulch, and skip transplanting today.
+                High of {formatTemp(weather.maxTempF, unitSystem, true)} — water before 9 AM, shade young plants, add mulch, and skip transplanting today.
               </Text>
             </View>
             <Pressable onPress={dismissBanner} hitSlop={10} style={{ padding: 4 }}>
@@ -132,16 +130,27 @@ export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, 
         </Pressable>
       </View>
     ) : null}
-    <Image
+    <TabHero
+      tabKey="home"
       source={homeBuddyImage}
-  style={{
-    width: "100%",
-    height: SCREEN_WIDTH * 1.35,
-    borderRadius: 24,
-    marginBottom: 18,
-  }}
-      resizeMode="cover"
+      style={{
+        width: "100%",
+        height: SCREEN_WIDTH * 1.35,
+        borderRadius: 24,
+        marginBottom: 18,
+      }}
     />
+
+    {/* GLOBAL SEARCH */}
+    <Pressable
+      onPress={onOpenSearch}
+      accessibilityRole="button"
+      accessibilityLabel="Search plants, pests, and journal"
+      style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 13, borderWidth: 1, borderColor: "rgba(92,255,137,0.20)", marginBottom: 18 }}
+    >
+      <Text style={{ fontSize: 16 }}>🔍</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "700" }}>Search plants, pests, journal…</Text>
+    </Pressable>
 
     {/* ZONE BADGE + CHANGE BUTTON */}
     <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: theme.card, borderRadius: 22, padding: 16, marginBottom: 18, borderWidth: 1, borderColor: "rgba(92,255,137,0.28)" }}>
@@ -170,6 +179,7 @@ export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, 
             {savedPlants.length > 0 ? (
                 <TodaysGamePlanCard
                   theme={theme}
+                  unitSystem={unitSystem}
                   savedPlants={savedPlants}
                   wateredPlants={wateredPlants}
                   wateringHistory={wateringHistory}
@@ -241,9 +251,10 @@ export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, 
   onOpenPlant={openPlantFromList}
 />
 
-<CollapsibleCard theme={theme} storageKey="dashboard" title="🌱 Garden Dashboard">
+<CollapsibleCard theme={theme} storageKey="dashboard" title="🌱 Garden Dashboard" defaultOpen={true}>
 <GardenStatsDashboard
   theme={theme}
+  unitSystem={unitSystem}
   savedPlants={savedPlants}
   journalEntries={journalEntries}
   gardenMap={combinedGardenMap}
@@ -262,6 +273,7 @@ harvestTrackers={harvestTrackers}
 
 <MyGardenTodayCard
   theme={theme}
+  unitSystem={unitSystem}
   weather={weather}
   monthlySuggestions={monthlySuggestions}
   savedPlants={savedPlants}
@@ -276,7 +288,7 @@ zone={zone}
   gardenMap={combinedGardenMap}
   onNavigate={jumpToTab}
 />
-{(monthlySuggestions.length || compatiblePlants.length) ? (
+{((monthlySuggestions.length || compatiblePlants.length) && plantPickDismissedDate !== getTodayKey()) ? (
 <CollapsibleCard theme={theme} storageKey="plantpick" title="🌟 Plant Pick">
 <PlantTodayHero
   theme={theme}
@@ -285,7 +297,12 @@ zone={zone}
   savedPlants={savedPlants}
   zone={zone}
   weather={weather}
-  onOpen={openPlantFromList}
+  onOpen={(plant) => {
+    const today = getTodayKey();
+    setPlantPickDismissedDate(today);
+    AsyncStorage.setItem("pp_plantPickDismissedDate", today).catch(() => {});
+    openPlantFromList(plant);
+  }}
 />
 </CollapsibleCard>
 ) : null}
@@ -306,43 +323,24 @@ zone={zone}
   onOpenPlant={openPlantFromList}
 />
 
-{(zone && savedPlants.length) ? (
-<CollapsibleCard theme={theme} storageKey="succession" title="🔁 Succession Sowing">
-<SuccessionSowingCard
-  theme={theme}
-  savedPlants={savedPlants}
-  zone={zone}
-  sowLog={sowLog}
-  onSow={(name) => setSowLog((c) => ({ ...c, [name]: getTodayKey() }))}
-/>
-</CollapsibleCard>
-) : null}
+{/* Frost window warning stays on its own; frost tools hide entirely in frost-free zones (USDA 10+). */}
+{zoneIsFrostFree(zone) ? null : (
+  <FrostWindowCard
+    theme={theme}
+    plants={compatiblePlants}
+    zone={zone}
+    onOpenPlant={openPlantFromList}
+  />
+)}
 
-<FrostWindowCard
-  theme={theme}
-  plants={compatiblePlants}
-  zone={zone}
-  onOpenPlant={openPlantFromList}
-/>
-
-{frostDatesHidden ? (
+{(!zoneIsFrostFree(zone) && frostDatesHidden) ? (
   <Pressable
     onPress={() => setFrostDatesHidden(false)}
     style={{ backgroundColor: "rgba(107,199,255,0.08)", borderRadius: 999, paddingVertical: 12, paddingHorizontal: 18, marginBottom: 18, borderWidth: 1, borderColor: "rgba(107,199,255,0.2)", alignItems: "center", justifyContent: "center" }}
   >
     <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "800" }}>❄️ Show frost dates card</Text>
   </Pressable>
-) : (
-  <CollapsibleCard theme={theme} storageKey="frostdates" title="❄️ Frost Dates">
-  <FrostOverrideCard
-    theme={theme}
-    zone={zone}
-    frostOverrides={frostOverrides}
-    onSave={setFrostOverrides}
-    onHide={() => setFrostDatesHidden(true)}
-  />
-  </CollapsibleCard>
-)}
+) : null}
 
 {zipCoords ? (
 <CollapsibleCard theme={theme} storageKey="daylight" title="☀️ Daylight Today">
@@ -350,7 +348,7 @@ zone={zone}
 </CollapsibleCard>
 ) : null}
 
-{zone ? (
+{zone && !isMonthlyChecklistComplete(zone, monthlyChecklist) ? (
 <CollapsibleCard theme={theme} storageKey="monthlychecklist" title="🗓️ This Month">
 <MonthlyChecklistCard theme={theme} zone={zone} monthlyChecklist={monthlyChecklist} setMonthlyChecklist={setMonthlyChecklist} />
 </CollapsibleCard>
@@ -375,54 +373,32 @@ zone={zone}
 <PestWatchCard
   theme={theme}
   savedPlantObjs={compatiblePlants}
+  zone={zone}
   onOpenPlant={openPlantFromList}
+  onOpenPest={openPest}
 />
 </CollapsibleCard>
 ) : null}
 
-{premiumUnlocked ? (
-  <CollapsibleCard theme={theme} storageKey="dailyquests" title="⚡ Daily Quests">
-  <DailyQuestsCard
-    theme={theme}
-    dailyQuests={dailyQuests}
-    completedQuestIds={completedQuestIds}
-    onQuestComplete={(quest) => {
-      const today = getTodayKey();
-      const todayCompleted = completedQuestIds[today] || [];
-      if (todayCompleted.includes(quest.id)) return;
-      setCompletedQuestIds(current => ({
-        ...current,
-        [today]: [...(current[today] || []), quest.id],
-      }));
-      setQuestXP(prev => prev + quest.reward);
-      const popup = { id: Date.now().toString(), amount: quest.reward };
-      setXpPopups(current => [...current, popup]);
-      setTimeout(() => {
-        setXpPopups(current => current.filter(item => item.id !== popup.id));
-      }, 1600);
-Vibration.vibrate(60);
-      successHaptic();
-    }}
-  />
-  </CollapsibleCard>
-) : (
-  <PremiumLockedCard theme={theme} title="Daily quests locked" body="Unlock gardening streaks, XP progression, achievements, and daily challenges." onUnlock={() => jumpToTab("premium")} />
-)}
-{savedPlants.length ? (
-<CollapsibleCard theme={theme} storageKey="weeklywatering" title="💧 This Week's Watering">
-<WeeklyWateringGrid theme={theme} savedPlants={savedPlants} wateringHistory={wateringHistory} />
+{((zone && savedPlants.length) || (!zoneIsFrostFree(zone) && !frostDatesHidden)) ? (
+<CollapsibleCard theme={theme} storageKey="plantingsowingfrost" title="🌱 Planting, Sowing & Frost" defaultOpen={false}>
+  {(zone && savedPlants.length) ? (
+    <>
+      <Text style={{ color: "#5cff89", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 8 }}>📅 PLANTING & HARVEST CALENDAR</Text>
+      <PlantingCalendarCard theme={theme} savedPlants={savedPlants} zone={zone} onOpenPlant={openPlantFromList} />
+      <ToggleSection label="🔁 Succession Sowing" closeLabel="✕ Close Succession Sowing">
+        <SuccessionSowingCard theme={theme} savedPlants={savedPlants} zone={zone} sowLog={sowLog} onSow={(name) => setSowLog((c) => ({ ...c, [name]: getTodayKey() }))} />
+      </ToggleSection>
+    </>
+  ) : null}
+  {(!zoneIsFrostFree(zone) && !frostDatesHidden) ? (
+    <ToggleSection label="❄️ Frost Dates" closeLabel="✕ Close Frost Dates" accent="blue">
+      <FrostOverrideCard theme={theme} zone={zone} frostOverrides={frostOverrides} onSave={setFrostOverrides} onHide={() => setFrostDatesHidden(true)} />
+    </ToggleSection>
+  ) : null}
 </CollapsibleCard>
 ) : null}
-{savedPlants.length >= 2 ? (
-<CollapsibleCard theme={theme} storageKey="mostloved" title="💧 Most Loved">
-<MostLovedPlantsCard theme={theme} savedPlants={savedPlants} wateringHistory={wateringHistory} onOpenPlant={openPlantFromList} />
-</CollapsibleCard>
-) : null}
-{savedPlants.length ? (
-<CollapsibleCard theme={theme} storageKey="wateringrhythm" title="📊 Watering Rhythm">
-<WateringRhythmCard theme={theme} savedPlants={savedPlants} wateringHistory={wateringHistory} onOpenPlant={openPlantFromList} />
-</CollapsibleCard>
-) : null}
+
 {savedPlants.length ? (
 <CollapsibleCard theme={theme} storageKey="savedplants" title="🌿 Saved Plants">
 <SavedPlantsCard theme={theme} savedPlants={savedPlants} plantFolders={plantFolders} premiumUnlocked={premiumUnlocked} wateredPlants={wateredPlants} wateringHistory={wateringHistory} weather={weather} harvestTrackers={harvestTrackers} pinnedPlants={pinnedPlants} onTogglePin={togglePinnedPlant} onOpenPlant={openPlantFromList} onUpgrade={() => jumpToTab("premium")} />

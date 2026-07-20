@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
-import { getUpcomingFrost } from "../core";
+import { formatTemp, getUpcomingFrost } from "../core";
 
-export function FrostBanner({ theme, weather, frostAlertsOn }) {
+export const FrostBanner = memo(function FrostBanner({ theme, weather, frostAlertsOn, unitSystem }) {
   const frost = getUpcomingFrost(weather);
   if (!frost) return null;
   const whenText =
@@ -15,7 +16,7 @@ export function FrostBanner({ theme, weather, frostAlertsOn }) {
       <View style={{ flex: 1 }}>
         <Text style={styles.frostBannerTitle}>Frost expected {whenText}</Text>
         <Text style={styles.frostBannerText}>
-          Low of {Math.round(frost.minTempF)}°F coming — cover tender plants, move containers to shelter, and hold off on transplanting.
+          Low of {formatTemp(frost.minTempF, unitSystem, true)} coming — cover tender plants, move containers to shelter, and hold off on transplanting.
         </Text>
         {!frostAlertsOn ? (
           <Text style={styles.frostBannerHint}>
@@ -25,4 +26,4 @@ export function FrostBanner({ theme, weather, frostAlertsOn }) {
       </View>
     </View>
   );
-}
+})

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { useEffect, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
@@ -5,7 +6,7 @@ import { styles } from "../styles";
 import { supabase } from "../lib/supabase";
 import { resolvePlantImageSource } from "../core";
 
-export function ThrivingNearYouCard({ theme, zone, onOpenPlant }) {
+export const ThrivingNearYouCard = memo(function ThrivingNearYouCard({ theme, zone, onOpenPlant }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -75,4 +76,4 @@ export function ThrivingNearYouCard({ theme, zone, onOpenPlant }) {
       )}
     </View>
   );
-}
+})

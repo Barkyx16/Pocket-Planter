@@ -1,7 +1,9 @@
+import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
+import { getDateKey } from "../core";
 
-export function WeeklyWateringGrid({ theme, savedPlants, wateringHistory }) {
+export const WeeklyWateringGrid = memo(function WeeklyWateringGrid({ theme, savedPlants, wateringHistory }) {
   if (!savedPlants || savedPlants.length === 0) return null;
 
   // Build the last 7 days (oldest → today)
@@ -11,7 +13,7 @@ export function WeeklyWateringGrid({ theme, savedPlants, wateringHistory }) {
     d.setHours(12, 0, 0, 0);
     d.setDate(d.getDate() - i);
     days.push({
-      key: d.toISOString().slice(0, 10),
+      key: getDateKey(d),
       label: d.toLocaleDateString("en-US", { weekday: "narrow" }),
       isToday: i === 0,
     });
@@ -28,7 +30,25 @@ export function WeeklyWateringGrid({ theme, savedPlants, wateringHistory }) {
     savedPlants.reduce((sum, name) => sum + (wateredOn(name, day.key) ? 1 : 0), 0)
   );
   const weekTotal = dayTotals.reduce((a, b) => a + b, 0);
-  const activeDays = dayTotals.filter((n) => n > 0).length;
+  const todayKey = days[6].key;
+  const wateredTodayCount = savedPlants.filter((n) => wateredOn(n, todayKey)).length;
+
+  // Days since a plant was last watered — surfaces who's overdue at a glance.
+  const now = new Date(); now.setHours(12, 0, 0, 0);
+  const plantStatus = (name) => {
+    const history = wateringHistory?.[name];
+    if (!Array.isArray(history) || !history.length) return { label: "—", color: theme.secondaryText };
+    const last = history
+      .map((d) => new Date(`${String(d).slice(0, 10)}T12:00:00`))
+      .filter((d) => !Number.isNaN(d.getTime()))
+      .sort((a, b) => b - a)[0];
+    if (!last) return { label: "—", color: theme.secondaryText };
+    const daysAgo = Math.round((now - last) / 86400000);
+    if (daysAgo <= 0) return { label: "Today", color: "#5cff89" };
+    if (daysAgo === 1) return { label: "1d", color: "#8effab" };
+    if (daysAgo <= 3) return { label: `${daysAgo}d`, color: "#ffd86b" };
+    return { label: `${daysAgo}d`, color: "#ff9f43" };
+  };
 
   // Show up to 6 plants as rows to keep it compact
   const rows = savedPlants.slice(0, 6);
@@ -37,13 +57,13 @@ return (
     <View>
       <Text style={[styles.cardText, { color: theme.secondaryText }]}>
         {weekTotal > 0
-          ? `${weekTotal} watering${weekTotal === 1 ? "" : "s"} across ${activeDays} day${activeDays === 1 ? "" : "s"} this week.`
+          ? `${wateredTodayCount} of ${savedPlants.length} plant${savedPlants.length === 1 ? "" : "s"} watered today · ${weekTotal} logged this week.`
           : "No waterings logged this week yet — tap a plant to get started."}
       </Text>
 
       {/* Day header */}
       <View style={{ flexDirection: "row", marginTop: 16, marginBottom: 6 }}>
-        <View style={{ width: 90 }} />
+        <View style={{ width: 74 }} />
         {days.map((day) => (
           <View key={`hdr-${day.key}`} style={{ flex: 1, alignItems: "center" }}>
             <Text style={{ color: day.isToday ? "#6bc7ff" : theme.secondaryText, fontSize: 11, fontWeight: "900" }}>
@@ -51,13 +71,18 @@ return (
             </Text>
           </View>
         ))}
+        <View style={{ width: 46, alignItems: "flex-end" }}>
+          <Text style={{ color: theme.secondaryText, fontSize: 9.5, fontWeight: "900" }}>LAST</Text>
+        </View>
       </View>
 
       {/* Plant rows */}
       <View style={{ gap: 6 }}>
-        {rows.map((name) => (
+        {rows.map((name) => {
+          const status = plantStatus(name);
+          return (
           <View key={`row-${name}`} style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text numberOfLines={1} style={{ width: 90, color: theme.text, fontSize: 12, fontWeight: "800", paddingRight: 6 }}>
+            <Text numberOfLines={1} style={{ width: 74, color: theme.text, fontSize: 12, fontWeight: "800", paddingRight: 6 }}>
               {name}
             </Text>
             {days.map((day) => {
@@ -76,8 +101,12 @@ return (
                 </View>
               );
             })}
+            <View style={{ width: 46, alignItems: "flex-end" }}>
+              <Text style={{ color: status.color, fontSize: 11.5, fontWeight: "900" }}>{status.label}</Text>
+            </View>
           </View>
-        ))}
+          );
+        })}
       </View>
 
       {savedPlants.length > 6 ? (
@@ -87,4 +116,4 @@ return (
       ) : null}
     </View>
   );
-}
+})

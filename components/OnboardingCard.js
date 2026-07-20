@@ -1,49 +1,54 @@
+import { memo } from "react";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
 
-export function OnboardingCard({ onFinish }) {
+export const OnboardingCard = memo(function OnboardingCard({ onFinish }) {
   const [slide, setSlide] = useState(0);
 
   const slides = [
     {
-      emoji: "🌱",
-      title: "Welcome to Pocket Planter",
-      text: "Grow smarter with planting picks, weather alerts, reminders, and garden tools built around your area.",
+      icon: "🌱",
+      eyebrow: "WELCOME TO POCKET PLANTER",
+      title: "Grow smarter,\ngarden better.",
+      text: "Everything you need to plan, track, and grow a thriving garden — matched to your area.",
       features: [
-        "📍 Find your garden zone",
-        "🌿 Discover what to plant",
-        "💚 Save your favorites",
+        { icon: "📍", title: "Your garden zone", text: "Plants matched to your local climate." },
+        { icon: "🌿", title: "What to plant", text: "Monthly picks tailored to your area." },
+        { icon: "💚", title: "Save favorites", text: "Build your own plant collection." },
       ],
     },
     {
-      emoji: "🗺️",
-      title: "Find Your Garden Zone",
-      text: "Enter your ZIP code so Pocket Planter can match plants to your local growing zone.",
+      icon: "🗺️",
+      eyebrow: "STEP 1 · YOUR ZONE",
+      title: "Find your\ngrowing zone",
+      text: "Enter your ZIP and Pocket Planter tailors everything to your local conditions.",
       features: [
-        "📅 Monthly planting picks",
-        "🌤️ Weather-aware tips",
-        "🔥 Frost and heat warnings",
+        { icon: "📅", title: "Monthly picks", text: "Know exactly what to sow each month." },
+        { icon: "🌤️", title: "Weather-aware tips", text: "Guidance that reacts to your forecast." },
+        { icon: "🔥", title: "Frost & heat alerts", text: "Warnings before dangerous temps hit." },
       ],
     },
     {
-      emoji: "📸",
-      title: "Track Your Garden",
-      text: "Save plants, log photos, track watering, and build your garden planner map.",
+      icon: "📸",
+      eyebrow: "STEP 2 · TRACK",
+      title: "Track your\ngarden",
+      text: "Save plants, log photos, track watering, and plan out every bed.",
       features: [
-        "💧 Watering checks",
-        "📸 Journal timeline",
-        "🗺️ Garden planner",
+        { icon: "💧", title: "Watering checks", text: "Never forget to water again." },
+        { icon: "📸", title: "Journal timeline", text: "Watch your garden grow over time." },
+        { icon: "🗺️", title: "Garden planner", text: "Plan beds with companion scoring." },
       ],
     },
     {
-      emoji: "🏆",
-      title: "Earn XP and Grow",
-      text: "Complete garden actions, build streaks, unlock achievements, and level up your gardener profile.",
+      icon: "🏆",
+      eyebrow: "STEP 3 · LEVEL UP",
+      title: "Earn XP\nand grow",
+      text: "Complete garden actions, build streaks, and unlock achievements.",
       features: [
-        "🔥 Daily streaks",
-        "🏆 Achievements",
-        "✨ Profile rewards",
+        { icon: "🔥", title: "Daily streaks", text: "Keep your momentum going." },
+        { icon: "🏆", title: "Achievements", text: "Unlock badges as you grow." },
+        { icon: "✨", title: "Profile rewards", text: "Level up your gardener profile." },
       ],
     },
   ];
@@ -53,20 +58,39 @@ export function OnboardingCard({ onFinish }) {
 
   return (
     <View style={styles.onboardingOverlay}>
-      <View style={styles.onboardingCard}>
-        <Text style={styles.onboardingEmoji}>{current.emoji}</Text>
+      <View style={[styles.onboardingCard, { padding: 16, maxHeight: "92%" }]}>
+        <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+          {/* HERO — matches the Premium screen */}
+          <View style={styles.premiumHeroSection}>
+            <View style={styles.premiumHeroGlowOrbOne} />
+            <View style={styles.premiumHeroGlowOrbTwo} />
 
-        <Text style={styles.onboardingTitle}>{current.title}</Text>
+            <View style={styles.premiumCrownWrap}>
+              <Text style={styles.premiumCrownEmoji}>{current.icon}</Text>
+            </View>
 
-        <Text style={styles.onboardingText}>{current.text}</Text>
+            <Text style={styles.premiumHeroEyebrow}>{current.eyebrow}</Text>
+            <Text style={styles.premiumHeroHeadline}>{current.title}</Text>
+            <Text style={styles.premiumHeroSubtext}>{current.text}</Text>
+          </View>
 
-        <View style={styles.onboardingFeatureList}>
-          {current.features.map((feature) => (
-            <Text key={feature} style={styles.onboardingFeature}>
-              {feature}
-            </Text>
-          ))}
-        </View>
+          {/* FEATURE TILES — matches the Premium feature grid */}
+          <View style={[styles.premiumFeaturesCard, { backgroundColor: "rgba(255,255,255,0.03)", borderColor: "rgba(92,255,137,0.16)" }]}>
+            <View style={styles.premiumFeaturesGrid}>
+              {current.features.map((f) => (
+                <View key={f.title} style={styles.premiumFeatureTile}>
+                  <View style={styles.premiumFeatureTileIconWrap}>
+                    <Text style={styles.premiumFeatureTileIcon}>{f.icon}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.premiumFeatureTileTitle}>{f.title}</Text>
+                    <Text style={styles.premiumFeatureTileText}>{f.text}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        </ScrollView>
 
         <View style={styles.onboardingDots}>
           {slides.map((_, index) => (
@@ -87,7 +111,6 @@ export function OnboardingCard({ onFinish }) {
               onFinish();
               return;
             }
-
             setSlide((currentSlide) => currentSlide + 1);
           }}
         >
@@ -104,4 +127,4 @@ export function OnboardingCard({ onFinish }) {
       </View>
     </View>
   );
-}
+})

@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
 import { getPlantFamily } from "../core";
 
-export function CropRotationCard({ theme, gardenAreas, areaHistory }) {
+export const CropRotationCard = memo(function CropRotationCard({ theme, gardenAreas, areaHistory }) {
   const now = new Date();
   const thisYear = now.getFullYear();
 
@@ -57,4 +58,4 @@ export function CropRotationCard({ theme, gardenAreas, areaHistory }) {
       </Text>
     </View>
   );
-}
+})

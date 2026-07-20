@@ -1,12 +1,17 @@
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
-import { styles } from "../styles";
 import { getTodayKey } from "../core";
 
-export function DailyQuestsCard({ theme, dailyQuests, completedQuestIds, onQuestComplete }) {
-  const completedCount = dailyQuests.filter((quest) => quest.completed).length;
-  const totalXP = dailyQuests.reduce((sum, q) => sum + (q.completed ? q.reward : 0), 0);
+export const DailyQuestsCard = memo(function DailyQuestsCard({ theme, dailyQuests, completedQuestIds, onQuestComplete }) {
+  const total = dailyQuests.length || 1;
+  const todayClaimed = completedQuestIds[getTodayKey()] || [];
+  // Claimed quests disappear from the list — the card shrinks as you claim, and hides
+  // entirely once everything's claimed.
+  const visible = dailyQuests.filter((q) => !todayClaimed.includes(q.id));
+  if (dailyQuests.length > 0 && visible.length === 0) return null;
 
-  if (dailyQuests.length > 0 && completedCount === dailyQuests.length) return null;
+  const claimedCount = dailyQuests.length - visible.length;
+  const claimedXP = dailyQuests.reduce((sum, q) => sum + (todayClaimed.includes(q.id) ? q.reward : 0), 0);
 
   const getResetText = () => {
     const now = new Date();
@@ -15,106 +20,82 @@ export function DailyQuestsCard({ theme, dailyQuests, completedQuestIds, onQuest
     const msLeft = midnight - now;
     const hoursLeft = Math.floor(msLeft / (1000 * 60 * 60));
     const minsLeft = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60));
-    if (hoursLeft >= 1) return `Resets in ${hoursLeft}h`;
-    return `Resets in ${minsLeft}m`;
+    return hoursLeft >= 1 ? `Resets in ${hoursLeft}h` : `Resets in ${minsLeft}m`;
   };
 
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case "Easy": return "#5cff89";
-      case "Medium": return "#ffd86b";
-      case "Hard": return "#ff7b7b";
-      case "Bonus": return "#d8c8ff";
-      default: return "#5cff89";
-    }
-  };
+  const diffColorOf = (d) =>
+    d === "Easy" ? "#5cff89" : d === "Medium" ? "#ffd86b" : d === "Hard" ? "#ff7b7b" : d === "Bonus" ? "#d8c8ff" : "#5cff89";
 
-return (
+  return (
     <View>
-     <Text style={[styles.cardText, { color: theme.secondaryText }]}>
-      </Text>
-      <View style={{ alignSelf: "flex-start", marginTop: 8, backgroundColor: "rgba(255,216,107,0.12)", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: "rgba(255,216,107,0.25)" }}>
-        <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900" }}>⏳ {getResetText()}</Text>
+      {/* Compact header: reset chip + inline progress */}
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 6, marginBottom: 10 }}>
+        <View style={{ backgroundColor: "rgba(255,216,107,0.12)", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 5, borderWidth: 1, borderColor: "rgba(255,216,107,0.25)" }}>
+          <Text style={{ color: "#ffd86b", fontSize: 11, fontWeight: "800" }}>⏳ {getResetText()}</Text>
+        </View>
+        <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "800" }}>
+          {claimedCount}/{total} claimed · +{claimedXP} XP
+        </Text>
+      </View>
+      <View style={{ height: 6, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden", marginBottom: 14 }}>
+        <View style={{ height: 6, borderRadius: 999, backgroundColor: "#5cff89", width: `${(claimedCount / total) * 100}%` }} />
       </View>
 
-      {/* PROGRESS SUMMARY */}
-      <View style={styles.questProgressSummary}>
-        <View style={styles.questProgressLeft}>
-          <Text style={styles.questProgressValue}>{completedCount}/{dailyQuests.length}</Text>
-          <Text style={[styles.questProgressLabel, { color: theme.secondaryText }]}>Completed</Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <View style={styles.questProgressTrack}>
-            <View style={[styles.questProgressFill, { width: `${(completedCount / dailyQuests.length) * 100}%` }]} />
-          </View>
-          <Text style={styles.questProgressXP}>+{totalXP} XP earned today</Text>
-        </View>
-        {completedCount === dailyQuests.length ? (
-          <Text style={styles.questAllDoneEmoji}>🌟</Text>
-        ) : null}
-      </View>
-
-      {/* QUEST LIST */}
-      <View style={styles.questList}>
-        {dailyQuests.map((quest) => {
-          const diffColor = getDifficultyColor(quest.difficulty);
+      {/* Compact quest rows */}
+      <View style={{ gap: 8 }}>
+        {visible.map((quest) => {
+          const c = diffColorOf(quest.difficulty);
           const alreadyClaimed = completedQuestIds[getTodayKey()]?.includes(quest.id);
-
+          const pct = Math.min((quest.progress / quest.goal) * 100, 100);
+          const claimable = quest.completed && !alreadyClaimed;
           return (
             <Pressable
               key={quest.id}
-              onPress={() => {
-                if (quest.completed && !alreadyClaimed) {
-                  onQuestComplete(quest);
-                }
+              onPress={() => { if (claimable) onQuestComplete(quest); }}
+              accessibilityRole="button"
+              accessibilityLabel={`${quest.title}, ${quest.progress} of ${quest.goal}${claimable ? ", tap to claim" : ""}`}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 11,
+                padding: 10,
+                borderRadius: 14,
+                borderWidth: 1,
+                backgroundColor: quest.completed ? `${c}14` : "rgba(255,255,255,0.05)",
+                borderColor: quest.completed ? `${c}40` : "rgba(255,255,255,0.08)",
               }}
-              style={[styles.questRowV2, {
-                backgroundColor: quest.completed
-                  ? diffColor + "14"
-                  : "rgba(255,255,255,0.05)",
-                borderColor: quest.completed
-                  ? diffColor + "40"
-                  : "rgba(255,255,255,0.08)",
-              }]}
             >
-              {/* ICON */}
-              <View style={[styles.questIconWrap, { backgroundColor: diffColor + "20" }]}>
-                <Text style={styles.questIcon}>{quest.icon}</Text>
+              <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: `${c}20`, alignItems: "center", justifyContent: "center" }}>
+                <Text style={{ fontSize: 19 }}>{quest.icon}</Text>
               </View>
 
-              {/* CONTENT */}
               <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <Text style={[styles.questTitle, { color: quest.completed ? "#ffffff" : "#8fbf9d" }]}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <Text numberOfLines={1} style={{ color: quest.completed ? "#ffffff" : theme.text, fontSize: 14, fontWeight: "800", flexShrink: 1 }}>
                     {quest.title}
                   </Text>
-                  <View style={[styles.questDifficultyBadge, { backgroundColor: diffColor + "22" }]}>
-                    <Text style={[styles.questDifficultyText, { color: diffColor }]}>{quest.difficulty}</Text>
+                  <View style={{ backgroundColor: `${c}22`, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 }}>
+                    <Text style={{ color: c, fontSize: 9.5, fontWeight: "800" }}>{quest.difficulty}</Text>
                   </View>
                 </View>
-                <Text style={[styles.questDescription, { color: theme.secondaryText }]}>{quest.description}</Text>
-
-                {/* PROGRESS BAR */}
-                <View style={styles.questProgressBarTrack}>
-                  <View style={[styles.questProgressBarFill, {
-                    width: `${Math.min((quest.progress / quest.goal) * 100, 100)}%`,
-                    backgroundColor: diffColor,
-                  }]} />
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 7 }}>
+                  <View style={{ flex: 1, height: 5, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.10)", overflow: "hidden" }}>
+                    <View style={{ height: 5, borderRadius: 999, backgroundColor: c, width: `${pct}%` }} />
+                  </View>
+                  <Text style={{ color: theme.secondaryText, fontSize: 10.5, fontWeight: "700" }}>
+                    {quest.progress}/{quest.goal} · +{quest.reward}
+                  </Text>
                 </View>
-                <Text style={[styles.questProgressFraction, { color: diffColor }]}>
-                  {quest.progress}/{quest.goal} • +{quest.reward} XP
-                </Text>
               </View>
 
-              {/* STATUS */}
               {quest.completed ? (
                 alreadyClaimed ? (
-                  <View style={[styles.questClaimedBadge, { backgroundColor: diffColor + "22" }]}>
-                    <Text style={[styles.questClaimedText, { color: diffColor }]}>✓ Claimed</Text>
+                  <View style={{ backgroundColor: `${c}22`, borderRadius: 999, width: 30, height: 30, alignItems: "center", justifyContent: "center" }}>
+                    <Text style={{ color: c, fontSize: 13, fontWeight: "900" }}>✓</Text>
                   </View>
                 ) : (
-                  <View style={[styles.questClaimButton, { backgroundColor: diffColor }]}>
-                    <Text style={styles.questClaimButtonText}>Claim!</Text>
+                  <View style={{ backgroundColor: c, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 9 }}>
+                    <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "800" }}>Claim</Text>
                   </View>
                 )
               ) : null}
@@ -122,16 +103,6 @@ return (
           );
         })}
       </View>
-
-      {/* ALL DONE */}
-      {completedCount === dailyQuests.length ? (
-        <View style={styles.questAllDoneBox}>
-          <Text style={styles.questAllDoneTitle}>🌟 All quests complete!</Text>
-          <Text style={[styles.questAllDoneText, { color: theme.secondaryText }]}>
-            Amazing work! Come back tomorrow for new quests.
-          </Text>
-        </View>
-      ) : null}
     </View>
   );
-}
+})

@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
-import { getClimateBucket, getTodayKey, getWeatherIconFromDay } from "../core";
+import { formatTemp, getClimateBucket, getTodayKey, getWeatherIconFromDay } from "../core";
 
-export function ForecastCard({ theme, weather, zone, savedPlants, wateredPlants }) {
+export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, savedPlants, wateredPlants, unitSystem }) {
   const forecast = weather?.forecast || [];
   const today = getTodayKey();
   const climate = getClimateBucket(zone);
@@ -24,13 +25,18 @@ export function ForecastCard({ theme, weather, zone, savedPlants, wateredPlants 
     return date.toLocaleDateString("en-US", { weekday: "short" });
   };
 
+  // Advice thresholds shift by climate — 92°F is a scorcher in Zone 4 but a normal
+  // summer day in Zone 10, so what counts as "hot" depends on where you garden.
   const getGardenAdvice = (day) => {
+    const heatSkip = climate === "hot" ? 104 : climate === "cold" ? 94 : 98;
+    const heatWater = climate === "hot" ? 95 : climate === "cold" ? 85 : 90;
+    const greatMax = climate === "cold" ? 80 : 85;
     if (day.minTempF <= 35) return { text: "Cover plants", color: "#6bc7ff" };
-    if (day.maxTempF >= 98) return { text: "Skip planting", color: "#ff7b7b" };
-    if (day.maxTempF >= 90) return { text: "Water early", color: "#ffd86b" };
+    if (day.maxTempF >= heatSkip) return { text: "Skip planting", color: "#ff7b7b" };
+    if (day.maxTempF >= heatWater) return { text: "Water early", color: "#ffd86b" };
     if (day.precipChance >= 70) return { text: "Skip watering", color: "#6bc7ff" };
     if (day.precipChance >= 40) return { text: "Check soil", color: "#8effab" };
-    if (day.maxTempF >= 65 && day.maxTempF <= 85 && day.precipChance < 30) return { text: "Great day! 🌟", color: "#5cff89" };
+    if (day.maxTempF >= 62 && day.maxTempF <= greatMax && day.precipChance < 30) return { text: "Great day! 🌟", color: "#5cff89" };
     return { text: "Normal care", color: "#d7ebdc" };
   };
 
@@ -57,8 +63,8 @@ export function ForecastCard({ theme, weather, zone, savedPlants, wateredPlants 
     if (heatDays >= 3) return { icon: "🔥", text: `${heatDays} days above 95°F — water deeply every morning and mulch heavily.`, color: "#ff7b7b" };
     if (rainyDays >= 4) return { icon: "🌧️", text: `${rainyDays} rainy days ahead — hold off on fertilizing and check container drainage.`, color: "#6bc7ff" };
     if (weeklyHigh <= 75 && weeklyLow >= 45) return { icon: "✅", text: "Perfect growing week ahead — mild temps and low rain chance all week.", color: "#5cff89" };
-    if (climate === "hot") return { icon: "☀️", text: `Hot zone week — high of ${Math.round(weeklyHigh)}°F. Water before 9 AM daily and harvest often.`, color: "#ffd86b" };
-    return { icon: "🌱", text: `Good garden week — high of ${Math.round(weeklyHigh)}°F with ${rainyDays} rainy day${rainyDays === 1 ? "" : "s"}. Stay consistent with watering.`, color: "#8effab" };
+    if (climate === "hot") return { icon: "☀️", text: `Hot zone week — high of ${formatTemp(weeklyHigh, unitSystem, true)}. Water before 9 AM daily and harvest often.`, color: "#ffd86b" };
+    return { icon: "🌱", text: `Good garden week — high of ${formatTemp(weeklyHigh, unitSystem, true)} with ${rainyDays} rainy day${rainyDays === 1 ? "" : "s"}. Stay consistent with watering.`, color: "#8effab" };
   };
 
   const weekSummary = getWeekSummary();
@@ -74,24 +80,23 @@ export function ForecastCard({ theme, weather, zone, savedPlants, wateredPlants 
   return (
     <View>
 
-      {/* HEADER */}
-      <Text style={[styles.forecastTitle, { color: theme.text }]}>Garden Weather This Week</Text>
+      {/* HEADER — title comes from the collapsible card; keep a useful one-liner here */}
       <Text style={[styles.forecastSubtitle, { color: theme.secondaryText }]}>
-        Zone {zone || "—"} • Tap each day for garden advice
+        Zone {zone || "—"} • 🌱 Best planting day: <Text style={{ color: "#5cff89", fontWeight: "900" }}>{formatDayLabel(bestDay.date)}</Text>
       </Text>
 
       {/* WEEKLY SUMMARY STATS */}
       <View style={styles.forecastWeeklyStats}>
         <View style={styles.forecastWeeklyStat}>
           <Text style={[styles.forecastWeeklyStatValue, { color: getTempColor(weeklyHigh) }]}>
-            {Math.round(weeklyHigh)}°
+            {formatTemp(weeklyHigh, unitSystem)}
           </Text>
           <Text style={[styles.forecastWeeklyStatLabel, { color: theme.secondaryText }]}>Week High</Text>
         </View>
         <View style={styles.forecastWeeklyDivider} />
         <View style={styles.forecastWeeklyStat}>
           <Text style={[styles.forecastWeeklyStatValue, { color: getTempColor(weeklyLow) }]}>
-            {Math.round(weeklyLow)}°
+            {formatTemp(weeklyLow, unitSystem)}
           </Text>
           <Text style={[styles.forecastWeeklyStatLabel, { color: theme.secondaryText }]}>Week Low</Text>
         </View>
@@ -174,12 +179,12 @@ export function ForecastCard({ theme, weather, zone, savedPlants, wateredPlants 
 
               {/* HIGH TEMP */}
               <Text style={[styles.forecastTempHigh, { color: tempColor }]}>
-                {Math.round(day.maxTempF)}°
+                {formatTemp(day.maxTempF, unitSystem)}
               </Text>
 
               {/* LOW TEMP */}
               <Text style={[styles.forecastTempLow, { color: theme.secondaryText }]}>
-                {Math.round(day.minTempF)}°
+                {formatTemp(day.minTempF, unitSystem)}
               </Text>
 
               {/* RAIN CHANCE */}
@@ -201,14 +206,6 @@ export function ForecastCard({ theme, weather, zone, savedPlants, wateredPlants 
         })}
       </ScrollView>
 
-      {/* GARDEN ACTION FOOTER */}
-      <View style={styles.forecastFooter}>
-        <Text style={[styles.forecastFooterText, { color: theme.secondaryText }]}>
-          🌱 Best planting day this week: <Text style={{ color: "#5cff89", fontWeight: "900" }}>{formatDayLabel(bestDay.date)}</Text>
-          {bestDay.maxTempF ? ` • ${Math.round(bestDay.maxTempF)}° • ${Math.round(bestDay.precipChance)}% rain` : ""}
-        </Text>
-      </View>
-
     </View>
   );
-}
+})

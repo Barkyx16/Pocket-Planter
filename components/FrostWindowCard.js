@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { getFirstFrostDate, getFrostMaturityInfo, getPlantSeasonLabel, resolvePlantImageSource } from "../core";
 
-export function FrostWindowCard({ theme, plants, zone, onOpenPlant }) {
+export const FrostWindowCard = memo(function FrostWindowCard({ theme, plants, zone, onOpenPlant }) {
   if (!zone) return null;
   const atRisk = (plants || [])
     .filter((item) => getPlantSeasonLabel(item, zone) === "Plant now")
@@ -57,4 +58,4 @@ export function FrostWindowCard({ theme, plants, zone, onOpenPlant }) {
       </Text>
     </View>
   );
-}
+})

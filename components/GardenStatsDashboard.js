@@ -1,9 +1,10 @@
+import { memo } from "react";
 import { Pressable, Share, Text, View } from "react-native";
 import { styles } from "../styles";
-import { calculateGardenHealth, getConsistencyBonus, getFertilizerDays, getTodayKey, tapHaptic } from "../core";
+import { calculateGardenHealth, formatTemp, getConsistencyBonus, getFertilizerDays, getTodayKey, tapHaptic } from "../core";
 import { AnimatedBar } from "./AnimatedBar";
 
-export function GardenStatsDashboard({
+export const GardenStatsDashboard = memo(function GardenStatsDashboard({
   theme,
   savedPlants,
   journalEntries,
@@ -18,6 +19,7 @@ export function GardenStatsDashboard({
   fertilizerTrackers,
   onNavigate,
   onWaterAll,
+  unitSystem,
 }) {
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
   const today = getTodayKey();
@@ -36,7 +38,9 @@ export function GardenStatsDashboard({
   }, 0);
   const hasWeeklyMomentum = photosThisWeek > 0 || wateringsThisWeek > 0;
 
-  const wateredTodayCount = Object.values(wateredPlants || {}).filter(v => v === today).length;
+  // Only count plants that are still saved — otherwise stale entries for unsaved
+  // plants can push the count above the total (e.g. "16/11").
+  const wateredTodayCount = (savedPlants || []).filter((name) => wateredPlants?.[name] === today).length;
   const totalWatered = Object.values(wateredPlants || {}).filter(Boolean).length;
   const plantsNeedingWater = savedPlants.length - wateredTodayCount;
 
@@ -54,7 +58,9 @@ const daysSince = Math.floor((new Date() - new Date(tracker.lastFertilized)) / (
     return daysSince >= getFertilizerDays(plantName);
   }).length;
 
-  const plantsDocumented = new Set(journalEntries.map(e => e.plantName).filter(Boolean)).size;
+  // Distinct specific plants photographed (the generic "Garden" bucket doesn't count as a plant).
+  const plantsDocumented = new Set(journalEntries.map(e => e.plantName).filter((n) => n && n !== "Garden")).size;
+  const totalPhotos = journalEntries.length;
   const thisMonthPhotos = journalEntries.filter(e => {
     const d = new Date(e.createdAt);
     const now = new Date();
@@ -64,6 +70,10 @@ const daysSince = Math.floor((new Date() - new Date(tracker.lastFertilized)) / (
   const gardenHealth = calculateGardenHealth(gardenMap);
   const xpToNext = gardenXP.nextLevelXP - gardenXP.currentLevelXP;
   const levelProgress = gardenXP.progress || 0;
+
+  // Only surface the To-Do list when something actually needs doing.
+  const hasTodos = plantsNeedingWater > 0 || harvestsReady > 0 || fertDue > 0
+    || (gardenHealth.score < 70 && gardenPlotCount > 1) || savedPlants.length === 0;
 
   const getStreakEmoji = (count) => {
     if (count >= 30) return "🏆";
@@ -118,7 +128,7 @@ return (
             <Text style={styles.dashTopCardIcon}>{weatherStatus.icon}</Text>
             <Text style={[styles.dashTopCardLabel, { color: weatherStatus.color }]}>{weatherStatus.label}</Text>
             <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>
-              {weather?.maxTempF ? `${Math.round(weather.maxTempF)}° / ${Math.round(weather.minTempF)}°` : "—"}
+              {weather?.maxTempF ? `${formatTemp(weather.maxTempF, unitSystem)} / ${formatTemp(weather.minTempF, unitSystem)}` : "—"}
             </Text>
           </View>
         ) : null}
@@ -131,11 +141,6 @@ return (
           <Text style={styles.dashTopCardIcon}>🌿</Text>
           <Text style={[styles.dashTopCardLabel, { color: getHealthColor(gardenHealth.score) }]}>{gardenHealth.score}%</Text>
           <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>Health</Text>
-        </View>
-        <View style={styles.dashTopCard}>
-          <Text style={styles.dashTopCardIcon}>🏆</Text>
-          <Text style={[styles.dashTopCardLabel, { color: theme.text }]}>Lvl {gardenXP.level}</Text>
-          <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>Rank</Text>
         </View>
       </View>
 
@@ -198,7 +203,8 @@ return (
 
       </View>
 
-      {/* TODAY'S ACTION ITEMS */}
+      {/* TODAY'S ACTION ITEMS — only what still needs doing */}
+      {hasTodos ? (
       <View style={styles.dashActionSection}>
         <Text style={styles.dashActionTitle}>To-Do</Text>
 
@@ -222,14 +228,6 @@ return (
             >
               <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 14 }}>💧 Water all {plantsNeedingWater} now</Text>
             </Pressable>
-          </View>
-        ) : savedPlants.length > 0 ? (
-          <View style={[styles.dashActionRow, { backgroundColor: "rgba(92,255,137,0.10)", borderColor: "rgba(92,255,137,0.25)" }]}>
-            <Text style={styles.dashActionIcon}>✅</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.dashActionLabel}>All plants watered today!</Text>
-              <Text style={[styles.dashActionSub, { color: theme.secondaryText }]}>Great work keeping your garden hydrated</Text>
-            </View>
           </View>
         ) : null}
 
@@ -272,16 +270,6 @@ return (
           </View>
         ) : null}
 
-        {plantsNeedingWater === 0 && harvestsReady === 0 && fertDue === 0 && gardenHealth.score >= 70 && savedPlants.length > 0 ? (
-          <View style={[styles.dashActionRow, { backgroundColor: "rgba(92,255,137,0.08)", borderColor: "rgba(92,255,137,0.18)" }]}>
-            <Text style={styles.dashActionIcon}>🌟</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.dashActionLabel}>Your garden is thriving!</Text>
-              <Text style={[styles.dashActionSub, { color: theme.secondaryText }]}>Everything is on track — keep up the great work</Text>
-            </View>
-          </View>
-        ) : null}
-
         {savedPlants.length === 0 ? (
           <View style={[styles.dashActionRow, { backgroundColor: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.10)" }]}>
             <Text style={styles.dashActionIcon}>🌱</Text>
@@ -292,22 +280,23 @@ return (
           </View>
         ) : null}
       </View>
+      ) : null}
 
       {/* BOTTOM QUICK STATS */}
       <View style={styles.dashBottomRow}>
+        <View style={styles.dashBottomStat}>
+          <Text style={styles.dashBottomStatValue}>{totalPhotos}</Text>
+          <Text style={[styles.dashBottomStatLabel, { color: theme.secondaryText }]}>Photos Logged</Text>
+        </View>
+        <View style={styles.dashBottomDivider} />
         <View style={styles.dashBottomStat}>
           <Text style={styles.dashBottomStatValue}>{plantsDocumented}</Text>
           <Text style={[styles.dashBottomStatLabel, { color: theme.secondaryText }]}>Plants Documented</Text>
         </View>
         <View style={styles.dashBottomDivider} />
-        <View style={styles.dashBottomStat}>
-          <Text style={styles.dashBottomStatValue}>{gardenXP.xp}</Text>
-          <Text style={[styles.dashBottomStatLabel, { color: theme.secondaryText }]}>Total XP</Text>
-        </View>
-        <View style={styles.dashBottomDivider} />
      <View style={styles.dashBottomStat}>
-          <Text style={styles.dashBottomStatValue}>{gardenPlotCount}/12</Text>
-          <Text style={[styles.dashBottomStatLabel, { color: theme.secondaryText }]}>Plots Filled</Text>
+          <Text style={styles.dashBottomStatValue}>{thisMonthPhotos}</Text>
+          <Text style={[styles.dashBottomStatLabel, { color: theme.secondaryText }]}>This Month</Text>
         </View>
       </View>
 
@@ -357,4 +346,4 @@ return (
 
     </View>
   );
-}
+})

@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
 import { getPlantingGuide } from "../core";
 
-export function PlantingGuideCard({ theme, plant }) {
+export const PlantingGuideCard = memo(function PlantingGuideCard({ theme, plant }) {
   if (!plant) return null;
   const guide = getPlantingGuide(plant);
   const rows = [
@@ -28,4 +29,4 @@ export function PlantingGuideCard({ theme, plant }) {
       </View>
     </View>
   );
-}
+})

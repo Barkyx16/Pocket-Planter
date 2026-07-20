@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { getPlantDifficulty, getSeasonForMonth, getSuggestionsForMonth, normalizeType, resolvePlantImageSource } from "../core";
 
-export function SeasonTransitionCard({ theme, zone, onOpenPlant, onBrowse }) {
+export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, zone, onOpenPlant, onBrowse }) {
   const now = new Date();
   now.setHours(12, 0, 0, 0);
   const currentMonth = now.getMonth() + 1;
@@ -84,4 +85,4 @@ export function SeasonTransitionCard({ theme, zone, onOpenPlant, onBrowse }) {
       ) : null}
     </View>
   );
-}
+})

@@ -1,10 +1,11 @@
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { getSeedStartInfo, getTodayKey, getUpcomingFrost } from "../core";
+import { formatTemp, getDateKey, getSeedStartInfo, getTodayKey, getUpcomingFrost } from "../core";
 
-export function TodaysGamePlanCard({ theme, savedPlants, wateredPlants, wateringHistory, harvestTrackers, weather, zone, compatiblePlants, snoozedPlants, onOpenPlant, onScrollToWatering }) {
+export const TodaysGamePlanCard = memo(function TodaysGamePlanCard({ theme, savedPlants, wateredPlants, wateringHistory, harvestTrackers, weather, zone, compatiblePlants, snoozedPlants, onOpenPlant, onScrollToWatering, unitSystem }) {
   const today = getTodayKey();
-  const tomorrowKey = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+  const tomorrowKey = getDateKey(new Date(Date.now() + 86400000));
   const tasks = [];
 
   // 1. Plants needing water today (snoozed plants are skipped until tomorrow)
@@ -46,7 +47,7 @@ export function TodaysGamePlanCard({ theme, savedPlants, wateredPlants, watering
       icon: "❄️",
       accent: "#a3d5ff",
       title: frost.daysOut === 0 ? "Frost tonight — protect plants" : "Frost tomorrow — prep now",
-      detail: `Low of ${Math.round(frost.minTempF)}°F. Cover tender plants and move containers.`,
+      detail: `Low of ${formatTemp(frost.minTempF, unitSystem, true)}. Cover tender plants and move containers.`,
       onPress: null,
     });
   }
@@ -66,6 +67,9 @@ export function TodaysGamePlanCard({ theme, savedPlants, wateredPlants, watering
   }
 
   const allDone = tasks.length === 0;
+  // Only surface the game plan when there's actually something to do — hide it when
+  // the garden is all caught up rather than showing an empty "you're all set" card.
+  if (allDone) return null;
 
   return (
     <View style={{ borderRadius: 26, padding: 20, marginBottom: 18, borderWidth: 1.5, backgroundColor: allDone ? "rgba(92,255,137,0.10)" : "rgba(255,255,255,0.05)", borderColor: allDone ? "#5cff89" : "rgba(255,255,255,0.12)" }}>
@@ -106,4 +110,4 @@ export function TodaysGamePlanCard({ theme, savedPlants, wateredPlants, watering
       )}
     </View>
   );
-}
+})

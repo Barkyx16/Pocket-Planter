@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
 
-export function StreakProgressCard({ theme, streakData }) {
+export const StreakProgressCard = memo(function StreakProgressCard({ theme, streakData }) {
   const streak = streakData?.count || 0;
   const progress = Math.min(streak / 7, 1);
   return (
@@ -14,4 +15,4 @@ export function StreakProgressCard({ theme, streakData }) {
       </View>
     </View>
   );
-}
+})

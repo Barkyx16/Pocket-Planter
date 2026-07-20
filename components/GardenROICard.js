@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { estimateHarvestValue, tapHaptic } from "../core";
 
-export function GardenROICard({ theme, harvestLog, suppliesSpent, setSuppliesSpent }) {
+export const GardenROICard = memo(function GardenROICard({ theme, harvestLog, suppliesSpent, setSuppliesSpent }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
 
@@ -99,4 +100,4 @@ return (
       </Text>
     </View>
   );
-}
+})

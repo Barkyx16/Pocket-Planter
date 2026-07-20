@@ -1,68 +1,63 @@
-import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { memo, useState } from "react";
+import { Image, Pressable, Text, View } from "react-native";
 import { getActivePests, tapHaptic } from "../core";
+import { getPestImage } from "../data/pestImageMap";
 
-export function PestWatchCard({ theme, savedPlantObjs, onOpenPlant }) {
+export const PestWatchCard = memo(function PestWatchCard({ theme, savedPlantObjs, zone, onOpenPlant, onOpenPest }) {
   const month = new Date().getMonth() + 1;
-  const pests = getActivePests(savedPlantObjs, month);
-  const [expanded, setExpanded] = useState(null);
+  const pests = getActivePests(savedPlantObjs, month, zone);
+  const [visible, setVisible] = useState(5);
 
   if (!pests.length) return null;
 
   const monthName = new Date().toLocaleDateString("en-US", { month: "long" });
+  const zoneLabel = zone ? `Zone ${zone}` : "your zone";
 
-return (
+  return (
     <View>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-        <Text style={{ fontSize: 26 }}>🐛</Text>
-        <View style={{ flex: 1 }}>
-          <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900", marginTop: 2 }}>
-            Active in {monthName}
-          </Text>
-        </View>
-      </View>
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 8 }}>
-        {pests.length} pest{pests.length === 1 ? "" : "s"} tend to show up this time of year for plants like yours. A quick check now saves a lot of damage later.
+      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "600", lineHeight: 19, marginTop: 2 }}>
+        {pests.length} pest{pests.length === 1 ? "" : "s"} common in {zoneLabel} around {monthName}. Tap any pest for a full guide.
       </Text>
 
-      <View style={{ gap: 10, marginTop: 14 }}>
-        {pests.map((pest) => {
-          const open = expanded === pest.name;
-          return (
-            <View key={pest.name} style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 18, borderWidth: 1, borderColor: "rgba(255,123,123,0.20)", overflow: "hidden" }}>
-              <Pressable
-                onPress={() => { tapHaptic("light"); setExpanded(open ? null : pest.name); }}
-                style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 13 }}
-              >
-                <Text style={{ fontSize: 24 }}>{pest.emoji}</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900" }}>{pest.name}</Text>
-                  <Text style={{ color: "#ffb3b3", fontSize: 12, fontWeight: "800", marginTop: 2 }}>
-                    Threatens: {pest.affected.slice(0, 3).join(", ")}{pest.affected.length > 3 ? ` +${pest.affected.length - 3}` : ""}
-                  </Text>
-                </View>
-                <Text style={{ color: "#ff9f9f", fontSize: 18, fontWeight: "900" }}>{open ? "−" : "+"}</Text>
-              </Pressable>
-              {open ? (
-                <View style={{ paddingHorizontal: 13, paddingBottom: 14, gap: 10 }}>
-                  <View>
-                    <Text style={{ color: "#ffd86b", fontSize: 11, fontWeight: "900", letterSpacing: 0.5, marginBottom: 3 }}>👀 WHAT TO LOOK FOR</Text>
-                    <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19 }}>{pest.sign}</Text>
-                  </View>
-                  <View>
-                    <Text style={{ color: "#8effab", fontSize: 11, fontWeight: "900", letterSpacing: 0.5, marginBottom: 3 }}>✅ WHAT TO DO</Text>
-                    <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19 }}>{pest.fix}</Text>
-                  </View>
-                </View>
-              ) : null}
+      <View style={{ gap: 8, marginTop: 14 }}>
+        {pests.slice(0, visible).map((pest) => (
+          <Pressable
+            key={pest.name}
+            onPress={() => { tapHaptic("light"); onOpenPest ? onOpenPest(pest) : null; }}
+            accessibilityRole="button"
+            accessibilityLabel={`${pest.name}, threatens ${pest.affected.join(", ")}. Tap for the full pest guide.`}
+            style={{ flexDirection: "row", alignItems: "center", gap: 11, paddingVertical: 10, paddingHorizontal: 12, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 16, borderWidth: 1, borderColor: "rgba(255,123,123,0.16)" }}
+          >
+            <View style={{ width: 38, height: 38, borderRadius: 11, backgroundColor: "rgba(255,123,123,0.12)", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+              {getPestImage(pest.name) ? (
+                <Image source={getPestImage(pest.name)} style={{ width: 38, height: 38 }} resizeMode="cover" />
+              ) : (
+                <Text style={{ fontSize: 20 }}>{pest.emoji}</Text>
+              )}
             </View>
-          );
-        })}
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: theme.text, fontSize: 14.5, fontWeight: "800" }}>{pest.name}</Text>
+              <Text numberOfLines={1} style={{ color: "#ffb3b3", fontSize: 11.5, fontWeight: "700", marginTop: 2 }}>
+                Hits {pest.affected.slice(0, 2).join(", ")}{pest.affected.length > 2 ? ` +${pest.affected.length - 2}` : ""}
+              </Text>
+            </View>
+            <Text style={{ color: "#ff9f9f", fontSize: 18, fontWeight: "900" }}>›</Text>
+          </Pressable>
+        ))}
       </View>
 
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 12, fontStyle: "italic", textAlign: "center" }}>
-        Based on typical seasonal activity — not a live infestation report.
+      {pests.length > visible ? (
+        <Pressable
+          onPress={() => setVisible((c) => c + 6)}
+          style={{ marginTop: 12, backgroundColor: "rgba(92,255,137,0.10)", borderRadius: 16, paddingVertical: 13, alignItems: "center", borderWidth: 1, borderColor: "rgba(92,255,137,0.24)" }}
+        >
+          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>Show more pests ({pests.length - visible} more)</Text>
+        </Pressable>
+      ) : null}
+
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "600", marginTop: 12, fontStyle: "italic", textAlign: "center" }}>
+        Based on typical activity in your zone — not a live infestation report.
       </Text>
     </View>
   );
-}
+})

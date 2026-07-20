@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 
-export function PremiumLockedSection({ title, description, icon, onUnlock }) {
+export const PremiumLockedSection = memo(function PremiumLockedSection({ title, description, icon, onUnlock }) {
   return (
     <View style={styles.premiumLockedSection}>
       <View style={styles.premiumLockedSectionGlow} />
@@ -20,4 +21,4 @@ export function PremiumLockedSection({ title, description, icon, onUnlock }) {
       </Pressable>
     </View>
   );
-}
+})

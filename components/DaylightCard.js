@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Text, View } from "react-native";
 import { getDaylightInfo } from "../core";
 
-export function DaylightCard({ theme, zipCoords }) {
+export const DaylightCard = memo(function DaylightCard({ theme, zipCoords }) {
   const info = getDaylightInfo(zipCoords);
   if (!info) return null;
 
@@ -30,4 +31,4 @@ return (
       </Text>
     </View>
   );
-}
+})

@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
 
-export function WeeklyGardenRecapCard({
+export const WeeklyGardenRecapCard = memo(function WeeklyGardenRecapCard({
   theme,
   savedPlants,
   journalEntries,
@@ -77,4 +78,4 @@ export function WeeklyGardenRecapCard({
       </Text>
     </View>
   );
-}
+})

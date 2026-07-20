@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
-import { getClimateBucket } from "../core";
+import { formatTemp, getClimateBucket } from "../core";
 
-export function WeatherTeaserCard({ theme, weather, zone, onUnlock }) {
+export const WeatherTeaserCard = memo(function WeatherTeaserCard({ theme, weather, zone, onUnlock, unitSystem }) {
   const climate = getClimateBucket(zone);
   const currentMonth = new Date().getMonth() + 1;
 
@@ -44,9 +45,9 @@ export function WeatherTeaserCard({ theme, weather, zone, onUnlock }) {
               {condition.icon} {condition.label}
             </Text>
             <Text style={[styles.weatherTeaserTempV2, { color: theme.text }]}>
-              {weather?.maxTempF ? `${Math.round(weather.maxTempF)}°F` : "--°F"}
+              {weather?.maxTempF ? formatTemp(weather.maxTempF, unitSystem, true) : "--°"}
               <Text style={[styles.weatherTeaserTempLow, { color: theme.secondaryText }]}>
-                {weather?.minTempF ? ` / ${Math.round(weather.minTempF)}°F` : ""}
+                {weather?.minTempF ? ` / ${formatTemp(weather.minTempF, unitSystem, true)}` : ""}
               </Text>
             </Text>
             <Text style={[styles.weatherTeaserRainPreview, { color: theme.secondaryText }]}>
@@ -100,4 +101,4 @@ export function WeatherTeaserCard({ theme, weather, zone, onUnlock }) {
       </Text>
     </View>
   );
-}
+})

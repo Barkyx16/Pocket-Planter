@@ -1,9 +1,10 @@
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { getClimateBucket, getTodayKey } from "../core";
 
-export function FertilizerIntelligenceCard({ theme, weather, zone, savedPlants, fertilizerTrackers, onOpenPlant }) {
+export const FertilizerIntelligenceCard = memo(function FertilizerIntelligenceCard({ theme, weather, zone, savedPlants, fertilizerTrackers, onOpenPlant }) {
   const currentMonth = new Date().getMonth() + 1;
   const today = getTodayKey();
 
@@ -178,26 +179,20 @@ return (
       </Text>
 
       <View style={styles.fertilizerGrid}>
-        <View style={styles.fertilizerTile}>
-          <Text style={styles.fertilizerTileIcon}>🧪</Text>
-          <Text style={styles.fertilizerTileLabel}>Fertilizer Type</Text>
-          <Text style={styles.fertilizerTileValue}>{tip.type}</Text>
-        </View>
-        <View style={styles.fertilizerTile}>
-          <Text style={styles.fertilizerTileIcon}>⏰</Text>
-          <Text style={styles.fertilizerTileLabel}>Best Time</Text>
-          <Text style={styles.fertilizerTileValue}>{tip.bestTime}</Text>
-        </View>
-        <View style={styles.fertilizerTile}>
-          <Text style={styles.fertilizerTileIcon}>📅</Text>
-          <Text style={styles.fertilizerTileLabel}>Frequency</Text>
-          <Text style={styles.fertilizerTileValue}>{tip.frequency}</Text>
-        </View>
-        <View style={styles.fertilizerTile}>
-          <Text style={styles.fertilizerTileIcon}>🛒</Text>
-          <Text style={styles.fertilizerTileLabel}>What to Buy</Text>
-          <Text style={styles.fertilizerTileValue}>{tip.product}</Text>
-        </View>
+        {[
+          { icon: "🧪", label: "Fertilizer Type", value: tip.type, tint: "#8effab" },
+          { icon: "⏰", label: "Best Time", value: tip.bestTime, tint: "#6bc7ff" },
+          { icon: "📅", label: "Frequency", value: tip.frequency, tint: "#ffd86b" },
+          { icon: "🛒", label: "What to Buy", value: tip.product, tint: "#ff9f43" },
+        ].map((t) => (
+          <View key={t.label} style={styles.fertilizerTile}>
+            <View style={{ width: 30, height: 30, borderRadius: 10, backgroundColor: `${t.tint}1f`, alignItems: "center", justifyContent: "center", marginBottom: 6, borderWidth: 1, borderColor: `${t.tint}33` }}>
+              <Text style={{ fontSize: 15 }}>{t.icon}</Text>
+            </View>
+            <Text style={[styles.fertilizerTileLabel, { color: t.tint }]}>{t.label}</Text>
+            <Text style={styles.fertilizerTileValue}>{t.value}</Text>
+          </View>
+        ))}
       </View>
 
       {weatherWarning ? (
@@ -236,4 +231,4 @@ return (
       ) : null}
     </View>
   );
-}
+})

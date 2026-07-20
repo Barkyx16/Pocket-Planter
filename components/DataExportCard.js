@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Alert, Pressable, Share, Text, View } from "react-native";
 import { buildCsv, tapHaptic } from "../core";
 
-export function DataExportCard({ theme, harvestLog, careLog, journalEntries }) {
+export const DataExportCard = memo(function DataExportCard({ theme, harvestLog, careLog, journalEntries }) {
   const shareCsv = async (label, csv, count) => {
     if (!count) {
       Alert.alert("Nothing to export", `You don't have any ${label} entries yet.`);
@@ -74,4 +75,4 @@ return (
       </View>
     </View>
   );
-}
+})

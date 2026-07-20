@@ -1,13 +1,13 @@
+import { memo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { styles } from "../styles";
-import { MONTH_NAMES, getMonthEmoji } from "../core";
+import { MONTH_NAMES, getMonthEmoji, tapHaptic } from "../core";
 
-export function PersonalPlantingCalendar({ theme, savedPlants, zone, onOpenPlant }) {
+export const PersonalPlantingCalendar = memo(function PersonalPlantingCalendar({ theme, savedPlants, zone, onOpenPlant }) {
   const saved = produceData.filter((item) => savedPlants.includes(item.name));
-  if (!saved.length) return null;
-
   const currentMonth = new Date().getMonth() + 1;
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  if (!saved.length) return null;
 
   // For each month, which saved plants can be planted
   const byMonth = Array.from({ length: 12 }, (_, i) => {
@@ -18,55 +18,86 @@ export function PersonalPlantingCalendar({ theme, savedPlants, zone, onOpenPlant
     return { monthNum, plants };
   });
 
-  const thisMonthPlants = byMonth[currentMonth - 1]?.plants || [];
+  const selectedPlants = byMonth[selectedMonth - 1]?.plants || [];
+  const thisMonthCount = byMonth[currentMonth - 1]?.plants.length || 0;
+  const activeMonths = byMonth.filter((m) => m.plants.length).length;
+  const peak = byMonth.reduce((best, m) => (m.plants.length > (best?.plants.length || 0) ? m : best), null);
+  const peakLabel = peak && peak.plants.length ? MONTH_NAMES[peak.monthNum - 1].slice(0, 3) : "—";
 
-return (
+  const stats = [
+    { label: "To sow now", value: String(thisMonthCount), color: thisMonthCount ? "#8effab" : theme.secondaryText },
+    { label: "Active months", value: String(activeMonths), color: "#6bc7ff" },
+    { label: "Peak month", value: peakLabel, color: "#ffd86b" },
+  ];
+
+  return (
     <View>
-      <Text style={[styles.cardText, { color: theme.secondaryText }]}>
+      {/* AT-A-GLANCE SUMMARY */}
+      <View style={{ flexDirection: "row", gap: 8, marginTop: 2 }}>
+        {stats.map((s) => (
+          <View key={s.label} style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 14, paddingVertical: 11, paddingHorizontal: 6, alignItems: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
+            <Text style={{ color: s.color, fontSize: 20, fontWeight: "900" }}>{s.value}</Text>
+            <Text style={{ color: theme.secondaryText, fontSize: 10.5, fontWeight: "800", marginTop: 2, textAlign: "center" }}>{s.label}</Text>
+          </View>
+        ))}
+      </View>
+
+      <Text style={{ color: theme.secondaryText, fontSize: 12.5, fontWeight: "700", lineHeight: 18, marginTop: 12 }}>
+        Tap a month to see which of your saved plants to sow{zone ? ` in Zone ${zone}` : ""}.
       </Text>
 
-      {/* MONTH GRID */}
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 16 }}>
+      {/* COMPACT MONTH GRID — 4 per row */}
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 12 }}>
         {byMonth.map(({ monthNum, plants }) => {
+          const isSelected = monthNum === selectedMonth;
           const isNow = monthNum === currentMonth;
           const has = plants.length > 0;
           return (
-            <View
+            <Pressable
               key={monthNum}
+              onPress={() => { tapHaptic("light"); setSelectedMonth(monthNum); }}
+              accessibilityRole="button"
+              accessibilityState={{ selected: isSelected }}
+              accessibilityLabel={`${MONTH_NAMES[monthNum - 1]}: ${has ? `${plants.length} plant${plants.length === 1 ? "" : "s"} to sow` : "nothing to sow"}`}
               style={{
-                width: "30%",
-                borderRadius: 16,
-                paddingVertical: 12,
-                paddingHorizontal: 8,
+                width: "22.7%",
+                borderRadius: 12,
+                paddingVertical: 9,
                 alignItems: "center",
-                backgroundColor: isNow ? "rgba(92,255,137,0.16)" : has ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.03)",
-                borderWidth: 1,
-                borderColor: isNow ? "#5cff89" : has ? "rgba(142,255,171,0.16)" : "rgba(255,255,255,0.06)",
+                backgroundColor: isSelected ? "rgba(92,255,137,0.18)" : has ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.03)",
+                borderWidth: isSelected ? 1.5 : 1,
+                borderColor: isSelected ? "#5cff89" : isNow ? "rgba(92,255,137,0.45)" : has ? "rgba(142,255,171,0.16)" : "rgba(255,255,255,0.06)",
               }}
             >
-              <Text style={{ fontSize: 18 }}>{getMonthEmoji(monthNum)}</Text>
-              <Text style={{ color: isNow ? "#5cff89" : theme.text, fontSize: 12, fontWeight: "900", marginTop: 4 }}>
+              <Text style={{ color: isSelected ? "#5cff89" : theme.text, fontSize: 12.5, fontWeight: "900" }}>
                 {MONTH_NAMES[monthNum - 1].slice(0, 3)}
               </Text>
-              <Text style={{ color: has ? "#8effab" : theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 2 }}>
-                {has ? `${plants.length} plant${plants.length === 1 ? "" : "s"}` : "—"}
+              <Text style={{ color: has ? "#8effab" : theme.secondaryText, fontSize: 12, fontWeight: "900", marginTop: 3 }}>
+                {has ? plants.length : "—"}
               </Text>
-            </View>
+              {isNow ? (
+                <View style={{ position: "absolute", top: 5, right: 6, width: 5, height: 5, borderRadius: 3, backgroundColor: "#5cff89" }} />
+              ) : null}
+            </Pressable>
           );
         })}
       </View>
 
-      {/* THIS MONTH DETAIL */}
-      <View style={{ marginTop: 16, backgroundColor: "rgba(92,255,137,0.08)", borderRadius: 18, padding: 16, borderWidth: 1, borderColor: "rgba(92,255,137,0.20)" }}>
-        <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 8 }}>
-          {getMonthEmoji(currentMonth)} PLANT IN {MONTH_NAMES[currentMonth - 1].toUpperCase()}
+      {/* SELECTED MONTH DETAIL */}
+      <View style={{ marginTop: 14, backgroundColor: "rgba(92,255,137,0.08)", borderRadius: 18, padding: 14, borderWidth: 1, borderColor: "rgba(92,255,137,0.20)" }}>
+        <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 10 }}>
+          {getMonthEmoji(selectedMonth)} {MONTH_NAMES[selectedMonth - 1].toUpperCase()}
+          {selectedMonth === currentMonth ? " · THIS MONTH" : ""}
+          {selectedPlants.length ? `  ·  ${selectedPlants.length} PLANT${selectedPlants.length === 1 ? "" : "S"}` : ""}
         </Text>
-        {thisMonthPlants.length ? (
+        {selectedPlants.length ? (
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-            {thisMonthPlants.map((item) => (
+            {selectedPlants.map((item) => (
               <Pressable
                 key={`cal-${item.name}`}
                 onPress={() => onOpenPlant(item)}
+                accessibilityRole="button"
+                accessibilityLabel={`Open ${item.name} care guide`}
                 style={{ backgroundColor: "rgba(92,255,137,0.12)", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 9, borderWidth: 1, borderColor: "rgba(92,255,137,0.24)" }}
               >
                 <Text style={{ color: "#8effab", fontSize: 13, fontWeight: "800" }}>{item.name} ›</Text>
@@ -74,11 +105,11 @@ return (
             ))}
           </View>
         ) : (
-          <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 20 }}>
-            None of your saved plants have a planting window this month. Check the highlighted months above for what's coming up.
+          <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "600", lineHeight: 20 }}>
+            None of your saved plants have a planting window in {MONTH_NAMES[selectedMonth - 1]}. Tap a highlighted month to see what's coming up.
           </Text>
         )}
       </View>
     </View>
   );
-}
+})

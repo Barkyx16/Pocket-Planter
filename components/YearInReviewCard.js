@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Pressable, Share, Text, View } from "react-native";
 import { estimateHarvestValue, tapHaptic } from "../core";
 
-export function YearInReviewCard({ theme, savedPlants, harvestLog, journalEntries, wateringHistory, streakData, gardenXP }) {
+export const YearInReviewCard = memo(function YearInReviewCard({ theme, savedPlants, harvestLog, journalEntries, wateringHistory, streakData, gardenXP }) {
   const now = new Date();
   const yearAgo = new Date(now); yearAgo.setFullYear(now.getFullYear() - 1);
   const inLastYear = (dateStr) => {
@@ -83,4 +84,4 @@ return (
       </Pressable>
     </View>
   );
-}
+})

@@ -25,7 +25,9 @@
         "ITSAppUsesNonExemptEncryption": false,
         "NSPhotoLibraryUsageDescription": "Pocket Planter uses your photo library to let you add progress photos to your garden journal. For example, you can document how your tomato plant grows over time.",
         "NSCameraUsageDescription": "Pocket Planter uses your camera to capture garden photos for your journal.",
-        "NSLocationWhenInUseUsageDescription": "Pocket Planter uses your location to automatically detect your ZIP code and growing zone."
+        "NSLocationWhenInUseUsageDescription": "Pocket Planter uses your location to automatically detect your ZIP code and growing zone.",
+        "NSFaceIDUsageDescription": "Pocket Planter uses Face ID to let you sign in quickly and securely with your face.",
+        "NSCalendarsUsageDescription": "Pocket Planter adds your planting and harvest reminders to your calendar so you never miss a sow or harvest window."
       }
     },
     "android": {
@@ -42,7 +44,8 @@
           "color": "#8effab"
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-secure-store"
     ],
     "extra": {
       "eas": {

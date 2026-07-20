@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { formatRelativeDate, tapHaptic } from "../core";
 
-export function HarvestLogCard({ theme, harvestLog, setHarvestLog, onUndoToast }) {
+export const HarvestLogCard = memo(function HarvestLogCard({ theme, harvestLog, setHarvestLog, onUndoToast }) {
   const total = harvestLog.length;
   const plantsHarvested = new Set(harvestLog.map((h) => h.plantName)).size;
   const thisMonth = harvestLog.filter((h) => {
@@ -68,4 +69,4 @@ return (
       )}
     </View>
   );
-}
+})

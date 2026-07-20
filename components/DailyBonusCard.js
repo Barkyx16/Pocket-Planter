@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 
-export function DailyBonusCard({
+export const DailyBonusCard = memo(function DailyBonusCard({
   theme,
   dailyBonusClaimed,
   dailyBonusDate,
@@ -74,4 +75,4 @@ const claimedRecently =
       </Pressable>
     </View>
   );
-}
+})

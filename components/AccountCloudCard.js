@@ -1,13 +1,13 @@
+import { memo } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { styles } from "../styles";
 import { supabase } from "../lib/supabase";
 
-export function AccountCloudCard({
+export const AccountCloudCard = memo(function AccountCloudCard({
   theme,
   user,
   newEmail,
   setNewEmail,
-  subscriptionPlan,
   premiumUnlocked,
   savedPlants,
   journalEntries,
@@ -26,7 +26,7 @@ export function AccountCloudCard({
   const cleanEmail = newEmail.trim();
 
   if (!cleanEmail) {
-    alert("Enter a new email first.");
+    Alert.alert("Enter a new email first.");
     return;
   }
 
@@ -37,21 +37,21 @@ export function AccountCloudCard({
 
     if (error) {
       console.log("EMAIL CHANGE ERROR:", error.message);
-      alert("Could not change email: " + error.message);
+      Alert.alert("Could not change email: " + error.message);
       return;
     }
 
-    alert("Check your new email inbox for a confirmation link!");
+    Alert.alert("Check your new email inbox for a confirmation link!");
     setNewEmail("");
   } catch (err) {
     console.log("EMAIL CHANGE CRASH:", err);
-    alert("Something went wrong. Try again.");
+    Alert.alert("Something went wrong. Try again.");
   }
 };
 
 const resetPassword = async () => {
   if (!user?.email) {
-    alert("No email found for this account.");
+    Alert.alert("No email found for this account.");
     return;
   }
 
@@ -65,14 +65,14 @@ const resetPassword = async () => {
 
     if (error) {
       console.log("RESET ERROR:", error.message);
-      alert("Could not send reset email: " + error.message);
+      Alert.alert("Could not send reset email: " + error.message);
       return;
     }
 
-    alert("Password reset email sent! Check your inbox.");
+    Alert.alert("Password reset email sent! Check your inbox.");
   } catch (err) {
     console.log("RESET CRASH:", err);
-    alert("Something went wrong. Try again.");
+    Alert.alert("Something went wrong. Try again.");
   }
 };
 
@@ -116,23 +116,13 @@ return (
 
       <View style={styles.accountInfoBox}>
         <Text style={styles.accountInfoLabel}>
-          Current Plan
-        </Text>
-
-        <Text style={styles.accountInfoValue}>
-          {subscriptionPlan || "Free"}
-        </Text>
-      </View>
-
-      <View style={styles.accountInfoBox}>
-        <Text style={styles.accountInfoLabel}>
           Premium Status
         </Text>
 
         <Text style={styles.accountInfoValue}>
           {premiumUnlocked
             ? "Active ✅"
-            : "Free 🌱"}
+            : "Inactive"}
         </Text>
       </View>
 
@@ -279,4 +269,4 @@ return (
       </Pressable>
     </View>
   );
-}
+})

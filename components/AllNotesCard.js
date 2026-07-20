@@ -1,10 +1,11 @@
+import { memo } from "react";
 import { useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { resolvePlantImageSource } from "../core";
 
-export function AllNotesCard({ theme, plantNotes, onOpenPlant }) {
+export const AllNotesCard = memo(function AllNotesCard({ theme, plantNotes, onOpenPlant }) {
   const [query, setQuery] = useState("");
 
   const notes = Object.entries(plantNotes || {})
@@ -74,4 +75,4 @@ export function AllNotesCard({ theme, plantNotes, onOpenPlant }) {
       )}
     </View>
   );
-}
+})

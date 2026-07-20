@@ -1,9 +1,10 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { getSunMismatch, resolvePlantImageSource } from "../core";
 
-export function SunlightMismatchCard({ theme, gardenAreas, onOpenPlant }) {
+export const SunlightMismatchCard = memo(function SunlightMismatchCard({ theme, gardenAreas, onOpenPlant }) {
   // Only consider areas the user has actually tagged with a sun level.
   const tagged = (gardenAreas || []).filter((a) => a.sunExposure);
   if (!tagged.length) return null;
@@ -76,4 +77,4 @@ export function SunlightMismatchCard({ theme, gardenAreas, onOpenPlant }) {
       </View>
     </View>
   );
-}
+})

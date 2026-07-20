@@ -1,9 +1,10 @@
+import { memo } from "react";
 import { useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { styles } from "../styles";
 import { tapHaptic } from "../core";
 
-export function HarvestGoalCard({ theme, harvestLog, harvestGoal, setHarvestGoal }) {
+export const HarvestGoalCard = memo(function HarvestGoalCard({ theme, harvestLog, harvestGoal, setHarvestGoal }) {
   const [input, setInput] = useState("");
 
   // Count harvests logged since the goal was created
@@ -75,4 +76,4 @@ if (!harvestGoal) {
       </Pressable>
     </View>
   );
-}
+})

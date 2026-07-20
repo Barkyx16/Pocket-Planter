@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
 
-export function ConfettiBurst() {
+export const ConfettiBurst = memo(function ConfettiBurst() {
   const pieces = [
     "🎉",
     "🌱",
@@ -34,4 +35,4 @@ export function ConfettiBurst() {
       ))}
     </View>
   );
-}
+})

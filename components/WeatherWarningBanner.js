@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
 
-export function WeatherWarningBanner({
+export const WeatherWarningBanner = memo(function WeatherWarningBanner({
   theme,
   weather,
   zone,
@@ -69,4 +70,4 @@ export function WeatherWarningBanner({
       </View>
     </View>
   );
-}
+})

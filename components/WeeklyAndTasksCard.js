@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
 
-export function WeeklyAndTasksCard({ theme, savedPlants, journalEntries, wateredPlants, gardenXP, streakData, weather }) {
+export const WeeklyAndTasksCard = memo(function WeeklyAndTasksCard({ theme, savedPlants, journalEntries, wateredPlants, gardenXP, streakData, weather }) {
   const wateredCount = Object.values(wateredPlants || {}).filter(Boolean).length;
   const hasAnyData = savedPlants.length > 0 || journalEntries.length > 0 || wateredCount > 0;
 
@@ -42,4 +43,4 @@ export function WeeklyAndTasksCard({ theme, savedPlants, journalEntries, watered
       {tasks.map((task) => (<Text key={task} style={styles.weatherTaskItem}>{task}</Text>))}
     </View>
   );
-}
+})

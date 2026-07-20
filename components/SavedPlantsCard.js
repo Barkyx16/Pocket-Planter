@@ -1,10 +1,11 @@
+import { memo } from "react";
 import { useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { getLastWateredText, getPlantHealthStatus, getTodayKey, getWateringStreak, resolvePlantImageSource } from "../core";
 
-export function SavedPlantsCard({
+export const SavedPlantsCard = memo(function SavedPlantsCard({
   theme,
   savedPlants,
   plantFolders,
@@ -161,4 +162,4 @@ const [sortMode, setSortMode] = useState("recent");
       </ScrollView>
     </View>
   );
-}
+})

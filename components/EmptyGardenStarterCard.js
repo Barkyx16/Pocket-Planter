@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { getPlantDifficulty, getPlantSeasonLabel, resolvePlantImageSource } from "../core";
 
-export function EmptyGardenStarterCard({ theme, savedPlants, compatiblePlants, zone, onOpenPlant, onBrowse }) {
+export const EmptyGardenStarterCard = memo(function EmptyGardenStarterCard({ theme, savedPlants, compatiblePlants, zone, onOpenPlant, onBrowse }) {
   if ((savedPlants || []).length > 0) return null;
 
   const starters = (compatiblePlants || [])
@@ -56,4 +57,4 @@ export function EmptyGardenStarterCard({ theme, savedPlants, compatiblePlants, z
       </Pressable>
     </View>
   );
-}
+})

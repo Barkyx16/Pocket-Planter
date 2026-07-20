@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Alert, Pressable, Switch, Text, View } from "react-native";
 import { styles } from "../styles";
 import { formatReminderTime } from "../core";
 
-export function ReminderControlCard({ theme, remindersOn, frostAlertsOn, monthlyPlantingOn, dailyWateringOn, wateringReminderTime, onChangeWateringTime, plantOfDayOn, onTogglePlantOfDay, onToggleReminders, onToggleFrost, onToggleMonthlyPlanting, onToggleDailyWatering }) {
+export const ReminderControlCard = memo(function ReminderControlCard({ theme, remindersOn, frostAlertsOn, monthlyPlantingOn, dailyWateringOn, wateringReminderTime, onChangeWateringTime, plantOfDayOn, onTogglePlantOfDay, onToggleReminders, onToggleFrost, onToggleMonthlyPlanting, onToggleDailyWatering }) {
   const TIME_OPTIONS = [
     { hour: 6, minute: 0 },
     { hour: 7, minute: 0 },
@@ -52,4 +53,4 @@ export function ReminderControlCard({ theme, remindersOn, frostAlertsOn, monthly
       ) : null}
     </View>
   );
-}
+})

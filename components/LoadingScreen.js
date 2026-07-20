@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Dimensions, Image, View } from "react-native";
 import { styles } from "../styles";
 import { loadingScreenImage } from "../core";
 
-export function LoadingScreen() {
+export const LoadingScreen = memo(function LoadingScreen() {
   const { width, height } = Dimensions.get("window");
   const imageAspectRatio = 1290 / 1671; // your image's exact width/height ratio
   const imageHeight = width / imageAspectRatio;
@@ -20,4 +21,4 @@ export function LoadingScreen() {
       />
     </View>
   );
-}
+})

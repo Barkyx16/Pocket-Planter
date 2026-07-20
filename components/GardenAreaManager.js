@@ -1,10 +1,10 @@
+import { memo } from "react";
 import { useState } from "react";
 import { Keyboard, Pressable, Text, TextInput, View } from "react-native";
 import { styles } from "../styles";
 import { getAreaTag } from "../core";
 
-export function GardenAreaManager({ theme, gardenAreas, onAddArea, onRenameArea, onDeleteArea, onSetAreaStyle }) {
-  const [newAreaName, setNewAreaName] = useState("");
+export const GardenAreaManager = memo(function GardenAreaManager({ theme, gardenAreas, onAddArea, onRenameArea, onDeleteArea, onSetAreaStyle }) {
   const [newAreaSize, setNewAreaSize] = useState(6);
   const [showCreator, setShowCreator] = useState(false);
   const [renamingId, setRenamingId] = useState(null);
@@ -64,21 +64,12 @@ export function GardenAreaManager({ theme, gardenAreas, onAddArea, onRenameArea,
         })}
       </View>
 
-      <View style={{ flexDirection: "row", gap: 10, marginTop: 14 }}>
-        <TextInput
-          value={newAreaName}
-          onChangeText={setNewAreaName}
-          placeholder="Or type a custom area name..."
-          placeholderTextColor="#8fbf9d"
-          style={[styles.input, { flex: 1, marginTop: 0, backgroundColor: theme.input, color: theme.text, borderColor: theme.border }]}
-        />
-        <Pressable
-          onPress={() => { onAddArea(newAreaName, newAreaSize); setNewAreaName(""); setNewAreaSize(6); Keyboard.dismiss(); }}
-          style={{ backgroundColor: "#5cff89", borderRadius: 18, paddingHorizontal: 18, justifyContent: "center" }}
-        >
-          <Text style={{ color: "#07120b", fontWeight: "900" }}>Add</Text>
-        </Pressable>
-      </View>
+      <Pressable
+        onPress={() => { onAddArea(`Garden Bed ${gardenAreas.length + 1}`, newAreaSize); setNewAreaSize(6); Keyboard.dismiss(); }}
+        style={{ marginTop: 16, backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 13, alignItems: "center" }}
+      >
+        <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 14 }}>+ Add a {newAreaSize}-plant bed</Text>
+      </Pressable>
       </>
       ) : null}
 
@@ -199,4 +190,4 @@ export function GardenAreaManager({ theme, gardenAreas, onAddArea, onRenameArea,
       ) : null}
     </View>
   );
-}
+})

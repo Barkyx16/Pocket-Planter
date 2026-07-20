@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { resolvePlantImageSource } from "../core";
 
-export function PlantAnniversaryCard({ theme, plantSaveDates, savedPlants, onOpenPlant }) {
+export const PlantAnniversaryCard = memo(function PlantAnniversaryCard({ theme, plantSaveDates, savedPlants, onOpenPlant }) {
   const now = new Date();
   const milestones = (savedPlants || [])
     .map((name) => {
@@ -63,4 +64,4 @@ export function PlantAnniversaryCard({ theme, plantSaveDates, savedPlants, onOpe
       </View>
     </View>
   );
-}
+})

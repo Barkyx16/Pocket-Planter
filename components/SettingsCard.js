@@ -1,10 +1,12 @@
+import { memo } from "react";
 import { useState } from "react";
-import { Alert, Linking, Pressable, Text, View } from "react-native";
+import { Alert, Linking, Platform, Pressable, Text, View } from "react-native";
 import * as Notifications from "expo-notifications";
 import Purchases from "react-native-purchases";
 import { styles } from "../styles";
+import { hasPremiumEntitlement } from "../core";
 
-export function SettingsCard({ theme, premiumUnlocked, setPremiumUnlocked, subscriptionPlan, setSubscriptionPlan, onUnlockPremium }) {
+export const SettingsCard = memo(function SettingsCard({ theme, premiumUnlocked, setPremiumUnlocked, subscriptionPlan, setSubscriptionPlan, onUnlockPremium }) {
  const [selectedPlan, setSelectedPlan] = useState(subscriptionPlan || "Yearly");
   const [restoring, setRestoring] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
@@ -14,7 +16,7 @@ async function restorePurchases() {
     setRestoring(true);
     try {
       const customerInfo = await Purchases.restorePurchases();
-      if (customerInfo.entitlements.active["Pocket Planter Pro"]) {
+      if (hasPremiumEntitlement(customerInfo)) {
         onUnlockPremium(selectedPlan);
         Alert.alert("Purchases Restored 👑", "Your premium subscription has been restored.");
       } else {
@@ -44,7 +46,7 @@ async function choosePlan(plan) {
           : pkg.product.identifier === "com.pocketplanter.yearly"
       ) || packages[0];
       const { customerInfo } = await Purchases.purchasePackage(targetPackage);
-      if (customerInfo.entitlements.active["Pocket Planter Pro"]) {
+      if (hasPremiumEntitlement(customerInfo)) {
         onUnlockPremium(plan);
       }
     } catch (err) {
@@ -59,12 +61,14 @@ async function choosePlan(plan) {
   const features = [
     { icon: "❄️", title: "Frost & Heat Alerts", text: "Get warned before dangerous temps hit your garden." },
     { icon: "💧", title: "Smart Watering Guidance", text: "Weather-aware daily watering recommendations." },
-    { icon: "🌿", title: "Companion Intelligence", text: "See which plants thrive together and which to avoid." },
-    { icon: "🗺️", title: "Garden Planner Map", text: "Plan all 12 plots with compatibility scoring." },
-    { icon: "📸", title: "Journal & Photo Timeline", text: "Document your garden's growth with photos." },
-    { icon: "🏆", title: "XP, Levels & Achievements", text: "Earn rewards for daily garden care." },
+    { icon: "🌿", title: "Companion Intelligence", text: "Which plants thrive together — and which to keep apart." },
+    { icon: "🗺️", title: "Garden Planner Map", text: "Plan all 12 plots with live compatibility scoring." },
+    { icon: "📸", title: "Journal & Photo Timeline", text: "Document your garden's growth with dated photos." },
+    { icon: "🐛", title: "Pest Watch & Guides", text: "Spot and stop pests before they spread." },
+    { icon: "🏆", title: "XP, Levels & Achievements", text: "Earn rewards and badges for daily garden care." },
+    { icon: "⚡", title: "Daily Quests & Streaks", text: "Complete challenges and keep your streak alive." },
     { icon: "🌱", title: "Unlimited Saved Plants", text: "Save as many plants as your garden needs." },
-    { icon: "⚡", title: "Daily Quests", text: "Complete challenges and build your streak." },
+    { icon: "☁️", title: "Cloud Backup & Sync", text: "Your garden saved safely across all devices." },
   ];
 
   return (
@@ -113,8 +117,10 @@ async function choosePlan(plan) {
               <View style={styles.premiumFeatureTileIconWrap}>
                 <Text style={styles.premiumFeatureTileIcon}>{f.icon}</Text>
               </View>
-              <Text style={styles.premiumFeatureTileTitle}>{f.title}</Text>
-              <Text style={styles.premiumFeatureTileText}>{f.text}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.premiumFeatureTileTitle}>{f.title}</Text>
+                <Text style={styles.premiumFeatureTileText}>{f.text}</Text>
+              </View>
             </View>
           ))}
         </View>
@@ -236,6 +242,17 @@ async function choosePlan(plan) {
             {restoring ? "Restoring…" : "↩️ Restore Purchases"}
           </Text>
         </Pressable>
+
+        {premiumUnlocked ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Manage or cancel your subscription"
+            onPress={() => Linking.openURL(Platform.OS === "android" ? "https://play.google.com/store/account/subscriptions" : "https://apps.apple.com/account/subscriptions")}
+            style={{ marginTop: 10, borderRadius: 16, paddingVertical: 14, alignItems: "center", backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.14)" }}
+          >
+            <Text style={{ color: "#d7ebdc", fontSize: 14, fontWeight: "900" }}>⚙️ Manage or Cancel Subscription</Text>
+          </Pressable>
+        ) : null}
       </View>
 
       {/* TRUST BADGES */}
@@ -282,6 +299,32 @@ async function choosePlan(plan) {
         <Text style={styles.premiumDevButtonText}>Dump Scheduled Reminders</Text>
         <Text style={styles.premiumDevButtonSub}>
           Logs every scheduled notification + trigger to console
+        </Text>
+      </View>
+    </Pressable>
+
+    <Pressable
+      style={styles.premiumDevButton}
+      onPress={async () => {
+        const settings = await Notifications.getPermissionsAsync();
+        let granted = settings.granted;
+        if (!granted) granted = (await Notifications.requestPermissionsAsync()).granted;
+        if (!granted) {
+          Alert.alert("Notifications Off", "Enable notifications for Pocket Planter in your phone settings, then try again.");
+          return;
+        }
+        await Notifications.scheduleNotificationAsync({
+          content: { title: "🔔 Test Notification", body: "If you see this, notifications are firing correctly!", sound: true },
+          trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 5 },
+        });
+        Alert.alert("Test Scheduled ⏱️", "Background the app now — a test notification will fire in ~5 seconds.");
+      }}
+    >
+      <Text style={styles.premiumDevButtonIcon}>⏱️</Text>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.premiumDevButtonText}>Fire Test Notification (5s)</Text>
+        <Text style={styles.premiumDevButtonSub}>
+          Verifies the full pipeline — background the app to see it appear
         </Text>
       </View>
     </Pressable>
@@ -348,4 +391,4 @@ async function choosePlan(plan) {
 
     </View>
   );
-}
+})

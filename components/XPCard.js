@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
 
-export function XPCard({ theme, gardenXP }) {
+export const XPCard = memo(function XPCard({ theme, gardenXP }) {
   return (
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: "#5cff89" }]}>
       <Text style={styles.cardEyebrow}>Garden progression</Text>
@@ -15,4 +16,4 @@ export function XPCard({ theme, gardenXP }) {
       </View>
     </View>
   );
-}
+})

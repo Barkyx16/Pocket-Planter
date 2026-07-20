@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 
-export function GardenHealthHomeCard({ theme, gardenHealth, onPress }) {
+export const GardenHealthHomeCard = memo(function GardenHealthHomeCard({ theme, gardenHealth, onPress }) {
   return (
     <Pressable onPress={onPress} style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <Text style={[styles.cardTitle, { color: theme.text }]}>🌱 Garden Health</Text>
@@ -11,4 +12,4 @@ export function GardenHealthHomeCard({ theme, gardenHealth, onPress }) {
       </View>
     </Pressable>
   );
-}
+})

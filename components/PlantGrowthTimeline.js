@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { PremiumLockedSection } from "./PremiumLockedSection";
 
-export function PlantGrowthTimeline({ theme, plant, journalEntries, premiumUnlocked, onAddPhoto, onUnlock }) {
+export const PlantGrowthTimeline = memo(function PlantGrowthTimeline({ theme, plant, journalEntries, premiumUnlocked, onAddPhoto, onUnlock }) {
   const STAGE_COLORS = {
     "Seedling": "#8effab",
     "Leaf Growth": "#5cff89",
@@ -124,4 +125,4 @@ export function PlantGrowthTimeline({ theme, plant, journalEntries, premiumUnloc
       )}
     </View>
   );
-}
+})

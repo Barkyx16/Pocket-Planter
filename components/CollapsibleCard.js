@@ -1,9 +1,15 @@
+import { memo } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { LayoutAnimation, Platform, Pressable, Text, UIManager, View } from "react-native";
 import { styles } from "../styles";
 
-export function CollapsibleCard({ theme, storageKey, title, eyebrow, defaultOpen = true, children }) {
+// Enable smooth layout animations on Android.
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+export const CollapsibleCard = memo(function CollapsibleCard({ theme, storageKey, title, eyebrow, defaultOpen = false, children }) {
   const [open, setOpen] = useState(defaultOpen);
   const [loaded, setLoaded] = useState(false);
 
@@ -17,6 +23,8 @@ export function CollapsibleCard({ theme, storageKey, title, eyebrow, defaultOpen
   }, [storageKey]);
 
   function toggle() {
+    // Smoothly animate the expand/collapse instead of an instant snap.
+    LayoutAnimation.configureNext(LayoutAnimation.create(200, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity));
     const next = !open;
     setOpen(next);
     AsyncStorage.setItem(`pp_collapse_${storageKey}`, next ? "1" : "0").catch(() => {});
@@ -24,7 +32,10 @@ export function CollapsibleCard({ theme, storageKey, title, eyebrow, defaultOpen
 
   return (
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-      <Pressable onPress={toggle} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+      <Pressable
+        onPress={toggle}
+        style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, pressed && { opacity: 0.6 }]}
+      >
         <View style={{ flex: 1 }}>
           {eyebrow ? <Text style={styles.cardEyebrow}>{eyebrow}</Text> : null}
           <Text style={[styles.cardTitle, { color: theme.text }]}>{title}</Text>
@@ -34,4 +45,4 @@ export function CollapsibleCard({ theme, storageKey, title, eyebrow, defaultOpen
       {open ? <View style={{ marginTop: 14 }}>{children}</View> : null}
     </View>
   );
-}
+})

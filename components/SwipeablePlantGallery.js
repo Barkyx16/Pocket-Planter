@@ -1,9 +1,10 @@
+import { memo } from "react";
 import { useEffect, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { RARITY_STYLES, getPlantSeasonLabel, getRarity, normalizeType, resolvePlantImageSource } from "../core";
 
-export function SwipeablePlantGallery({ plants, theme, zone, onOpen }) {
+export const SwipeablePlantGallery = memo(function SwipeablePlantGallery({ plants, theme, zone, onOpen }) {
   const [activeIndex, setActiveIndex] = useState(0);
   useEffect(() => {
   setActiveIndex(0);
@@ -44,4 +45,4 @@ export function SwipeablePlantGallery({ plants, theme, zone, onOpen }) {
       </View>
     </View>
   );
-}
+})

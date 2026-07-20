@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { WATER_UNITS, getTodayKey, tapHaptic, toGallons } from "../core";
 
-export function WaterUsageCard({ theme, savedPlants, wateringAmounts, setWateringAmounts, onUndoToast }) {
+export const WaterUsageCard = memo(function WaterUsageCard({ theme, savedPlants, wateringAmounts, setWateringAmounts, onUndoToast }) {
   const [plant, setPlant] = useState("Garden");
   const [amount, setAmount] = useState("");
   const [unit, setUnit] = useState("gal");
@@ -157,4 +158,4 @@ return (
       ) : null}
     </View>
   );
-}
+})

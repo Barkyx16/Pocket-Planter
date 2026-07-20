@@ -1,9 +1,10 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { getStreakDaysLeft, getWateringStreak, resolvePlantImageSource } from "../core";
+import { getDateKey, getStreakDaysLeft, getWateringStreak, resolvePlantImageSource } from "../core";
 
-export function WateringStreakNudge({ theme, savedPlants, wateringHistory, snoozedPlants, onOpenPlant, onWater }) {
-  const tomorrowKey = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+export const WateringStreakNudge = memo(function WateringStreakNudge({ theme, savedPlants, wateringHistory, snoozedPlants, onOpenPlant, onWater }) {
+  const tomorrowKey = getDateKey(new Date(Date.now() + 86400000));
   const atRisk = (savedPlants || [])
     .filter((name) => snoozedPlants?.[name] !== tomorrowKey)
     .map((name) => {
@@ -76,4 +77,4 @@ export function WateringStreakNudge({ theme, savedPlants, wateringHistory, snooz
       </View>
     </View>
   );
-}
+})

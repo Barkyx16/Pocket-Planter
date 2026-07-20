@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { RESCUE_THRESHOLD_DAYS, getDaysSince, resolvePlantImageSource } from "../core";
 
-export function RescueModeCard({ theme, savedPlants, wateredPlants, wateringHistory, onOpenPlant, onWater }) {
+export const RescueModeCard = memo(function RescueModeCard({ theme, savedPlants, wateredPlants, wateringHistory, onOpenPlant, onWater }) {
   const neglected = (savedPlants || [])
     .map((name) => {
       const history = wateringHistory?.[name];
@@ -65,4 +66,4 @@ export function RescueModeCard({ theme, savedPlants, wateredPlants, wateringHist
       </View>
     </View>
   );
-}
+})

@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
 import { getCompatibilityScore } from "../core";
 
-export function GardenHealthCard({ theme, gardenHealth, gardenMap }) {
+export const GardenHealthCard = memo(function GardenHealthCard({ theme, gardenHealth, gardenMap }) {
   const plants = Object.values(gardenMap || {}).filter(Boolean);
   const conflicts = [];
   const tips = [];
@@ -26,4 +27,4 @@ export function GardenHealthCard({ theme, gardenHealth, gardenMap }) {
       {tips.length ? (<View style={[styles.conflictWarningBox, { marginTop: 10, borderColor: "#5cff89" }]}>{tips.slice(0, 3).map((t) => (<Text key={t} style={[styles.conflictWarningText, { color: "#5cff89" }]}>{t}</Text>))}</View>) : null}
     </View>
   );
-}
+})

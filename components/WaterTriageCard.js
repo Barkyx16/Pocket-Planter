@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { getWaterTriage, resolvePlantImageSource } from "../core";
 
-export function WaterTriageCard({ theme, savedPlants, wateringHistory, wateringAmounts, onWater, onOpenPlant }) {
+export const WaterTriageCard = memo(function WaterTriageCard({ theme, savedPlants, wateringHistory, wateringAmounts, onWater, onOpenPlant }) {
   const rows = getWaterTriage(savedPlants, wateringHistory, wateringAmounts);
   if (!rows.length) return null;
 
@@ -65,4 +66,4 @@ export function WaterTriageCard({ theme, savedPlants, wateringHistory, wateringA
       </View>
     </View>
   );
-}
+})

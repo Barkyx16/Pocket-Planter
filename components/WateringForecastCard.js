@@ -1,10 +1,12 @@
+import { memo } from "react";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { getNextWaterInfo } from "../core";
 
-export function WateringForecastCard({ theme, savedPlants, wateringHistory, wateredPlants, weather, onOpenPlant }) {
-  const [selectedDay, setSelectedDay] = useState(null);
+export const WateringForecastCard = memo(function WateringForecastCard({ theme, savedPlants, wateringHistory, wateredPlants, weather, onOpenPlant }) {
+  // Default to today so the useful info is visible without a tap.
+  const [selectedDay, setSelectedDay] = useState(0);
 
   // Build 7 forward day-buckets. Each saved plant with watering history is
   // projected via getNextWaterInfo and dropped into the day it comes due.
@@ -34,6 +36,18 @@ export function WateringForecastCard({ theme, savedPlants, wateringHistory, wate
 
   const active = selectedDay != null ? days[selectedDay] : null;
 
+  // At-a-glance summary so the card is useful before any tap.
+  const dueToday = days[0].plants.length;
+  const rainSoon = weather?.precipChance >= 65;
+  const nextDue = days.slice(1).find((d) => d.plants.length > 0);
+  const busiest = days.reduce((a, b) => (b.plants.length > a.plants.length ? b : a), days[0]);
+
+  const headline = dueToday > 0
+    ? `💧 ${dueToday} plant${dueToday === 1 ? "" : "s"} to water today`
+    : nextDue
+    ? `✅ Nothing due today — next up ${weekdayFmt(nextDue.date, nextDue.offset)}`
+    : "✅ You're all caught up this week!";
+
 return (
     <View>
 
@@ -43,20 +57,36 @@ return (
         </Text>
       ) : (
         <>
-          <View style={{ flexDirection: "row", gap: 6, marginTop: 14 }}>
+          {/* SUMMARY HEADLINE */}
+          <View style={{ marginTop: 8, backgroundColor: dueToday > 0 ? "rgba(107,199,255,0.10)" : "rgba(92,255,137,0.10)", borderRadius: 14, padding: 12, borderWidth: 1, borderColor: dueToday > 0 ? "rgba(107,199,255,0.28)" : "rgba(92,255,137,0.28)" }}>
+            <Text style={{ color: dueToday > 0 ? "#6bc7ff" : "#5cff89", fontSize: 14, fontWeight: "900" }}>{headline}</Text>
+            {busiest.plants.length > 1 && busiest.offset !== 0 ? (
+              <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4 }}>
+                📅 Busiest day: {weekdayFmt(busiest.date, busiest.offset)} ({busiest.plants.length} plants)
+              </Text>
+            ) : null}
+            {rainSoon && dueToday > 0 ? (
+              <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "700", marginTop: 4 }}>
+                🌧️ Rain expected soon — check soil first, you may be able to skip.
+              </Text>
+            ) : null}
+          </View>
+
+          <View style={{ flexDirection: "row", gap: 6, marginTop: 12 }}>
             {days.map((d) => {
               const count = d.plants.length;
               const intensity = count === 0 ? 0.06 : 0.12 + 0.5 * (count / maxCount);
               const isSel = selectedDay === d.offset;
+              const isToday = d.offset === 0;
               return (
                 <Pressable
                   key={d.offset}
                   onPress={() => setSelectedDay(isSel ? null : d.offset)}
                   accessibilityRole="button"
                   accessibilityLabel={`${weekdayFmt(d.date, d.offset)}: ${count} plant${count === 1 ? "" : "s"} due`}
-                  style={{ flex: 1, alignItems: "center", borderRadius: 14, paddingVertical: 10, backgroundColor: `rgba(107,199,255,${intensity})`, borderWidth: isSel ? 2 : 1, borderColor: isSel ? "#6bc7ff" : "rgba(255,255,255,0.08)" }}
+                  style={{ flex: 1, alignItems: "center", borderRadius: 14, paddingVertical: 10, backgroundColor: `rgba(107,199,255,${intensity})`, borderWidth: isSel ? 2 : 1, borderColor: isSel ? "#6bc7ff" : isToday ? "rgba(107,199,255,0.4)" : "rgba(255,255,255,0.08)" }}
                 >
-                  <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "800" }}>{weekdayFmt(d.date, d.offset)}</Text>
+                  <Text style={{ color: isToday ? "#6bc7ff" : theme.secondaryText, fontSize: 10, fontWeight: "800" }}>{weekdayFmt(d.date, d.offset)}</Text>
                   <Text style={{ color: count === 0 ? theme.secondaryText : "#ffffff", fontSize: 18, fontWeight: "900", marginTop: 4 }}>{count}</Text>
                   <Text style={{ color: theme.secondaryText, fontSize: 8, fontWeight: "700" }}>{count === 1 ? "plant" : "plants"}</Text>
                 </Pressable>
@@ -103,4 +133,4 @@ return (
       )}
     </View>
   );
-}
+})

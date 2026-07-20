@@ -1,17 +1,21 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { getHarvestCountdown, getPlantDifficulty, getPlantSeasonLabel, normalizeType, resolvePlantImageSource } from "../core";
 
-export function PlantTodayHero({ theme, monthlySuggestions, compatiblePlants, savedPlants = [], zone, weather, onOpen }) {
-  const weekOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24 * 7));
-
+export const PlantTodayHero = memo(function PlantTodayHero({ theme, monthlySuggestions, compatiblePlants, savedPlants = [], zone, weather, onOpen }) {
   const basePool = monthlySuggestions.length > 0 ? monthlySuggestions : compatiblePlants;
   const unsavedPool = basePool.filter((p) => !savedPlants.includes(p.name));
   const plantPool = unsavedPool.length > 0 ? unsavedPool : basePool;
 
   if (!plantPool.length) return null;
 
-  const plant = plantPool[weekOfYear % plantPool.length];
+  // Random-feeling pick that's seeded by today's date, so it stays stable through
+  // the day (no flicker on re-render) but lands on a fresh plant each new day.
+  const dateKey = new Date().toISOString().slice(0, 10);
+  let seed = 0;
+  for (let i = 0; i < dateKey.length; i += 1) seed = (seed * 31 + dateKey.charCodeAt(i)) >>> 0;
+  const plant = plantPool[seed % plantPool.length];
 
   if (!plant) return null;
 
@@ -63,4 +67,4 @@ return (
       )}
     </Pressable>
   );
-}
+})

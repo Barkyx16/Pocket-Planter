@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { resolvePlantImageSource } from "../core";
 
-export function OnThisDayCard({ theme, journalEntries, harvestLog, onOpenPlant }) {
+export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries, harvestLog, onOpenPlant }) {
   const now = new Date();
   now.setHours(12, 0, 0, 0);
 
@@ -106,4 +107,4 @@ export function OnThisDayCard({ theme, journalEntries, harvestLog, onOpenPlant }
       </View>
     </View>
   );
-}
+})

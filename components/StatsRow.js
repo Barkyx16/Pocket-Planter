@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { View } from "react-native";
 import { styles } from "../styles";
 import { MiniStat } from "./MiniStat";
 
-export function StatsRow({ theme, compatiblePlants, savedPlants, journalEntries, streakData }) {
+export const StatsRow = memo(function StatsRow({ theme, compatiblePlants, savedPlants, journalEntries, streakData }) {
   return (
     <View style={styles.statsRow}>
       <MiniStat theme={theme} label="Plants" value={compatiblePlants.length} icon="🌱" />
@@ -11,4 +12,4 @@ export function StatsRow({ theme, compatiblePlants, savedPlants, journalEntries,
       <MiniStat theme={theme} label="Streak" value={`${streakData.count}d`} icon="🔥" />
     </View>
   );
-}
+})

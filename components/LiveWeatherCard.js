@@ -1,12 +1,33 @@
-import { Text, View } from "react-native";
+import { memo, useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LayoutAnimation, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
-import { getClimateBucket, getEstimatedLastFrost, getTodayKey } from "../core";
+import { formatTemp, getTodayKey, tapHaptic } from "../core";
 
-export function LiveWeatherCard({ theme, weather, recommendation, zone, savedPlants, wateredPlants, harvestTrackers }) {
+export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, recommendation, savedPlants, wateredPlants, harvestTrackers, unitSystem }) {
   const today = getTodayKey();
-  const climate = getClimateBucket(zone);
   const currentHour = new Date().getHours();
-  const currentMonth = new Date().getMonth() + 1;
+
+  // Completed smart actions, stored per day so they reset every 24 hours.
+  const [doneIds, setDoneIds] = useState({});
+  useEffect(() => {
+    let alive = true;
+    AsyncStorage.getItem(`pp_smartActionsDone_${today}`).then((val) => {
+      if (!alive) return;
+      try { setDoneIds(val ? (JSON.parse(val) || {}) : {}); } catch (e) { setDoneIds({}); }
+    }).catch(() => {});
+    return () => { alive = false; };
+  }, [today]);
+  const markActionDone = (id) => {
+    tapHaptic("light");
+    LayoutAnimation.configureNext(LayoutAnimation.create(220, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity));
+    setDoneIds((prev) => {
+      if (prev[id]) return prev;
+      const next = { ...prev, [id]: true };
+      AsyncStorage.setItem(`pp_smartActionsDone_${today}`, JSON.stringify(next)).catch(() => {});
+      return next;
+    });
+  };
 
   const unwateredCount = savedPlants?.filter(p => wateredPlants?.[p] !== today).length || 0;
   const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, t]) => {
@@ -29,54 +50,40 @@ export function LiveWeatherCard({ theme, weather, recommendation, zone, savedPla
     if (!weather) return actions;
 
     if (weather.minTempF <= 35) {
-      actions.push({ icon: "🏠", text: "Move containers indoors or near shelter tonight", priority: "high" });
-      actions.push({ icon: "🧣", text: "Cover frost-sensitive plants before dark", priority: "high" });
+      actions.push({ id: "frost-indoors", icon: "🏠", text: "Move containers indoors or near shelter tonight", priority: "high" });
+      actions.push({ id: "frost-cover", icon: "🧣", text: "Cover frost-sensitive plants before dark", priority: "high" });
     }
     if (weather.maxTempF >= 98) {
-      actions.push({ icon: "⏰", text: "Water before 9 AM — afternoon heat will scorch wet leaves", priority: "high" });
-      actions.push({ icon: "🌿", text: "Add shade cloth over young transplants", priority: "high" });
-      actions.push({ icon: "🚫", text: "Skip transplanting today — heat stress risk too high", priority: "medium" });
+      actions.push({ id: "heat-shade", icon: "🌿", text: "Add shade cloth over young transplants", priority: "high" });
+      actions.push({ id: "heat-skip-transplant", icon: "🚫", text: "Skip transplanting today — heat stress risk too high", priority: "medium" });
     } else if (weather.maxTempF >= 90) {
-      actions.push({ icon: "💧", text: "Water deeply early morning to protect roots", priority: "medium" });
-      actions.push({ icon: "🪵", text: "Add mulch around plants to retain soil moisture", priority: "medium" });
+      actions.push({ id: "warm-mulch", icon: "🪵", text: "Add mulch around plants to retain soil moisture", priority: "medium" });
     }
     if (weather.precipChance >= 70) {
-      actions.push({ icon: "🌧️", text: "Skip watering — rain will handle it today", priority: "medium" });
-      actions.push({ icon: "🪣", text: "Check container drainage before rain arrives", priority: "low" });
+      actions.push({ id: "rain-skip-water", icon: "🌧️", text: "Skip watering — rain will handle it today", priority: "medium" });
+      actions.push({ id: "rain-drainage", icon: "🪣", text: "Check container drainage before rain arrives", priority: "low" });
     } else if (weather.precipChance >= 40) {
-      actions.push({ icon: "🌱", text: "Check soil moisture before watering — rain may help", priority: "low" });
+      actions.push({ id: "rain-check-soil", icon: "🌱", text: "Check soil moisture before watering — rain may help", priority: "low" });
     }
     if (unwateredCount > 0 && weather.precipChance < 40) {
-      actions.push({ icon: "💧", text: `${unwateredCount} saved plant${unwateredCount === 1 ? "" : "s"} still need watering today`, priority: weather.maxTempF >= 90 ? "high" : "medium" });
+      actions.push({ id: "water-remaining", icon: "💧", text: `${unwateredCount} saved plant${unwateredCount === 1 ? "" : "s"} still need watering today`, priority: weather.maxTempF >= 90 ? "high" : "medium" });
     }
     if (harvestsReady > 0) {
-      actions.push({ icon: "🎉", text: `${harvestsReady} plant${harvestsReady === 1 ? "" : "s"} ready to harvest — pick today for peak flavor`, priority: "high" });
+      actions.push({ id: "harvest-ready", icon: "🎉", text: `${harvestsReady} plant${harvestsReady === 1 ? "" : "s"} ready to harvest — pick today for peak flavor`, priority: "high" });
     }
     if (weather.maxTempF >= 65 && weather.maxTempF <= 82 && weather.precipChance < 30) {
-      actions.push({ icon: "🌱", text: "Ideal conditions for transplanting or direct sowing today", priority: "low" });
+      actions.push({ id: "ideal-sow", icon: "🌱", text: "Ideal conditions for transplanting or direct sowing today", priority: "low" });
     }
     if (currentHour >= 6 && currentHour <= 9 && weather.maxTempF >= 70) {
-      actions.push({ icon: "🌅", text: "Perfect morning window for garden care right now", priority: "low" });
+      actions.push({ id: "morning-window", icon: "🌅", text: "Perfect morning window for garden care right now", priority: "low" });
     }
     return actions.slice(0, 4);
   };
 
-  const getZoneInsight = () => {
-    if (climate === "hot") {
-      if (currentMonth >= 5 && currentMonth <= 9) return `Zone ${zone} summer: deep water every 2-3 days. Harvest peppers, okra, and beans daily during peak season.`;
-      return `Zone ${zone} cool season: great time for leafy greens, carrots, and brassicas. Plant now before temperatures rise.`;
-    }
-    if (climate === "cold") {
-      if (currentMonth >= 6 && currentMonth <= 8) return `Zone ${zone} summer: your prime growing window. Stay consistent with watering and harvest regularly.`;
-      if (currentMonth >= 9) return `Zone ${zone} fall: harvest root crops and store them. Plant garlic now for a spring harvest.`;
-      return `Zone ${zone} spring: soil is warming up. Start seeds indoors and wait for consistent temps above 50°F before transplanting.`;
-    }
-    return `Zone ${zone}: ${currentMonth >= 3 && currentMonth <= 5 ? "spring planting season — ideal time to get tomatoes, peppers, and herbs in the ground." : currentMonth >= 9 ? "fall growing season — great for cool crops and root vegetables." : "peak growing season — water consistently and harvest often."}`;
-  };
-
   const condition = getConditionDetails();
   const smartActions = getSmartActions();
-  const zoneInsight = getZoneInsight();
+  const doneCount = smartActions.filter((a) => doneIds[a.id]).length;
+  const activeActions = smartActions.filter((a) => !doneIds[a.id]);
 
   const getTempColor = (temp) => {
     if (temp >= 98) return "#ff4444";
@@ -113,14 +120,14 @@ export function LiveWeatherCard({ theme, weather, recommendation, zone, savedPla
           <Text style={styles.liveWeatherIcon}>☀️</Text>
           <Text style={styles.liveWeatherLabel}>High</Text>
           <Text style={[styles.liveWeatherValue, { color: weather ? getTempColor(weather.maxTempF) : "#ffffff" }]}>
-            {weather ? `${Math.round(weather.maxTempF)}°` : "—"}
+            {weather ? formatTemp(weather.maxTempF, unitSystem) : "—"}
           </Text>
         </View>
         <View style={[styles.liveWeatherBox, { borderColor: weather ? `${getTempColor(weather.minTempF)}30` : "rgba(255,255,255,0.08)" }]}>
           <Text style={styles.liveWeatherIcon}>🌙</Text>
           <Text style={styles.liveWeatherLabel}>Low</Text>
           <Text style={[styles.liveWeatherValue, { color: weather ? getTempColor(weather.minTempF) : "#ffffff" }]}>
-            {weather ? `${Math.round(weather.minTempF)}°` : "—"}
+            {weather ? formatTemp(weather.minTempF, unitSystem) : "—"}
           </Text>
         </View>
         <View style={[styles.liveWeatherBox, { borderColor: weather?.precipChance >= 70 ? "rgba(107,199,255,0.30)" : "rgba(255,255,255,0.08)" }]}>
@@ -130,61 +137,65 @@ export function LiveWeatherCard({ theme, weather, recommendation, zone, savedPla
             {weather ? `${Math.round(weather.precipChance)}%` : "—"}
           </Text>
         </View>
-        <View style={styles.liveWeatherBox}>
-          <Text style={styles.liveWeatherIcon}>💧</Text>
-          <Text style={styles.liveWeatherLabel}>Unwatered</Text>
-          <Text style={[styles.liveWeatherValue, { color: unwateredCount > 0 ? "#6bc7ff" : "#5cff89" }]}>
-            {unwateredCount}
-          </Text>
-        </View>
       </View>
 
-      {/* SMART ACTION LIST */}
+      {/* SMART ACTION LIST — tap to check off; resets every 24h */}
       {smartActions.length > 0 ? (
         <View style={styles.liveWeatherActionsWrap}>
-          <Text style={styles.liveWeatherActionsTitle}>⚡ Smart Actions for Today</Text>
-          <View style={styles.liveWeatherActionsList}>
-            {smartActions.map((action, index) => (
-              <View key={index} style={[styles.liveWeatherActionRow, {
-                backgroundColor: action.priority === "high"
-                  ? "rgba(255,123,123,0.10)"
-                  : action.priority === "medium"
-                  ? "rgba(255,216,107,0.08)"
-                  : "rgba(255,255,255,0.05)",
-                borderColor: action.priority === "high"
-                  ? "rgba(255,123,123,0.25)"
-                  : action.priority === "medium"
-                  ? "rgba(255,216,107,0.20)"
-                  : "rgba(255,255,255,0.08)",
-              }]}>
-                <Text style={styles.liveWeatherActionIcon}>{action.icon}</Text>
-                <Text style={[styles.liveWeatherActionText, { color: action.priority === "high" ? "#ffb3b3" : theme.secondaryText }]}>
-                  {action.text}
-                </Text>
-                {action.priority === "high" ? (
-                  <View style={styles.liveWeatherActionPriority}>
-                    <Text style={styles.liveWeatherActionPriorityText}>!</Text>
-                  </View>
-                ) : null}
-              </View>
-            ))}
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <Text style={styles.liveWeatherActionsTitle}>⚡ Smart Actions for Today</Text>
+            <Text style={{ color: doneCount === smartActions.length ? "#5cff89" : "#8effab", fontSize: 12, fontWeight: "900" }}>
+              {doneCount}/{smartActions.length}
+            </Text>
           </View>
+          {activeActions.length ? (
+            <>
+              <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 2, marginBottom: 8 }}>
+                Tap one to check it off — it disappears. Refreshes each day.
+              </Text>
+              <View style={styles.liveWeatherActionsList}>
+                {activeActions.map((action) => {
+                  const baseBg = action.priority === "high"
+                    ? "rgba(255,123,123,0.10)"
+                    : action.priority === "medium"
+                    ? "rgba(255,216,107,0.08)"
+                    : "rgba(255,255,255,0.05)";
+                  const baseBorder = action.priority === "high"
+                    ? "rgba(255,123,123,0.25)"
+                    : action.priority === "medium"
+                    ? "rgba(255,216,107,0.20)"
+                    : "rgba(255,255,255,0.08)";
+                  return (
+                    <Pressable
+                      key={action.id}
+                      onPress={() => markActionDone(action.id)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Mark complete: ${action.text}`}
+                      style={[styles.liveWeatherActionRow, { backgroundColor: baseBg, borderColor: baseBorder }]}
+                    >
+                      <Text style={styles.liveWeatherActionIcon}>{action.icon}</Text>
+                      <Text style={[styles.liveWeatherActionText, { color: action.priority === "high" ? "#ffb3b3" : theme.secondaryText }]}>
+                        {action.text}
+                      </Text>
+                      {action.priority === "high" ? (
+                        <View style={styles.liveWeatherActionPriority}>
+                          <Text style={styles.liveWeatherActionPriorityText}>!</Text>
+                        </View>
+                      ) : null}
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </>
+          ) : (
+            <View style={{ alignItems: "center", paddingVertical: 14, marginTop: 2 }}>
+              <Text style={{ color: "#5cff89", fontSize: 14, fontWeight: "900" }}>🎉 All done for today!</Text>
+              <Text style={{ color: theme.secondaryText, fontSize: 11.5, fontWeight: "700", marginTop: 3 }}>Fresh actions refresh tomorrow.</Text>
+            </View>
+          )}
         </View>
       ) : null}
 
-      {/* ZONE INSIGHT */}
-      <View style={styles.liveWeatherZoneInsight}>
-        <Text style={styles.liveWeatherZoneInsightTitle}>📍 Zone Insight</Text>
-        <Text style={[styles.liveWeatherZoneInsightText, { color: theme.secondaryText }]}>{zoneInsight}</Text>
-      </View>
-
-      {/* FOOTER */}
-      <View style={styles.liveWeatherFooter}>
-        <Text style={styles.liveWeatherFooterText}>
-          Zone {zone || "—"} • Est. last frost: {getEstimatedLastFrost(zone)} • {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-        </Text>
-      </View>
-
     </View>
   );
-}
+})

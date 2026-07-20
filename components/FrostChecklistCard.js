@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { COLD_THRESHOLD_F, FROST_TASKS, tapHaptic } from "../core";
 
-export function FrostChecklistCard({ theme, weather, frostChecklist, setFrostChecklist }) {
+export const FrostChecklistCard = memo(function FrostChecklistCard({ theme, weather, frostChecklist, setFrostChecklist }) {
   // Find the coldest low across today + next 2 forecast days
   const forecast = Array.isArray(weather?.forecast) ? weather.forecast : [];
   const window = forecast.slice(0, 3);
@@ -68,4 +69,4 @@ export function FrostChecklistCard({ theme, weather, frostChecklist, setFrostChe
       </View>
     </View>
   );
-}
+})

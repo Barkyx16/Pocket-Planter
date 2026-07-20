@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 
-export function GardenSummaryRow({ theme, remindersOn, frostAlertsOn, monthlyPlantingOn, dailyWateringOn, onPressReminders, gardenHealth, onPressGarden }) {
+export const GardenSummaryRow = memo(function GardenSummaryRow({ theme, remindersOn, frostAlertsOn, monthlyPlantingOn, dailyWateringOn, onPressReminders, gardenHealth, onPressGarden }) {
   const enabledCount = [remindersOn, frostAlertsOn, monthlyPlantingOn, dailyWateringOn].filter(Boolean).length;
   return (
     <View style={styles.gardenSummaryRow}>
@@ -17,4 +18,4 @@ export function GardenSummaryRow({ theme, remindersOn, frostAlertsOn, monthlyPla
       </Pressable>
     </View>
   );
-}
+})

@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { View } from "react-native";
 import { styles } from "../styles";
 import { FloatingParticle } from "./FloatingParticle";
 
-export function WeatherParticles({ weather }) {
+export const WeatherParticles = memo(function WeatherParticles({ weather }) {
   let mode = "firefly";
   let symbols = ["✨","🟢","✨","🟢","✨","🟢","✨","🟢"];
   if (weather?.precipChance >= 65) { mode = "rain"; symbols = ["💧","💧","💧","💧","💧","💧","💧","💧","💧","💧"]; }
@@ -13,4 +14,4 @@ export function WeatherParticles({ weather }) {
       {symbols.map((symbol, index) => <FloatingParticle key={`floating-particle-${symbol}-${index}`} symbol={symbol} index={index} mode={mode} />)}
     </View>
   );
-}
+})

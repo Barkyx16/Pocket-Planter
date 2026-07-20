@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
 
-export function HarvestRevealCard({ theme, journalEntries, harvestLog, onOpenPlant }) {
+export const HarvestRevealCard = memo(function HarvestRevealCard({ theme, journalEntries, harvestLog, onOpenPlant }) {
   // Plants that have been harvested AND have 2+ journal photos
   const harvestedNames = Array.from(new Set((harvestLog || []).map((h) => h.plantName)));
 
@@ -61,4 +62,4 @@ export function HarvestRevealCard({ theme, journalEntries, harvestLog, onOpenPla
       </View>
     </View>
   );
-}
+})

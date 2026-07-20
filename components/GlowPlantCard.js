@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { RARITY_STYLES, getHarvestCountdown, getLastWateredText, getNextWaterInfo, getPlantDifficulty, getRarity, getStreakDaysLeft, getTodayKey, getWateringStreak, normalizeType, resolvePlantImageSource } from "../core";
 
-export function GlowPlantCard({ plant, weather, zone, theme, isSaved, isCompared, isFollowed, isSnoozed, wateredDate, wateredPlants, wateringHistory, onOpen, onSave, onCompare, onFollow, onWater, onSnooze }) {
+export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone, theme, isSaved, isCompared, isFollowed, isSnoozed, wateredDate, wateredPlants, wateringHistory, onOpen, onSave, onCompare, onFollow, onWater, onSnooze }) {
   const imageSource = resolvePlantImageSource(plant);
   const rarity = RARITY_STYLES[getRarity(plant)];
   const wateredToday = wateredDate === getTodayKey();
@@ -128,4 +129,4 @@ export function GlowPlantCard({ plant, weather, zone, theme, isSaved, isCompared
 
     </Pressable>
   );
-}
+})

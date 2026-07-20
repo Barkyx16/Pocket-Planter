@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { useEffect, useRef } from "react";
 import { Animated, View } from "react-native";
 
-export function AnimatedBar({ progress, color = "#5cff89", trackStyle, fillStyle }) {
+export const AnimatedBar = memo(function AnimatedBar({ progress, color = "#5cff89", trackStyle, fillStyle }) {
   const widthAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     Animated.timing(widthAnim, {
@@ -16,4 +17,4 @@ export function AnimatedBar({ progress, color = "#5cff89", trackStyle, fillStyle
       <Animated.View style={[fillStyle, { width, backgroundColor: color }]} />
     </View>
   );
-}
+})

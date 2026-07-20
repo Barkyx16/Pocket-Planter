@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { HARVEST_SOON_DAYS, resolvePlantImageSource } from "../core";
 
-export function HarvestReadyCard({ theme, harvestTrackers, onOpenPlant }) {
+export const HarvestReadyCard = memo(function HarvestReadyCard({ theme, harvestTrackers, onOpenPlant }) {
   const entries = Object.entries(harvestTrackers || {})
     .map(([name, tracker]) => {
       const daysPassed = Math.floor((new Date() - new Date(tracker.startedAt)) / (1000 * 60 * 60 * 24));
@@ -61,4 +62,4 @@ export function HarvestReadyCard({ theme, harvestTrackers, onOpenPlant }) {
       </View>
     </View>
   );
-}
+})

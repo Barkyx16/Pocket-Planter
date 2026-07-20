@@ -1,9 +1,10 @@
+import { memo } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { getClimateBucket, getFertilizerDays, getTodayKey, resolvePlantImageSource } from "../core";
+import { formatTemp, getClimateBucket, getFertilizerDays, getTodayKey, resolvePlantImageSource } from "../core";
 
-export function MyGardenTodayCard({ theme, weather, monthlySuggestions, savedPlants, wateredPlants, onOpenPlant, onAddPhoto, uploadingPhoto, harvestTrackers, fertilizerTrackers, journalEntries, zone, gardenMap, onNavigate }) {
+export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weather, monthlySuggestions, savedPlants, wateredPlants, onOpenPlant, onAddPhoto, uploadingPhoto, harvestTrackers, fertilizerTrackers, journalEntries, zone, gardenMap, onNavigate, unitSystem }) {
   const today = getTodayKey();
   const currentHour = new Date().getHours();
   const currentMonth = new Date().getMonth() + 1;
@@ -34,12 +35,12 @@ export function MyGardenTodayCard({ theme, weather, monthlySuggestions, savedPla
 
   const getWeatherSummary = () => {
     if (!weather) return { icon: "🌤️", title: "Weather loading", text: "Your forecast will appear shortly.", color: "#d7ebdc", urgent: false };
-    if (weather.minTempF <= 35) return { icon: "❄️", title: "Frost risk tonight", text: `Low of ${Math.round(weather.minTempF)}°F — cover tender plants and move containers to shelter before dark.`, color: "#6bc7ff", urgent: true };
-    if (weather.maxTempF >= 98) return { icon: "🔥", title: "Extreme heat today", text: `High of ${Math.round(weather.maxTempF)}°F — water before 9 AM, add shade cloth, and skip transplanting.`, color: "#ff7b7b", urgent: true };
-    if (weather.maxTempF >= 90) return { icon: "☀️", title: "Hot day ahead", text: `High of ${Math.round(weather.maxTempF)}°F — water deeply early and mulch around roots to hold moisture.`, color: "#ffd86b", urgent: false };
+    if (weather.minTempF <= 35) return { icon: "❄️", title: "Frost risk tonight", text: `Low of ${formatTemp(weather.minTempF, unitSystem, true)} — cover tender plants and move containers to shelter before dark.`, color: "#6bc7ff", urgent: true };
+    if (weather.maxTempF >= 98) return { icon: "🔥", title: "Extreme heat today", text: `High of ${formatTemp(weather.maxTempF, unitSystem, true)} — water before 9 AM, add shade cloth, and skip transplanting.`, color: "#ff7b7b", urgent: true };
+    if (weather.maxTempF >= 90) return { icon: "☀️", title: "Hot day ahead", text: `High of ${formatTemp(weather.maxTempF, unitSystem, true)} — water deeply early and mulch around roots to hold moisture.`, color: "#ffd86b", urgent: false };
     if (weather.precipChance >= 70) return { icon: "🌧️", title: "Rain likely today", text: `${Math.round(weather.precipChance)}% chance of rain — skip watering and check drainage on containers.`, color: "#6bc7ff", urgent: false };
     if (weather.precipChance >= 40) return { icon: "🌦️", title: "Possible showers", text: `${Math.round(weather.precipChance)}% rain chance — check soil before watering, may not be needed.`, color: "#8effab", urgent: false };
-    return { icon: "✅", title: "Great garden day", text: `${Math.round(weather.maxTempF)}° high, ${Math.round(weather.precipChance)}% rain — ideal conditions for planting, watering, and garden care.`, color: "#5cff89", urgent: false };
+    return { icon: "✅", title: "Great garden day", text: `${formatTemp(weather.maxTempF, unitSystem)} high, ${Math.round(weather.precipChance)}% rain — ideal conditions for planting, watering, and garden care.`, color: "#5cff89", urgent: false };
   };
 
   const getSeasonalTip = () => {
@@ -122,8 +123,8 @@ return (
         </View>
         {weather ? (
           <View style={styles.myGardenWeatherTemps}>
-            <Text style={styles.myGardenWeatherHigh}>{Math.round(weather.maxTempF)}°</Text>
-            <Text style={styles.myGardenWeatherLow}>{Math.round(weather.minTempF)}°</Text>
+            <Text style={styles.myGardenWeatherHigh}>{formatTemp(weather.maxTempF, unitSystem)}</Text>
+            <Text style={styles.myGardenWeatherLow}>{formatTemp(weather.minTempF, unitSystem)}</Text>
           </View>
         ) : null}
       </View>
@@ -324,4 +325,4 @@ return (
       </View>
     </View>
   );
-}
+})

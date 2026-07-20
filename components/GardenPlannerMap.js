@@ -1,10 +1,11 @@
+import { memo } from "react";
 import { useState } from "react";
 import { Alert, Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { GARDEN_SLOTS, getCompatibilityScore, getFertilizerDays, getPlantSeasonLabel, getTodayKey, resolvePlantImageSource } from "../core";
 
-export function GardenPlannerMap({ theme, gardenMap, savedPlants, wateredPlants, onAssign, onClear, zone, weather, harvestTrackers, fertilizerTrackers }) {
+export const GardenPlannerMap = memo(function GardenPlannerMap({ theme, gardenMap, savedPlants, wateredPlants, onAssign, onClear, zone, weather, harvestTrackers, fertilizerTrackers }) {
   const [selectedSlot, setSelectedSlot] = useState(null);
 
   function getPlantName(plant) { return typeof plant === "string" ? plant : plant?.name || ""; }
@@ -300,4 +301,4 @@ const fertDueDays = getFertilizerDays(plantName);
       ) : null}
     </View>
   );
-}
+})

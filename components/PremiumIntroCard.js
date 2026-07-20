@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 
-export function PremiumIntroCard({ onClose, onUnlock }) {
+export const PremiumIntroCard = memo(function PremiumIntroCard({ onClose, onUnlock }) {
   return (
     <View style={styles.premiumGlassCard}>
       <View style={styles.premiumGlowOrb} />
@@ -25,4 +26,4 @@ export function PremiumIntroCard({ onClose, onUnlock }) {
     <Text style={styles.premiumPriceText}>🛡️ $2.99/month or $24.99/year • Cancel anytime</Text>
     </View>
   );
-}
+})

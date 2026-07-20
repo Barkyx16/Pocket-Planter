@@ -1,3 +1,4 @@
+import { memo } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useRef, useState } from "react";
 import { Alert, Image, Modal, Pressable, Text, View } from "react-native";
@@ -5,7 +6,7 @@ import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { getAreaTag, getCompanionInfo, getCompatibilityScore, getPairReason, getTodayKey, resolvePlantImageSource } from "../core";
 
-export function AreaPlannerMap({ theme, gardenAreas, savedPlants, wateredPlants, onAssignSlot, onClearSlot, onWaterArea, zone, weather, harvestTrackers, onOpenPlant, onPickPhoto, onDeleteArea }) {
+export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas, savedPlants, wateredPlants, onAssignSlot, onClearSlot, onWaterArea, zone, weather, harvestTrackers, onOpenPlant, onPickPhoto, onDeleteArea }) {
   const [selectedAreaId, setSelectedAreaId] = useState(null);
   const [perfectGardenPlant, setPerfectGardenPlant] = useState(null);
   const seenPerfectRef = useRef(new Set());
@@ -451,4 +452,4 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
       })}
     </View>
   );
-}
+})

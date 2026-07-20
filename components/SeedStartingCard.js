@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { getSeedStartInfo, resolvePlantImageSource } from "../core";
 
-export function SeedStartingCard({ theme, plants, zone, onOpenPlant }) {
+export const SeedStartingCard = memo(function SeedStartingCard({ theme, plants, zone, onOpenPlant }) {
   const scored = (plants || [])
     .map((item) => ({ item, info: getSeedStartInfo(item, zone) }))
     .filter((e) => e.info && (e.info.status === "start-now" || e.info.status === "upcoming"))
@@ -57,4 +58,4 @@ export function SeedStartingCard({ theme, plants, zone, onOpenPlant }) {
       </View>
     </View>
   );
-}
+})

@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 
-export function PremiumLockedCard({ theme, title, body, onUnlock }) {
+export const PremiumLockedCard = memo(function PremiumLockedCard({ theme, title, body, onUnlock }) {
   return (
     <Pressable onPress={onUnlock} style={[styles.weatherPremiumBlock, { backgroundColor: theme.card, borderColor: "#5cff89" }]}>
       <View style={styles.weatherLockCircle}><Text style={styles.weatherLockIcon}>🔒</Text></View>
@@ -12,4 +13,4 @@ export function PremiumLockedCard({ theme, title, body, onUnlock }) {
       <View style={styles.weatherUnlockButton}><Text style={styles.weatherUnlockText}>👑 Unlock Premium ›</Text></View>
     </Pressable>
   );
-}
+})

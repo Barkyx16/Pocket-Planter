@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { getWateringCount, resolvePlantImageSource } from "../core";
 
-export function MostLovedPlantsCard({ theme, savedPlants, wateringHistory, onOpenPlant }) {
+export const MostLovedPlantsCard = memo(function MostLovedPlantsCard({ theme, savedPlants, wateringHistory, onOpenPlant }) {
   const ranked = (savedPlants || [])
     .map((name) => ({ name, count: getWateringCount(name, wateringHistory) }))
     .filter((e) => e.count > 0)
@@ -42,4 +43,4 @@ return (
      </View>
     </View>
   );
-}
+})

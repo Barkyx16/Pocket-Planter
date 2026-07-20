@@ -280,6 +280,13 @@ export function getClimateBucket(zone) {
   return "hot";
 }
 
+// USDA zones 10 and warmer effectively never freeze, so frost-date tools
+// (frost-window warnings, last/first frost overrides) are just noise there.
+export function zoneIsFrostFree(zone) {
+  const value = zoneNumber(zone);
+  return value !== null && value >= 10;
+}
+
 export function normalizeType(type, name = "") {
   const value = String(type || "").trim();
   if (value === "Vegetable") return "Vegetables";
@@ -1788,7 +1795,14 @@ export function resolvePlantImageSource(item) {
   return plantImages[item.image] || null;
 }
 
+// Global haptics switch — flipped by the Settings toggle via setHapticsEnabled.
+let hapticsEnabled = true;
+export function setHapticsEnabled(on) {
+  hapticsEnabled = on !== false;
+}
+
 export function tapHaptic(style = "light") {
+  if (!hapticsEnabled) return;
   const map = {
     light: Haptics.ImpactFeedbackStyle.Light,
     medium: Haptics.ImpactFeedbackStyle.Medium,
@@ -1798,11 +1812,19 @@ export function tapHaptic(style = "light") {
 }
 
 export function successHaptic() {
+  if (!hapticsEnabled) return;
   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
 }
 
+export function getDateKey(date) {
+  const d = date instanceof Date ? date : new Date(date);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 export function getTodayKey() {
-  return new Date().toISOString().slice(0, 10);
+  return getDateKey(new Date());
 }
 
 export function getAreaTag(area) {
@@ -1886,6 +1908,30 @@ export function migrateGardenToAreas(existingAreas, legacyGardenMap) {
       size: 12,
     },
   ];
+}
+
+// ── Units ──────────────────────────────────────────────────────────────────
+// Weather data is always stored in °F / inches internally. These format for
+// display based on the user's chosen unit system ("imperial" | "metric").
+export function fToC(f) {
+  return (Number(f) - 32) * (5 / 9);
+}
+
+// Rounded temperature with degree symbol, e.g. "72°" or "22°". Pass withUnit
+// to append F/C, e.g. "72°F" / "22°C".
+export function formatTemp(fahrenheit, units, withUnit = false) {
+  if (fahrenheit == null || Number.isNaN(Number(fahrenheit))) return "—";
+  const metric = units === "metric";
+  const val = Math.round(metric ? fToC(fahrenheit) : Number(fahrenheit));
+  return `${val}°${withUnit ? (metric ? "C" : "F") : ""}`;
+}
+
+// Rainfall/length: inches → mm for metric.
+export function formatLength(inches, units) {
+  if (inches == null || Number.isNaN(Number(inches))) return "—";
+  if (units === "metric") return `${Math.round(Number(inches) * 25.4)} mm`;
+  const n = Number(inches);
+  return `${Number.isInteger(n) ? n : n.toFixed(1)}"`;
 }
 
 export async function maybeAskForReview() {
@@ -2502,7 +2548,7 @@ export function getProfileBanners({ gardenXP, savedPlants, journalEntries, garde
   ];
 }
 
-export function getDailyQuests({ savedPlants, journalEntries, gardenMap, wateredPlants, careLog, harvestTrackers, streakData }) {
+export function getDailyQuests({ savedPlants, journalEntries, gardenMap, wateredPlants, careLog, harvestTrackers, streakData, harvestLog, fertilizerTrackers, comparePlants }) {
   const today = getTodayKey();
   const dayOfWeek = new Date().getDay();
   const wateredTodayCount = Object.values(wateredPlants || {}).filter((value) => value === today).length;
@@ -2513,6 +2559,9 @@ export function getDailyQuests({ savedPlants, journalEntries, gardenMap, watered
   const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, t]) => {
     return Math.max(0, t.days - Math.floor((new Date() - new Date(t.startedAt)) / (1000 * 60 * 60 * 24))) === 0;
   }).length;
+  const fertilizerCount = Object.keys(fertilizerTrackers || {}).length;
+  const harvestLogToday = (harvestLog || []).filter((h) => h.date === today || (h.createdAt || "").startsWith(today)).length;
+  const compareCount = (comparePlants || []).length;
 
   const allQuests = [
     // EASY — 15 XP
@@ -2540,9 +2589,30 @@ export function getDailyQuests({ savedPlants, journalEntries, gardenMap, watered
     { id: "full_garden_plot", icon: "🌍", title: "Fill 6 garden plots", description: "Have at least 6 plants placed in your garden map.", difficulty: "Hard", progress: Math.min(gardenPlotCount, 6), goal: 6, completed: gardenPlotCount >= 6, reward: 50 },
 
     // BONUS SURPRISE — 50 XP
-    { id: "streak_7", icon: "⚡", title: "7-Day Streak!", description: "Use Pocket Planter 7 days in a row.", difficulty: "Bonus", progress: Math.min(streakCount, 7), goal: 7, completed: streakCount >= 7, reward: 50 },
     { id: "photo_and_water", icon: "🌟", title: "Photo + Water combo", description: "Add a journal photo AND water a plant today.", difficulty: "Bonus", progress: Math.min(todayPhotos >= 1 && wateredTodayCount >= 1 ? 1 : 0, 1), goal: 1, completed: todayPhotos >= 1 && wateredTodayCount >= 1, reward: 50 },
     { id: "care_and_water", icon: "💪", title: "Full care day", description: "Log a care action AND water 3 plants today.", difficulty: "Bonus", progress: todayCareLog >= 1 && wateredTodayCount >= 3 ? 1 : 0, goal: 1, completed: todayCareLog >= 1 && wateredTodayCount >= 3, reward: 50 },
+
+    // ── MORE EASY ──
+    { id: "fertilize_one", icon: "🌾", title: "Feed a plant", description: "Start a fertilizer tracker for any plant.", difficulty: "Easy", progress: Math.min(fertilizerCount, 1), goal: 1, completed: fertilizerCount >= 1, reward: 15 },
+    { id: "harvest_one", icon: "🧺", title: "Log a harvest", description: "Record something you picked from your garden.", difficulty: "Easy", progress: Math.min(harvestLogToday, 1), goal: 1, completed: harvestLogToday >= 1, reward: 15 },
+    { id: "check_month", icon: "🗓️", title: "Check this month's picks", description: "Open the Plants tab to see what to plant now.", difficulty: "Easy", progress: 1, goal: 1, completed: true, reward: 15 },
+
+    // ── MORE MEDIUM ──
+    { id: "compare_two", icon: "⚖️", title: "Compare two plants", description: "Use Compare on the Plants tab to weigh two options.", difficulty: "Medium", progress: Math.min(compareCount, 2), goal: 2, completed: compareCount >= 2, reward: 25 },
+    { id: "care_two", icon: "🧫", title: "Log 2 care actions", description: "Record two care actions today.", difficulty: "Medium", progress: Math.min(todayCareLog, 2), goal: 2, completed: todayCareLog >= 2, reward: 25 },
+    { id: "photo_two", icon: "📷", title: "Add 2 journal photos", description: "Document your garden twice today.", difficulty: "Medium", progress: Math.min(todayPhotos, 2), goal: 2, completed: todayPhotos >= 2, reward: 25 },
+    { id: "save_seven", icon: "🌻", title: "Grow to 7 plants", description: "Have at least 7 plants saved.", difficulty: "Medium", progress: Math.min(savedPlants.length, 7), goal: 7, completed: savedPlants.length >= 7, reward: 25 },
+
+    // ── MORE HARD ──
+    { id: "harvest_two", icon: "🚜", title: "Log 2 harvests", description: "Record two harvests today.", difficulty: "Hard", progress: Math.min(harvestLogToday, 2), goal: 2, completed: harvestLogToday >= 2, reward: 50 },
+    { id: "fill_nine", icon: "🏞️", title: "Fill 9 garden plots", description: "Have at least 9 plants placed in your garden.", difficulty: "Hard", progress: Math.min(gardenPlotCount, 9), goal: 9, completed: gardenPlotCount >= 9, reward: 50 },
+    { id: "save_ten", icon: "📚", title: "Save 10 plants", description: "Reach 10 saved plants in your collection.", difficulty: "Hard", progress: Math.min(savedPlants.length, 10), goal: 10, completed: savedPlants.length >= 10, reward: 50 },
+    { id: "fertilize_three", icon: "🌱", title: "Feed 3 plants", description: "Have fertilizer trackers on 3 plants.", difficulty: "Hard", progress: Math.min(fertilizerCount, 3), goal: 3, completed: fertilizerCount >= 3, reward: 50 },
+
+    // ── MORE BONUS ──
+    { id: "triple_threat", icon: "🏆", title: "Triple threat", description: "Water a plant, add a photo, AND log care today.", difficulty: "Bonus", progress: (wateredTodayCount >= 1 && todayPhotos >= 1 && todayCareLog >= 1) ? 1 : 0, goal: 1, completed: wateredTodayCount >= 1 && todayPhotos >= 1 && todayCareLog >= 1, reward: 75 },
+    { id: "streak_14", icon: "💫", title: "14-Day Streak!", description: "Use Pocket Planter 14 days in a row.", difficulty: "Bonus", progress: Math.min(streakCount, 14), goal: 14, completed: streakCount >= 14, reward: 75 },
+    { id: "harvest_and_care", icon: "🌾", title: "Harvest & feed", description: "Log a harvest AND a care action today.", difficulty: "Bonus", progress: (harvestLogToday >= 1 && todayCareLog >= 1) ? 1 : 0, goal: 1, completed: harvestLogToday >= 1 && todayCareLog >= 1, reward: 75 },
   ];
 
   // Pick 5 quests — always show 1 easy, 2 medium, 1 hard, 1 bonus
@@ -2556,8 +2626,9 @@ export function getDailyQuests({ savedPlants, journalEntries, gardenMap, watered
   return [
     pick(easy, dayOfWeek),
     pick(medium, dayOfWeek),
-    pick(medium, dayOfWeek + 1),
+    pick(medium, dayOfWeek + 2),
     pick(hard, dayOfWeek),
+    pick(hard, dayOfWeek + 3),
     pick(bonus, dayOfWeek),
   ];
 }
@@ -2583,93 +2654,117 @@ export function getFrameColor(level) {
 }
 
 export const PEST_WATCH_DATA = [
-  {
-    name: "Aphids",
-    emoji: "🐛",
-    months: [3, 4, 5, 6, 9, 10],
-    targets: ["Vegetables", "Herbs", "lettuce", "kale", "pepper", "tomato", "cabbage", "broccoli"],
-    sign: "Clusters of tiny green/black bugs on new growth and leaf undersides; sticky residue.",
-    fix: "Blast off with water, then treat with insecticidal soap. Ladybugs help long-term.",
-  },
-  {
-    name: "Tomato Hornworms",
-    emoji: "🐍",
-    months: [6, 7, 8],
-    targets: ["tomato", "pepper", "eggplant"],
-    sign: "Large green caterpillars and stripped upper leaves; dark droppings on foliage.",
-    fix: "Hand-pick at dusk (they glow under UV light). Bt spray for heavy infestations.",
-  },
-  {
-    name: "Squash Bugs",
-    emoji: "🐞",
-    months: [6, 7, 8],
-    targets: ["squash", "zucchini", "pumpkin", "cucumber", "melon"],
-    sign: "Bronze egg clusters on leaf undersides; wilting despite moist soil.",
-    fix: "Crush eggs early, remove adults by hand, and keep beds clear of debris.",
-  },
-  {
-    name: "Cabbage Worms",
-    emoji: "🦋",
-    months: [4, 5, 6, 9, 10],
-    targets: ["cabbage", "broccoli", "kale", "cauliflower", "brussels"],
-    sign: "White butterflies hovering; ragged holes and green worms on brassicas.",
-    fix: "Row covers early in the season; Bt spray; hand-pick the caterpillars.",
-  },
-  {
-    name: "Slugs & Snails",
-    emoji: "🐌",
-    months: [3, 4, 5, 9, 10, 11],
-    targets: ["lettuce", "spinach", "strawberry", "Herbs", "basil"],
-    sign: "Slime trails and irregular holes in tender leaves, worst after rain.",
-    fix: "Hand-pick at night, use beer traps, or ring beds with copper tape.",
-  },
-  {
-    name: "Spider Mites",
-    emoji: "🕸️",
-    months: [6, 7, 8, 9],
-    targets: ["tomato", "pepper", "eggplant", "cucumber", "beans", "melon"],
-    sign: "Fine webbing and stippled, yellow-speckled leaves in hot, dry spells.",
-    fix: "Raise humidity, hose down undersides, and treat with insecticidal soap or neem.",
-  },
-  {
-    name: "Whiteflies",
-    emoji: "🦟",
-    months: [6, 7, 8, 9],
-    targets: ["tomato", "pepper", "cucumber", "cabbage", "Herbs"],
-    sign: "Clouds of tiny white insects fly up when leaves are disturbed; sticky residue.",
-    fix: "Yellow sticky traps, insecticidal soap, and encourage lacewings.",
-  },
-  {
-    name: "Flea Beetles",
-    emoji: "🪲",
-    months: [4, 5, 6],
-    targets: ["eggplant", "radish", "arugula", "cabbage", "tomato"],
-    sign: "Tiny 'shotgun' holes peppering young leaves; small jumping beetles.",
-    fix: "Row covers on seedlings; kaolin clay; keep plants vigorous to outgrow damage.",
-  },
+  { name: "Aphids", emoji: "🐛", climates: ["hot","moderate","cold"], months: [3,4,5,6,9,10], targets: ["Vegetables","Herbs","lettuce","kale","pepper","tomato","cabbage","broccoli"], sign: "Clusters of tiny green/black bugs on new growth and leaf undersides; sticky residue.", fix: "Blast off with water, then treat with insecticidal soap. Ladybugs help long-term.",
+    description: "Tiny pear-shaped sap-sucking insects — green, black, or yellow — that cluster on tender new growth and multiply astonishingly fast.",
+    damage: "They drain sap so leaves curl and yellow, and their sticky honeydew invites sooty mold. Heavy infestations stunt plants and spread viruses.",
+    prevent: "Invite ladybugs and lacewings, avoid over-feeding nitrogen (it fuels soft growth they love), and check new shoots weekly." },
+  { name: "Tomato Hornworms", emoji: "🐍", climates: ["hot","moderate","cold"], months: [6,7,8], targets: ["tomato","pepper","eggplant"], sign: "Large green caterpillars and stripped upper leaves; dark droppings on foliage.", fix: "Hand-pick at dusk (they glow under UV light). Bt spray for heavy infestations.",
+    description: "Fat green caterpillars up to 4 inches long with a horn-like tail — the larvae of the five-spotted hawkmoth.",
+    damage: "They devour leaves and stems overnight and chew holes in fruit, defoliating a tomato plant in days.",
+    prevent: "Till soil in fall to destroy pupae, plant dill or marigolds to draw parasitic wasps, and scout at dusk." },
+  { name: "Squash Bugs", emoji: "🐞", climates: ["hot","moderate"], months: [6,7,8], targets: ["squash","zucchini","pumpkin","cucumber","melon"], sign: "Bronze egg clusters on leaf undersides; wilting despite moist soil.", fix: "Crush eggs early, remove adults by hand, and keep beds clear of debris.",
+    description: "Flat, brownish-grey shield-shaped bugs that gather at the base of squash-family plants.",
+    damage: "They pierce stems and leaves to suck sap, causing wilting, yellow spots, and eventual collapse of the vine.",
+    prevent: "Rotate cucurbit crops yearly, clear debris they overwinter in, use row covers until flowering, and destroy egg clusters early." },
+  { name: "Cabbage Worms", emoji: "🦋", climates: ["hot","moderate","cold"], months: [4,5,6,9,10], targets: ["cabbage","broccoli","kale","cauliflower","brussels"], sign: "White butterflies hovering; ragged holes and green worms on brassicas.", fix: "Row covers early in the season; Bt spray; hand-pick the caterpillars.",
+    description: "Velvety green caterpillars — the larvae of the white cabbage butterfly — that blend perfectly into brassica leaves.",
+    damage: "They chew ragged holes through leaves and bore into heads, leaving dark frass (droppings) behind.",
+    prevent: "Cover brassicas with fine netting so butterflies can't lay eggs, interplant aromatic herbs, and rub off eggs on leaf undersides." },
+  { name: "Slugs & Snails", emoji: "🐌", climates: ["moderate","cold"], months: [3,4,5,9,10,11], targets: ["lettuce","spinach","strawberry","Herbs","basil"], sign: "Slime trails and irregular holes in tender leaves, worst after rain.", fix: "Hand-pick at night, use beer traps, or ring beds with copper tape.",
+    description: "Soft-bodied mollusks that feed at night and in wet weather, leaving telltale shiny slime trails.",
+    damage: "They rasp large, irregular holes in leaves and can strip young seedlings to nothing overnight.",
+    prevent: "Water in the morning so soil dries by nightfall, remove hiding spots like boards and thick mulch, and set copper barriers or beer traps." },
+  { name: "Spider Mites", emoji: "🕸️", climates: ["hot","moderate"], months: [6,7,8,9], targets: ["tomato","pepper","eggplant","cucumber","beans","melon"], sign: "Fine webbing and stippled, yellow-speckled leaves in hot, dry spells.", fix: "Raise humidity, hose down undersides, and treat with insecticidal soap or neem.",
+    description: "Nearly microscopic arachnids that explode in numbers during hot, dry weather and spin fine webbing.",
+    damage: "They suck out cell contents, stippling leaves with yellow dots until foliage bronzes, dries, and drops.",
+    prevent: "Keep plants well-watered, raise humidity, avoid dusty conditions, and rinse leaf undersides regularly." },
+  { name: "Whiteflies", emoji: "🦟", climates: ["hot","moderate"], months: [6,7,8,9], targets: ["tomato","pepper","cucumber","cabbage","Herbs"], sign: "Clouds of tiny white insects fly up when leaves are disturbed; sticky residue.", fix: "Yellow sticky traps, insecticidal soap, and encourage lacewings.",
+    description: "Tiny white moth-like insects that gather on leaf undersides and rise in a cloud when a plant is brushed.",
+    damage: "They suck sap and weaken plants, coat leaves in sticky honeydew and sooty mold, and transmit viruses.",
+    prevent: "Hang yellow sticky traps, inspect new transplants before buying, and encourage lacewings and parasitic wasps." },
+  { name: "Flea Beetles", emoji: "🪲", climates: ["hot","moderate","cold"], months: [4,5,6], targets: ["eggplant","radish","arugula","cabbage","tomato"], sign: "Tiny 'shotgun' holes peppering young leaves; small jumping beetles.", fix: "Row covers on seedlings; kaolin clay; keep plants vigorous to outgrow damage.",
+    description: "Tiny black or bronze beetles that spring away like fleas the moment you disturb them.",
+    damage: "They riddle leaves with small 'shotgun' holes, stunting seedlings and spreading bacterial diseases.",
+    prevent: "Float row covers over young plants, delay planting until seedlings toughen up, and keep beds weed-free." },
+  { name: "Japanese Beetles", emoji: "🪲", climates: ["cold","moderate"], months: [6,7,8], targets: ["beans","grape","raspberry","rose","basil","corn"], sign: "Metallic green beetles feeding in groups, skeletonizing leaves to lace.", fix: "Hand-pick into soapy water early morning; skip lure traps (they attract more).",
+    description: "Shiny metallic green-and-copper beetles that feed in groups on warm, sunny afternoons.",
+    damage: "They skeletonize leaves — eating the tissue between veins — and chew flowers and fruit, while their grubs damage roots.",
+    prevent: "Hand-pick in the cool morning, keep plants healthy, and treat lawns for grubs; skip pheromone traps that lure more beetles in." },
+  { name: "Cucumber Beetles", emoji: "🐞", climates: ["hot","moderate","cold"], months: [5,6,7,8], targets: ["cucumber","squash","zucchini","pumpkin","melon"], sign: "Yellow-and-black striped or spotted beetles; they also spread bacterial wilt.", fix: "Row covers until flowering, then hand-pick; mulch to deter egg-laying.",
+    description: "Small yellow beetles marked with black stripes or spots that attack cucurbits from the seedling stage on.",
+    damage: "They chew leaves, flowers, and stems and — worst of all — transmit bacterial wilt and mosaic virus that can kill plants.",
+    prevent: "Use row covers until flowering, choose resistant varieties, mulch to deter egg-laying, and rotate crops each year." },
+  { name: "Cutworms", emoji: "🐛", climates: ["hot","moderate","cold"], months: [3,4,5], targets: ["tomato","pepper","cabbage","broccoli","bean","corn"], sign: "Seedlings cut clean off at the soil line overnight; fat grey curled larvae.", fix: "Ring stems with a cardboard collar, clear debris, and hand-pick after dark.",
+    description: "Fat, greasy-grey moth caterpillars that curl into a C shape and hide just under the soil by day.",
+    damage: "They sever young seedlings at the soil line overnight and can clear a freshly planted bed in a couple of nights.",
+    prevent: "Ring stems with cardboard or foil collars, clear weeds and debris they hide in, and delay planting to thin their numbers." },
+  { name: "Thrips", emoji: "🌾", climates: ["hot","moderate"], months: [5,6,7,8], targets: ["onion","tomato","pepper","bean","Herbs"], sign: "Silvery streaks and distorted new growth; tiny fast-moving slivers.", fix: "Blue sticky traps, insecticidal soap, and encourage lacewings and pirate bugs.",
+    description: "Slender, fast-moving insects barely visible to the eye that rasp at leaves and flowers.",
+    damage: "Their feeding leaves silvery streaks and twisted new growth, and they spread tospoviruses like spotted wilt.",
+    prevent: "Set blue sticky traps, clear weeds that harbor them, and encourage minute pirate bugs and lacewings." },
+  { name: "Colorado Potato Beetle", emoji: "🪲", climates: ["cold","moderate"], months: [5,6,7], targets: ["potato","eggplant","tomato"], sign: "Yellow-orange striped beetles and red humpbacked larvae stripping leaves.", fix: "Hand-pick adults, crush the orange egg clusters under leaves, and mulch heavily.",
+    description: "Rounded yellow beetles with bold black stripes; their red, humpbacked larvae are the most voracious feeders.",
+    damage: "Adults and larvae strip potato and eggplant foliage, and heavy feeding can destroy the whole crop.",
+    prevent: "Rotate nightshade crops far from last year's bed, mulch deeply, and hand-pick adults while crushing orange egg clusters." },
+  { name: "Squash Vine Borers", emoji: "🐛", climates: ["hot","moderate"], months: [6,7], targets: ["squash","zucchini","pumpkin","gourd"], sign: "A squash vine wilts suddenly, with sawdust-like frass near a hole at the stem base.", fix: "Slit the stem lengthwise to remove the grub, then mound moist soil over the wound to re-root.",
+    description: "The fat white larvae of a clear-winged moth that bore straight into squash-family stems and hollow them out.",
+    damage: "They tunnel through the main stem and cut off water flow, so an otherwise healthy vine collapses almost overnight.",
+    prevent: "Cover plants with row cover until they flower, wrap stem bases in foil, and destroy spent vines after harvest." },
+  { name: "Leaf Miners", emoji: "🍃", climates: ["hot","moderate","cold"], months: [4,5,6,7,8,9], targets: ["spinach","chard","beet","tomato","lettuce","pepper"], sign: "Winding white or tan squiggly tunnels traced just under the leaf surface.", fix: "Pick off and destroy mined leaves, use row covers, and encourage parasitic wasps.",
+    description: "The tiny larvae of flies or moths that live and feed inside the leaf, between its upper and lower surfaces.",
+    damage: "Their tunnels and blotches reduce photosynthesis and make leafy greens unappetizing, weakening the plant.",
+    prevent: "Remove affected leaves early, float row covers over seedlings, and clear weeds where the flies overwinter." },
+  { name: "Scale Insects", emoji: "🐚", climates: ["hot","moderate"], months: [5,6,7,8,9], targets: ["citrus","fig","tomato","Herbs","Tree Fruits"], sign: "Small brown or waxy bumps clustered on stems and leaf undersides that don't rub off easily.", fix: "Scrape off gently, dab with rubbing alcohol, or spray horticultural oil to smother them.",
+    description: "Immobile sap-suckers that hide under a protective waxy shell, looking more like bumps than bugs.",
+    damage: "They drain sap, causing yellowing, leaf drop, and sticky honeydew that turns into sooty mold.",
+    prevent: "Inspect new plants before buying, prune heavily infested growth, and encourage ladybugs and lacewings." },
+  { name: "Mealybugs", emoji: "🪰", climates: ["hot","moderate"], months: [6,7,8,9], targets: ["Herbs","tomato","pepper","citrus","Tropical Fruits"], sign: "Fluffy white cottony masses tucked into leaf joints and stem crevices.", fix: "Wipe off with an alcohol-dipped cotton swab, then treat with insecticidal soap or neem.",
+    description: "Soft, oval sap-suckers coated in a white waxy fluff, often mistaken for mold at first glance.",
+    damage: "They weaken plants by sucking sap and leave sticky honeydew that invites sooty mold and ants.",
+    prevent: "Quarantine new plants, avoid over-fertilizing, and hose down or wipe leaves regularly to catch them early." },
+  { name: "Earwigs", emoji: "🪳", climates: ["hot","moderate","cold"], months: [5,6,7,8], targets: ["lettuce","strawberry","seedling","Herbs","corn"], sign: "Ragged holes in tender leaves and petals overnight, plus pincer-tailed bugs hiding by day.", fix: "Set rolled-newspaper or oil traps at dusk, and clear damp mulch and debris where they shelter.",
+    description: "Fast brown insects with distinctive rear pincers that feed at night and hide in dark, moist spots by day.",
+    damage: "They chew irregular holes in soft leaves, flowers, and seedlings — though they also eat some other pests.",
+    prevent: "Reduce damp hiding spots, water in the morning, and trap them with rolled damp newspaper left out overnight." },
+  { name: "Grasshoppers", emoji: "🦗", climates: ["hot","moderate"], months: [7,8,9], targets: ["Vegetables","bean","corn","lettuce","Herbs"], sign: "Large ragged bites chewed from leaf edges inward, with bugs that leap away as you approach.", fix: "Hand-pick in the cool morning, use floating row covers, and keep weedy field edges mowed.",
+    description: "Big leaf-chewing insects that arrive in waves during hot, dry summers and can strip plants fast.",
+    damage: "Heavy swarms devour leaves, stems, and even fruit, and can defoliate a bed in a matter of days.",
+    prevent: "Cover vulnerable crops, encourage birds, keep surrounding weeds down, and apply Nosema baits early in the season." },
+  { name: "Cabbage Loopers", emoji: "🦋", climates: ["hot","moderate","cold"], months: [5,6,7,8,9,10], targets: ["cabbage","broccoli","kale","lettuce","cauliflower","spinach"], sign: "Pale green caterpillars that arch into a loop as they crawl, leaving large ragged holes.", fix: "Hand-pick, apply Bt spray, and use row covers to block the night-flying moths from laying eggs.",
+    description: "Smooth green caterpillars — the larvae of a night-flying moth — that inch along by looping their bodies.",
+    damage: "They chew big holes through leaves and bore into heads, contaminating crops with frass.",
+    prevent: "Net brassicas early, remove eggs on leaf undersides, and rotate crops to break the cycle." },
+  { name: "Corn Earworms", emoji: "🌽", climates: ["hot","moderate"], months: [7,8,9], targets: ["corn","tomato","bean","pepper"], sign: "Caterpillars burrowed into the tips of corn ears (or tomato fruit), with frass at the entry.", fix: "Apply a few drops of mineral oil to silk tips, use Bt, and hand-pick where practical.",
+    description: "The larvae of a moth that bore into corn ears and fruit — one of the most widespread garden pests in North America.",
+    damage: "They eat kernels at the ear tip and tunnel into tomatoes and peppers, ruining the harvestable part.",
+    prevent: "Choose tight-husked corn varieties, treat silks early, and till in fall to expose overwintering pupae." },
 ];
 
-export function getActivePests(savedPlantObjs, month) {
+export function getActivePests(savedPlantObjs, month, zone) {
+  const bucket = getClimateBucket(zone);
+  // Warm zones have longer pest seasons; cold zones stay peak-only.
+  const expand = (months) => {
+    if (bucket !== "hot") return months;
+    const set = new Set(months);
+    months.forEach((m) => { set.add((m % 12) + 1); set.add(((m + 10) % 12) + 1); });
+    return [...set];
+  };
   const results = [];
   PEST_WATCH_DATA.forEach((pest) => {
-    if (!pest.months.includes(month)) return;
-    // Which of the user's plants does this pest target?
+    if (Array.isArray(pest.climates) && !pest.climates.includes(bucket)) return;
+    if (!expand(pest.months).includes(month)) return;
     const affected = (savedPlantObjs || []).filter((p) => {
       const nm = String(p?.name || "").toLowerCase();
       const type = normalizeType(p?.type, p?.name);
       return pest.targets.some((t) => {
         const tl = t.toLowerCase();
-        // target can be a plant-type (capitalized in data) or a name fragment
         return type === t || nm.includes(tl);
       });
     });
-    if (affected.length) {
-      results.push({ ...pest, affected: affected.map((p) => p.name) });
-    }
+    if (affected.length) results.push({ ...pest, affected: affected.map((p) => p.name) });
   });
   return results;
 }
-
 export function getSeasonForMonth(month) {
   if (month >= 3 && month <= 5) return { key: "spring", label: "Spring", months: [3, 4, 5] };
   if (month >= 6 && month <= 8) return { key: "summer", label: "Summer", months: [6, 7, 8] };
@@ -2720,48 +2815,6 @@ if (level >= 100) title = "🌟 Garden Gnome";
   return { xp, level, title, currentLevelXP, nextLevelXP, progress: currentLevelXP / nextLevelXP };
 }
 
-export async function analyzePlantHealth(imageUri) {
-  try {
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(",")[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-
-    const result = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-  "Content-Type": "application/json",
-  "x-api-key": "YOUR_ANTHROPIC_API_KEY",
-  "anthropic-version": "2023-06-01",
-},
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        messages: [{
-          role: "user",
-          content: [
-            { type: "image", source: { type: "base64", media_type: "image/jpeg", data: base64 } },
-            { type: "text", text: `You are a plant health expert. Analyze this plant photo and respond ONLY in valid JSON with no markdown or extra text:\n{"healthy":true,"healthScore":8,"plantName":"Tomato","diagnosis":"Plant looks healthy with vibrant green leaves","issues":[],"fixes":[],"urgency":"low"}` }
-          ]
-        }]
-      }),
-    });
-
-    const data = await result.json();
-console.log("API RESPONSE:", JSON.stringify(data));
-const text = data.content?.[0]?.text || "";
-console.log("RAW TEXT:", text);
-const clean = text.replace(/```json|```/g, "").trim();
-return JSON.parse(clean);
-  } catch (err) {
-    console.error("Plant analysis error:", err);
-    return null;
-  }
-}
 
 export function getMonthEmoji(monthNumber) {
   const emojis = { 1:"❄️",2:"🌧️",3:"🌱",4:"🌷",5:"☀️",6:"🍅",7:"🌽",8:"🍉",9:"🍎",10:"🎃",11:"🍂",12:"🎄" };
@@ -3003,4 +3056,38 @@ export function getPlantFamily(plantName) {
   if (["cucumber", "squash", "zucchini", "pumpkin", "melon", "watermelon"].some((w) => n.includes(w))) return "Cucurbit";
   if (["carrot", "beet", "radish", "turnip", "parsnip"].some((w) => n.includes(w))) return "Root";
   return null; // herbs, fruit, etc. — not rotation-sensitive
+}
+
+// Robust premium check: RevenueCat entitlement identifiers are easy to mismatch, so
+// treat the user as premium if our named entitlement is active OR any entitlement is.
+export function hasPremiumEntitlement(customerInfo) {
+  const active = customerInfo?.entitlements?.active || {};
+  return !!active["Pocket Planter Pro"] || Object.keys(active).length > 0;
+}
+
+// Universal monthly garden habits appended to every month's seasonal tasks, so the
+// checklist always has a fuller set of things to do.
+const UNIVERSAL_MONTHLY_TASKS = [
+  "🌡️ Check soil moisture across your beds",
+  "🐛 Scout plants for early signs of pests",
+  "🌿 Clear weeds and spent growth",
+  "📸 Add a progress photo to your journal",
+  "📋 Plan what to plant next month",
+];
+export function getMonthlyChecklistTasks(zone) {
+  const bucket = getClimateBucket(zone);
+  const monthIndex = new Date().getMonth();
+  const seasonal = (SEASONAL_TASKS[bucket] && SEASONAL_TASKS[bucket][monthIndex]) || [];
+  return [...seasonal, ...UNIVERSAL_MONTHLY_TASKS];
+}
+export function getMonthKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+export function isMonthlyChecklistComplete(zone, monthlyChecklist) {
+  if (!zone) return false;
+  const tasks = getMonthlyChecklistTasks(zone);
+  if (!tasks.length) return false;
+  const checked = (monthlyChecklist && monthlyChecklist[getMonthKey()]) || {};
+  return tasks.every((_, i) => checked[i]);
 }
