@@ -121,63 +121,63 @@ Includes:
 
 ## App Icon
 
-![Pocket Planter Icon](screenshots/pocket%20planter%20icon.png)
+![Pocket Planter Icon](./screenshots/pocket%20planter%20icon.png)
 
 ---
 
 ## Home Screen
 
-![Pocket Planter Home](screenshots/pocket%20planter.png)
+![Pocket Planter Home](./screenshots/pocket%20planter.png)
 
 ---
 
 ## Plant Discovery
 
-![Plant Discovery](screenshots/plantforgit.png)
+![Plant Discovery](./screenshots/plantforgit.png)
 
 ---
 
 ## Garden Planner
 
-![Garden Planner](screenshots/gardenforgit.png)
+![Garden Planner](./screenshots/gardenforgit.png)
 
 ---
 
 ## Garden Assistant
 
-![Garden Assistant](screenshots/assistant%20for%20git.png)
+![Garden Assistant](./screenshots/assistant%20for%20git.png)
 
 ---
 
 ## Weather Features
 
-![Weather Integration](screenshots/weatherforgit.png)
+![Weather Integration](./screenshots/weatherforgit.png)
 
 ---
 
 ## Watering Features
 
-![Watering System](screenshots/waterforgit.png)
+![Watering System](./screenshots/waterforgit.png)
 
 ---
 
 ## Profile
 
-![Profile](screenshots/profile.png)
+![Profile](./screenshots/profile.png)
 
 ---
 
 ## App Banners
 
-![Banner 1](screenshots/banner1.png)
+![Banner 1](./screenshots/banner1.png)
 
-![Banner 2](screenshots/banner2.png)
+![Banner 2](./screenshots/banner2.png)
 
 ---
 
 ## Garden Command
 
-![Garden Command](screenshots/gardencommandforgit.png)
+![Garden Command](./screenshots/gardencommandforgit.png)
 
 ---
 
