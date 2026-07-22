@@ -4,6 +4,16 @@ A mobile gardening companion designed to help people grow smarter, stay organize
 
 ---
 
+---
+
+## 📲 Download
+
+Available on the App Store:
+
+[Download Pocket Planter](https://apps.apple.com/us/app/pocket-planter-garden-planner/id6768810301)
+
+---
+
 ## 📱 About Pocket Planter
 
 Pocket Planter is a mobile application built to make gardening easier for everyone — from beginners planting their first seed to experienced gardeners managing multiple plants.
