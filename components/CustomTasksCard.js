@@ -3,6 +3,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { tapHaptic } from "../core";
+import { useTranslation } from "../lib/i18n";
+import { ChoreRotationSection } from "./ChoreRotationSection";
 
 const STORAGE_KEY = "pp_customTasks";
 const INTERVALS = [
@@ -13,6 +15,7 @@ const INTERVALS = [
 ];
 
 export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
+  const { t } = useTranslation();
   const [tasks, setTasks] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [title, setTitle] = useState("");
@@ -60,45 +63,48 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
 
   return (
     <View>
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Set your own recurring garden reminders — prune, feed, weed, turn compost — and get a nudge on schedule.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
+        {t("customTasks.setYourOwnRecurringGarden")}
       </Text>
 
       <TextInput
         value={title}
         onChangeText={setTitle}
-        placeholder="e.g. Prune tomatoes, turn compost…"
+        placeholder={t("customTasks.egPruneTomatoesTurnCompost")}
         placeholderTextColor="#8fbf9d"
-        style={{ marginTop: 14, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.15)", color: theme.text, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontWeight: "700" }}
+        style={{ marginTop: 14, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontWeight: "700" }}
       />
       <View style={{ flexDirection: "row", gap: 6, marginTop: 8 }}>
         {INTERVALS.map((iv) => {
           const active = interval === iv.days;
           return (
-            <Pressable key={iv.days} onPress={() => setIntervalDays(iv.days)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 10, backgroundColor: active ? "#5cff89" : "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255,255,255,0.1)" }}>
-              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 11.5, fontWeight: "900" }}>{iv.label}</Text>
+            <Pressable key={iv.days} onPress={() => setIntervalDays(iv.days)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}>
+              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{iv.label}</Text>
             </Pressable>
           );
         })}
       </View>
       <Pressable onPress={add} style={{ marginTop: 10, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 12, alignItems: "center" }}>
-        <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>＋ Add reminder</Text>
+        <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{t("customTasks.addReminder")}</Text>
       </Pressable>
 
       {tasks.length ? (
         <View style={{ gap: 6, marginTop: 12 }}>
           {tasks.map((task) => (
-            <View key={task.id} style={{ flexDirection: "row", alignItems: "center", gap: 9, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 12, paddingVertical: 9, paddingHorizontal: 11, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
-              <Text style={{ fontSize: 15 }}>{task.notifId ? "🔔" : "📝"}</Text>
+            <View key={task.id} style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
+              <Text style={{ fontSize: 14 }}>{task.notifId ? "🔔" : "📝"}</Text>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: theme.text, fontSize: 13.5, fontWeight: "800" }} numberOfLines={1}>{task.title}</Text>
-                <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 1 }}>Every {INTERVALS.find((i) => i.days === task.interval)?.label.toLowerCase() || `${task.interval} days`}</Text>
+                <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }} numberOfLines={1}>{task.title}</Text>
+                <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 2 }}>Every {INTERVALS.find((i) => i.days === task.interval)?.label.toLowerCase() || `${task.interval} days`}</Text>
               </View>
-              <Pressable onPress={() => remove(task)} hitSlop={8}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.deleteTask")} onPress={() => remove(task)} hitSlop={8}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
             </View>
           ))}
         </View>
       ) : null}
+
+      {/* Household chore rotation */}
+      <ChoreRotationSection theme={theme} />
     </View>
   );
 })

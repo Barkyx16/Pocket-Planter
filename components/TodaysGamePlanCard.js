@@ -2,8 +2,10 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { formatTemp, getDateKey, getSeedStartInfo, getTodayKey, getUpcomingFrost } from "../core";
+import { useTranslation } from "../lib/i18n";
 
 export const TodaysGamePlanCard = memo(function TodaysGamePlanCard({ theme, savedPlants, wateredPlants, wateringHistory, harvestTrackers, weather, zone, compatiblePlants, snoozedPlants, onOpenPlant, onScrollToWatering, unitSystem }) {
+  const { t } = useTranslation();
   const today = getTodayKey();
   const tomorrowKey = getDateKey(new Date(Date.now() + 86400000));
   const tasks = [];
@@ -72,20 +74,20 @@ export const TodaysGamePlanCard = memo(function TodaysGamePlanCard({ theme, save
   if (allDone) return null;
 
   return (
-    <View style={{ borderRadius: 26, padding: 20, marginBottom: 18, borderWidth: 1.5, backgroundColor: allDone ? "rgba(92,255,137,0.10)" : "rgba(255,255,255,0.05)", borderColor: allDone ? "#5cff89" : "rgba(255,255,255,0.12)" }}>
+    <View style={{ borderRadius: 24, padding: 20, marginBottom: 18, borderWidth: 1.5, backgroundColor: allDone ? "rgba(92, 255, 137, 0.1)" : "rgba(255, 255, 255, 0.06)", borderColor: allDone ? "#5cff89" : "rgba(255, 255, 255, 0.12)" }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: allDone ? 0 : 6 }}>
         <Text style={{ fontSize: 24 }}>{allDone ? "✅" : "📋"}</Text>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: allDone ? "#5cff89" : "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>TODAY'S GAME PLAN</Text>
-          <Text style={{ color: theme.text, fontSize: 19, fontWeight: "900", marginTop: 2 }}>
-            {allDone ? "You're all caught up! 🌿" : `${tasks.length} thing${tasks.length === 1 ? "" : "s"} to do today`}
+          <Text style={{ color: allDone ? "#5cff89" : "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>{t("todaysGamePlan.todaysGamePlan")}</Text>
+          <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900", marginTop: 2 }}>
+            {allDone ? t("todaysGamePlan.youreAllCaughtUp") : `${tasks.length} thing${tasks.length === 1 ? "" : "s"} to do today`}
           </Text>
         </View>
       </View>
 
       {allDone ? (
-        <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 20, marginTop: 8 }}>
-          Nothing urgent in the garden right now. Check back tomorrow, or browse new plants to grow.
+        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 20, marginTop: 8 }}>
+          {t("todaysGamePlan.nothingUrgentInTheGarden")}
         </Text>
       ) : (
         <View style={{ gap: 10, marginTop: 12 }}>
@@ -94,13 +96,13 @@ export const TodaysGamePlanCard = memo(function TodaysGamePlanCard({ theme, save
               key={`task-${i}`}
               onPress={task.onPress || undefined}
               disabled={!task.onPress}
-              style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: `${task.accent}30` }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: `${task.accent}30` }}
             >
               <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: `${task.accent}1a`, alignItems: "center", justifyContent: "center" }}>
                 <Text style={{ fontSize: 20 }}>{task.icon}</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900" }}>{task.title}</Text>
+                <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{task.title}</Text>
                 <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }} numberOfLines={1}>{task.detail}</Text>
               </View>
               {task.onPress ? <Text style={{ color: task.accent, fontSize: 20, fontWeight: "900" }}>›</Text> : null}

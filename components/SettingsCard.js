@@ -3,10 +3,13 @@ import { useState } from "react";
 import { Alert, Linking, Platform, Pressable, Text, View } from "react-native";
 import * as Notifications from "expo-notifications";
 import Purchases from "react-native-purchases";
+import { useTranslation } from "../lib/i18n";
 import { styles } from "../styles";
-import { hasPremiumEntitlement } from "../core";
+import { hasPremiumEntitlement, PREMIUM_FEATURES } from "../core";
+import { IconText } from "./IconText";
 
 export const SettingsCard = memo(function SettingsCard({ theme, premiumUnlocked, setPremiumUnlocked, subscriptionPlan, setSubscriptionPlan, onUnlockPremium }) {
+  const { t } = useTranslation();
  const [selectedPlan, setSelectedPlan] = useState(subscriptionPlan || "Yearly");
   const [restoring, setRestoring] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
@@ -18,12 +21,12 @@ async function restorePurchases() {
       const customerInfo = await Purchases.restorePurchases();
       if (hasPremiumEntitlement(customerInfo)) {
         onUnlockPremium(selectedPlan);
-        Alert.alert("Purchases Restored 👑", "Your premium subscription has been restored.");
+        Alert.alert(t("purchases.restoredTitle"), t("purchases.restoredBody"));
       } else {
-        Alert.alert("No Purchases Found", "We couldn't find an active subscription to restore for this account.");
+        Alert.alert(t("purchases.noneTitle"), t("purchases.noneBody"));
       }
     } catch (err) {
-      Alert.alert("Restore Failed", "Something went wrong restoring your purchases. Please try again.");
+      Alert.alert(t("purchases.restoreFailed"), t("purchases.restoreFailedBody"));
     } finally {
       setRestoring(false);
     }
@@ -37,7 +40,7 @@ async function choosePlan(plan) {
       const offerings = await Purchases.getOfferings();
       const packages = offerings?.current?.availablePackages;
       if (!packages?.length) {
-        Alert.alert("Store Unavailable", "In-app purchases are not available right now. Please try again later.");
+        Alert.alert(t("purchases.storeUnavailable"), t("purchases.storeUnavailableBody"));
         return;
       }
       const targetPackage = packages.find(pkg =>
@@ -51,25 +54,20 @@ async function choosePlan(plan) {
       }
     } catch (err) {
       if (!err.userCancelled) {
-        Alert.alert("Purchase Failed", "Something went wrong. Please try again.");
+        Alert.alert(t("purchases.purchaseFailed"), t("purchases.purchaseFailedBody"));
       }
     } finally {
       setPurchasing(false);
     }
   }
 
-  const features = [
-    { icon: "❄️", title: "Frost & Heat Alerts", text: "Get warned before dangerous temps hit your garden." },
-    { icon: "💧", title: "Smart Watering Guidance", text: "Weather-aware daily watering recommendations." },
-    { icon: "🌿", title: "Companion Intelligence", text: "Which plants thrive together — and which to keep apart." },
-    { icon: "🗺️", title: "Garden Planner Map", text: "Plan all 12 plots with live compatibility scoring." },
-    { icon: "📸", title: "Journal & Photo Timeline", text: "Document your garden's growth with dated photos." },
-    { icon: "🐛", title: "Pest Watch & Guides", text: "Spot and stop pests before they spread." },
-    { icon: "🏆", title: "XP, Levels & Achievements", text: "Earn rewards and badges for daily garden care." },
-    { icon: "⚡", title: "Daily Quests & Streaks", text: "Complete challenges and keep your streak alive." },
-    { icon: "🌱", title: "Unlimited Saved Plants", text: "Save as many plants as your garden needs." },
-    { icon: "☁️", title: "Cloud Backup & Sync", text: "Your garden saved safely across all devices." },
-  ];
+  // Rendered from the shared PREMIUM_FEATURES manifest so this list always
+  // reflects every gated feature and stays in sync with the onboarding finale.
+  const features = PREMIUM_FEATURES.map((f) => ({
+    icon: f.icon,
+    title: t(f.titleKey),
+    text: t(f.bodyKey),
+  }));
 
   return (
     <View style={{ marginBottom: 18 }}>
@@ -83,21 +81,21 @@ async function choosePlan(plan) {
           <Text style={styles.premiumCrownEmoji}>👑</Text>
         </View>
 
-        <Text style={styles.premiumHeroEyebrow}>POCKET PLANTER PREMIUM</Text>
-        <Text style={styles.premiumHeroHeadline}>Grow smarter.{"\n"}Garden better.</Text>
+        <Text style={styles.premiumHeroEyebrow}>{t("premiumCard.eyebrow")}</Text>
+        <Text style={styles.premiumHeroHeadline}>{t("premiumCard.headline")}</Text>
         <Text style={styles.premiumHeroSubtext}>
-          Everything you need to plan, track, and grow a thriving garden — all in one place.
+          {t("settings.everythingYouNeedToPlan")}
         </Text>
 
         <View style={styles.premiumHeroStatRow}>
           <View style={styles.premiumHeroStat}>
-            <Text style={styles.premiumHeroStatValue}>200+</Text>
+            <Text style={styles.premiumHeroStatValue}>600+</Text>
             <Text style={styles.premiumHeroStatLabel}>Plants</Text>
           </View>
           <View style={styles.premiumHeroStatDivider} />
           <View style={styles.premiumHeroStat}>
             <Text style={styles.premiumHeroStatValue}>12</Text>
-            <Text style={styles.premiumHeroStatLabel}>Garden Plots</Text>
+            <Text style={styles.premiumHeroStatLabel}>{t("premiumCard.gardenPlots")}</Text>
           </View>
           <View style={styles.premiumHeroStatDivider} />
           <View style={styles.premiumHeroStat}>
@@ -109,7 +107,7 @@ async function choosePlan(plan) {
 
       {/* FEATURES GRID */}
       <View style={[styles.premiumFeaturesCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-        <Text style={styles.premiumFeaturesEyebrow}>EVERYTHING INCLUDED</Text>
+        <Text style={styles.premiumFeaturesEyebrow}>{t("premiumCard.everythingIncluded")}</Text>
 
         <View style={styles.premiumFeaturesGrid}>
           {features.map((f) => (
@@ -128,9 +126,9 @@ async function choosePlan(plan) {
 
       {/* PLAN SELECTOR */}
       <View style={[styles.premiumPlanCard, { backgroundColor: theme.card, borderColor: "#5cff89" }]}>
-        <Text style={styles.premiumPlanEyebrow}>CHOOSE YOUR PLAN</Text>
+        <Text style={styles.premiumPlanEyebrow}>{t("premiumCard.choosePlan")}</Text>
         <Text style={[styles.premiumPlanSubtext, { color: theme.secondaryText }]}>
-          Choose monthly or yearly. Cancel anytime.
+          {t("premiumCard.choosePlanBody")}
         </Text>
 
         <View style={styles.premiumPlanToggleRow}>
@@ -146,12 +144,12 @@ async function choosePlan(plan) {
             },
             {
               plan: "Yearly",
-              badge: "BEST VALUE",
+              badge: t("premiumCard.bestValue"),
               badgeBg: "#ffd86b",
               badgeColor: "#3d2c00",
               price: "$24.99",
               per: "/ year",
-              savings: "Save 30%",
+              savings: t("premiumCard.savings"),
             },
           ].map(({ plan, badge, badgeBg, badgeColor, price, per, savings }) => {
             const isSelected = selectedPlan === plan;
@@ -163,9 +161,9 @@ async function choosePlan(plan) {
                   styles.premiumPlanOption,
                   {
                     backgroundColor: isSelected
-                      ? "rgba(92,255,137,0.14)"
-                      : "rgba(255,255,255,0.05)",
-                    borderColor: isSelected ? "#5cff89" : "rgba(255,255,255,0.10)",
+                      ? "rgba(92, 255, 137, 0.16)"
+                      : "rgba(255, 255, 255, 0.06)",
+                    borderColor: isSelected ? "#5cff89" : "rgba(255, 255, 255, 0.1)",
                     borderWidth: isSelected ? 2 : 1,
                   },
                 ]}
@@ -208,49 +206,53 @@ async function choosePlan(plan) {
         <Pressable
           disabled={purchasing}
           accessibilityRole="button"
-          accessibilityLabel="Subscribe to Pocket Planter Premium"
+          accessibilityLabel={t("settings.subscribeToPocketPlanterPremium")}
           accessibilityState={{ disabled: purchasing }}
           style={[styles.premiumPlanCTA, purchasing && { opacity: 0.6 }]}
           onPress={() => choosePlan(selectedPlan)}
         >
           <Text style={styles.premiumPlanCTAText}>
-           {purchasing ? "Opening…" : "Unlock Premium 🌱"}
+           {purchasing ? t("settings.opening") : t("settings.unlockPremium")}
           </Text>
         </Pressable>
 
         <Text style={styles.premiumPlanFooter}>
-          Cancel anytime • Restores on new device
+          {t("settings.cancelAnytimeRestoresOnNew")}
         </Text>
 
         {/* LEGAL LINKS */}
         <View style={{ flexDirection: "row", justifyContent: "center", gap: 16, marginTop: 10, marginBottom: 4 }}>
           <Pressable onPress={() => Linking.openURL("https://pocketplanter.green/privacy")}>
             <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "700", textDecorationLine: "underline" }}>
-              Privacy Policy
+              {t("settings.privacyPolicy")}
             </Text>
           </Pressable>
           <Text style={{ color: "#8effab", fontSize: 12 }}>•</Text>
           <Pressable onPress={() => Linking.openURL("https://pocketplanter.green/terms")}>
             <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "700", textDecorationLine: "underline" }}>
-              Terms of Use
+              {t("settings.termsOfUse")}
             </Text>
           </Pressable>
         </View>
 
-       <Pressable disabled={restoring} accessibilityRole="button" accessibilityLabel="Restore previous purchases" onPress={restorePurchases} style={{ marginTop: 14, borderRadius: 16, paddingVertical: 14, alignItems: "center", backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(92,255,137,0.22)", opacity: restoring ? 0.6 : 1 }}>
+       <Pressable disabled={restoring} accessibilityRole="button" accessibilityLabel={t("settings.restorePreviousPurchases")} onPress={restorePurchases} style={{ marginTop: 14, borderRadius: 16, paddingVertical: 14, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)", opacity: restoring ? 0.6 : 1 }}>
           <Text style={{ color: "#8effab", fontSize: 14, fontWeight: "900" }}>
-            {restoring ? "Restoring…" : "↩️ Restore Purchases"}
+            {restoring ? t("settings.restoring") : t("settings.restorePurchases")}
           </Text>
         </Pressable>
 
         {premiumUnlocked ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Manage or cancel your subscription"
+            accessibilityLabel={t("settings.manageOrCancelYourSubscription")}
             onPress={() => Linking.openURL(Platform.OS === "android" ? "https://play.google.com/store/account/subscriptions" : "https://apps.apple.com/account/subscriptions")}
-            style={{ marginTop: 10, borderRadius: 16, paddingVertical: 14, alignItems: "center", backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.14)" }}
+            style={{ marginTop: 10, borderRadius: 16, paddingVertical: 14, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.16)" }}
           >
-            <Text style={{ color: "#d7ebdc", fontSize: 14, fontWeight: "900" }}>⚙️ Manage or Cancel Subscription</Text>
+            <IconText label={t("settings.manageOrCancelSubscription")} style={{
+  color: "#d7ebdc",
+  fontSize: 14,
+  fontWeight: "900"
+}} />
           </Pressable>
         ) : null}
       </View>
@@ -259,9 +261,9 @@ async function choosePlan(plan) {
       <View style={[styles.premiumTrustRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
         {[
           { icon: "🔒", label: "Secure" },
-          { icon: "↩️", label: "Cancel anytime" },
+          { icon: "↩️", label: t("settings.cancelAnytime") },
           { icon: "📱", label: "iOS" },
-          { icon: "☁️", label: "Cloud sync" },
+          { icon: "☁️", label: t("settings.cloudSync") },
         ].map((t) => (
           <View key={t.label} style={styles.premiumTrustTile}>
             <Text style={styles.premiumTrustIcon}>{t.icon}</Text>
@@ -274,8 +276,8 @@ async function choosePlan(plan) {
      {__DEV__ ? (
   <View style={styles.premiumDevSection}>
     <View style={styles.premiumDevSectionHeader}>
-      <Text style={styles.premiumDevSectionLabel}>🛠 DEVELOPER TOOLS</Text>
-      <Text style={styles.premiumDevSectionSub}>Remove before App Store submission</Text>
+      <IconText label={t("settings.developerTools")} style={styles.premiumDevSectionLabel} />
+      <Text style={styles.premiumDevSectionSub}>{t("settings.removeBeforeAppStoreSubmission")}</Text>
     </View>
 
   <Pressable
@@ -296,9 +298,9 @@ async function choosePlan(plan) {
     >
       <Text style={styles.premiumDevButtonIcon}>🔔</Text>
       <View style={{ flex: 1 }}>
-        <Text style={styles.premiumDevButtonText}>Dump Scheduled Reminders</Text>
+        <Text style={styles.premiumDevButtonText}>{t("settings.dumpScheduledReminders")}</Text>
         <Text style={styles.premiumDevButtonSub}>
-          Logs every scheduled notification + trigger to console
+          {t("settings.logsEveryScheduledNotificationTrigger")}
         </Text>
       </View>
     </Pressable>
@@ -322,9 +324,9 @@ async function choosePlan(plan) {
     >
       <Text style={styles.premiumDevButtonIcon}>⏱️</Text>
       <View style={{ flex: 1 }}>
-        <Text style={styles.premiumDevButtonText}>Fire Test Notification (5s)</Text>
+        <Text style={styles.premiumDevButtonText}>{t("settings.fireTestNotification5s")}</Text>
         <Text style={styles.premiumDevButtonSub}>
-          Verifies the full pipeline — background the app to see it appear
+          {t("settings.verifiesTheFullPipelineBackground")}
         </Text>
       </View>
     </Pressable>
@@ -341,9 +343,9 @@ async function choosePlan(plan) {
     >
       <Text style={styles.premiumDevButtonIcon}>🗑</Text>
       <View style={{ flex: 1 }}>
-        <Text style={styles.premiumDevButtonText}>Clear All Scheduled</Text>
+        <Text style={styles.premiumDevButtonText}>{t("settings.clearAllScheduled")}</Text>
         <Text style={styles.premiumDevButtonSub}>
-          One-time flush to remove orphaned legacy reminders
+          {t("settings.onetimeFlushToRemoveOrphaned")}
         </Text>
       </View>
     </Pressable>
@@ -368,15 +370,15 @@ async function choosePlan(plan) {
       </Text>
       <View style={{ flex: 1 }}>
         <Text style={styles.premiumDevButtonText}>
-          {premiumUnlocked ? "Premium ON — Tap to disable" : "Unlock Full App (Dev)"}
+          {premiumUnlocked ? t("settings.premiumOnTapToDisable") : t("settings.unlockFullAppDev")}
         </Text>
         <Text style={styles.premiumDevButtonSub}>
-          Toggles all premium locks on and off
+          {t("settings.togglesAllPremiumLocksOn")}
         </Text>
       </View>
       <View style={[
         styles.premiumDevTogglePill,
-        { backgroundColor: premiumUnlocked ? "#5cff89" : "rgba(255,255,255,0.10)" }
+        { backgroundColor: premiumUnlocked ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }
       ]}>
         <Text style={[
           styles.premiumDevToggleText,

@@ -1,8 +1,10 @@
 import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
+import { isReducedMotion } from "../lib/motion";
 
 export const ConfettiBurst = memo(function ConfettiBurst() {
+  if (isReducedMotion()) return null;
   const pieces = [
     "🎉",
     "🌱",

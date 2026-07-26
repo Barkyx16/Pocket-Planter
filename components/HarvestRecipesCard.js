@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Image, Linking, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { resolvePlantImageSource } from "../core";
+import { useTranslation } from "../lib/i18n";
 
 const imgFor = (name) => {
   const item = produceData.find((p) => p.name === name);
@@ -33,6 +34,7 @@ const recipeFor = (name) => {
 };
 
 export const HarvestRecipesCard = memo(function HarvestRecipesCard({ theme, savedPlants, harvestLog }) {
+  const { t } = useTranslation();
   // Prefer what you've actually harvested; fall back to what you're growing.
   const harvestedNames = Array.from(new Set((harvestLog || []).map((e) => e.plantName).filter(Boolean)));
   const source = harvestedNames.length ? harvestedNames : (savedPlants || []);
@@ -46,26 +48,26 @@ export const HarvestRecipesCard = memo(function HarvestRecipesCard({ theme, save
 
   if (!matched.length) {
     return (
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Save or harvest a few edible crops and this card will suggest simple ways to cook and enjoy them.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
+        {t("harvestRecipes.saveOrHarvestAFew")}
       </Text>
     );
   }
 
   return (
     <View>
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Fresh from your garden — quick ideas for what you're {harvestedNames.length ? "harvesting" : "growing"}. Tap to find recipes.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
+        {t("harvestRecipes.freshFromYourGardenQuick")} {harvestedNames.length ? "harvesting" : "growing"}{t("harvestRecipes.tapToFindRecipes")}
       </Text>
 
       <View style={{ gap: 8, marginTop: 14 }}>
         {matched.slice(0, 8).map(({ name, r }) => {
           const img = imgFor(name);
           return (
-          <View key={name} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 14, padding: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 9, marginBottom: 8 }}>
+          <View key={name} style={{ backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 8 }}>
               {img ? (
-                <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                <View style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                   <Image source={img} style={{ width: 30, height: 30 }} resizeMode="contain" />
                 </View>
               ) : (
@@ -73,16 +75,16 @@ export const HarvestRecipesCard = memo(function HarvestRecipesCard({ theme, save
               )}
               <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900", flex: 1 }}>{name}</Text>
               <Pressable
-                onPress={() => Linking.openURL(`https://www.google.com/search?q=${encodeURIComponent(name + " recipes easy")}`)}
-                style={{ backgroundColor: "rgba(255,216,107,0.12)", borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderColor: "rgba(255,216,107,0.25)" }}
+                onPress={() => Linking.openURL(`https://www.google.com/search?q=${encodeURIComponent(name + t("harvestRecipes.recipesEasy"))}`)}
+                style={{ backgroundColor: "rgba(255, 216, 107, 0.12)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderColor: "rgba(255, 216, 107, 0.24)" }}
               >
-                <Text style={{ color: "#ffd86b", fontSize: 11.5, fontWeight: "900" }}>Recipes ›</Text>
+                <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900" }}>{t("harvestRecipes.recipes")}</Text>
               </Pressable>
             </View>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
               {r.ideas.map((idea) => (
-                <View key={idea} style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }}>
-                  <Text style={{ color: theme.secondaryText, fontSize: 11.5, fontWeight: "700" }}>{idea}</Text>
+                <View key={idea} style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 }}>
+                  <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>{idea}</Text>
                 </View>
               ))}
             </View>

@@ -3,8 +3,11 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { getNextWaterInfo } from "../core";
+import { IconText } from "./IconText";
+import { formatDate, useTranslation } from "../lib/i18n";
 
 export const WateringForecastCard = memo(function WateringForecastCard({ theme, savedPlants, wateringHistory, wateredPlants, weather, onOpenPlant }) {
+  const { t } = useTranslation();
   // Default to today so the useful info is visible without a tap.
   const [selectedDay, setSelectedDay] = useState(0);
 
@@ -32,7 +35,9 @@ export const WateringForecastCard = memo(function WateringForecastCard({ theme, 
 
   const maxCount = Math.max(1, ...days.map((d) => d.plants.length));
   const weekdayFmt = (date, offset) =>
-    offset === 0 ? "Today" : offset === 1 ? "Tmrw" : date.toLocaleDateString(undefined, { weekday: "short" });
+    offset === 0 ? "Today" : offset === 1 ? "Tmrw" : formatDate(date, {
+  weekday: "short"
+});
 
   const active = selectedDay != null ? days[selectedDay] : null;
 
@@ -52,23 +57,26 @@ return (
     <View>
 
       {savedItems.length === 0 ? (
-        <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", marginTop: 8 }}>
-          Save a few plants to see your watering week take shape.
+        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 8 }}>
+          {t("wateringForecast.saveAFewPlantsTo")}
         </Text>
       ) : (
         <>
           {/* SUMMARY HEADLINE */}
-          <View style={{ marginTop: 8, backgroundColor: dueToday > 0 ? "rgba(107,199,255,0.10)" : "rgba(92,255,137,0.10)", borderRadius: 14, padding: 12, borderWidth: 1, borderColor: dueToday > 0 ? "rgba(107,199,255,0.28)" : "rgba(92,255,137,0.28)" }}>
+          <View style={{ marginTop: 8, backgroundColor: dueToday > 0 ? "rgba(107, 199, 255, 0.1)" : "rgba(92, 255, 137, 0.1)", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: dueToday > 0 ? "rgba(107, 199, 255, 0.3)" : "rgba(92, 255, 137, 0.3)" }}>
             <Text style={{ color: dueToday > 0 ? "#6bc7ff" : "#5cff89", fontSize: 14, fontWeight: "900" }}>{headline}</Text>
             {busiest.plants.length > 1 && busiest.offset !== 0 ? (
               <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4 }}>
-                📅 Busiest day: {weekdayFmt(busiest.date, busiest.offset)} ({busiest.plants.length} plants)
+                {t("wateringForecast.busiestDay")} {weekdayFmt(busiest.date, busiest.offset)} ({busiest.plants.length} {t("wateringForecast.plants")}
               </Text>
             ) : null}
             {rainSoon && dueToday > 0 ? (
-              <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "700", marginTop: 4 }}>
-                🌧️ Rain expected soon — check soil first, you may be able to skip.
-              </Text>
+              <IconText label={t("wateringForecast.rainExpectedSoonCheckSoil")} style={{
+  color: "#8effab",
+  fontSize: 12,
+  fontWeight: "700",
+  marginTop: 4
+}} />
             ) : null}
           </View>
 
@@ -84,7 +92,7 @@ return (
                   onPress={() => setSelectedDay(isSel ? null : d.offset)}
                   accessibilityRole="button"
                   accessibilityLabel={`${weekdayFmt(d.date, d.offset)}: ${count} plant${count === 1 ? "" : "s"} due`}
-                  style={{ flex: 1, alignItems: "center", borderRadius: 14, paddingVertical: 10, backgroundColor: `rgba(107,199,255,${intensity})`, borderWidth: isSel ? 2 : 1, borderColor: isSel ? "#6bc7ff" : isToday ? "rgba(107,199,255,0.4)" : "rgba(255,255,255,0.08)" }}
+                  style={{ flex: 1, alignItems: "center", borderRadius: 12, paddingVertical: 10, backgroundColor: `rgba(107,199,255,${intensity})`, borderWidth: isSel ? 2 : 1, borderColor: isSel ? "#6bc7ff" : isToday ? "rgba(107, 199, 255, 0.4)" : "rgba(255, 255, 255, 0.08)" }}
                 >
                   <Text style={{ color: isToday ? "#6bc7ff" : theme.secondaryText, fontSize: 10, fontWeight: "800" }}>{weekdayFmt(d.date, d.offset)}</Text>
                   <Text style={{ color: count === 0 ? theme.secondaryText : "#ffffff", fontSize: 18, fontWeight: "900", marginTop: 4 }}>{count}</Text>
@@ -95,12 +103,12 @@ return (
           </View>
 
           {active ? (
-            <View style={{ marginTop: 14, backgroundColor: "rgba(107,199,255,0.08)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(107,199,255,0.2)" }}>
+            <View style={{ marginTop: 14, backgroundColor: "rgba(107, 199, 255, 0.08)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.2)" }}>
               <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: active.plants.length ? 10 : 0 }}>
                 {weekdayFmt(active.date, active.offset).toUpperCase()} · {active.plants.length} DUE
               </Text>
               {active.plants.length === 0 ? (
-                <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700" }}>Nothing due — a free day. 🌤️</Text>
+                <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>{t("wateringForecast.nothingDueAFreeDay")}</Text>
               ) : (
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                   {active.plants.map((p) => (
@@ -110,9 +118,9 @@ return (
                         const item = produceData.find((pd) => pd.name === p.name);
                         if (item && onOpenPlant) onOpenPlant(item);
                       }}
-                      style={{ backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" }}
+                      style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.1)" }}
                     >
-                      <Text style={{ color: "#ffffff", fontSize: 13, fontWeight: "800" }}>{p.rainSoon ? "🌧️ " : ""}{p.name} ›</Text>
+                      <Text style={{ color: "#ffffff", fontSize: 12, fontWeight: "800" }}>{p.rainSoon ? "🌧️ " : ""}{p.name} ›</Text>
                     </Pressable>
                   ))}
                 </View>
@@ -120,13 +128,13 @@ return (
             </View>
           ) : (
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 12, textAlign: "center" }}>
-              Tap a day to see which plants are due.
+              {t("wateringForecast.tapADayToSee")}
             </Text>
           )}
 
           {untrackedCount > 0 ? (
-            <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 12, fontStyle: "italic" }}>
-              {untrackedCount} plant{untrackedCount === 1 ? "" : "s"} not shown — water once to start forecasting.
+            <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 12, fontStyle: "italic" }}>
+              {untrackedCount} plant{untrackedCount === 1 ? "" : "s"} {t("wateringForecast.notShownWaterOnceTo")}
             </Text>
           ) : null}
         </>

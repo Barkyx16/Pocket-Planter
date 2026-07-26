@@ -4,6 +4,10 @@ import * as Haptics from "expo-haptics";
 import * as StoreReview from "expo-store-review";
 import produceData from "./data/produceData";
 import zipZoneData from "./data/zipZoneData";
+import { PLANT_DETAILS } from "./data/plantDetails";
+import { PLANT_HEALTH } from "./data/plantHealth";
+import { DISEASE_LIBRARY } from "./data/diseaseData";
+import { formatDate } from "./lib/i18n";
 
 export const loadingScreenImage = require("./assets/loading-screen.png");
 
@@ -208,6 +212,438 @@ export const plantImages = {
   aronia: require("./assets/plants/aronia.png"),
   gojiberry: require("./assets/plants/gojiberry.png"),
   barberry: require("./assets/plants/barberry.png"),
+  ackee: require("./assets/plants/ackee.png"),
+  adzukibean: require("./assets/plants/adzukibean.png"),
+  agapanthus: require("./assets/plants/agapanthus.png"),
+  agave: require("./assets/plants/agave.png"),
+  almond: require("./assets/plants/almond.png"),
+  alocasia: require("./assets/plants/alocasia.png"),
+  aloevera: require("./assets/plants/aloevera.png"),
+  amaranth: require("./assets/plants/amaranth.png"),
+  amaryllis: require("./assets/plants/amaryllis.png"),
+  anaheimpepper: require("./assets/plants/anaheimpepper.png"),
+  anemone: require("./assets/plants/anemone.png"),
+  arecapalm: require("./assets/plants/arecapalm.png"),
+  arrowroot: require("./assets/plants/arrowroot.png"),
+  ashgourd: require("./assets/plants/ashgourd.png"),
+  aster: require("./assets/plants/aster.png"),
+  atemoya: require("./assets/plants/atemoya.png"),
+  barley: require("./assets/plants/barley.png"),
+  baytree: require("./assets/plants/baytree.png"),
+  beebalm: require("./assets/plants/beebalm.png"),
+  beefsteaktomato: require("./assets/plants/beefsteaktomato.png"),
+  bilberry: require("./assets/plants/bilberry.png"),
+  birdofparadise: require("./assets/plants/birdofparadise.png"),
+  birdsnestfern: require("./assets/plants/birdsnestfern.png"),
+  blackcurrant: require("./assets/plants/blackcurrant.png"),
+  blackeyedpea: require("./assets/plants/blackeyedpea.png"),
+  blackeyedsusan: require("./assets/plants/blackeyedsusan.png"),
+  blacksapote: require("./assets/plants/blacksapote.png"),
+  bostonfern: require("./assets/plants/bostonfern.png"),
+  bottlegourd: require("./assets/plants/bottlegourd.png"),
+  boysenthorn: require("./assets/plants/boysenthorn.png"),
+  breadfruit: require("./assets/plants/breadfruit.png"),
+  buckwheat: require("./assets/plants/buckwheat.png"),
+  buddhashand: require("./assets/plants/buddhashand.png"),
+  burrostail: require("./assets/plants/burrostail.png"),
+  calamondin: require("./assets/plants/calamondin.png"),
+  calathea: require("./assets/plants/calathea.png"),
+  calendula: require("./assets/plants/calendula.png"),
+  camellia: require("./assets/plants/camellia.png"),
+  canistel: require("./assets/plants/canistel.png"),
+  cannellinibean: require("./assets/plants/cannellinibean.png"),
+  cardoon: require("./assets/plants/cardoon.png"),
+  cashew: require("./assets/plants/cashew.png"),
+  cassava: require("./assets/plants/cassava.png"),
+  celtuce: require("./assets/plants/celtuce.png"),
+  chayote: require("./assets/plants/chayote.png"),
+  cherrytomato: require("./assets/plants/cherrytomato.png"),
+  chestnut: require("./assets/plants/chestnut.png"),
+  chineseevergreen: require("./assets/plants/chineseevergreen.png"),
+  chineseyam: require("./assets/plants/chineseyam.png"),
+  christmascactus: require("./assets/plants/christmascactus.png"),
+  cloudberry: require("./assets/plants/cloudberry.png"),
+  coleus: require("./assets/plants/coleus.png"),
+  coneflower: require("./assets/plants/coneflower.png"),
+  coreopsis: require("./assets/plants/coreopsis.png"),
+  cosmos: require("./assets/plants/cosmos.png"),
+  cowpea: require("./assets/plants/cowpea.png"),
+  crocus: require("./assets/plants/crocus.png"),
+  cubanellepepper: require("./assets/plants/cubanellepepper.png"),
+  culantro: require("./assets/plants/culantro.png"),
+  curryleaf: require("./assets/plants/curryleaf.png"),
+  custardapple: require("./assets/plants/custardapple.png"),
+  cyclamen: require("./assets/plants/cyclamen.png"),
+  daffodil: require("./assets/plants/daffodil.png"),
+  dahlia: require("./assets/plants/dahlia.png"),
+  delphinium: require("./assets/plants/delphinium.png"),
+  dewberry: require("./assets/plants/dewberry.png"),
+  dieffenbachia: require("./assets/plants/dieffenbachia.png"),
+  durian: require("./assets/plants/durian.png"),
+  echeveria: require("./assets/plants/echeveria.png"),
+  elderberryblack: require("./assets/plants/elderberryblack.png"),
+  elephantear: require("./assets/plants/elephantear.png"),
+  epazote: require("./assets/plants/epazote.png"),
+  fern: require("./assets/plants/fern.png"),
+  fiddleleaffig: require("./assets/plants/fiddleleaffig.png"),
+  fingerlime: require("./assets/plants/fingerlime.png"),
+  foxglove: require("./assets/plants/foxglove.png"),
+  freesia: require("./assets/plants/freesia.png"),
+  fuchsia: require("./assets/plants/fuchsia.png"),
+  gailan: require("./assets/plants/gailan.png"),
+  gaillardia: require("./assets/plants/gaillardia.png"),
+  gardenia: require("./assets/plants/gardenia.png"),
+  geranium: require("./assets/plants/geranium.png"),
+  gladiolus: require("./assets/plants/gladiolus.png"),
+  haskap: require("./assets/plants/haskap.png"),
+  hazelnut: require("./assets/plants/hazelnut.png"),
+  heirloomtomato: require("./assets/plants/heirloomtomato.png"),
+  hellebore: require("./assets/plants/hellebore.png"),
+  hensandchicks: require("./assets/plants/hensandchicks.png"),
+  hibiscus: require("./assets/plants/hibiscus.png"),
+  hollyhock: require("./assets/plants/hollyhock.png"),
+  hosta: require("./assets/plants/hosta.png"),
+  hyacinth: require("./assets/plants/hyacinth.png"),
+  hydrangea: require("./assets/plants/hydrangea.png"),
+  impatiens: require("./assets/plants/impatiens.png"),
+  iris: require("./assets/plants/iris.png"),
+  jabuticaba: require("./assets/plants/jabuticaba.png"),
+  jadeplant: require("./assets/plants/jadeplant.png"),
+  jasmine: require("./assets/plants/jasmine.png"),
+  juneplum: require("./assets/plants/juneplum.png"),
+  kangkong: require("./assets/plants/kangkong.png"),
+  kentiapalm: require("./assets/plants/kentiapalm.png"),
+  keylime: require("./assets/plants/keylime.png"),
+  kidneybean: require("./assets/plants/kidneybean.png"),
+  komatsuna: require("./assets/plants/komatsuna.png"),
+  larkspur: require("./assets/plants/larkspur.png"),
+  lavatera: require("./assets/plants/lavatera.png"),
+  lemonbalm: require("./assets/plants/lemonbalm.png"),
+  lilac: require("./assets/plants/lilac.png"),
+  lily: require("./assets/plants/lily.png"),
+  lobella: require("./assets/plants/lobella.png"),
+  longkong: require("./assets/plants/longkong.png"),
+  lotusroot: require("./assets/plants/lotusroot.png"),
+  lupin: require("./assets/plants/lupin.png"),
+  lupineflower: require("./assets/plants/lupineflower.png"),
+  macadamia: require("./assets/plants/macadamia.png"),
+  maidenhairfern: require("./assets/plants/maidenhairfern.png"),
+  malabarspinach: require("./assets/plants/malabarspinach.png"),
+  mangosteen: require("./assets/plants/mangosteen.png"),
+  meyerlemon: require("./assets/plants/meyerlemon.png"),
+  millet: require("./assets/plants/millet.png"),
+  miraclefruit: require("./assets/plants/miraclefruit.png"),
+  mizuna: require("./assets/plants/mizuna.png"),
+  monstera: require("./assets/plants/monstera.png"),
+  moringa: require("./assets/plants/moringa.png"),
+  mulberryred: require("./assets/plants/mulberryred.png"),
+  mulberrywhite: require("./assets/plants/mulberrywhite.png"),
+  mungbean: require("./assets/plants/mungbean.png"),
+  mustardspinach: require("./assets/plants/mustardspinach.png"),
+  nasturtium: require("./assets/plants/nasturtium.png"),
+  navybean: require("./assets/plants/navybean.png"),
+  newzealandspinach: require("./assets/plants/newzealandspinach.png"),
+  oats: require("./assets/plants/oats.png"),
+  okrared: require("./assets/plants/okrared.png"),
+  orchid: require("./assets/plants/orchid.png"),
+  pansy: require("./assets/plants/pansy.png"),
+  parlorpalm: require("./assets/plants/parlorpalm.png"),
+  pecan: require("./assets/plants/pecan.png"),
+  peony: require("./assets/plants/peony.png"),
+  peppermint: require("./assets/plants/peppermint.png"),
+  petunia: require("./assets/plants/petunia.png"),
+  philodendron: require("./assets/plants/philodendron.png"),
+  phlox: require("./assets/plants/phlox.png"),
+  pigeonpea: require("./assets/plants/pigeonpea.png"),
+  pimentopepper: require("./assets/plants/pimentopepper.png"),
+  pistachio: require("./assets/plants/pistachio.png"),
+  pomelo: require("./assets/plants/pomelo.png"),
+  pothos: require("./assets/plants/pothos.png"),
+  prayerplant: require("./assets/plants/prayerplant.png"),
+  purslane: require("./assets/plants/purslane.png"),
+  quinoa: require("./assets/plants/quinoa.png"),
+  ranunculus: require("./assets/plants/ranunculus.png"),
+  redcurrant: require("./assets/plants/redcurrant.png"),
+  rice: require("./assets/plants/rice.png"),
+  ridgegourd: require("./assets/plants/ridgegourd.png"),
+  romanesco: require("./assets/plants/romanesco.png"),
+  romatomato: require("./assets/plants/romatomato.png"),
+  rose: require("./assets/plants/rose.png"),
+  roseapple: require("./assets/plants/roseapple.png"),
+  rye: require("./assets/plants/rye.png"),
+  sanmarzanotomato: require("./assets/plants/sanmarzanotomato.png"),
+  santol: require("./assets/plants/santol.png"),
+  scabiosa: require("./assets/plants/scabiosa.png"),
+  scotchbonnetpepper: require("./assets/plants/scotchbonnetpepper.png"),
+  seabuckthorn: require("./assets/plants/seabuckthorn.png"),
+  sedum: require("./assets/plants/sedum.png"),
+  shishitopepper: require("./assets/plants/shishitopepper.png"),
+  shiso: require("./assets/plants/shiso.png"),
+  snakefruit: require("./assets/plants/snakefruit.png"),
+  snakegourd: require("./assets/plants/snakegourd.png"),
+  snakeplant: require("./assets/plants/snakeplant.png"),
+  snapdragon: require("./assets/plants/snapdragon.png"),
+  sorghum: require("./assets/plants/sorghum.png"),
+  soursop: require("./assets/plants/soursop.png"),
+  spearmint: require("./assets/plants/spearmint.png"),
+  spiderplant: require("./assets/plants/spiderplant.png"),
+  starapple: require("./assets/plants/starapple.png"),
+  stock: require("./assets/plants/stock.png"),
+  stringofpearls: require("./assets/plants/stringofpearls.png"),
+  sudachi: require("./assets/plants/sudachi.png"),
+  sugarapple: require("./assets/plants/sugarapple.png"),
+  sunflower: require("./assets/plants/sunflower.png"),
+  sweetalyssum: require("./assets/plants/sweetalyssum.png"),
+  sweetpea: require("./assets/plants/sweetpea.png"),
+  taro: require("./assets/plants/taro.png"),
+  tatsoi: require("./assets/plants/tatsoi.png"),
+  thaichilipepper: require("./assets/plants/thaichilipepper.png"),
+  tulip: require("./assets/plants/tulip.png"),
+  tulsi: require("./assets/plants/tulsi.png"),
+  verbena: require("./assets/plants/verbena.png"),
+  vietnamesecoriander: require("./assets/plants/vietnamesecoriander.png"),
+  viola: require("./assets/plants/viola.png"),
+  walnut: require("./assets/plants/walnut.png"),
+  wasabi: require("./assets/plants/wasabi.png"),
+  waterchestnut: require("./assets/plants/waterchestnut.png"),
+  waxapple: require("./assets/plants/waxapple.png"),
+  wheat: require("./assets/plants/wheat.png"),
+  whitecurrant: require("./assets/plants/whitecurrant.png"),
+  whitesapote: require("./assets/plants/whitesapote.png"),
+  wineberry: require("./assets/plants/wineberry.png"),
+  wintersavory: require("./assets/plants/wintersavory.png"),
+  yam: require("./assets/plants/yam.png"),
+  yarrow: require("./assets/plants/yarrow.png"),
+  yucca: require("./assets/plants/yucca.png"),
+  zinnia: require("./assets/plants/zinnia.png"),
+  zzplant: require("./assets/plants/zzplant.png"),
+  snowpea: require("./assets/plants/snowpea.png"),
+  yardlongbean: require("./assets/plants/yardlongbean.png"),
+  wingedbean: require("./assets/plants/wingedbean.png"),
+  clusterbean: require("./assets/plants/clusterbean.png"),
+  ivygourd: require("./assets/plants/ivygourd.png"),
+  pointedgourd: require("./assets/plants/pointedgourd.png"),
+  broccolirabe: require("./assets/plants/broccolirabe.png"),
+  broccolini: require("./assets/plants/broccolini.png"),
+  choysum: require("./assets/plants/choysum.png"),
+  yuchoy: require("./assets/plants/yuchoy.png"),
+  molokhia: require("./assets/plants/molokhia.png"),
+  roselle: require("./assets/plants/roselle.png"),
+  chinesecelery: require("./assets/plants/chinesecelery.png"),
+  garlicchives: require("./assets/plants/garlicchives.png"),
+  bambooshoot: require("./assets/plants/bambooshoot.png"),
+  nopal: require("./assets/plants/nopal.png"),
+  samphire: require("./assets/plants/samphire.png"),
+  dandeliongreens: require("./assets/plants/dandeliongreens.png"),
+  plantain: require("./assets/plants/plantain.png"),
+  sugarbeet: require("./assets/plants/sugarbeet.png"),
+  carolinareaper: require("./assets/plants/carolinareaper.png"),
+  birdseyechili: require("./assets/plants/birdseyechili.png"),
+  padronpepper: require("./assets/plants/padronpepper.png"),
+  fresnopepper: require("./assets/plants/fresnopepper.png"),
+  hungarianwax: require("./assets/plants/hungarianwax.png"),
+  ajiamarillo: require("./assets/plants/ajiamarillo.png"),
+  cherimoya: require("./assets/plants/cherimoya.png"),
+  sapodilla: require("./assets/plants/sapodilla.png"),
+  mameysapote: require("./assets/plants/mameysapote.png"),
+  jujube: require("./assets/plants/jujube.png"),
+  tamarillo: require("./assets/plants/tamarillo.png"),
+  naranjilla: require("./assets/plants/naranjilla.png"),
+  acerola: require("./assets/plants/acerola.png"),
+  surinamcherry: require("./assets/plants/surinamcherry.png"),
+  bilimbi: require("./assets/plants/bilimbi.png"),
+  bael: require("./assets/plants/bael.png"),
+  jamun: require("./assets/plants/jamun.png"),
+  mamoncillo: require("./assets/plants/mamoncillo.png"),
+  pawpaw: require("./assets/plants/pawpaw.png"),
+  jostaberry: require("./assets/plants/jostaberry.png"),
+  loganberry: require("./assets/plants/loganberry.png"),
+  hardykiwi: require("./assets/plants/hardykiwi.png"),
+  concordgrape: require("./assets/plants/concordgrape.png"),
+  corneliancherry: require("./assets/plants/corneliancherry.png"),
+  medlar: require("./assets/plants/medlar.png"),
+  sweetlime: require("./assets/plants/sweetlime.png"),
+  uglifruit: require("./assets/plants/uglifruit.png"),
+  seagrape: require("./assets/plants/seagrape.png"),
+  gacfruit: require("./assets/plants/gacfruit.png"),
+  noni: require("./assets/plants/noni.png"),
+  cupuacu: require("./assets/plants/cupuacu.png"),
+  abiu: require("./assets/plants/abiu.png"),
+  rollinia: require("./assets/plants/rollinia.png"),
+  chempedak: require("./assets/plants/chempedak.png"),
+  marang: require("./assets/plants/marang.png"),
+  pulasan: require("./assets/plants/pulasan.png"),
+  che: require("./assets/plants/che.png"),
+  cardamom: require("./assets/plants/cardamom.png"),
+  vanilla: require("./assets/plants/vanilla.png"),
+  saffron: require("./assets/plants/saffron.png"),
+  galangal: require("./assets/plants/galangal.png"),
+  kaffirlime: require("./assets/plants/kaffirlime.png"),
+  lemonverbena: require("./assets/plants/lemonverbena.png"),
+  pandan: require("./assets/plants/pandan.png"),
+  sichuanpepper: require("./assets/plants/sichuanpepper.png"),
+  cinnamon: require("./assets/plants/cinnamon.png"),
+  clove: require("./assets/plants/clove.png"),
+  nutmeg: require("./assets/plants/nutmeg.png"),
+  allspice: require("./assets/plants/allspice.png"),
+  fenugreek: require("./assets/plants/fenugreek.png"),
+  comfrey: require("./assets/plants/comfrey.png"),
+  valerian: require("./assets/plants/valerian.png"),
+  ashwagandha: require("./assets/plants/ashwagandha.png"),
+  gotukola: require("./assets/plants/gotukola.png"),
+  rue: require("./assets/plants/rue.png"),
+  hyssop: require("./assets/plants/hyssop.png"),
+  angelica: require("./assets/plants/angelica.png"),
+  feverfew: require("./assets/plants/feverfew.png"),
+  wormwood: require("./assets/plants/wormwood.png"),
+  curryplant: require("./assets/plants/curryplant.png"),
+  spelt: require("./assets/plants/spelt.png"),
+  teff: require("./assets/plants/teff.png"),
+  farro: require("./assets/plants/farro.png"),
+  wildrice: require("./assets/plants/wildrice.png"),
+  triticale: require("./assets/plants/triticale.png"),
+  jobstears: require("./assets/plants/jobstears.png"),
+  popcorn: require("./assets/plants/popcorn.png"),
+  peanut: require("./assets/plants/peanut.png"),
+  soybean: require("./assets/plants/soybean.png"),
+  brazilnut: require("./assets/plants/brazilnut.png"),
+  pinenut: require("./assets/plants/pinenut.png"),
+  ginkgo: require("./assets/plants/ginkgo.png"),
+  carob: require("./assets/plants/carob.png"),
+  kolanut: require("./assets/plants/kolanut.png"),
+  blackwalnut: require("./assets/plants/blackwalnut.png"),
+  chrysanthemum: require("./assets/plants/chrysanthemum.png"),
+  carnation: require("./assets/plants/carnation.png"),
+  gerberadaisy: require("./assets/plants/gerberadaisy.png"),
+  shastadaisy: require("./assets/plants/shastadaisy.png"),
+  poppy: require("./assets/plants/poppy.png"),
+  begonia: require("./assets/plants/begonia.png"),
+  primrose: require("./assets/plants/primrose.png"),
+  poinsettia: require("./assets/plants/poinsettia.png"),
+  bougainvillea: require("./assets/plants/bougainvillea.png"),
+  wisteria: require("./assets/plants/wisteria.png"),
+  clematis: require("./assets/plants/clematis.png"),
+  morningglory: require("./assets/plants/morningglory.png"),
+  moonflower: require("./assets/plants/moonflower.png"),
+  nigella: require("./assets/plants/nigella.png"),
+  statice: require("./assets/plants/statice.png"),
+  strawflower: require("./assets/plants/strawflower.png"),
+  gomphrena: require("./assets/plants/gomphrena.png"),
+  celosia: require("./assets/plants/celosia.png"),
+  sweetwilliam: require("./assets/plants/sweetwilliam.png"),
+  cornflower: require("./assets/plants/cornflower.png"),
+  babysbreath: require("./assets/plants/babysbreath.png"),
+  callalily: require("./assets/plants/callalily.png"),
+  cannalily: require("./assets/plants/cannalily.png"),
+  lilyofthevalley: require("./assets/plants/lilyofthevalley.png"),
+  forgetmenot: require("./assets/plants/forgetmenot.png"),
+  columbine: require("./assets/plants/columbine.png"),
+  bleedingheart: require("./assets/plants/bleedingheart.png"),
+  astilbe: require("./assets/plants/astilbe.png"),
+  snowdrop: require("./assets/plants/snowdrop.png"),
+  bluebell: require("./assets/plants/bluebell.png"),
+  portulaca: require("./assets/plants/portulaca.png"),
+  vinca: require("./assets/plants/vinca.png"),
+  osteospermum: require("./assets/plants/osteospermum.png"),
+  protea: require("./assets/plants/protea.png"),
+  passionflower: require("./assets/plants/passionflower.png"),
+  buddleia: require("./assets/plants/buddleia.png"),
+  azalea: require("./assets/plants/azalea.png"),
+  rhododendron: require("./assets/plants/rhododendron.png"),
+  magnolia: require("./assets/plants/magnolia.png"),
+  plumeria: require("./assets/plants/plumeria.png"),
+  cherryblossom: require("./assets/plants/cherryblossom.png"),
+  rubberplant: require("./assets/plants/rubberplant.png"),
+  peacelily: require("./assets/plants/peacelily.png"),
+  croton: require("./assets/plants/croton.png"),
+  englishivy: require("./assets/plants/englishivy.png"),
+  dracaena: require("./assets/plants/dracaena.png"),
+  cordyline: require("./assets/plants/cordyline.png"),
+  pilea: require("./assets/plants/pilea.png"),
+  stringofhearts: require("./assets/plants/stringofhearts.png"),
+  hoya: require("./assets/plants/hoya.png"),
+  airplant: require("./assets/plants/airplant.png"),
+  nerveplant: require("./assets/plants/nerveplant.png"),
+  polkadotplant: require("./assets/plants/polkadotplant.png"),
+  inchplant: require("./assets/plants/inchplant.png"),
+  rexbegonia: require("./assets/plants/rexbegonia.png"),
+  begoniamaculata: require("./assets/plants/begoniamaculata.png"),
+  kalanchoe: require("./assets/plants/kalanchoe.png"),
+  haworthia: require("./assets/plants/haworthia.png"),
+  ponytailpalm: require("./assets/plants/ponytailpalm.png"),
+  moneytree: require("./assets/plants/moneytree.png"),
+  norfolkpine: require("./assets/plants/norfolkpine.png"),
+  castironplant: require("./assets/plants/castironplant.png"),
+  staghornfern: require("./assets/plants/staghornfern.png"),
+  asparagusfern: require("./assets/plants/asparagusfern.png"),
+  luckybamboo: require("./assets/plants/luckybamboo.png"),
+  venusflytrap: require("./assets/plants/venusflytrap.png"),
+  pitcherplant: require("./assets/plants/pitcherplant.png"),
+  africanviolet: require("./assets/plants/africanviolet.png"),
+  bromeliad: require("./assets/plants/bromeliad.png"),
+  guzmania: require("./assets/plants/guzmania.png"),
+  anthurium: require("./assets/plants/anthurium.png"),
+  umbrellaplant: require("./assets/plants/umbrellaplant.png"),
+  lithops: require("./assets/plants/lithops.png"),
+  aeonium: require("./assets/plants/aeonium.png"),
+  ghostplant: require("./assets/plants/ghostplant.png"),
+  pandaplant: require("./assets/plants/pandaplant.png"),
+  stringofbananas: require("./assets/plants/stringofbananas.png"),
+  bunnyearcactus: require("./assets/plants/bunnyearcactus.png"),
+  barrelcactus: require("./assets/plants/barrelcactus.png"),
+  pricklypearcactus: require("./assets/plants/pricklypearcactus.png"),
+  phalaenopsis: require("./assets/plants/phalaenopsis.png"),
+  dendrobium: require("./assets/plants/dendrobium.png"),
+  iceberglettuce: require("./assets/plants/iceberglettuce.png"),
+  butterheadlettuce: require("./assets/plants/butterheadlettuce.png"),
+  oakleaflettuce: require("./assets/plants/oakleaflettuce.png"),
+  redcabbage: require("./assets/plants/redcabbage.png"),
+  savoycabbage: require("./assets/plants/savoycabbage.png"),
+  lacinatokale: require("./assets/plants/lacinatokale.png"),
+  elephantgarlic: require("./assets/plants/elephantgarlic.png"),
+  pearlonion: require("./assets/plants/pearlonion.png"),
+  scarletrunnerbean: require("./assets/plants/scarletrunnerbean.png"),
+  cranberrybean: require("./assets/plants/cranberrybean.png"),
+  crooknecksquash: require("./assets/plants/crooknecksquash.png"),
+  hubbardsquash: require("./assets/plants/hubbardsquash.png"),
+  chicory: require("./assets/plants/chicory.png"),
+  marrow: require("./assets/plants/marrow.png"),
+  tabascopepper: require("./assets/plants/tabascopepper.png"),
+  peperoncini: require("./assets/plants/peperoncini.png"),
+  aleppopepper: require("./assets/plants/aleppopepper.png"),
+  cornsalad: require("./assets/plants/cornsalad.png"),
+  frisee: require("./assets/plants/frisee.png"),
+  gardencress: require("./assets/plants/gardencress.png"),
+  orach: require("./assets/plants/orach.png"),
+  seakale: require("./assets/plants/seakale.png"),
+  fiddleheadfern: require("./assets/plants/fiddleheadfern.png"),
+  ramps: require("./assets/plants/ramps.png"),
+  stingingnettle: require("./assets/plants/stingingnettle.png"),
+  welshonion: require("./assets/plants/welshonion.png"),
+  burdock: require("./assets/plants/burdock.png"),
+  scorzonera: require("./assets/plants/scorzonera.png"),
+  pricklypear: require("./assets/plants/pricklypear.png"),
+  muscadinegrape: require("./assets/plants/muscadinegrape.png"),
+  kiwano: require("./assets/plants/kiwano.png"),
+  koreanmelon: require("./assets/plants/koreanmelon.png"),
+  canarymelon: require("./assets/plants/canarymelon.png"),
+  tangelo: require("./assets/plants/tangelo.png"),
+  satsuma: require("./assets/plants/satsuma.png"),
+  caracaraorange: require("./assets/plants/caracaraorange.png"),
+  sevilleorange: require("./assets/plants/sevilleorange.png"),
+  citron: require("./assets/plants/citron.png"),
+  crabapple: require("./assets/plants/crabapple.png"),
+  sourcherry: require("./assets/plants/sourcherry.png"),
+  damsonplum: require("./assets/plants/damsonplum.png"),
+  mirabelleplum: require("./assets/plants/mirabelleplum.png"),
+  tayberry: require("./assets/plants/tayberry.png"),
+  saskatoonberry: require("./assets/plants/saskatoonberry.png"),
+  thimbleberry: require("./assets/plants/thimbleberry.png"),
+  alpinestrawberry: require("./assets/plants/alpinestrawberry.png"),
+  pineberry: require("./assets/plants/pineberry.png"),
+  chrysanthemumgreens: require("./assets/plants/chrysanthemumgreens.png"),
+  grapehyacinth: require("./assets/plants/grapehyacinth.png"),
+  jocote: require("./assets/plants/jocote.png"),
 };
 
 export const MONTH_NAMES = [
@@ -215,7 +651,7 @@ export const MONTH_NAMES = [
   "July","August","September","October","November","December",
 ];
 
-export const PLANT_TYPES = ["All","Vegetables","Tree Fruits","Tropical Fruits","Berries","Herbs"];
+export const PLANT_TYPES = ["All","Vegetables","Tree Fruits","Tropical Fruits","Berries","Herbs","Flowers","Houseplants","Grains","Nuts"];
 
 export const MONTH_LABELS = [
   "January","February","March","April","May","June",
@@ -224,6 +660,9 @@ export const MONTH_LABELS = [
 
 export const STORAGE_KEYS = {
   zip: "pp_zip",
+  latitude: "pp_latitude",
+  country: "pp_country",
+  language: "pp_language",
   savedPlants: "pp_savedPlants",
   dailyBonusDate: "pp_dailyBonusDate",
   dailyBonusXP: "pp_dailyBonusXP",
@@ -256,6 +695,66 @@ export const GARDEN_SLOTS = Array.from({ length: 12 }, (_, index) => ({
   label: `Plot ${index + 1}`,
 }));
 
+// ── Self-persisting feature modules ──────────────────────────────────────────
+// Several cards (seed inventory, custom tasks, rainfall, toolkit, and the newer
+// compost / rain-barrel / germination / chore trackers) keep their own
+// AsyncStorage keys instead of threading state through App.js. Listing those
+// keys here lets the full backup round-trip their data too, so a restore brings
+// everything back instead of silently dropping module data.
+export const MODULE_STORAGE_KEYS = [
+  "pp_compostLog",
+  "pp_rainBarrel",
+  "pp_germTests",
+  "pp_choreRotation",
+  "pp_seedInventory",
+  "pp_customTasks",
+  "pp_rainfallLog",
+  "pp_toolkit_owned",
+  // second batch of self-persisting modules
+  "pp_soilTempLog",
+  "pp_soilTests",
+  "pp_toolMaint",
+  "pp_growLights",
+  "pp_gardenSites",
+  "pp_pruningDone",
+  "pp_propagation",
+  "pp_plantRooms",
+  "pp_houseplantCare",
+  "pp_vases",
+];
+
+// Reads every module key and returns a { key: rawJsonString } map for the
+// backup payload. Values stay as their stored JSON strings so restore can write
+// them straight back without re-serializing.
+export async function collectModuleBackup() {
+  const out = {};
+  try {
+    const pairs = await AsyncStorage.multiGet(MODULE_STORAGE_KEYS);
+    pairs.forEach(([key, val]) => {
+      if (val != null) out[key] = val;
+    });
+  } catch (e) {
+    /* ignore — a partial backup is better than a failed one */
+  }
+  return out;
+}
+
+// Writes a module map (from collectModuleBackup) back into AsyncStorage. The
+// self-persisting cards re-read their key when their tab next mounts, so the
+// restored data shows up without a full app relaunch.
+export async function applyModuleBackup(modules) {
+  if (!modules || typeof modules !== "object") return;
+  const entries = MODULE_STORAGE_KEYS
+    .filter((k) => typeof modules[k] === "string")
+    .map((k) => [k, modules[k]]);
+  if (!entries.length) return;
+  try {
+    await AsyncStorage.multiSet(entries);
+  } catch (e) {
+    /* ignore */
+  }
+}
+
 export const RARITY_STYLES = {
   Common: { label: "Common", emoji: "🌱", color: "#2f7d46", bg: "#eaf8ee", border: "#bfe8ca" },
   Rare: { label: "Rare", emoji: "💎", color: "#315fd6", bg: "#edf3ff", border: "#bfd0ff" },
@@ -287,6 +786,48 @@ export function zoneIsFrostFree(zone) {
   return value !== null && value >= 10;
 }
 
+// ── Hemisphere ───────────────────────────────────────────────────────────────
+// All seasonal data in the app (plantMonths, pest months, frost dates) is
+// authored in northern-hemisphere calendar terms. Below the equator the growing
+// year is offset by six months, so a single ref lets the pure helpers below
+// translate without every caller having to thread a latitude through.
+export const hemisphereRef = { current: "N" };
+
+export function setHemisphereFromLatitude(latitude) {
+  const value = parseFloat(latitude);
+  if (Number.isNaN(value)) return;
+  hemisphereRef.current = value < 0 ? "S" : "N";
+}
+
+export function isSouthernHemisphere() {
+  return hemisphereRef.current === "S";
+}
+
+// Shifts a 1-12 month by six months in the southern hemisphere, and is a no-op
+// in the northern. It is its own inverse, so the same call converts northern
+// reference data into local months and local months back into reference data.
+export function flipMonth(month) {
+  const value = Number(month);
+  if (!value || !isSouthernHemisphere()) return value;
+  return ((value + 5) % 12) + 1;
+}
+
+// Shifts a Date by six months in the southern hemisphere, keeping the day of
+// the month so "late May" stays "late November". The result stays inside the
+// same calendar year, matching the northern helpers — callers such as
+// getFrostMaturityInfo already handle a date that has passed.
+export function flipDate(date) {
+  if (!(date instanceof Date) || !isSouthernHemisphere()) return date;
+  return new Date(date.getFullYear(), (date.getMonth() + 6) % 12, date.getDate());
+}
+
+// The planting window for an item, expressed in the user's local calendar.
+export function localPlantMonths(item) {
+  if (!Array.isArray(item?.plantMonths)) return [];
+  if (!isSouthernHemisphere()) return item.plantMonths;
+  return item.plantMonths.map(flipMonth).sort((a, b) => a - b);
+}
+
 export function normalizeType(type, name = "") {
   const value = String(type || "").trim();
   if (value === "Vegetable") return "Vegetables";
@@ -294,6 +835,10 @@ export function normalizeType(type, name = "") {
   if (value === "Berry") return "Berries";
   if (value === "Herb") return "Herbs";
   if (value === "Fruit") return "Tropical Fruits";
+  if (value === "Flower") return "Flowers";
+  if (value === "Houseplant") return "Houseplants";
+  if (value === "Grain") return "Grains";
+  if (value === "Nut") return "Nuts";
   if (PLANT_TYPES.includes(value)) return value;
   const lower = String(name).toLowerCase();
   if (["apple","pear","peach","plum","cherry","fig","orange","lemon","lime","mandarin","grapefruit","pomegranate"].some((w) => lower.includes(w))) return "Tree Fruits";
@@ -306,6 +851,34 @@ export function normalizeType(type, name = "") {
 export function matchesType(item, selectedType) {
   if (selectedType === "All") return true;
   return normalizeType(item.type, item.name) === selectedType;
+}
+
+// Flowers & houseplants are grown for looks, not food — used to suppress the
+// harvest/crop-timeline UI that only makes sense for edibles.
+export function isOrnamental(item) {
+  const t = normalizeType(item?.type, item?.name);
+  return t === "Flowers" || t === "Houseplants";
+}
+
+// Classic companion flowers stay welcome in any bed — they're grown for pest
+// control and pollinators, not just looks, and they're members of the veggie
+// combos. Everything else in the Flowers category is decorative.
+export const COMPANION_FLOWERS = new Set(["Marigold", "Nasturtium", "Calendula", "Sunflower", "Borage"]);
+
+// Enforces the flower rule when placing a plant into a garden bed:
+//   • a flower bed (kind "flower") holds only flowers
+//   • a home garden (kind "home", and the default "My Garden") holds anything
+//   • every other bed rejects ornamental flowers, but still allows the
+//     companion flowers above
+export function canPlantInArea(plantName, area) {
+  const name = typeof plantName === "string" ? plantName : plantName?.name;
+  if (!name) return false;
+  const item = produceData.find((p) => p.name === name);
+  const isFlower = normalizeType(item?.type, name) === "Flowers";
+  // Flowers live only in flower beds (on the Flowers tab); every garden bed (on
+  // the Garden tab) holds only non-flowers. The two are kept fully separate.
+  if (area?.kind === "flower") return isFlower;
+  return !isFlower;
 }
 
 export function zoneMatch(zone, minZone, maxZone) {
@@ -844,35 +1417,158 @@ export function calculateGardenHealth(gardenMap) {
 export function getSuggestionsForMonth(zone, month) {
   const zonePlants = produceData.filter((item) => {
     if (!item?.name) return false;
-    const months = Array.isArray(item.plantMonths) ? item.plantMonths : [];
+    const months = localPlantMonths(item);
     return zoneMatch(zone, item.minZone, item.maxZone) && months.includes(month);
   });
   return zonePlants.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export function getFirstPlantingMonth(item) {
-  if (!Array.isArray(item.plantMonths) || !item.plantMonths.length) return null;
-  return [...item.plantMonths].sort((a, b) => a - b)[0] || null;
+  const months = localPlantMonths(item);
+  if (!months.length) return null;
+  return [...months].sort((a, b) => a - b)[0] || null;
 }
 
 export function getPlantingWindowText(item) {
-  if (!Array.isArray(item.plantMonths) || !item.plantMonths.length) {
+  const months = localPlantMonths(item);
+  if (!months.length) {
     return "Best months vary by zone. Use the Planting Calendar above for seasonal timing.";
   }
-  return item.plantMonths.map((month) => MONTH_LABELS[month - 1]?.slice(0, 3)).filter(Boolean).join(" • ");
+  return months.map((month) => MONTH_LABELS[month - 1]?.slice(0, 3)).filter(Boolean).join(" • ");
 }
 
 export function getPlantSeasonLabel(item, zone, monthOverride = null) {
   if (!zoneMatch(zone, item.minZone, item.maxZone)) return "Outside your zone";
   const currentMonth = monthOverride || new Date().getMonth() + 1;
-  if (!Array.isArray(item.plantMonths) || !item.plantMonths.length) return "Zone fit";
-  if (item.plantMonths.includes(currentMonth)) return "Plant now";
+  const plantMonths = localPlantMonths(item);
+  if (!plantMonths.length) return "Zone fit";
+  if (plantMonths.includes(currentMonth)) return "Plant now";
   const firstMonth = getFirstPlantingMonth(item);
   if (firstMonth && firstMonth > currentMonth) return `Starts in ${MONTH_NAMES[firstMonth - 1]}`;
   return "Out of season";
 }
 
 export const PERENNIALS = new Set([
+  "Ivy Gourd (Tindora)",
+  "Garlic Chives",
+  "Bamboo Shoot",
+  "Nopal (Cactus Pad)",
+  "Plantain",
+  "Cherimoya",
+  "Sapodilla (Chikoo)",
+  "Mamey Sapote",
+  "Jujube",
+  "Tamarillo (Tree Tomato)",
+  "Naranjilla (Lulo)",
+  "Acerola",
+  "Surinam Cherry",
+  "Bilimbi",
+  "Bael (Wood Apple)",
+  "Jamun (Java Plum)",
+  "Mamoncillo (Genip)",
+  "Pawpaw (American)",
+  "Serviceberry",
+  "Jostaberry",
+  "Loganberry",
+  "Hardy Kiwi (Kiwiberry)",
+  "Concord Grape",
+  "Cornelian Cherry",
+  "Medlar",
+  "Sweet Lime (Mosambi)",
+  "Ugli Fruit",
+  "Sea Grape",
+  "Gac Fruit",
+  "Noni",
+  "Cupuaçu",
+  "Abiu",
+  "Rollinia",
+  "Chempedak",
+  "Marang",
+  "Pulasan",
+  "Che (Melonberry)",
+  "Cardamom",
+  "Vanilla",
+  "Saffron",
+  "Galangal",
+  "Kaffir Lime",
+  "Lemon Verbena",
+  "Pandan",
+  "Sichuan Pepper",
+  "Cinnamon",
+  "Clove",
+  "Nutmeg",
+  "Allspice",
+  "Comfrey",
+  "Valerian",
+  "Gotu Kola",
+  "Rue",
+  "Hyssop",
+  "Angelica",
+  "Feverfew",
+  "Wormwood",
+  "Curry Plant",
+  "Brazil Nut",
+  "Pine Nut",
+  "Ginkgo",
+  "Carob",
+  "Kola Nut",
+  "Black Walnut",
+  "Ackee",
+  "Almond",
+  "Atemoya",
+  "Bay Tree",
+  "Bilberry",
+  "Black Currant",
+  "Black Sapote",
+  "Thornless Boysenberry",
+  "Breadfruit",
+  "Buddha's Hand",
+  "Calamondin",
+  "Canistel",
+  "Cashew",
+  "Chestnut",
+  "Cloudberry",
+  "Curry Leaf",
+  "Custard Apple",
+  "Dewberry",
+  "Durian",
+  "Black Elderberry",
+  "Finger Lime",
+  "Honeyberry (Haskap)",
+  "Hazelnut",
+  "Jabuticaba",
+  "June Plum",
+  "Key Lime",
+  "Lemon Balm",
+  "Longkong (Langsat)",
+  "Macadamia",
+  "Mangosteen",
+  "Meyer Lemon",
+  "Miracle Fruit",
+  "Drumstick Tree (Moringa)",
+  "Red Mulberry",
+  "White Mulberry",
+  "Pecan",
+  "Peppermint",
+  "Pistachio",
+  "Pomelo",
+  "Red Currant",
+  "Rose Apple",
+  "Santol",
+  "Sea Buckthorn",
+  "Salak (Snake Fruit)",
+  "Soursop",
+  "Spearmint",
+  "Star Apple",
+  "Sudachi",
+  "Sugar Apple",
+  "Vietnamese Coriander",
+  "Walnut",
+  "Wax Apple",
+  "White Currant",
+  "White Sapote",
+  "Wineberry",
+  "Winter Savory",
   "apple","apricot","avocado","banana","cherry","fig","mango","peach","pear",
   "plum","pluot","nectarine","pomegranate","persimmon","quince","olive","date",
   "coconut","jackfruit","guava","papaya","dragonfruit","starfruit","passionfruit",
@@ -892,6 +1588,98 @@ export function isPerennial(item) {
 }
 
 export const harvestDays = {
+  "Snow Pea": 60,
+  "Yardlong Bean": 75,
+  "Winged Bean": 100,
+  "Cluster Bean (Guar)": 90,
+  "Pointed Gourd (Parwal)": 120,
+  "Broccoli Rabe (Rapini)": 45,
+  "Broccolini": 60,
+  "Choy Sum": 45,
+  "Yu Choy": 45,
+  "Molokhia (Jute Mallow)": 60,
+  "Roselle": 120,
+  "Chinese Celery": 70,
+  "Samphire (Sea Bean)": 60,
+  "Dandelion Greens": 55,
+  "Sugar Beet": 90,
+  "Carolina Reaper": 100,
+  "Bird's Eye Chili": 90,
+  "Padrón Pepper": 75,
+  "Fresno Pepper": 80,
+  "Hungarian Wax": 70,
+  "Ají Amarillo": 100,
+  "Fenugreek (Methi)": 40,
+  "Ashwagandha": 180,
+  "Spelt": 120,
+  "Teff": 100,
+  "Farro (Emmer)": 120,
+  "Wild Rice": 110,
+  "Triticale": 240,
+  "Job's Tears": 120,
+  "Popcorn": 100,
+  "Peanut": 130,
+  "Soybean": 100,
+  "Adzuki Bean": 100,
+  "Amaranth": 50,
+  "Anaheim Pepper": 80,
+  "Arrowroot": 300,
+  "Ash Gourd": 120,
+  "Barley": 90,
+  "Beefsteak Tomato": 85,
+  "Black-Eyed Pea": 90,
+  "Bottle Gourd": 120,
+  "Buckwheat": 75,
+  "Cannellini Bean": 90,
+  "Cardoon": 120,
+  "Cassava": 300,
+  "Celtuce": 80,
+  "Chayote": 120,
+  "Cherry Tomato": 65,
+  "Chinese Yam": 180,
+  "Cowpea": 80,
+  "Cubanelle Pepper": 70,
+  "Culantro": 70,
+  "Epazote": 60,
+  "Chinese Broccoli (Gai Lan)": 60,
+  "Heirloom Tomato": 80,
+  "Water Spinach (Kangkong)": 50,
+  "Kidney Bean": 100,
+  "Komatsuna": 40,
+  "Lotus Root": 120,
+  "Lupini Bean": 100,
+  "Malabar Spinach": 55,
+  "Millet": 75,
+  "Mizuna": 40,
+  "Mung Bean": 90,
+  "Mustard Spinach": 40,
+  "Navy Bean": 100,
+  "New Zealand Spinach": 55,
+  "Oats": 100,
+  "Red Okra": 55,
+  "Pigeon Pea": 120,
+  "Pimento Pepper": 75,
+  "Purslane": 40,
+  "Quinoa": 100,
+  "Rice": 120,
+  "Ridge Gourd": 90,
+  "Romanesco": 90,
+  "Roma Tomato": 75,
+  "Rye": 240,
+  "San Marzano Tomato": 80,
+  "Scotch Bonnet Pepper": 100,
+  "Shishito Pepper": 60,
+  "Shiso": 60,
+  "Snake Gourd": 90,
+  "Sorghum": 110,
+  "Taro": 200,
+  "Tatsoi": 45,
+  "Thai Chili Pepper": 90,
+  "Holy Basil (Tulsi)": 60,
+  "Wasabi": 540,
+  "Water Chestnut": 220,
+  "Wheat": 120,
+  "Yam": 180,
     Basil: 60,
     Beet: 55,
     Bok_Choy: 45,
@@ -1034,7 +1822,35 @@ export const harvestDays = {
     Lovage: 90,
   };
 
+// Authored structured growing data (data/plantDetails.js), rolled out in batches
+// of 100 plants. Returns the record for a plant by exact name, or null if this
+// plant hasn't been authored yet — callers fall back to their derived defaults.
+export function getPlantDetails(item) {
+  const name = typeof item === "string" ? item : item?.name;
+  if (!name) return null;
+  return PLANT_DETAILS[name] || null;
+}
+
+// Authored pest & disease profile (data/plantHealth.js), rolled out in batches.
+// Returns null for plants not yet authored — the UI hides the section for those.
+export function getPlantHealth(item) {
+  const name = typeof item === "string" ? item : item?.name;
+  if (!name) return null;
+  return PLANT_HEALTH[name] || null;
+}
+
 export function getHarvestCountdown(item) {
+  const ornType = normalizeType(item?.type, item?.name);
+  if (ornType === "Flowers") return "Blooms seasonally";
+  if (ornType === "Houseplants") return "Grown for foliage";
+  const authored = getPlantDetails(item);
+  if (authored) {
+    // Authored plants with a real maturity window (incl. perennial herbs that
+    // still crop the first season) show a day count; trees/berries carry
+    // daysToMaturity: null and fall through to the seasonal label.
+    if (authored.daysToMaturity) return `~${authored.daysToMaturity} day harvest`;
+    if (authored.perennial) return "Perennial — harvests seasonally";
+  }
   if (isPerennial(item)) return "Perennial — harvests seasonally";
   const key = String(item?.name || "").replace(/\s+/g, "_");
   const days = harvestDays[key] || harvestDays[item?.name] || 75;
@@ -1042,6 +1858,8 @@ export function getHarvestCountdown(item) {
 }
 
 export function getHarvestDays(item) {
+  const authored = getPlantDetails(item);
+  if (authored && authored.daysToMaturity) return authored.daysToMaturity;
   const key = String(item?.name || "").replace(/\s+/g, "_");
   return harvestDays[key] || harvestDays[item?.name] || 75;
 }
@@ -1079,6 +1897,14 @@ export function getPlantSunNeed(item) {
   const type = normalizeType(item?.type, item?.name);
   const name = String(item?.name || "").toLowerCase();
 
+  // Prefer authored sunlight when this plant has structured data.
+  const authored = getPlantDetails(item);
+  if (authored && authored.sunlight) {
+    if (authored.sunlight === "shade") return { need: "shade", label: "Shade tolerant", toleratesShade: true };
+    if (authored.sunlight === "partial") return { need: "partial", label: "Partial shade OK", toleratesShade: true };
+    return { need: "full", label: "Full sun", toleratesShade: false };
+  }
+
   // Leafy greens and some herbs tolerate — and in summer heat prefer — some shade.
   if (["lettuce", "spinach", "kale", "arugula", "chard", "cilantro", "parsley", "mint"].some((w) => name.includes(w))) {
     return { need: "partial", label: "Partial shade OK", toleratesShade: true };
@@ -1111,21 +1937,49 @@ export function getSunMismatch(item, areaSun) {
   return null; // good match, no warning
 }
 
+// Inches → a friendly spacing string; feet once the gap gets big (trees/shrubs).
+function formatSpacingInches(inches) {
+  if (typeof inches !== "number") return null;
+  if (inches >= 48) {
+    const ft = inches / 12;
+    return `${Number.isInteger(ft) ? ft : ft.toFixed(1)} ft apart`;
+  }
+  return `${inches}" apart`;
+}
+
 export function getPlantQuickFacts(item) {
   const type = normalizeType(item.type, item.name);
   const difficulty = getPlantDifficulty(item);
+  // Prefer the authored plantDetails record; fall back to type-based defaults
+  // for any plant that hasn't been authored yet.
+  const d = getPlantDetails(item);
+
+  const sun = d && d.sunlight
+    ? (d.sunlight === "full" ? "Full sun" : d.sunlight === "partial" ? "Full sun to partial shade" : "Shade / low light")
+    : (type === "Herbs" ? "Full sun to partial shade" : "Full sun");
+
+  const water = d && d.waterNeeds
+    ? (d.waterNeeds === "low" ? "Low — let the soil dry out" : d.waterNeeds === "high" ? "High — keep evenly moist" : "Moderate — water when the top inch is dry")
+    : "Water when the top inch of soil is dry";
+
+  const spacing = (d && formatSpacingInches(d.spacingInches))
+    || (type === "Tree Fruits" ? "10–20 ft apart" : type === "Berries" ? "2–4 ft apart" : type === "Herbs" ? "8–18 in apart" : "12–24 in apart");
+
   return {
-    sun: type === "Herbs" ? "Full sun to partial shade" : "Full sun",
+    sun,
+    water,
     soil: type === "Tree Fruits" || type === "Tropical Fruits" ? "Deep, well-draining soil" : "Loose, compost-rich soil",
-    spacing: type === "Tree Fruits" ? "10–20 ft apart" : type === "Berries" ? "2–4 ft apart" : type === "Herbs" ? "8–18 in apart" : "12–24 in apart",
+    spacing,
     harvest: getHarvestCountdown(item),
     difficulty: `${difficulty.icon} ${difficulty.label}`,
+    containerFriendly: d ? d.containerFriendly : null,
+    perennial: d ? d.perennial : null,
   };
 }
 
 export function getSeasonalIntelligenceLabel(item, zone, weather) {
   const currentMonth = new Date().getMonth() + 1;
-  const months = Array.isArray(item.plantMonths) ? item.plantMonths : [];
+  const months = localPlantMonths(item);
   if (!zoneMatch(zone, item.minZone, item.maxZone)) return { icon: "📍", label: "Outside your zone", text: "This plant may need containers, shade, or protection in your area." };
   if (!months.length) return { icon: "🌿", label: "Zone fit", text: "Season timing varies, but this plant matches your growing zone." };
   if (months.includes(currentMonth)) {
@@ -1145,6 +1999,7 @@ export function getRainSkipToday(weather) {
 }
 
 export const FROST_THRESHOLD_F = 35;
+export const HEAT_THRESHOLD_F = 95;
 
 export function getUpcomingFrost(weather) {
   const forecast = Array.isArray(weather?.forecast) ? weather.forecast : [];
@@ -1157,18 +2012,67 @@ export function getUpcomingFrost(weather) {
   return null;
 }
 
+// ── Home-screen widgets / Live Activities / Watch ────────────────────────────
+// A tiny, JSON-serialisable snapshot of "what needs my attention today", derived
+// entirely from existing garden state. The native widget extension reads this
+// from the shared app group; nothing here is AI or network. Keep it small — a
+// widget shows a glance, not a screen.
+export function buildWidgetSnapshot({
+  savedPlantObjs = [], wateredPlants = {}, wateringHistory = {},
+  weather = null, harvestTrackers = {}, streakData = null, plantPick = null, zone = null,
+} = {}) {
+  const today = getTodayKey();
+
+  // Plants due for water today (not yet watered).
+  const dueNames = [];
+  (savedPlantObjs || []).forEach((p) => {
+    if (!p || !p.name || wateredPlants[p.name] === today) return;
+    const nw = getNextWaterInfo(p.name, p, wateringHistory, wateredPlants, weather);
+    if (nw && nw.urgency === "due") dueNames.push(p.name);
+  });
+
+  // Plants whose harvest tracker has reached (or passed) its window.
+  const harvestNames = [];
+  Object.entries(harvestTrackers || {}).forEach(([name, tracker]) => {
+    if (!tracker || typeof tracker.days !== "number" || !tracker.startedAt) return;
+    const elapsed = Math.floor((Date.now() - new Date(tracker.startedAt).getTime()) / 86400000);
+    if (tracker.days - elapsed <= 0) harvestNames.push(name);
+  });
+
+  const frost = getUpcomingFrost(weather);
+  const todayHigh = typeof weather?.maxTempF === "number" ? weather.maxTempF : null;
+
+  return {
+    updatedAt: Date.now(),
+    zone: zone || null,
+    waterDue: { count: dueNames.length, names: dueNames.slice(0, 3) },
+    harvestReady: { count: harvestNames.length, names: harvestNames.slice(0, 3) },
+    frost: frost ? { daysOut: frost.daysOut, minTempF: Math.round(frost.minTempF), date: frost.date } : null,
+    heat: todayHigh != null && todayHigh >= HEAT_THRESHOLD_F ? { maxTempF: Math.round(todayHigh) } : null,
+    streak: streakData && typeof streakData.count === "number" ? streakData.count : 0,
+    plantPick: plantPick && plantPick.name ? { name: plantPick.name, image: plantPick.image || null } : null,
+  };
+}
+
 export function getFrostSeasonMonths(zone) {
   const bucket = getClimateBucket(zone);
-  if (bucket === "cold") return [1, 2, 3, 4, 5, 9, 10, 11, 12];
-  if (bucket === "moderate") return [1, 2, 3, 11, 12];
-  return [12, 1, 2];
+  let months;
+  if (bucket === "cold") months = [1, 2, 3, 4, 5, 9, 10, 11, 12];
+  else if (bucket === "moderate") months = [1, 2, 3, 11, 12];
+  else months = [12, 1, 2];
+  return months.map(flipMonth).sort((a, b) => a - b);
 }
 
 export function getEstimatedLastFrost(zone) {
   const bucket = getClimateBucket(zone);
-  if (bucket === "cold") return "late May";
-  if (bucket === "moderate") return "mid March";
-  return "late January";
+  if (!isSouthernHemisphere()) {
+    if (bucket === "cold") return "late May";
+    if (bucket === "moderate") return "mid March";
+    return "late January";
+  }
+  if (bucket === "cold") return "late November";
+  if (bucket === "moderate") return "mid September";
+  return "late July";
 }
 
 export const frostOverrideRef = { current: {} };
@@ -1192,9 +2096,9 @@ export function getLastFrostDate(zone) {
   if (override) return override;
   const bucket = getClimateBucket(zone);
   const year = new Date().getFullYear();
-  if (bucket === "cold") return new Date(year, 4, 25);      // ~late May
-  if (bucket === "moderate") return new Date(year, 2, 15);  // ~mid March
-  return new Date(year, 0, 25);                             // ~late January (hot)
+  if (bucket === "cold") return flipDate(new Date(year, 4, 25));      // ~late May
+  if (bucket === "moderate") return flipDate(new Date(year, 2, 15));  // ~mid March
+  return flipDate(new Date(year, 0, 25));                             // ~late January (hot)
 }
 
 export function getFirstFrostDate(zone) {
@@ -1203,9 +2107,9 @@ export function getFirstFrostDate(zone) {
   // Estimated FALL first-frost date by climate bucket.
   const bucket = getClimateBucket(zone);
   const year = new Date().getFullYear();
-  if (bucket === "cold") return new Date(year, 8, 25);      // ~late September
-  if (bucket === "moderate") return new Date(year, 10, 15); // ~mid November
-  return new Date(year, 11, 5);                             // ~early December (hot)
+  if (bucket === "cold") return flipDate(new Date(year, 8, 25));      // ~late September
+  if (bucket === "moderate") return flipDate(new Date(year, 10, 15)); // ~mid November
+  return flipDate(new Date(year, 11, 5));                             // ~early December (hot)
 }
 
 export function dayOfYear(date) {
@@ -1280,7 +2184,10 @@ export function getSeedStartInfo(item, zone) {
   const now = new Date(); now.setHours(12, 0, 0, 0);
   const startClone = new Date(startBy); startClone.setHours(12, 0, 0, 0);
   const daysUntilStart = Math.round((startClone - now) / (1000 * 60 * 60 * 24));
-  const fmt = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const fmt = (d) => formatDate(d, {
+  month: "short",
+  day: "numeric"
+});
   let status;
   if (daysUntilStart > 21) status = "upcoming";
   else if (daysUntilStart >= -14) status = "start-now";
@@ -1827,6 +2734,64 @@ export function getTodayKey() {
   return getDateKey(new Date());
 }
 
+// ── Premium feature manifest ────────────────────────────────────────────────
+// Single source of truth for everything unlocked by Premium. Both the Premium
+// tab (SettingsCard) and the onboarding finale render from this list, so the two
+// surfaces can never drift and every gated feature is always represented. Each
+// entry's title/body are i18n keys under `premiumCard`.
+export const PREMIUM_FEATURES = [
+  { icon: "❄️", titleKey: "premiumCard.frostTitle", bodyKey: "premiumCard.frostBody" },
+  { icon: "🌤️", titleKey: "premiumCard.weatherTitle", bodyKey: "premiumCard.weatherBody" },
+  { icon: "💧", titleKey: "premiumCard.wateringTitle", bodyKey: "premiumCard.wateringBody" },
+  { icon: "🌿", titleKey: "premiumCard.companionTitle", bodyKey: "premiumCard.companionBody" },
+  { icon: "🗺️", titleKey: "premiumCard.plannerTitle", bodyKey: "premiumCard.plannerBody" },
+  { icon: "📖", titleKey: "premiumCard.guidesTitle", bodyKey: "premiumCard.guidesBody" },
+  { icon: "📸", titleKey: "premiumCard.journalTitle", bodyKey: "premiumCard.journalBody" },
+  { icon: "🐛", titleKey: "premiumCard.pestsTitle", bodyKey: "premiumCard.pestsBody" },
+  { icon: "🛒", titleKey: "premiumCard.shoppingTitle", bodyKey: "premiumCard.shoppingBody" },
+  { icon: "🧑‍🌾", titleKey: "premiumCard.profileTitle", bodyKey: "premiumCard.profileBody" },
+  { icon: "🏆", titleKey: "premiumCard.xpTitle", bodyKey: "premiumCard.xpBody" },
+  { icon: "⚡", titleKey: "premiumCard.questsTitle", bodyKey: "premiumCard.questsBody" },
+  { icon: "🌱", titleKey: "premiumCard.unlimitedTitle", bodyKey: "premiumCard.unlimitedBody" },
+  { icon: "☁️", titleKey: "premiumCard.cloudTitle", bodyKey: "premiumCard.cloudBody" },
+];
+
+// ── New-user activation checklist ───────────────────────────────────────────
+// The first-week milestones that turn an install into an active gardener. Each
+// step's completion is derived purely from existing saved state, so there is
+// nothing separate to track or keep in sync. Labels live in the view layer
+// (i18n); this returns stable ids + an emoji + the tab `route` the card jumps
+// to when the user taps an unfinished step.
+export function getActivationSteps({
+  zone,
+  zip,
+  savedPlants = [],
+  gardenAreas = [],
+  wateringHistory = {},
+  wateredPlants = {},
+  journalEntries = [],
+} = {}) {
+  const hasZone = !!zone || (typeof zip === "string" && zip.length === 5);
+  const hasPlant = Array.isArray(savedPlants) && savedPlants.length > 0;
+  const hasBed =
+    Array.isArray(gardenAreas) &&
+    gardenAreas.some(
+      (a) => a && a.plots && Object.values(a.plots).some((p) => p != null && p !== "")
+    );
+  const hasWatered =
+    (wateringHistory && Object.keys(wateringHistory).length > 0) ||
+    (wateredPlants && Object.keys(wateredPlants).length > 0);
+  const hasPhoto = Array.isArray(journalEntries) && journalEntries.length > 0;
+
+  return [
+    { id: "zone", emoji: "📍", done: hasZone, route: "home" },
+    { id: "plant", emoji: "🌱", done: hasPlant, route: "plants" },
+    { id: "bed", emoji: "🪴", done: hasBed, route: "garden" },
+    { id: "water", emoji: "💧", done: hasWatered, route: "plants" },
+    { id: "photo", emoji: "📷", done: hasPhoto, route: "journal" },
+  ];
+}
+
 export function getAreaTag(area) {
   return {
     emoji: area?.emoji || "🌿",
@@ -1853,7 +2818,7 @@ export function formatRelativeDate(ts) {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}d ago`;
-  return new Date(ts).toLocaleDateString();
+  return formatDate(new Date(ts));
 }
 
 export const HARVEST_UNIT_VALUE = {
@@ -1906,6 +2871,7 @@ export function migrateGardenToAreas(existingAreas, legacyGardenMap) {
       name: "My Garden",
       plots: { ...legacyPlots },
       size: 12,
+      kind: "home",
     },
   ];
 }
@@ -2738,7 +3704,164 @@ export const PEST_WATCH_DATA = [
     description: "The larvae of a moth that bore into corn ears and fruit — one of the most widespread garden pests in North America.",
     damage: "They eat kernels at the ear tip and tunnel into tomatoes and peppers, ruining the harvestable part.",
     prevent: "Choose tight-husked corn varieties, treat silks early, and till in fall to expose overwintering pupae." },
+  { name: "Apple Maggot", emoji: "🪰", climates: ["cold","moderate"], months: [6,7,8], targets: ["apple","pear","plum","cherry","hawthorn"], sign: "Dimpled, pitted fruit with winding brown tunnels inside.", fix: "Hang red sphere traps, pick up dropped fruit, and bag developing apples.",
+    description: "A small fly whose maggots tunnel through ripening apples and other pome fruit.",
+    damage: "Larvae burrow through the flesh, leaving brown trails and rot that ruin the fruit.",
+    prevent: "Clean up fallen fruit weekly, hang sticky red sphere traps at petal fall, and bag fruit early." },
+  { name: "Armyworms", emoji: "🐛", climates: ["hot","moderate","cold"], months: [6,7,8,9], targets: ["corn","lettuce","cabbage","bean","Vegetables"], sign: "Bare patches overnight and green-brown caterpillars feeding in groups.", fix: "Hand-pick, apply Bt, and encourage birds and parasitic wasps.",
+    description: "Caterpillars of several moths that feed in large groups and can strip plants fast.",
+    damage: "They chew leaves and stems and can defoliate rows of seedlings in a night or two.",
+    prevent: "Till in fall, keep beds weed-free, and scout for egg masses on leaf undersides." },
+  { name: "Banana Weevil", emoji: "🪲", climates: ["hot"], months: [4,5,6,7,8], targets: ["banana","plantain"], sign: "Tunneled corms, wilting leaves, and toppling stems.", fix: "Plant clean pups, trap adults under split stems, and clear old material.",
+    description: "A black weevil whose grubs bore through banana corms and stem bases.",
+    damage: "Larval tunneling weakens the plant, cuts yield, and can make stems collapse.",
+    prevent: "Start with pest-free pups, keep the mat clear of old stems, and rotate planting sites." },
+  { name: "Birds", emoji: "🐦", climates: ["hot","moderate","cold"], months: [5,6,7,8], targets: ["strawberry","blueberry","cherry","grape","fig","corn"], sign: "Pecked, half-eaten ripe fruit and stripped berry bushes.", fix: "Drape netting before fruit colors up; add scare tape or reflective deterrents.",
+    description: "Songbirds and others that target ripening berries and soft fruit just before harvest.",
+    damage: "They peck holes in ripening fruit and can clear a berry bush in a day.",
+    prevent: "Net plants before fruit ripens, harvest promptly, and use reflective tape or decoys." },
+  { name: "Cabbage Root Maggot", emoji: "🪰", climates: ["moderate","cold"], months: [4,5,6,9], targets: ["cabbage","broccoli","radish","turnip","cauliflower"], sign: "Wilting, bluish outer leaves and slimy tunnels in the roots.", fix: "Fit stem collars, use row cover, and rotate brassica beds.",
+    description: "The larvae of a small fly that tunnel into brassica roots and stems.",
+    damage: "Root tunneling stunts or kills plants and opens the door to rot.",
+    prevent: "Lay a disc collar at the stem base, cover with fine netting, and rotate crops." },
+  { name: "Carrot Rust Fly", emoji: "🪰", climates: ["moderate","cold"], months: [5,6,9], targets: ["carrot","parsnip","celery","parsley","fennel"], sign: "Rusty tunnels through roots and stunted, reddish tops.", fix: "Cover with row cover, sow later, and avoid thinning at dusk.",
+    description: "A fly whose larvae mine rusty tunnels through carrots and other umbellifer roots.",
+    damage: "Their tunnels scar and rot the roots, making them inedible.",
+    prevent: "Use insect netting, sow after early summer, and remove thinnings that attract flies." },
+  { name: "Codling Moth", emoji: "🦋", climates: ["cold","moderate"], months: [5,6,7,8], targets: ["apple","pear","quince","walnut"], sign: "Holes to the core packed with frass, and early fruit drop.", fix: "Hang pheromone traps, band trunks, and bag or thin fruit.",
+    description: "The classic 'worm in the apple' — a moth whose larvae tunnel to the core.",
+    damage: "Larvae bore into fruit and feed at the core, leaving frass-filled tunnels and rot.",
+    prevent: "Hang pheromone traps at bloom, wrap trunks with cardboard bands, and pick up drops." },
+  { name: "European Corn Borer", emoji: "🌽", climates: ["cold","moderate"], months: [6,7,8], targets: ["corn","pepper","bean","potato"], sign: "Sawdust frass at leaf joints and broken tassels or stalks.", fix: "Apply Bt to whorls, destroy stalks after harvest, and plant resistant hybrids.",
+    description: "A moth whose caterpillars bore into corn stalks and ears and into pepper fruit.",
+    damage: "Tunneling weakens stalks so they snap, and borers ruin ears and peppers.",
+    prevent: "Shred and till stalks in fall, treat whorls with Bt, and rotate away from last year's corn." },
+  { name: "Fig Beetle", emoji: "🪲", climates: ["hot","moderate"], months: [7,8,9], targets: ["fig","grape","peach","melon"], sign: "Large green beetles feeding inside split, overripe fruit.", fix: "Harvest promptly, remove damaged fruit, and set fruit-baited traps.",
+    description: "A big metallic-green beetle drawn to ripe and fermenting soft fruit.",
+    damage: "They feed on ripe figs and other soft fruit, enlarging wounds and inviting rot.",
+    prevent: "Pick fruit as it ripens, clear windfalls, and trap adults with fermenting bait." },
+  { name: "Fruit Fly", emoji: "🪰", climates: ["hot","moderate"], months: [6,7,8,9], targets: ["fig","mango","guava","citrus","tomato"], sign: "Tiny flies around ripe fruit and soft, weeping spots that rot from inside.", fix: "Bag fruit, hang protein-bait traps, and clear all fallen fruit.",
+    description: "Small flies that lay eggs in ripening fruit, where maggots hatch and feed.",
+    damage: "Egg-laying punctures and internal maggots turn fruit soft and rotten before harvest.",
+    prevent: "Bag developing fruit, harvest early, and remove every dropped or overripe fruit." },
+  { name: "Fungus Gnats", emoji: "🦟", climates: ["hot","moderate","cold"], months: [1,2,3,4,5,6,7,8,9,10,11,12], targets: ["Houseplants","seedling","Herbs"], sign: "Tiny black flies drifting up from the soil when you water.", fix: "Let soil dry, use sticky traps and BTi, and top-dress with sand.",
+    description: "Small dark flies whose larvae feed on organic matter and tender roots in wet potting soil.",
+    damage: "Larvae nibble seedling roots and root hairs, weakening young or potted plants.",
+    prevent: "Let the top inch dry between waterings, add yellow sticky traps, and water with BTi." },
+  { name: "Grape Phylloxera", emoji: "🐜", climates: ["moderate","cold"], months: [5,6,7], targets: ["grape"], sign: "Galls on leaf undersides and slowly declining, stunted vines.", fix: "Plant grafted vines on resistant rootstock; there is no cure once infested.",
+    description: "A tiny root- and leaf-feeding insect that once devastated the world's vineyards.",
+    damage: "Root feeding stunts and slowly kills own-rooted grapevines.",
+    prevent: "Choose vines grafted onto phylloxera-resistant rootstock in affected regions." },
+  { name: "Husk Fly", emoji: "🪰", climates: ["moderate","cold"], months: [7,8,9], targets: ["walnut","pecan"], sign: "Blackened, slimy husks that stain the shell inside.", fix: "Hang yellow sticky traps, clean up drops, and time sprays to first catch.",
+    description: "A fly whose maggots feed inside the husks of walnuts and related nuts.",
+    damage: "Husk feeding stains and shrivels the nut and can lower kernel quality.",
+    prevent: "Hang baited yellow traps in midsummer and rake up fallen husks promptly." },
+  { name: "Mango Hopper", emoji: "🦗", climates: ["hot"], months: [2,3,4], targets: ["mango"], sign: "Clouds of wedge-shaped hoppers on flower spikes and sticky, sooty leaves.", fix: "Prune for airflow, wash off honeydew, and treat heavy flushes at bloom.",
+    description: "Small hopping insects that swarm mango flower panicles and suck sap.",
+    damage: "They drain flowers so they drop, and their honeydew breeds sooty mold, cutting fruit set.",
+    prevent: "Open the canopy with pruning, avoid crowding trees, and monitor panicles at bloom." },
+  { name: "Mexican Bean Beetle", emoji: "🐞", climates: ["hot","moderate","cold"], months: [6,7,8], targets: ["bean","cowpea","soybean"], sign: "Lacy, skeletonized leaves and fuzzy yellow larvae underneath.", fix: "Hand-pick adults and larvae, crush yellow egg clusters, and use row cover.",
+    description: "A coppery, spotted relative of the ladybug — but a leaf-eating pest of beans.",
+    damage: "Adults and spiny larvae skeletonize bean leaves and can defoliate plants.",
+    prevent: "Scout leaf undersides for yellow eggs, hand-pick, and plant early to dodge peak numbers." },
+  { name: "Nut Weevil", emoji: "🥜", climates: ["moderate","cold"], months: [8,9], targets: ["chestnut","hazelnut","walnut"], sign: "Small round exit holes in nuts and grubs inside the kernel.", fix: "Collect and destroy dropped nuts, and float-test to cull infested ones.",
+    description: "Weevils whose grubs develop inside ripening nuts.",
+    damage: "Larvae hollow out the kernel, leaving an exit hole and a ruined nut.",
+    prevent: "Gather nuts promptly, destroy infested drops, and cull floaters before storing." },
+  { name: "Onion Maggot", emoji: "🪰", climates: ["moderate","cold"], months: [5,6,9], targets: ["onion","garlic","leek","shallot"], sign: "Wilting, yellow seedlings and soft, tunneled bulbs.", fix: "Use row cover, rotate alliums, and avoid planting into fresh manure.",
+    description: "The larvae of a fly that tunnel into onion-family roots and bulbs.",
+    damage: "Tunneling kills young plants and rots stored bulbs from the inside.",
+    prevent: "Cover seedlings with netting, rotate on a long cycle, and remove culls that attract flies." },
+  { name: "Parsleyworm", emoji: "🐛", climates: ["hot","moderate","cold"], months: [6,7,8], targets: ["parsley","dill","fennel","carrot","celery"], sign: "Fat green caterpillars banded with black and yellow on umbellifer leaves.", fix: "Hand-pick if needed — many gardeners leave them for the butterflies.",
+    description: "The striking caterpillar of the black swallowtail butterfly.",
+    damage: "It eats foliage of parsley, dill, and carrots, though rarely enough to kill a plant.",
+    prevent: "Grow a few extra plants to share, and relocate caterpillars rather than spraying." },
+  { name: "Peach Tree Borer", emoji: "🐛", climates: ["moderate","cold"], months: [6,7,8], targets: ["peach","plum","cherry","apricot","nectarine"], sign: "Gummy sap and sawdust frass oozing at the trunk base.", fix: "Dig out borers with a wire, hang pheromone traps, and keep the trunk healthy.",
+    description: "A clear-winged moth whose larvae bore into the trunk base of stone-fruit trees.",
+    damage: "Larvae girdle the lower trunk, weakening or killing young trees.",
+    prevent: "Hang pheromone traps, keep the trunk base clear and unmulched, and avoid bark wounds." },
+  { name: "Pear Psylla", emoji: "🪲", climates: ["cold","moderate"], months: [4,5,6,7], targets: ["pear"], sign: "Sticky honeydew, black sooty mold, and curled, yellowing leaves.", fix: "Spray dormant oil, wash off honeydew, and encourage predatory bugs.",
+    description: "A tiny sap-sucking insect that is the main pest of pears.",
+    damage: "Feeding and honeydew blacken leaves with sooty mold and can spread pear decline.",
+    prevent: "Apply dormant oil before bud break, avoid excess nitrogen, and support natural predators." },
+  { name: "Persea Mite", emoji: "🕷️", climates: ["hot","moderate"], months: [6,7,8,9], targets: ["avocado"], sign: "Yellow spots and brown patches along leaf veins, with fine webbing.", fix: "Rinse foliage, keep trees watered, and release predatory mites.",
+    description: "A tiny mite that colonizes the undersides of avocado leaves.",
+    damage: "Feeding kills leaf tissue in patches, causing leaf drop and sunburned fruit.",
+    prevent: "Keep trees well-watered and unstressed, hose off dust, and conserve predatory mites." },
+  { name: "Plum Curculio", emoji: "🪲", climates: ["cold","moderate"], months: [5,6], targets: ["plum","apple","peach","cherry","apricot"], sign: "Crescent-shaped scars on young fruit and early fruit drop.", fix: "Jar the beetles onto a sheet at dawn, and clean up dropped fruit.",
+    description: "A small snouted weevil that scars stone and pome fruit as it lays eggs.",
+    damage: "Egg-laying leaves crescent scars, and grubs cause fruit to drop early.",
+    prevent: "Tap branches at dawn to collect beetles on a sheet, and destroy all dropped fruit." },
+  { name: "Pomegranate Butterfly", emoji: "🦋", climates: ["hot"], months: [6,7,8], targets: ["pomegranate"], sign: "Bored holes in the rind and hollowed, rotting fruit.", fix: "Bag fruit early, remove infested fruit, and clear fallen debris.",
+    description: "A butterfly whose larvae bore into developing pomegranate fruit.",
+    damage: "Caterpillars tunnel inside the fruit, causing rot that stays hidden until harvest.",
+    prevent: "Bag fruit soon after set, pick and destroy infested fruit, and keep the ground clean." },
+  { name: "Root-Knot Nematode", emoji: "🪱", climates: ["hot","moderate"], months: [6,7,8], targets: ["tomato","carrot","cucumber","okra","Vegetables"], sign: "Stunted, wilting plants with knotty galls along the roots.", fix: "Rotate with resistant crops, solarize soil, and add compost.",
+    description: "Microscopic soil worms that swell plant roots into galls.",
+    damage: "Galled roots can't take up water and nutrients, so plants wilt and yield poorly.",
+    prevent: "Rotate with resistant varieties, solarize beds in summer, and build soil with compost and marigolds." },
+  { name: "Spittlebug", emoji: "🫧", climates: ["moderate","cold"], months: [4,5,6], targets: ["strawberry","Herbs","rosemary","lavender"], sign: "Frothy 'spit' blobs on stems, with a nymph hidden inside.", fix: "Hose off the foam; damage is usually minor and needs no spray.",
+    description: "Sap-sucking nymphs that shelter inside a protective foam on stems.",
+    damage: "Heavy feeding can stunt new growth, but most plants shrug it off.",
+    prevent: "Blast foam off with water, keep beds tidy, and tolerate light infestations." },
+  { name: "Spotted Wing Drosophila", emoji: "🪰", climates: ["hot","moderate","cold"], months: [6,7,8,9], targets: ["raspberry","blackberry","blueberry","cherry","strawberry"], sign: "Soft, sunken, quickly-collapsing ripe berries with tiny larvae inside.", fix: "Harvest often, chill fruit fast, and hang vinegar traps.",
+    description: "A fruit fly that, unlike most, lays eggs in sound ripening fruit.",
+    damage: "Larvae feed inside berries, turning them soft and mushy within days of ripening.",
+    prevent: "Pick fruit as it ripens, refrigerate at once, remove culls, and monitor with vinegar traps." },
+  { name: "Stink Bug", emoji: "🛡️", climates: ["hot","moderate"], months: [7,8,9], targets: ["tomato","pepper","bean","okra","peach"], sign: "Cloudy, dimpled spots on fruit and shield-shaped bugs on the plants.", fix: "Hand-pick into soapy water, clear weeds, and cover young plants.",
+    description: "Shield-shaped bugs that pierce fruit and pods to suck sap.",
+    damage: "Feeding leaves hard, corky spots and dimples that deform fruit and pods.",
+    prevent: "Remove weedy borders, hand-pick adults, and cover vulnerable crops before fruiting." },
+  { name: "Strawberry Bud Weevil", emoji: "🪲", climates: ["moderate","cold"], months: [4,5], targets: ["strawberry","raspberry","blackberry"], sign: "Flower buds clipped and left dangling on the stem.", fix: "Clear debris, and treat at first sign only if damage is heavy.",
+    description: "The strawberry clipper — a weevil that girdles flower buds to lay its eggs.",
+    damage: "It severs unopened buds, cutting the number of berries the plant can set.",
+    prevent: "Clear leaf litter where adults overwinter, and grow day-neutral types to outrun the damage." },
+  { name: "Sweet Potato Weevil", emoji: "🍠", climates: ["hot","moderate"], months: [6,7,8,9], targets: ["sweet potato"], sign: "Tunneled roots with a bitter taste and slender bluish beetles.", fix: "Plant clean slips, rotate far away, and harvest before cold.",
+    description: "An ant-like weevil whose grubs tunnel through sweet potato roots and vines.",
+    damage: "Tunneling makes roots bitter and inedible, and it continues in storage.",
+    prevent: "Start with certified slips, rotate crops widely, hill the roots, and harvest on time." },
+  { name: "Wireworm", emoji: "🪱", climates: ["moderate","cold"], months: [4,5,6], targets: ["potato","carrot","corn","beet","Vegetables"], sign: "Narrow holes bored through roots and tubers, with thin orange grubs in the soil.", fix: "Trap with buried potato chunks, rotate, and cultivate before planting.",
+    description: "The tough, wiry larvae of click beetles that live for years in the soil.",
+    damage: "They bore clean holes through tubers, roots, and seeds, opening the way to rot.",
+    prevent: "Rotate out of sod, cultivate to expose grubs, and set potato-chunk bait traps before planting." },
 ];
+
+// Map an authored plantHealth pest name (e.g. "Tomato hornworm", "Scale") to its
+// full entry in PEST_WATCH_DATA, so the per-plant pest profiles can drive the same
+// tappable, climate-aware Pest Watch. Contains-match on a normalized, singularized
+// key; returns null when the pest isn't in the curated library (no detail to link).
+let _pestLibKeys = null;
+function matchLibraryPest(pestName) {
+  const norm = (s) => String(s || "").toLowerCase().replace(/[^a-z]/g, "").replace(/(ies|es|s)$/, "");
+  const k = norm(pestName);
+  if (k.length < 4) return null;
+  if (!_pestLibKeys) _pestLibKeys = PEST_WATCH_DATA.map((p) => ({ key: norm(p.name), pest: p }));
+  const hit = _pestLibKeys.find(({ key }) => key === k || key.includes(k) || k.includes(key));
+  return hit ? hit.pest : null;
+}
+
+// Public accessor: the full PEST_WATCH_DATA entry for an authored pest name (so a
+// plant's pest chip can open the pest detail), or null when it has no library page.
+export function getPestForName(name) {
+  return matchLibraryPest(name);
+}
+
+// Disease equivalent of matchLibraryPest: the full DISEASE_LIBRARY entry for an
+// authored disease name (so a plant's disease chip can open the disease detail),
+// or null when it has no library page. Uses a stricter match than pests — a plain
+// contains-match would collapse "Rust"/"Bean rust"/"Fig rust" and "Blight"/"Early
+// blight" together, so we match the whole normalized name, then fall back to a
+// word-boundary containment only when it doesn't create a wrong short-name hit.
+let _diseaseLibKeys = null;
+export function getDiseaseForName(name) {
+  const norm = (s) => String(s || "").toLowerCase().replace(/[^a-z]/g, "");
+  const k = norm(name);
+  if (k.length < 3) return null;
+  if (!_diseaseLibKeys) _diseaseLibKeys = DISEASE_LIBRARY.map((d) => ({ key: norm(d.name), disease: d }));
+  // Exact normalized match first (the common case — plantHealth uses library names verbatim).
+  const exact = _diseaseLibKeys.find(({ key }) => key === k);
+  return exact ? exact.disease : null;
+}
 
 export function getActivePests(savedPlantObjs, month, zone) {
   const bucket = getClimateBucket(zone);
@@ -2752,24 +3875,33 @@ export function getActivePests(savedPlantObjs, month, zone) {
   const results = [];
   PEST_WATCH_DATA.forEach((pest) => {
     if (Array.isArray(pest.climates) && !pest.climates.includes(bucket)) return;
-    if (!expand(pest.months).includes(month)) return;
+    if (!expand(pest.months.map(flipMonth)).includes(month)) return;
     const affected = (savedPlantObjs || []).filter((p) => {
       const nm = String(p?.name || "").toLowerCase();
       const type = normalizeType(p?.type, p?.name);
-      return pest.targets.some((t) => {
+      const targetMatch = pest.targets.some((t) => {
         const tl = t.toLowerCase();
         return type === t || nm.includes(tl);
       });
+      if (targetMatch) return true;
+      // Authored per-plant pest profile also counts — extends the watch to every
+      // plant with a plantHealth record, not just those in the curated target lists.
+      const health = getPlantHealth(p);
+      return !!(health && health.pests.some((hp) => matchLibraryPest(hp) === pest));
     });
     if (affected.length) results.push({ ...pest, affected: affected.map((p) => p.name) });
   });
   return results;
 }
 export function getSeasonForMonth(month) {
-  if (month >= 3 && month <= 5) return { key: "spring", label: "Spring", months: [3, 4, 5] };
-  if (month >= 6 && month <= 8) return { key: "summer", label: "Summer", months: [6, 7, 8] };
-  if (month >= 9 && month <= 11) return { key: "fall", label: "Fall", months: [9, 10, 11] };
-  return { key: "winter", label: "Winter", months: [12, 1, 2] };
+  // Resolve the season against the northern reference calendar, then hand the
+  // months back in the caller's local calendar.
+  const ref = flipMonth(month);
+  const local = (months) => months.map(flipMonth).sort((a, b) => a - b);
+  if (ref >= 3 && ref <= 5) return { key: "spring", label: "Spring", months: local([3, 4, 5]) };
+  if (ref >= 6 && ref <= 8) return { key: "summer", label: "Summer", months: local([6, 7, 8]) };
+  if (ref >= 9 && ref <= 11) return { key: "fall", label: "Fall", months: local([9, 10, 11]) };
+  return { key: "winter", label: "Winter", months: local([12, 1, 2]) };
 }
 
 export function countInSeason(items, dateField, year, seasonMonths) {
@@ -2778,6 +3910,86 @@ export function countInSeason(items, dateField, year, seasonMonths) {
     if (Number.isNaN(d.getTime())) return false;
     return d.getFullYear() === year && seasonMonths.includes(d.getMonth() + 1);
   }).length;
+}
+
+// ── Garden Timeline ──────────────────────────────────────────────────────────
+// Merges every dated garden signal the app already tracks into one newest-first
+// feed for the Journal. Waterings are grouped per day so they don't flood it.
+export function buildGardenTimeline({
+  journalEntries = [], harvestLog = [], wateringHistory = {}, careLog = [],
+  sowLog = {}, plantSaveDates = {}, badgeEarnedDates = {}, achievementBadges = [],
+} = {}) {
+  const events = [];
+  const tsOf = (v) => { const t = new Date(v).getTime(); return Number.isNaN(t) ? 0 : t; };
+  const keyOf = (v) => { const d = new Date(v); return Number.isNaN(d.getTime()) ? "" : getDateKey(d); };
+
+  Object.entries(plantSaveDates || {}).forEach(([plant, dk]) => {
+    if (!dk) return;
+    events.push({ ts: tsOf(dk), dateKey: keyOf(dk), kind: "plant", icon: "🌱", color: "#5cff89", title: `Added ${plant}`, subtitle: "Saved to your garden", plantName: plant });
+  });
+  Object.entries(sowLog || {}).forEach(([plant, dk]) => {
+    if (!dk) return;
+    events.push({ ts: tsOf(dk), dateKey: keyOf(dk), kind: "sow", icon: "🌾", color: "#8effab", title: `Sowed ${plant}`, subtitle: "Succession sowing", plantName: plant });
+  });
+  (journalEntries || []).forEach((e) => {
+    if (!e) return;
+    const when = e.createdAt || e.date;
+    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "photo", icon: "📸", color: "#6bc7ff", title: e.plantName && e.plantName !== "Garden" ? `Photo of ${e.plantName}` : "Garden photo", subtitle: e.mood ? `Feeling ${e.mood}` : "Added a photo", plantName: e.plantName && e.plantName !== "Garden" ? e.plantName : null, imageUri: e.imageUri });
+  });
+  (harvestLog || []).forEach((h) => {
+    if (!h) return;
+    const when = h.createdAt || h.date;
+    const amt = [h.amount, h.unit].filter(Boolean).join(" ").trim();
+    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "harvest", icon: "🎉", color: "#ffd86b", title: `Harvested ${h.plantName}`, subtitle: amt || "Logged a harvest", plantName: h.plantName });
+  });
+  (careLog || []).forEach((c) => {
+    if (!c) return;
+    const when = c.createdAt || c.date;
+    const who = c.plant && c.plant !== "Garden" ? c.plant : "the whole garden";
+    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "care", icon: c.actionIcon || "🌿", color: c.actionColor || "#8effab", title: c.actionLabel || "Garden care", subtitle: c.note ? c.note : who, plantName: c.plant && c.plant !== "Garden" ? c.plant : null });
+  });
+  const waterByDay = {};
+  Object.entries(wateringHistory || {}).forEach(([plant, dates]) => {
+    (Array.isArray(dates) ? dates : []).forEach((d) => {
+      const dk = keyOf(String(d).slice(0, 10));
+      if (!dk) return;
+      (waterByDay[dk] = waterByDay[dk] || new Set()).add(plant);
+    });
+  });
+  Object.entries(waterByDay).forEach(([dk, set]) => {
+    const n = set.size;
+    events.push({ ts: new Date(dk).getTime(), dateKey: dk, kind: "water", icon: "💧", color: "#6bc7ff", title: `Watered ${n} plant${n === 1 ? "" : "s"}`, subtitle: Array.from(set).slice(0, 3).join(", ") + (n > 3 ? ` +${n - 3}` : "") });
+  });
+  const badgeById = {};
+  (achievementBadges || []).forEach((b) => { if (b && b.id) badgeById[b.id] = b; });
+  Object.entries(badgeEarnedDates || {}).forEach(([id, dk]) => {
+    if (!dk) return;
+    const b = badgeById[id];
+    events.push({ ts: tsOf(dk), dateKey: keyOf(dk), kind: "badge", icon: (b && b.emoji) || "🏆", color: "#ffd86b", title: `Earned "${(b && b.title) || id}"`, subtitle: "Achievement unlocked" });
+  });
+
+  return events.filter((e) => e.ts > 0).sort((a, b) => b.ts - a.ts);
+}
+
+// A light recap of one calendar month's activity, keyed by event kind.
+export function getTimelineMonthRecap(events, ref = new Date()) {
+  const y = ref.getFullYear(), m = ref.getMonth();
+  const counts = {};
+  (events || []).forEach((e) => {
+    const d = new Date(e.ts);
+    if (d.getFullYear() === y && d.getMonth() === m) counts[e.kind] = (counts[e.kind] || 0) + 1;
+  });
+  return counts;
+}
+
+// "On This Day": events from the same month+day in a previous year.
+export function getTimelineOnThisDay(events, ref = new Date()) {
+  const md = `${ref.getMonth()}-${ref.getDate()}`;
+  const thisYear = ref.getFullYear();
+  return (events || []).filter((e) => {
+    const d = new Date(e.ts);
+    return `${d.getMonth()}-${d.getDate()}` === md && d.getFullYear() < thisYear;
+  });
 }
 
 export function getGardenXP({ savedPlants, journalEntries, gardenMap, wateredPlants, streakData, bonusXP, questXP }) {

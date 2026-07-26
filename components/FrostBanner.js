@@ -2,8 +2,10 @@ import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
 import { formatTemp, getUpcomingFrost } from "../core";
+import { useTranslation } from "../lib/i18n";
 
 export const FrostBanner = memo(function FrostBanner({ theme, weather, frostAlertsOn, unitSystem }) {
+  const { t } = useTranslation();
   const frost = getUpcomingFrost(weather);
   if (!frost) return null;
   const whenText =
@@ -14,13 +16,13 @@ export const FrostBanner = memo(function FrostBanner({ theme, weather, frostAler
     <View style={[styles.frostBanner, { borderColor: "#6bc7ff" }]}>
       <Text style={styles.frostBannerIcon}>❄️</Text>
       <View style={{ flex: 1 }}>
-        <Text style={styles.frostBannerTitle}>Frost expected {whenText}</Text>
+        <Text style={styles.frostBannerTitle}>{t("frostBanner.frostExpected")} {whenText}</Text>
         <Text style={styles.frostBannerText}>
-          Low of {formatTemp(frost.minTempF, unitSystem, true)} coming — cover tender plants, move containers to shelter, and hold off on transplanting.
+          {t("frostBanner.lowOf")} {formatTemp(frost.minTempF, unitSystem, true)} {t("frostBanner.comingCoverTenderPlantsMove")}
         </Text>
         {!frostAlertsOn ? (
           <Text style={styles.frostBannerHint}>
-            Turn on Frost Alerts in the Garden tab to get a heads-up each cold evening.
+            {t("frostBanner.turnOnFrostAlertsIn")}
           </Text>
         ) : null}
       </View>

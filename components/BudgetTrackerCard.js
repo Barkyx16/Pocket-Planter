@@ -2,6 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { tapHaptic } from "../core";
+import { useTranslation } from "../lib/i18n";
 
 const STORAGE_KEY = "pp_gardenExpenses";
 const CATS = [
@@ -13,6 +14,7 @@ const CATS = [
 const catOf = (id) => CATS.find((c) => c.id === id) || CATS[3];
 
 export const BudgetTrackerCard = memo(function BudgetTrackerCard({ theme }) {
+  const { t } = useTranslation();
   const [expenses, setExpenses] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [amount, setAmount] = useState("");
@@ -45,15 +47,15 @@ export const BudgetTrackerCard = memo(function BudgetTrackerCard({ theme }) {
 
   return (
     <View>
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Track what you spend on the garden — it feeds your ROI and shows where the money goes.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
+        {t("budgetTracker.trackWhatYouSpendOn")}
       </Text>
 
-      <View style={{ alignItems: "center", marginTop: 14, backgroundColor: "rgba(255,216,107,0.08)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(255,216,107,0.25)" }}>
+      <View style={{ alignItems: "center", marginTop: 14, backgroundColor: "rgba(255, 216, 107, 0.08)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(255, 216, 107, 0.24)" }}>
         <Text style={{ color: "#ffd86b", fontSize: 30, fontWeight: "900" }}>${total.toFixed(2)}</Text>
-        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800" }}>total invested</Text>
+        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{t("budgetTracker.totalInvested")}</Text>
         {byCat.length ? (
-          <Text style={{ color: theme.secondaryText, fontSize: 11.5, fontWeight: "700", marginTop: 6, textAlign: "center" }}>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 6, textAlign: "center" }}>
             {byCat.map((c) => `${c.label} $${c.sum.toFixed(0)}`).join("  ·  ")}
           </Text>
         ) : null}
@@ -61,16 +63,16 @@ export const BudgetTrackerCard = memo(function BudgetTrackerCard({ theme }) {
 
       {/* ADD */}
       <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
-        <TextInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="$" placeholderTextColor="#8fbf9d" style={{ width: 70, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.15)", color: theme.text, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontWeight: "800" }} />
-        <TextInput value={label} onChangeText={setLabel} placeholder="What for? (optional)" placeholderTextColor="#8fbf9d" style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.15)", color: theme.text, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontWeight: "700" }} />
-        <Pressable onPress={add} style={{ backgroundColor: "#5cff89", borderRadius: 12, paddingHorizontal: 15, justifyContent: "center" }}><Text style={{ color: "#07120b", fontSize: 15, fontWeight: "900" }}>＋</Text></Pressable>
+        <TextInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="$" placeholderTextColor="#8fbf9d" style={{ width: 70, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontWeight: "800" }} />
+        <TextInput value={label} onChangeText={setLabel} placeholder={t("budgetTracker.whatForOptional")} placeholderTextColor="#8fbf9d" style={{ flex: 1, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontWeight: "700" }} />
+        <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.addItem")} onPress={add} style={{ backgroundColor: "#5cff89", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}><Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>＋</Text></Pressable>
       </View>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
         {CATS.map((c) => {
           const active = cat === c.id;
           return (
-            <Pressable key={c.id} onPress={() => setCat(c.id)} style={{ borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: active ? c.color + "22" : "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: active ? c.color : "rgba(255,255,255,0.1)" }}>
-              <Text style={{ color: active ? c.color : theme.secondaryText, fontSize: 11.5, fontWeight: "800" }}>{c.label}</Text>
+            <Pressable key={c.id} onPress={() => setCat(c.id)} style={{ borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: active ? c.color + "22" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? c.color : "rgba(255, 255, 255, 0.1)" }}>
+              <Text style={{ color: active ? c.color : theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{c.label}</Text>
             </Pressable>
           );
         })}
@@ -81,11 +83,11 @@ export const BudgetTrackerCard = memo(function BudgetTrackerCard({ theme }) {
           {expenses.slice(0, 8).map((e) => {
             const c = catOf(e.cat);
             return (
-              <View key={e.id} style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255,255,255,0.03)", borderRadius: 10, paddingVertical: 7, paddingHorizontal: 10 }}>
+              <View key={e.id} style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 8, paddingVertical: 8, paddingHorizontal: 10 }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.color }} />
-                <Text style={{ flex: 1, color: theme.text, fontSize: 13, fontWeight: "700" }} numberOfLines={1}>{e.label || c.label.replace(/^\S+\s/, "")}</Text>
-                <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }}>${e.amount.toFixed(2)}</Text>
-                <Pressable onPress={() => remove(e.id)} hitSlop={8}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
+                <Text style={{ flex: 1, color: theme.text, fontSize: 12, fontWeight: "700" }} numberOfLines={1}>{e.label || c.label.replace(/^\S+\s/, "")}</Text>
+                <Text style={{ color: theme.text, fontSize: 12, fontWeight: "900" }}>${e.amount.toFixed(2)}</Text>
+                <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.removeItem")} onPress={() => remove(e.id)} hitSlop={8}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
               </View>
             );
           })}

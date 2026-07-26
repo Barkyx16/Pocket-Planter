@@ -3,8 +3,11 @@ import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { formatTemp, getClimateBucket, getFertilizerDays, getTodayKey, resolvePlantImageSource } from "../core";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
 export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weather, monthlySuggestions, savedPlants, wateredPlants, onOpenPlant, onAddPhoto, uploadingPhoto, harvestTrackers, fertilizerTrackers, journalEntries, zone, gardenMap, onNavigate, unitSystem }) {
+  const { t } = useTranslation();
   const today = getTodayKey();
   const currentHour = new Date().getHours();
   const currentMonth = new Date().getMonth() + 1;
@@ -82,7 +85,7 @@ if (!hasRealIssue) return null;
 
 return (
     <View style={[styles.myGardenTodayCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-      <Text style={styles.myGardenTodayEyebrow}>📋 TODAY'S GARDEN PLAN</Text>
+      <IconText label={t("myGardenToday.todaysGardenPlan")} style={styles.myGardenTodayEyebrow} />
 
       {/* HEADER */}
       <Text style={[styles.myGardenTodayTitle, { color: theme.text }]}>{greeting}</Text>
@@ -94,7 +97,7 @@ return (
       {savedPlants.length > 0 ? (
         <View style={styles.myGardenProgressWrap}>
           <View style={styles.myGardenProgressHeader}>
-            <Text style={styles.myGardenProgressLabel}>Daily garden tasks</Text>
+            <Text style={styles.myGardenProgressLabel}>{t("myGardenToday.dailyGardenTasks")}</Text>
             <Text style={styles.myGardenProgressCount}>{completedCount}/{totalTasks} done</Text>
           </View>
           <View style={styles.myGardenProgressTrack}>
@@ -104,15 +107,15 @@ return (
             }]} />
           </View>
           {progressPercent === 100 ? (
-            <Text style={styles.myGardenProgressComplete}>🌟 All tasks complete — your garden is thriving!</Text>
+            <IconText label={t("myGardenToday.allTasksCompleteYourGarden")} style={styles.myGardenProgressComplete} />
           ) : null}
         </View>
       ) : null}
 
       {/* WEATHER CARD */}
       <View style={[styles.myGardenWeatherCard, {
-        backgroundColor: weatherSummary.urgent ? `${weatherSummary.color}18` : "rgba(255,255,255,0.06)",
-        borderColor: weatherSummary.urgent ? `${weatherSummary.color}55` : "rgba(255,255,255,0.10)",
+        backgroundColor: weatherSummary.urgent ? `${weatherSummary.color}18` : "rgba(255, 255, 255, 0.06)",
+        borderColor: weatherSummary.urgent ? `${weatherSummary.color}55` : "rgba(255, 255, 255, 0.1)",
       }]}>
         <Text style={styles.myGardenWeatherIcon}>{weatherSummary.icon}</Text>
         <View style={{ flex: 1 }}>
@@ -137,22 +140,22 @@ return (
           <Pressable
             onPress={() => !allWatered ? onNavigate("plants") : null}
             style={[styles.myGardenTaskRowV2, {
-              backgroundColor: allWatered ? "rgba(92,255,137,0.10)" : "rgba(107,199,255,0.08)",
-              borderColor: allWatered ? "rgba(92,255,137,0.28)" : "rgba(107,199,255,0.28)",
+              backgroundColor: allWatered ? "rgba(92, 255, 137, 0.1)" : "rgba(107, 199, 255, 0.08)",
+              borderColor: allWatered ? "rgba(92, 255, 137, 0.3)" : "rgba(107, 199, 255, 0.3)",
             }]}
           >
-            <View style={[styles.myGardenTaskIconWrap, { backgroundColor: allWatered ? "rgba(92,255,137,0.20)" : "rgba(107,199,255,0.18)" }]}>
+            <View style={[styles.myGardenTaskIconWrap, { backgroundColor: allWatered ? "rgba(92, 255, 137, 0.2)" : "rgba(107, 199, 255, 0.16)" }]}>
               <Text style={styles.myGardenTaskIcon}>{allWatered ? "✅" : "💧"}</Text>
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.myGardenTaskTitle, { color: allWatered ? "#5cff89" : "#6bc7ff" }]}>
-                {allWatered ? "All plants watered!" : `${needsWaterCount} plant${needsWaterCount === 1 ? "" : "s"} need water`}
+                {allWatered ? t("myGardenToday.allPlantsWatered") : `${needsWaterCount} plant${needsWaterCount === 1 ? "" : "s"} need water`}
               </Text>
               <Text style={[styles.myGardenTaskText, { color: theme.secondaryText }]}>
                 {allWatered
                   ? `${wateredToday.length} of ${savedPlants.length} plants watered today`
                   : weather?.precipChance >= 65
-                  ? "Rain may help — check soil before watering"
+                  ? t("myGardenToday.rainMayHelpCheckSoil")
                   : `${wateredToday.length}/${savedPlants.length} done — tap to go to Plants tab`}
               </Text>
               {!allWatered && unwateredPlants.length > 0 ? (
@@ -174,7 +177,7 @@ return (
               ) : null}
               {!allWatered ? (
                 <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900", marginTop: 8 }}>
-                  Tap to go to Plants tab →
+                  {t("myGardenToday.tapToGoToPlants")}
                 </Text>
               ) : null}
             </View>
@@ -186,30 +189,30 @@ return (
         {harvestsReady.length > 0 ? (
           <Pressable
             onPress={() => onNavigate("garden")}
-            style={[styles.myGardenTaskRowV2, { backgroundColor: "rgba(255,216,107,0.10)", borderColor: "rgba(255,216,107,0.30)" }]}
+            style={[styles.myGardenTaskRowV2, { backgroundColor: "rgba(255, 216, 107, 0.1)", borderColor: "rgba(255, 216, 107, 0.3)" }]}
           >
-            <View style={[styles.myGardenTaskIconWrap, { backgroundColor: "rgba(255,216,107,0.20)" }]}>
+            <View style={[styles.myGardenTaskIconWrap, { backgroundColor: "rgba(255, 216, 107, 0.2)" }]}>
               <Text style={styles.myGardenTaskIcon}>🎉</Text>
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.myGardenTaskTitle, { color: "#ffd86b" }]}>
-                {harvestsReady.length} plant{harvestsReady.length === 1 ? "" : "s"} ready to harvest!
+                {harvestsReady.length} plant{harvestsReady.length === 1 ? "" : "s"} {t("myGardenToday.readyToHarvest")}
               </Text>
               <Text style={[styles.myGardenTaskText, { color: theme.secondaryText }]}>
-                Harvest now for peak flavor and to keep plants producing
+                {t("myGardenToday.harvestNowForPeakFlavor")}
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.myGardenPlantPillRow}>
                 {harvestsReady.map(p => {
                   const plant = produceData.find(item => item.name === p);
                   return (
-                    <Pressable key={p} onPress={() => plant && onOpenPlant(plant)} style={[styles.myGardenPlantPill, { backgroundColor: "rgba(255,216,107,0.18)", borderColor: "rgba(255,216,107,0.35)" }]}>
+                    <Pressable key={p} onPress={() => plant && onOpenPlant(plant)} style={[styles.myGardenPlantPill, { backgroundColor: "rgba(255, 216, 107, 0.16)", borderColor: "rgba(255, 216, 107, 0.3)" }]}>
                       <Text style={[styles.myGardenPlantPillText, { color: "#ffd86b" }]}>{p} →</Text>
                     </Pressable>
                   );
                 })}
               </ScrollView>
               <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900", marginTop: 8 }}>
-                Tap to go to Garden tab →
+                {t("myGardenToday.tapToGoToGarden")}
               </Text>
             </View>
           </Pressable>
@@ -219,30 +222,30 @@ return (
         {fertDuePlants.length > 0 ? (
           <Pressable
             onPress={() => onNavigate("garden")}
-            style={[styles.myGardenTaskRowV2, { backgroundColor: "rgba(142,255,171,0.08)", borderColor: "rgba(142,255,171,0.22)" }]}
+            style={[styles.myGardenTaskRowV2, { backgroundColor: "rgba(142, 255, 171, 0.08)", borderColor: "rgba(142, 255, 171, 0.2)" }]}
           >
-            <View style={[styles.myGardenTaskIconWrap, { backgroundColor: "rgba(142,255,171,0.16)" }]}>
+            <View style={[styles.myGardenTaskIconWrap, { backgroundColor: "rgba(142, 255, 171, 0.16)" }]}>
               <Text style={styles.myGardenTaskIcon}>🌿</Text>
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.myGardenTaskTitle, { color: "#8effab" }]}>
-                {fertDuePlants.length} plant{fertDuePlants.length === 1 ? "" : "s"} due for fertilizer
+                {fertDuePlants.length} plant{fertDuePlants.length === 1 ? "" : "s"} {t("myGardenToday.dueForFertilizer")}
               </Text>
               <Text style={[styles.myGardenTaskText, { color: theme.secondaryText }]}>
-                It's been 14+ days since last feeding — time to fertilize
+                {t("myGardenToday.itsBeen14DaysSince")}
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.myGardenPlantPillRow}>
                 {fertDuePlants.slice(0, 3).map(p => {
                   const plant = produceData.find(item => item.name === p);
                   return (
-                    <Pressable key={p} onPress={() => plant && onOpenPlant(plant)} style={[styles.myGardenPlantPill, { backgroundColor: "rgba(142,255,171,0.14)", borderColor: "rgba(142,255,171,0.28)" }]}>
+                    <Pressable key={p} onPress={() => plant && onOpenPlant(plant)} style={[styles.myGardenPlantPill, { backgroundColor: "rgba(142, 255, 171, 0.16)", borderColor: "rgba(142, 255, 171, 0.3)" }]}>
                       <Text style={[styles.myGardenPlantPillText, { color: "#8effab" }]}>{p} →</Text>
                     </Pressable>
                   );
                 })}
               </ScrollView>
               <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", marginTop: 8 }}>
-                Tap to go to Garden tab →
+                {t("myGardenToday.tapToGoToGarden")}
               </Text>
             </View>
           </Pressable>
@@ -250,22 +253,22 @@ return (
 
         {/* JOURNAL PHOTO TASK */}
         <Pressable disabled={uploadingPhoto} onPress={onAddPhoto} style={[styles.myGardenTaskRowV2, {
-          backgroundColor: todayPhotos > 0 ? "rgba(92,255,137,0.08)" : "rgba(255,255,255,0.05)",
-          borderColor: todayPhotos > 0 ? "rgba(92,255,137,0.22)" : "rgba(255,255,255,0.10)",
+          backgroundColor: todayPhotos > 0 ? "rgba(92, 255, 137, 0.08)" : "rgba(255, 255, 255, 0.06)",
+          borderColor: todayPhotos > 0 ? "rgba(92, 255, 137, 0.2)" : "rgba(255, 255, 255, 0.1)",
         }]}>
-          <View style={[styles.myGardenTaskIconWrap, { backgroundColor: todayPhotos > 0 ? "rgba(92,255,137,0.18)" : "rgba(255,255,255,0.08)" }]}>
+          <View style={[styles.myGardenTaskIconWrap, { backgroundColor: todayPhotos > 0 ? "rgba(92, 255, 137, 0.16)" : "rgba(255, 255, 255, 0.08)" }]}>
             <Text style={styles.myGardenTaskIcon}>{todayPhotos > 0 ? "✅" : "📸"}</Text>
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.myGardenTaskTitle, { color: todayPhotos > 0 ? "#5cff89" : theme.text }]}>
-              {uploadingPhoto ? "Uploading photo…" : todayPhotos > 0 ? `${todayPhotos} photo${todayPhotos === 1 ? "" : "s"} logged today!` : "Add a garden photo"}
+              {uploadingPhoto ? t("myGardenToday.uploadingPhoto") : todayPhotos > 0 ? `${todayPhotos} photo${todayPhotos === 1 ? "" : "s"} logged today!` : t("myGardenToday.addAGardenPhoto")}
             </Text>
             <Text style={[styles.myGardenTaskText, { color: theme.secondaryText }]}>
-              {todayPhotos > 0 ? "Your garden story is growing — great work!" : "Document your garden's progress with a photo"}
+              {todayPhotos > 0 ? t("myGardenToday.yourGardenStoryIsGrowing") : t("myGardenToday.documentYourGardensProgressWith")}
             </Text>
             {todayPhotos === 0 ? (
               <Text style={{ color: "#5cff89", fontSize: 12, fontWeight: "900", marginTop: 8 }}>
-                Tap to add a photo →
+                {t("myGardenToday.tapToAddAPhoto")}
               </Text>
             ) : null}
           </View>
@@ -273,8 +276,8 @@ return (
         </Pressable>
 
         {/* SEASONAL TIP */}
-        <View style={[styles.myGardenSeasonalTip, { borderColor: "rgba(255,216,107,0.22)" }]}>
-          <Text style={styles.myGardenSeasonalTipTitle}>💡 Seasonal Tip</Text>
+        <View style={[styles.myGardenSeasonalTip, { borderColor: "rgba(255, 216, 107, 0.2)" }]}>
+          <IconText label={t("myGardenToday.seasonalTip")} style={styles.myGardenSeasonalTipTitle} />
           <Text style={[styles.myGardenSeasonalTipText, { color: theme.secondaryText }]}>{seasonalTip}</Text>
         </View>
 
@@ -282,18 +285,18 @@ return (
         {savedPlants.length === 0 ? (
           <Pressable
             onPress={() => onNavigate("plants")}
-            style={[styles.myGardenTaskRowV2, { backgroundColor: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.08)" }]}
+            style={[styles.myGardenTaskRowV2, { backgroundColor: "rgba(255, 255, 255, 0.04)", borderColor: "rgba(255, 255, 255, 0.08)" }]}
           >
-            <View style={[styles.myGardenTaskIconWrap, { backgroundColor: "rgba(92,255,137,0.10)" }]}>
+            <View style={[styles.myGardenTaskIconWrap, { backgroundColor: "rgba(92, 255, 137, 0.1)" }]}>
               <Text style={styles.myGardenTaskIcon}>🌱</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.myGardenTaskTitle, { color: theme.text }]}>No plants saved yet</Text>
+              <Text style={[styles.myGardenTaskTitle, { color: theme.text }]}>{t("myGardenToday.noPlantsSavedYet")}</Text>
               <Text style={[styles.myGardenTaskText, { color: theme.secondaryText }]}>
-                Browse the Plants tab and save your first plant to start tracking your garden
+                {t("myGardenToday.browseThePlantsTabAnd")}
               </Text>
               <Text style={{ color: "#5cff89", fontSize: 12, fontWeight: "900", marginTop: 8 }}>
-                Tap to go to Plants tab →
+                {t("myGardenToday.tapToGoToPlants")}
               </Text>
             </View>
           </Pressable>
@@ -301,8 +304,8 @@ return (
 
         {/* MONTHLY SUGGESTION */}
         {monthlySuggestions.length > 0 && savedPlants.length > 0 ? (
-          <Pressable onPress={() => onOpenPlant(monthlySuggestions[0])} style={[styles.myGardenTaskRowV2, { backgroundColor: "rgba(92,255,137,0.08)", borderColor: "rgba(92,255,137,0.20)" }]}>
-            <View style={[styles.myGardenTaskIconWrap, { backgroundColor: "rgba(92,255,137,0.16)" }]}>
+          <Pressable onPress={() => onOpenPlant(monthlySuggestions[0])} style={[styles.myGardenTaskRowV2, { backgroundColor: "rgba(92, 255, 137, 0.08)", borderColor: "rgba(92, 255, 137, 0.2)" }]}>
+            <View style={[styles.myGardenTaskIconWrap, { backgroundColor: "rgba(92, 255, 137, 0.16)" }]}>
               {(() => {
                 const img = resolvePlantImageSource(monthlySuggestions[0]);
                 return img
@@ -312,10 +315,10 @@ return (
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.myGardenTaskTitle, { color: "#5cff89" }]}>
-                Plant this month: {monthlySuggestions[0].name}
+                {t("myGardenToday.plantThisMonth")} {monthlySuggestions[0].name}
               </Text>
               <Text style={[styles.myGardenTaskText, { color: theme.secondaryText }]}>
-                A strong pick for your zone right now — tap to see the care guide
+                {t("myGardenToday.aStrongPickForYour")}
               </Text>
             </View>
             <Text style={styles.myGardenTaskArrow}>›</Text>

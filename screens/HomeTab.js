@@ -1,12 +1,14 @@
 import { Alert, Pressable, Text, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { styles } from "../styles";
-import { SCREEN_WIDTH, WHATS_NEW_ITEMS, WHATS_NEW_VERSION, formatTemp, getRainSkipToday, getTodayKey, getUpcomingFrost, homeBuddyImage, isMonthlyChecklistComplete, zoneIsFrostFree } from "../core";
+import { SCREEN_WIDTH, WHATS_NEW_ITEMS, WHATS_NEW_VERSION, formatTemp, getActivePests, getRainSkipToday, getTodayKey, getUpcomingFrost, homeBuddyImage, isMonthlyChecklistComplete, zoneIsFrostFree } from "../core";
+import { t } from "../lib/i18n";
 import { CollapsibleCard } from "../components/CollapsibleCard";
 import { TabHero } from "../components/TabHero";
 import { DailyBonusCard } from "../components/DailyBonusCard";
 import { DaylightCard } from "../components/DaylightCard";
 import { EmptyGardenStarterCard } from "../components/EmptyGardenStarterCard";
+import { GettingStartedCard } from "../components/GettingStartedCard";
 import { FrostChecklistCard } from "../components/FrostChecklistCard";
 import { FrostOverrideCard } from "../components/FrostOverrideCard";
 import { FrostWindowCard } from "../components/FrostWindowCard";
@@ -29,8 +31,9 @@ import { TodaysGamePlanCard } from "../components/TodaysGamePlanCard";
 import { ToggleSection } from "../components/ToggleSection";
 import { WaterTriageCard } from "../components/WaterTriageCard";
 import { WateringStreakNudge } from "../components/WateringStreakNudge";
+import { IconText } from "../components/IconText";
 
-export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, completedQuestIds, dailyBonusClaimed, dailyBonusDate, dailyQuests, dismissPremiumIntro, fertilizerTrackers, frostChecklist, frostDatesHidden, frostOverrides, gardenXP, harvestLog, harvestTrackers, homeBannerDismissedDate, journalEntries, jumpToTab, markPlantWatered, monthlyChecklist, monthlySuggestions, onOpenSearch, openPlantFromList, openPest, pickJournalPhoto, pinnedPlants, plantFolders, plantPickDismissedDate, plantSaveDates, premiumUnlocked, record, savedPlants, scrollRef, setPlantPickDismissedDate, setCompletedQuestIds, setFrostChecklist, setFrostDatesHidden, setFrostOverrides, setHomeBannerDismissedDate, setMonthlyChecklist, setQuestXP, setShowWhatsNew, setSowLog, setXpPopups, setZip, showPremiumIntro, showWhatsNew, snoozedPlants, sowLog, streakData, streakFreeze, theme, togglePinnedPlant, unitSystem, uploadingPhoto, useStreakFreeze, waterAllPlants, waterPlant, wateredPlants, wateringAmounts, wateringHistory, wateringSectionY, weather, zipCoords, zone }) {
+export function HomeTab({ activationSteps, claimDailyBonus, combinedGardenMap, compatiblePlants, completedQuestIds, dailyBonusClaimed, dailyBonusDate, dailyQuests, dismissGettingStarted, dismissPremiumIntro, fertilizerTrackers, frostChecklist, frostDatesHidden, frostOverrides, gardenXP, gettingStartedDismissed, harvestLog, harvestTrackers, homeBannerDismissedDate, journalEntries, jumpToTab, markPlantWatered, monthlyChecklist, monthlySuggestions, onOpenSearch, openPlantFromList, openPest, pickJournalPhoto, pinnedPlants, plantFolders, plantPickDismissedDate, plantSaveDates, premiumUnlocked, record, savedPlants, savedPlantObjs, scrollRef, setPlantPickDismissedDate, setCompletedQuestIds, setFrostChecklist, setFrostDatesHidden, setFrostOverrides, setHomeBannerDismissedDate, setMonthlyChecklist, setQuestXP, setShowWhatsNew, setSowLog, setXpPopups, setZip, showPremiumIntro, showWhatsNew, snoozedPlants, sowLog, streakData, streakFreeze, theme, togglePinnedPlant, unitSystem, uploadingPhoto, useStreakFreeze, waterAllPlants, waterPlant, wateredPlants, wateringAmounts, wateringHistory, wateringSectionY, weather, zipCoords, zone }) {
   return (
 <>
 {(() => {
@@ -45,25 +48,25 @@ export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, 
       if (frost) {
         const whenText =
           frost.daysOut === 0 ? "tonight"
-          : frost.daysOut === 1 ? "tomorrow night"
+          : frost.daysOut === 1 ? t("home.tomorrowNight")
           : `in ${frost.daysOut} days`;
         const countdownText =
-          frost.daysOut === 0 ? "❄️ Tonight"
-          : frost.daysOut === 1 ? "❄️ 1 night away"
+          frost.daysOut === 0 ? t("home.tonight")
+          : frost.daysOut === 1 ? t("home.n1NightAway")
           : `❄️ ${frost.daysOut} nights away`;
         return (
           <View style={[styles.frostBanner, { borderColor: "#6bc7ff" }]}>
             <Text style={styles.frostBannerIcon}>❄️</Text>
             <View style={{ flex: 1 }}>
-              <Text style={styles.frostBannerTitle}>Frost expected {whenText}</Text>
-              <View style={{ alignSelf: "flex-start", marginTop: 6, marginBottom: 6, backgroundColor: "rgba(107,199,255,0.18)", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: "rgba(107,199,255,0.35)" }}>
-                <Text style={{ color: "#6bc7ff", fontSize: 13, fontWeight: "900" }}>{countdownText}</Text>
+              <Text style={styles.frostBannerTitle}>{t("home.frostExpected")} {whenText}</Text>
+              <View style={{ alignSelf: "flex-start", marginTop: 6, marginBottom: 6, backgroundColor: "rgba(107, 199, 255, 0.16)", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.3)" }}>
+                <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900" }}>{countdownText}</Text>
               </View>
               <Text style={styles.frostBannerText}>
-                Low of {formatTemp(frost.minTempF, unitSystem, true)} coming — cover tender plants, move containers to shelter, and hold off on transplanting.
+                {t("home.lowOf")} {formatTemp(frost.minTempF, unitSystem, true)} {t("home.comingCoverTenderPlantsMove")}
               </Text>
             </View>
-           <Pressable onPress={dismissBanner} hitSlop={10} style={{ padding: 4 }}>
+           <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.dismiss")} onPress={dismissBanner} hitSlop={10} style={{ padding: 4 }}>
               <Text style={{ color: "#6bc7ff", fontSize: 18, fontWeight: "900" }}>✕</Text>
             </Pressable>
           </View>
@@ -71,15 +74,15 @@ export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, 
       }
       if (extremeHeat) {
         return (
-          <View style={[styles.frostBanner, { borderColor: "#ff7b7b", backgroundColor: "rgba(255,123,123,0.10)" }]}>
+          <View style={[styles.frostBanner, { borderColor: "#ff7b7b", backgroundColor: "rgba(255, 123, 123, 0.1)" }]}>
             <Text style={styles.frostBannerIcon}>🔥</Text>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.frostBannerTitle, { color: "#ff7b7b" }]}>Extreme heat today</Text>
+              <Text style={[styles.frostBannerTitle, { color: "#ff7b7b" }]}>{t("home.extremeHeatToday")}</Text>
               <Text style={styles.frostBannerText}>
-                High of {formatTemp(weather.maxTempF, unitSystem, true)} — water before 9 AM, shade young plants, add mulch, and skip transplanting today.
+                {t("home.highOf")} {formatTemp(weather.maxTempF, unitSystem, true)} {t("home.waterBefore9AmShade")}
               </Text>
             </View>
-            <Pressable onPress={dismissBanner} hitSlop={10} style={{ padding: 4 }}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.dismiss")} onPress={dismissBanner} hitSlop={10} style={{ padding: 4 }}>
               <Text style={{ color: "#ff7b7b", fontSize: 18, fontWeight: "900" }}>✕</Text>
             </Pressable>
           </View>
@@ -88,15 +91,15 @@ export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, 
       const rainSkip = getRainSkipToday(weather);
       if (rainSkip) {
         return (
-          <View style={[styles.frostBanner, { borderColor: "#6bc7ff", backgroundColor: "rgba(107,199,255,0.10)" }]}>
+          <View style={[styles.frostBanner, { borderColor: "#6bc7ff", backgroundColor: "rgba(107, 199, 255, 0.1)" }]}>
             <Text style={styles.frostBannerIcon}>🌧️</Text>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.frostBannerTitle, { color: "#6bc7ff" }]}>Watering skipped today</Text>
+              <Text style={[styles.frostBannerTitle, { color: "#6bc7ff" }]}>{t("home.wateringSkippedToday")}</Text>
               <Text style={styles.frostBannerText}>
-                {rainSkip.chance}% chance of rain — Pocket Planter is skipping today's watering reminder so you don't overwater. Check soil before watering anyway.
+                {rainSkip.chance}{t("home.chanceOfRainPocketPlanter")}
               </Text>
             </View>
-            <Pressable onPress={dismissBanner} hitSlop={10} style={{ padding: 4 }}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.dismiss")} onPress={dismissBanner} hitSlop={10} style={{ padding: 4 }}>
               <Text style={{ color: "#6bc7ff", fontSize: 18, fontWeight: "900" }}>✕</Text>
             </Pressable>
           </View>
@@ -107,8 +110,15 @@ export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, 
     {showWhatsNew ? (
       <View style={{ backgroundColor: theme.card, borderRadius: 24, padding: 18, marginBottom: 18, borderWidth: 1, borderColor: "#5cff89" }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>✨ WHAT'S NEW</Text>
+          <IconText label={t("home.whatsNew")} style={{
+  color: "#8effab",
+  fontSize: 12,
+  fontWeight: "900",
+  letterSpacing: 0.5
+}} />
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t("a11y.dismiss")}
             onPress={() => { setShowWhatsNew(false); AsyncStorage.setItem("pp_whatsNewSeen", WHATS_NEW_VERSION).catch(() => {}); }}
             hitSlop={10}
             style={{ padding: 4 }}
@@ -116,7 +126,7 @@ export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, 
             <Text style={{ color: "#8fbf9d", fontSize: 18, fontWeight: "900" }}>✕</Text>
           </Pressable>
         </View>
-        <Text style={{ color: theme.text, fontSize: 20, fontWeight: "900", marginTop: 6 }}>Fresh updates 🌱</Text>
+        <Text style={{ color: theme.text, fontSize: 20, fontWeight: "900", marginTop: 6 }}>{t("home.freshUpdates")}</Text>
         <View style={{ marginTop: 12, gap: 8 }}>
           {WHATS_NEW_ITEMS.map((item) => (
             <Text key={item} style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "700", lineHeight: 20 }}>{item}</Text>
@@ -124,9 +134,9 @@ export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, 
         </View>
         <Pressable
           onPress={() => { setShowWhatsNew(false); AsyncStorage.setItem("pp_whatsNewSeen", WHATS_NEW_VERSION).catch(() => {}); }}
-          style={{ marginTop: 14, backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 13, alignItems: "center" }}
+          style={{ marginTop: 14, backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 14, alignItems: "center" }}
         >
-          <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 14 }}>Got it 🌿</Text>
+          <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 14 }}>{t("home.gotIt")}</Text>
         </Pressable>
       </View>
     ) : null}
@@ -145,37 +155,14 @@ export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, 
     <Pressable
       onPress={onOpenSearch}
       accessibilityRole="button"
-      accessibilityLabel="Search plants, pests, and journal"
-      style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 13, borderWidth: 1, borderColor: "rgba(92,255,137,0.20)", marginBottom: 18 }}
+      accessibilityLabel={t("home.searchPlantsPestsAndJournal")}
+      style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 14, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)", marginBottom: 18 }}
     >
       <Text style={{ fontSize: 16 }}>🔍</Text>
-      <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "700" }}>Search plants, pests, journal…</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "700" }}>{t("home.searchPlantsPestsJournal")}</Text>
     </Pressable>
 
-    {/* ZONE BADGE + CHANGE BUTTON */}
-    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: theme.card, borderRadius: 22, padding: 16, marginBottom: 18, borderWidth: 1, borderColor: "rgba(92,255,137,0.28)" }}>
-      <View>
-        <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", textTransform: "uppercase", letterSpacing: 0.5 }}>Your Growing Zone</Text>
-        <Text style={{ color: "#ffffff", fontSize: 28, fontWeight: "900", marginTop: 2 }}>Zone {record.zone}</Text>
-        <Text style={{ color: "#d7ebdc", fontSize: 13, fontWeight: "700", marginTop: 2 }}>{record.zonetitle}</Text>
-      </View>
-      <Pressable
-        onPress={() => {
-          Alert.alert(
-            "Change your zone?",
-            "This clears your current ZIP code so you can enter a new one. Your saved plants and garden stay intact.",
-            [
-              { text: "Cancel", style: "cancel" },
-              { text: "Change Zone", style: "destructive", onPress: () => setZip("") },
-            ]
-          );
-        }}
-        style={{ backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}
-      >
-        <Text style={{ color: "#d7ebdc", fontSize: 13, fontWeight: "900" }}>✏️ Change Zone</Text>
-      </Pressable>
-    </View>
-
+            {/* Growing zone card moved to the bottom of the page */}
             {savedPlants.length > 0 ? (
                 <TodaysGamePlanCard
                   theme={theme}
@@ -214,6 +201,15 @@ export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, 
                 setFrostChecklist={setFrostChecklist}
               />
 
+              {!gettingStartedDismissed && Array.isArray(activationSteps) ? (
+                <GettingStartedCard
+                  theme={theme}
+                  steps={activationSteps}
+                  onGoToStep={(step) => jumpToTab(step.route)}
+                  onDismiss={dismissGettingStarted}
+                />
+              ) : null}
+
               <EmptyGardenStarterCard
                 theme={theme}
                 savedPlants={savedPlants}
@@ -251,7 +247,7 @@ export function HomeTab({ claimDailyBonus, combinedGardenMap, compatiblePlants, 
   onOpenPlant={openPlantFromList}
 />
 
-<CollapsibleCard theme={theme} storageKey="dashboard" title="🌱 Garden Dashboard" defaultOpen={true}>
+<CollapsibleCard theme={theme} storageKey="dashboard" title={t("home.gardenDashboard")} defaultOpen={true}>
 <GardenStatsDashboard
   theme={theme}
   unitSystem={unitSystem}
@@ -289,7 +285,7 @@ zone={zone}
   onNavigate={jumpToTab}
 />
 {((monthlySuggestions.length || compatiblePlants.length) && plantPickDismissedDate !== getTodayKey()) ? (
-<CollapsibleCard theme={theme} storageKey="plantpick" title="🌟 Plant Pick">
+<CollapsibleCard theme={theme} storageKey="plantpick" title={t("home.plantPick")}>
 <PlantTodayHero
   theme={theme}
   monthlySuggestions={monthlySuggestions}
@@ -333,23 +329,14 @@ zone={zone}
   />
 )}
 
-{(!zoneIsFrostFree(zone) && frostDatesHidden) ? (
-  <Pressable
-    onPress={() => setFrostDatesHidden(false)}
-    style={{ backgroundColor: "rgba(107,199,255,0.08)", borderRadius: 999, paddingVertical: 12, paddingHorizontal: 18, marginBottom: 18, borderWidth: 1, borderColor: "rgba(107,199,255,0.2)", alignItems: "center", justifyContent: "center" }}
-  >
-    <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "800" }}>❄️ Show frost dates card</Text>
-  </Pressable>
-) : null}
-
 {zipCoords ? (
-<CollapsibleCard theme={theme} storageKey="daylight" title="☀️ Daylight Today">
+<CollapsibleCard theme={theme} storageKey="daylight" title={t("home.daylightToday")}>
 <DaylightCard theme={theme} zipCoords={zipCoords} />
 </CollapsibleCard>
 ) : null}
 
 {zone && !isMonthlyChecklistComplete(zone, monthlyChecklist) ? (
-<CollapsibleCard theme={theme} storageKey="monthlychecklist" title="🗓️ This Month">
+<CollapsibleCard theme={theme} storageKey="monthlychecklist" title={t("home.thisMonth")}>
 <MonthlyChecklistCard theme={theme} zone={zone} monthlyChecklist={monthlyChecklist} setMonthlyChecklist={setMonthlyChecklist} />
 </CollapsibleCard>
 ) : null}
@@ -368,11 +355,11 @@ zone={zone}
   streakData={streakData}
 />
 
-{compatiblePlants.length ? (
-<CollapsibleCard theme={theme} storageKey="pestwatch" title="🐛 Pest Watch">
+{getActivePests(savedPlantObjs, new Date().getMonth() + 1, zone).length ? (
+<CollapsibleCard theme={theme} storageKey="pestwatch" title={t("home.pestWatch")}>
 <PestWatchCard
   theme={theme}
-  savedPlantObjs={compatiblePlants}
+  savedPlantObjs={savedPlantObjs}
   zone={zone}
   onOpenPlant={openPlantFromList}
   onOpenPest={openPest}
@@ -380,53 +367,99 @@ zone={zone}
 </CollapsibleCard>
 ) : null}
 
-{((zone && savedPlants.length) || (!zoneIsFrostFree(zone) && !frostDatesHidden)) ? (
-<CollapsibleCard theme={theme} storageKey="plantingsowingfrost" title="🌱 Planting, Sowing & Frost" defaultOpen={false}>
+{((zone && savedPlants.length) || !zoneIsFrostFree(zone)) ? (
+<CollapsibleCard theme={theme} storageKey="plantingsowingfrost" title={t("home.plantingSowingFrost")} defaultOpen={false}>
   {(zone && savedPlants.length) ? (
     <>
-      <Text style={{ color: "#5cff89", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 8 }}>📅 PLANTING & HARVEST CALENDAR</Text>
+      <IconText label={t("home.plantingHarvestCalendar")} style={{
+  color: "#5cff89",
+  fontSize: 12,
+  fontWeight: "900",
+  letterSpacing: 0.8,
+  marginBottom: 8
+}} />
       <PlantingCalendarCard theme={theme} savedPlants={savedPlants} zone={zone} onOpenPlant={openPlantFromList} />
-      <ToggleSection label="🔁 Succession Sowing" closeLabel="✕ Close Succession Sowing">
+      <ToggleSection label={t("home.successionSowing")} closeLabel={t("home.closeSuccessionSowing")}>
         <SuccessionSowingCard theme={theme} savedPlants={savedPlants} zone={zone} sowLog={sowLog} onSow={(name) => setSowLog((c) => ({ ...c, [name]: getTodayKey() }))} />
       </ToggleSection>
     </>
   ) : null}
-  {(!zoneIsFrostFree(zone) && !frostDatesHidden) ? (
-    <ToggleSection label="❄️ Frost Dates" closeLabel="✕ Close Frost Dates" accent="blue">
-      <FrostOverrideCard theme={theme} zone={zone} frostOverrides={frostOverrides} onSave={setFrostOverrides} onHide={() => setFrostDatesHidden(true)} />
-    </ToggleSection>
+  {!zoneIsFrostFree(zone) ? (
+    frostDatesHidden ? (
+      // When hidden, the unhide control lives right here — where the frost
+      // section was — instead of jumping to the top of the page.
+      <Pressable
+        onPress={() => setFrostDatesHidden(false)}
+        accessibilityRole="button"
+        style={{ backgroundColor: "rgba(107, 199, 255, 0.08)", borderRadius: 12, paddingVertical: 12, paddingHorizontal: 18, borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.2)", alignItems: "center", justifyContent: "center" }}
+      >
+        <IconText label={t("home.showFrostDatesCard")} style={{
+  color: theme.secondaryText,
+  fontSize: 12,
+  fontWeight: "800"
+}} />
+      </Pressable>
+    ) : (
+      <ToggleSection label={t("home.frostDates")} closeLabel={t("home.closeFrostDates")} accent="blue">
+        <FrostOverrideCard theme={theme} zone={zone} frostOverrides={frostOverrides} onSave={setFrostOverrides} onHide={() => setFrostDatesHidden(true)} />
+      </ToggleSection>
+    )
   ) : null}
 </CollapsibleCard>
 ) : null}
 
 {savedPlants.length ? (
-<CollapsibleCard theme={theme} storageKey="savedplants" title="🌿 Saved Plants">
+<CollapsibleCard theme={theme} storageKey="savedplants" title={t("home.savedPlants")}>
 <SavedPlantsCard theme={theme} savedPlants={savedPlants} plantFolders={plantFolders} premiumUnlocked={premiumUnlocked} wateredPlants={wateredPlants} wateringHistory={wateringHistory} weather={weather} harvestTrackers={harvestTrackers} pinnedPlants={pinnedPlants} onTogglePin={togglePinnedPlant} onOpenPlant={openPlantFromList} onUpgrade={() => jumpToTab("premium")} />
 </CollapsibleCard>
 ) : null}
 
 {(streakData?.count || 0) >= 3 ? (
-  <View style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: streakFreeze.available ? "rgba(163,213,255,0.10)" : "rgba(255,255,255,0.04)", borderRadius: 18, padding: 16, marginBottom: 18, borderWidth: 1, borderColor: streakFreeze.available ? "rgba(163,213,255,0.28)" : "rgba(255,255,255,0.08)" }}>
+  <View style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: streakFreeze.available ? "rgba(163, 213, 255, 0.1)" : "rgba(255, 255, 255, 0.04)", borderRadius: 16, padding: 16, marginBottom: 18, borderWidth: 1, borderColor: streakFreeze.available ? "rgba(163, 213, 255, 0.3)" : "rgba(255, 255, 255, 0.08)" }}>
     <Text style={{ fontSize: 28 }}>❄️</Text>
     <View style={{ flex: 1 }}>
-      <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900" }}>Streak Freeze</Text>
+      <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{t("home.streakFreeze")}</Text>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>
-        {streakFreeze.available ? "Protect your streak on a busy day. Refreshes weekly." : "Used this week — refreshes next week."}
+        {streakFreeze.available ? t("home.protectYourStreakOnA") : t("home.usedThisWeekRefreshesNext")}
       </Text>
     </View>
     <Pressable
       onPress={useStreakFreeze}
       disabled={!streakFreeze.available}
       accessibilityRole="button"
-      accessibilityLabel="Use streak freeze"
-      style={{ backgroundColor: streakFreeze.available ? "#a3d5ff" : "rgba(255,255,255,0.08)", borderRadius: 14, paddingHorizontal: 16, paddingVertical: 11 }}
+      accessibilityLabel={t("home.useStreakFreeze")}
+      style={{ backgroundColor: streakFreeze.available ? "#a3d5ff" : "rgba(255, 255, 255, 0.08)", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12 }}
     >
-      <Text style={{ color: streakFreeze.available ? "#07120b" : "#8fbf9d", fontSize: 13, fontWeight: "900" }}>
+      <Text style={{ color: streakFreeze.available ? "#07120b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>
         {streakFreeze.available ? "Use" : "Used"}
       </Text>
     </Pressable>
   </View>
 ) : null}
+
+    {/* GROWING ZONE — moved to the bottom of the home page */}
+    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: theme.card, borderRadius: 24, padding: 16, marginTop: 4, marginBottom: 8, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)" }}>
+      <View>
+        <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", textTransform: "uppercase", letterSpacing: 0.5 }}>{t("zone.yourZone")}</Text>
+        <Text style={{ color: "#ffffff", fontSize: 28, fontWeight: "900", marginTop: 2 }}>{t("zone.zoneN", { zone: record.zone })}</Text>
+        <Text style={{ color: "#d7ebdc", fontSize: 12, fontWeight: "700", marginTop: 2 }}>{record.zonetitle}</Text>
+      </View>
+      <Pressable
+        onPress={() => {
+          Alert.alert(
+            t("zone.changeTitle"),
+            t("zone.changeBody"),
+            [
+              { text: t("common.cancel"), style: "cancel" },
+              { text: t("zone.changeConfirm"), style: "destructive", onPress: () => setZip("") },
+            ]
+          );
+        }}
+        style={{ backgroundColor: "rgba(255, 255, 255, 0.08)", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.12)" }}
+      >
+        <Text style={{ color: "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{t("zone.change")}</Text>
+      </Pressable>
+    </View>
             </>
   );
 }

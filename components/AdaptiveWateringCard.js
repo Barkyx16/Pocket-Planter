@@ -2,8 +2,11 @@ import { memo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { getBaseWaterInterval, getNextWaterInfo, getWateringRhythm, resolvePlantImageSource } from "../core";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
 export const AdaptiveWateringCard = memo(function AdaptiveWateringCard({ theme, savedPlants, wateringHistory, wateredPlants, weather, onOpenPlant }) {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(6);
   const rows = (savedPlants || [])
     .map((name) => {
@@ -21,8 +24,8 @@ export const AdaptiveWateringCard = memo(function AdaptiveWateringCard({ theme, 
 
   if (!rows.length) {
     return (
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Water your plants a few times and Pocket Planter will learn each one's rhythm and build a personalized schedule here.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
+        {t("adaptiveWatering.waterYourPlantsAFew")}
       </Text>
     );
   }
@@ -31,8 +34,8 @@ export const AdaptiveWateringCard = memo(function AdaptiveWateringCard({ theme, 
 
   return (
     <View>
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        A schedule that adapts to you — {learnedCount > 0 ? `learned from your habits on ${learnedCount} plant${learnedCount === 1 ? "" : "s"}` : "starting from typical needs"}, then adjusted for the weather.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
+        {t("adaptiveWatering.aScheduleThatAdaptsTo")} {learnedCount > 0 ? `learned from your habits on ${learnedCount} plant${learnedCount === 1 ? "" : "s"}` : t("adaptiveWatering.startingFromTypicalNeeds")}{t("adaptiveWatering.thenAdjustedForTheWeather")}
       </Text>
 
       <View style={{ gap: 8, marginTop: 14 }}>
@@ -43,20 +46,25 @@ export const AdaptiveWateringCard = memo(function AdaptiveWateringCard({ theme, 
             <Pressable
               key={name}
               onPress={() => onOpenPlant && onOpenPlant(item)}
-              style={{ flexDirection: "row", alignItems: "center", gap: 11, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 14, padding: 11, borderWidth: 1, borderColor: `${accent}22` }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: `${accent}22` }}
             >
-              <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+              <View style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                 {img ? <Image source={img} style={{ width: 28, height: 28 }} resizeMode="contain" /> : <Text style={{ fontSize: 16 }}>🌱</Text>}
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{name}</Text>
-                <Text style={{ color: theme.secondaryText, fontSize: 11.5, fontWeight: "700", marginTop: 1 }}>
-                  Every ~{interval}d {learned ? "· 🧠 learned from you" : "· typical"}
+                <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>
+                  {t("adaptiveWatering.every")}{interval}d {learned ? t("adaptiveWatering.learnedFromYou") : t("adaptiveWatering.typical")}
                 </Text>
               </View>
               <View style={{ alignItems: "flex-end" }}>
-                <Text style={{ color: accent, fontSize: 12.5, fontWeight: "900" }}>{next.daysUntil <= 0 ? "Due now" : next.daysUntil === 1 ? "Tomorrow" : `${next.daysUntil}d`}</Text>
-                {next.rainSoon ? <Text style={{ color: "#8effab", fontSize: 10, fontWeight: "800", marginTop: 1 }}>🌧️ check soil</Text> : null}
+                <Text style={{ color: accent, fontSize: 12, fontWeight: "900" }}>{next.daysUntil <= 0 ? t("adaptiveWatering.dueNow") : next.daysUntil === 1 ? "Tomorrow" : `${next.daysUntil}d`}</Text>
+                {next.rainSoon ? <IconText label={t("adaptiveWatering.checkSoil")} style={{
+  color: "#8effab",
+  fontSize: 10,
+  fontWeight: "800",
+  marginTop: 2
+}} /> : null}
               </View>
             </Pressable>
           );
@@ -66,15 +74,20 @@ export const AdaptiveWateringCard = memo(function AdaptiveWateringCard({ theme, 
       {rows.length > visible ? (
         <Pressable
           onPress={() => setVisible((c) => c + 8)}
-          style={{ marginTop: 12, backgroundColor: "rgba(92,255,137,0.10)", borderRadius: 16, paddingVertical: 13, alignItems: "center", borderWidth: 1, borderColor: "rgba(92,255,137,0.24)" }}
+          style={{ marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
         >
-          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>Show more plants ({rows.length - visible} more)</Text>
+          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("adaptiveWatering.showMorePlants")}{rows.length - visible} {t("adaptiveWatering.more")}</Text>
         </Pressable>
       ) : null}
 
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 12, fontStyle: "italic", textAlign: "center" }}>
-        🧠 = interval learned from your watering history · intervals tighten automatically in heat.
-      </Text>
+      <IconText label={t("adaptiveWatering.intervalLearnedFromYourWatering")} style={{
+  color: theme.secondaryText,
+  fontSize: 10,
+  fontWeight: "700",
+  marginTop: 12,
+  fontStyle: "italic",
+  textAlign: "center"
+}} />
     </View>
   );
 })

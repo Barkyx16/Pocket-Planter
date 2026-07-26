@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
+import { useTranslation } from "../lib/i18n";
 
 export const WeeklyGardenRecapCard = memo(function WeeklyGardenRecapCard({
   theme,
@@ -10,6 +11,7 @@ export const WeeklyGardenRecapCard = memo(function WeeklyGardenRecapCard({
   gardenXP,
   streakData,
 }) {
+  const { t } = useTranslation();
   const wateredCount = Object.values(
     wateredPlants || {}
   ).filter(Boolean).length;
@@ -34,7 +36,7 @@ export const WeeklyGardenRecapCard = memo(function WeeklyGardenRecapCard({
       ]}
     >
       <Text style={styles.weeklyRecapEyebrow}>
-        WEEKLY RECAP
+        {t("weeklyGardenRecap.weeklyRecap")}
       </Text>
 
       <Text
@@ -43,37 +45,37 @@ export const WeeklyGardenRecapCard = memo(function WeeklyGardenRecapCard({
           { color: theme.text },
         ]}
       >
-        Your Garden Progress 🌱
+        {t("weeklyGardenRecap.yourGardenProgress")}
       </Text>
 
       <View style={styles.weeklyRecapGrid}>
         {wateredCount > 0 && (
           <Text style={styles.weeklyRecapItem}>
-            💧 Watered: {wateredCount}
+            {t("weeklyGardenRecap.watered")} {wateredCount}
           </Text>
         )}
 
         {journalEntries.length > 0 && (
           <Text style={styles.weeklyRecapItem}>
-            📸 Photos: {journalEntries.length}
+            {t("weeklyGardenRecap.photos")} {journalEntries.length}
           </Text>
         )}
 
         {savedPlants.length > 0 && (
           <Text style={styles.weeklyRecapItem}>
-            🪴 Saved: {savedPlants.length}
+            {t("weeklyGardenRecap.saved")} {savedPlants.length}
           </Text>
         )}
 
         {gardenXP.xp > 0 && (
           <Text style={styles.weeklyRecapItem}>
-            ⭐ XP: {gardenXP.xp}
+            {t("weeklyGardenRecap.xp")} {gardenXP.xp}
           </Text>
         )}
       </View>
 
       <Text style={styles.weeklyRecapFooter}>
-        🔥 Current streak:{" "}
+        {t("weeklyGardenRecap.currentStreak")}{" "}
         {streakData?.count || 0} days
       </Text>
     </View>

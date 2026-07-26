@@ -2,9 +2,13 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { getMonthKey, getMonthlyChecklistTasks } from "../core";
+import { formatDate, useTranslation } from "../lib/i18n";
 
 export const MonthlyChecklistCard = memo(function MonthlyChecklistCard({ theme, zone, monthlyChecklist, setMonthlyChecklist }) {
-  const monthName = new Date().toLocaleDateString("en-US", { month: "long" });
+  const { t } = useTranslation();
+  const monthName = formatDate(new Date(), {
+  month: "long"
+});
   const tasks = getMonthlyChecklistTasks(zone);
 
   // Key by year+month so each month starts fresh and old checks don't bleed over.
@@ -25,11 +29,11 @@ export const MonthlyChecklistCard = memo(function MonthlyChecklistCard({ theme, 
 
   return (
     <View>
-      <Text style={[styles.cardTitle, { color: theme.text }]}>{monthName} Garden Checklist</Text>
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "600", marginTop: 4 }}>
-        {doneCount}/{tasks.length} done{remaining > 0 ? ` · ${remaining} to go this month` : " · all wrapped up! 🎉"}
+      <Text style={[styles.cardTitle, { color: theme.text }]}>{monthName} {t("monthlyChecklist.gardenChecklist")}</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "600", marginTop: 4 }}>
+        {doneCount}/{tasks.length} done{remaining > 0 ? ` · ${remaining} to go this month` : t("monthlyChecklist.allWrappedUp")}
       </Text>
-      <View style={{ height: 6, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden", marginTop: 10 }}>
+      <View style={{ height: 6, borderRadius: 999, backgroundColor: "rgba(255, 255, 255, 0.08)", overflow: "hidden", marginTop: 10 }}>
         <View style={{ height: 6, borderRadius: 999, backgroundColor: "#8effab", width: `${(doneCount / tasks.length) * 100}%` }} />
       </View>
 
@@ -42,9 +46,9 @@ export const MonthlyChecklistCard = memo(function MonthlyChecklistCard({ theme, 
               onPress={() => toggle(i)}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: isDone }}
-              style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: isDone ? "rgba(142,239,171,0.10)" : "rgba(255,255,255,0.05)", borderRadius: 14, padding: 14, borderWidth: 1, borderColor: isDone ? "rgba(142,239,171,0.35)" : "rgba(255,255,255,0.10)" }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: isDone ? "rgba(142, 239, 171, 0.1)" : "rgba(255, 255, 255, 0.06)", borderRadius: 12, padding: 14, borderWidth: 1, borderColor: isDone ? "rgba(142, 239, 171, 0.3)" : "rgba(255, 255, 255, 0.1)" }}
             >
-              <View style={{ width: 24, height: 24, borderRadius: 7, alignItems: "center", justifyContent: "center", backgroundColor: isDone ? "#8effab" : "transparent", borderWidth: 2, borderColor: isDone ? "#8effab" : "rgba(255,255,255,0.3)" }}>
+              <View style={{ width: 24, height: 24, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: isDone ? "#8effab" : "transparent", borderWidth: 2, borderColor: isDone ? "#8effab" : "rgba(255, 255, 255, 0.3)" }}>
                 {isDone && <Text style={{ color: "#0e2414", fontSize: 14, fontWeight: "900" }}>✓</Text>}
               </View>
               <Text style={{ flex: 1, color: isDone ? theme.secondaryText : theme.text, fontSize: 14, fontWeight: "600", textDecorationLine: isDone ? "line-through" : "none" }}>

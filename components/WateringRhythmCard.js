@@ -2,8 +2,10 @@ import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { getWateringRhythm, resolvePlantImageSource } from "../core";
+import { useTranslation } from "../lib/i18n";
 
 export const WateringRhythmCard = memo(function WateringRhythmCard({ theme, savedPlants, wateringHistory, onOpenPlant }) {
+  const { t } = useTranslation();
   const rows = (savedPlants || [])
     .map((name) => {
       const item = produceData.find((p) => p.name === name);
@@ -34,25 +36,25 @@ return (
             <Pressable
               key={`rhythm-${name}`}
               onPress={() => onOpenPlant(item)}
-              style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 14, padding: 10, borderWidth: 1, borderColor: `${s.color}30` }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, padding: 10, borderWidth: 1, borderColor: `${s.color}30` }}
             >
-              <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+              <View style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                 {img ? <Image source={img} style={{ width: 28, height: 28 }} resizeMode="contain" /> : <Text style={{ fontSize: 18 }}>🌱</Text>}
               </View>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }} numberOfLines={1}>{name}</Text>
-                <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 1 }} numberOfLines={1}>{detail}</Text>
+                <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 2 }} numberOfLines={1}>{detail}</Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4, flexShrink: 0 }}>
-                <Text style={{ color: s.color, fontSize: 11, fontWeight: "900" }} numberOfLines={1}>{s.icon} {s.label}</Text>
+                <Text style={{ color: s.color, fontSize: 10, fontWeight: "900" }} numberOfLines={1}>{s.icon} {s.label}</Text>
                 <Text style={{ color: s.color, fontSize: 16, fontWeight: "900" }}>›</Text>
               </View>
             </Pressable>
           );
         })}
       </View>
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 10, fontStyle: "italic", textAlign: "center" }}>
-        Needs at least 3 logged waterings per plant to show a pattern.
+      <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 10, fontStyle: "italic", textAlign: "center" }}>
+        {t("wateringRhythm.needsAtLeast3Logged")}
       </Text>
     </View>
   );

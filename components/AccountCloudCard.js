@@ -2,10 +2,13 @@ import { memo } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { styles } from "../styles";
 import { supabase } from "../lib/supabase";
+import { IconText } from "./IconText";
+import { formatDate, useTranslation } from "../lib/i18n";
 
 export const AccountCloudCard = memo(function AccountCloudCard({
   theme,
   user,
+  lastSyncedAt,
   newEmail,
   setNewEmail,
   premiumUnlocked,
@@ -13,20 +16,32 @@ export const AccountCloudCard = memo(function AccountCloudCard({
   journalEntries,
   gardenMap,
 }) {
+  const { t } = useTranslation();
   const gardenPlotCount =
     Object.values(gardenMap || {}).filter(Boolean).length;
 
   const memberSince = user?.created_at
-    ? new Date(user.created_at).toLocaleDateString()
-    : "Unknown";
+    ? formatDate(new Date(user.created_at))
+    : t("accountCloud.unknown");
 
-  const lastSync = "Just now";
+  // Honest last-sync time from the real timestamp of the last successful cloud
+  // save, not a hardcoded label. Computed at render (accurate when the card
+  // opens); a settings card doesn't need it to tick live.
+  const lastSync = (() => {
+    if (!lastSyncedAt) return t("accountCloud.syncPending");
+    const mins = Math.floor((Date.now() - lastSyncedAt) / 60000);
+    if (mins < 1) return t("accountCloud.syncJustNow");
+    if (mins < 60) return t("accountCloud.syncMinutesAgo", { count: mins });
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return t("accountCloud.syncHoursAgo", { count: hrs });
+    return formatDate(new Date(lastSyncedAt), { month: "short", day: "numeric" });
+  })();
 
   const changeEmail = async () => {
   const cleanEmail = newEmail.trim();
 
   if (!cleanEmail) {
-    Alert.alert("Enter a new email first.");
+    Alert.alert(t("accountCloud.enterNewEmailFirst"));
     return;
   }
 
@@ -37,21 +52,21 @@ export const AccountCloudCard = memo(function AccountCloudCard({
 
     if (error) {
       console.log("EMAIL CHANGE ERROR:", error.message);
-      Alert.alert("Could not change email: " + error.message);
+      Alert.alert(t("accountCloud.couldNotChangeEmail") + " " + error.message);
       return;
     }
 
-    Alert.alert("Check your new email inbox for a confirmation link!");
+    Alert.alert(t("accountCloud.checkNewEmailInbox"));
     setNewEmail("");
   } catch (err) {
     console.log("EMAIL CHANGE CRASH:", err);
-    Alert.alert("Something went wrong. Try again.");
+    Alert.alert(t("accountCloud.somethingWentWrong"));
   }
 };
 
 const resetPassword = async () => {
   if (!user?.email) {
-    Alert.alert("No email found for this account.");
+    Alert.alert(t("accountCloud.noEmailFound"));
     return;
   }
 
@@ -65,11 +80,11 @@ const resetPassword = async () => {
 
     if (error) {
       console.log("RESET ERROR:", error.message);
-      Alert.alert("Could not send reset email: " + error.message);
+      Alert.alert(t("accountCloud.couldNotSendReset") + " " + error.message);
       return;
     }
 
-    Alert.alert("Password reset email sent! Check your inbox.");
+    Alert.alert(t("accountCloud.resetEmailSent"));
   } catch (err) {
     console.log("RESET CRASH:", err);
     Alert.alert("Something went wrong. Try again.");
@@ -78,12 +93,12 @@ const resetPassword = async () => {
 
 const handleLogout = () => {
   Alert.alert(
-    "Log Out",
-    "Are you sure you want to log out?",
+    t("accountCloud.logOutTitle"),
+    t("accountCloud.logOutConfirm"),
     [
-      { text: "Cancel", style: "cancel" },
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Log Out",
+        text: t("accountCloud.logOutTitle"),
         style: "destructive",
         onPress: async () => {
           await supabase.auth.signOut();
@@ -96,33 +111,41 @@ const handleLogout = () => {
 return (
     <View>
 
-      <Text
-        style={[
-          styles.cardText,
-          { color: theme.secondaryText },
-        ]}
-      >
-      </Text>
+      {/* Reassurance: your garden is safely in the cloud. */}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.28)", marginBottom: 16 }}>
+        <Text style={{ fontSize: 24 }}>{lastSyncedAt ? "☁️" : "🔄"}</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>
+            {lastSyncedAt ? "Your garden is backed up" : "Backing up your garden…"}
+          </Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 16, marginTop: 2 }}>
+            {lastSyncedAt
+              ? `Synced ${lastSync} — saved to your account and restored when you sign in on any device.`
+              : "Your progress saves automatically to your account."}
+          </Text>
+        </View>
+        {lastSyncedAt ? <Text style={{ color: "#5cff89", fontSize: 18, fontWeight: "900" }}>✓</Text> : null}
+      </View>
 
       <View style={styles.accountInfoBox}>
         <Text style={styles.accountInfoLabel}>
-          Email
+          {t("accountCloud.emailLabel")}
         </Text>
 
         <Text style={styles.accountInfoValue}>
-          {user?.email || "Not signed in"}
+          {user?.email || t("accountCloud.notSignedIn")}
         </Text>
       </View>
 
       <View style={styles.accountInfoBox}>
         <Text style={styles.accountInfoLabel}>
-          Premium Status
+          {t("accountCloud.premiumStatus")}
         </Text>
 
         <Text style={styles.accountInfoValue}>
           {premiumUnlocked
-            ? "Active ✅"
-            : "Inactive"}
+            ? t("accountCloud.active")
+            : t("accountCloud.inactive")}
         </Text>
       </View>
 
@@ -133,7 +156,7 @@ return (
           </Text>
 
           <Text style={styles.accountStatLabel}>
-            Saved Plants
+            {t("accountCloud.savedPlants")}
           </Text>
         </View>
 
@@ -143,7 +166,7 @@ return (
           </Text>
 
           <Text style={styles.accountStatLabel}>
-            Journal Photos
+            {t("accountCloud.journalPhotos")}
           </Text>
         </View>
 
@@ -153,7 +176,7 @@ return (
           </Text>
 
           <Text style={styles.accountStatLabel}>
-            Garden Plots
+            {t("accountCloud.gardenPlots")}
           </Text>
         </View>
 
@@ -168,24 +191,14 @@ return (
           </Text>
 
           <Text style={styles.accountStatLabel}>
-            Member Since
+            {t("accountCloud.memberSince")}
           </Text>
         </View>
       </View>
 
-      <View style={styles.accountSyncBox}>
-        <Text style={styles.accountInfoLabel}>
-          Last Cloud Sync
-        </Text>
-
-        <Text style={styles.accountInfoValue}>
-          {lastSync}
-        </Text>
-      </View>
-
       <View style={styles.accountInfoBox}>
         <Text style={styles.accountInfoLabel}>
-          Change Email
+          {t("accountCloud.changeEmail")}
         </Text>
 
         <TextInput
@@ -193,7 +206,7 @@ return (
           onChangeText={setNewEmail}
           autoCapitalize="none"
           keyboardType="email-address"
-          placeholder="New email address"
+          placeholder={t("accountCloud.newEmailAddress")}
           placeholderTextColor="#8fbf9d"
           style={styles.accountInput}
         />
@@ -203,7 +216,7 @@ return (
           style={styles.accountActionButton}
         >
           <Text style={styles.accountActionButtonText}>
-            Send Email Change Confirmation
+            {t("accountCloud.sendEmailChangeConfirmation")}
           </Text>
         </Pressable>
       </View>
@@ -213,7 +226,7 @@ return (
         style={styles.accountSecondaryButton}
       >
         <Text style={styles.accountSecondaryButtonText}>
-          Send Password Reset Email
+          {t("accountCloud.sendPasswordResetEmail")}
         </Text>
       </Pressable>
 
@@ -221,51 +234,49 @@ return (
         onPress={handleLogout}
         style={styles.accountLogoutButton}
       >
-        <Text style={styles.accountLogoutButtonText}>
-          🚪 Log Out
-        </Text>
+        <IconText label={t("accountCloud.logOut")} style={styles.accountLogoutButtonText} />
       </Pressable>
 
       <Pressable
         onPress={async () => {
           Alert.alert(
-            "Delete Account",
-            "This will permanently delete your account and all garden data. This cannot be undone.",
+            t("accountCloud.deleteAccountTitle"),
+            t("accountCloud.deleteAccountBody"),
             [
-              { text: "Cancel", style: "cancel" },
+              { text: t("common.cancel"), style: "cancel" },
               {
-                text: "Delete My Account",
+                text: t("accountCloud.deleteAccountConfirm"),
                 style: "destructive",
                 onPress: async () => {
                   try {
                     const { data: sessionData } = await supabase.auth.getSession();
                     const token = sessionData?.session?.access_token;
                     if (!token) {
-                      Alert.alert("Error", "Could not verify your session. Please log out and back in, then try again.");
+                      Alert.alert(t("accountCloud.errorTitle"), t("accountCloud.sessionError"));
                       return;
                     }
                     const { error } = await supabase.functions.invoke("delete-account", {
                       headers: { Authorization: `Bearer ${token}` },
                     });
                     if (error) {
-                      Alert.alert("Deletion Failed", "Something went wrong. Please email support@pocketplanter.green for help.");
+                      Alert.alert(t("accountCloud.deletionFailed"), t("accountCloud.deletionFailedBody"));
                       return;
                     }
                     await supabase.auth.signOut();
-                    Alert.alert("Account Deleted", "Your account and all data have been permanently removed.");
+                    Alert.alert(t("accountCloud.accountDeleted"), t("accountCloud.accountDeletedBody"));
                   } catch (err) {
-                    Alert.alert("Contact Support", "Please email support@pocketplanter.green to complete account deletion.");
+                    Alert.alert(t("accountCloud.contactSupport"), t("accountCloud.contactSupportBody"));
                   }
                 },
               },
             ]
           );
         }}
-        style={[styles.accountLogoutButton, { borderColor: "rgba(255,50,50,0.5)", marginTop: 10 }]}
+        style={[styles.accountLogoutButton, { borderColor: "rgba(255, 50, 50, 0.5)", marginTop: 10 }]}
       >
-        <Text style={[styles.accountLogoutButtonText, { color: "#ff4444" }]}>
-          🗑 Delete Account
-        </Text>
+        <IconText label={t("accountCloud.deleteAccount")} style={[styles.accountLogoutButtonText, {
+  color: "#ff7b7b"
+}]} />
       </Pressable>
     </View>
   );

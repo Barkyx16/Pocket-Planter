@@ -3,8 +3,11 @@ import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { getSunMismatch, resolvePlantImageSource } from "../core";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
 export const SunlightMismatchCard = memo(function SunlightMismatchCard({ theme, gardenAreas, onOpenPlant }) {
+  const { t } = useTranslation();
   // Only consider areas the user has actually tagged with a sun level.
   const tagged = (gardenAreas || []).filter((a) => a.sunExposure);
   if (!tagged.length) return null;
@@ -38,10 +41,10 @@ export const SunlightMismatchCard = memo(function SunlightMismatchCard({ theme, 
 
   return (
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: accent }]}>
-      <Text style={styles.cardEyebrow}>☀️ SUNLIGHT CHECK</Text>
-      <Text style={[styles.cardTitle, { color: theme.text }]}>Sun Placement Warnings</Text>
+      <IconText label={t("sunlightMismatch.sunlightCheck")} style={styles.cardEyebrow} />
+      <Text style={[styles.cardTitle, { color: theme.text }]}>{t("sunlightMismatch.sunPlacementWarnings")}</Text>
       <Text style={[styles.cardText, { color: theme.secondaryText }]}>
-        {mismatches.length} plant{mismatches.length === 1 ? "" : "s"} may be in the wrong light for the bed {mismatches.length === 1 ? "it's" : "they're"} planted in.
+        {mismatches.length} plant{mismatches.length === 1 ? "" : "s"} {t("sunlightMismatch.mayBeInTheWrong")} {mismatches.length === 1 ? t("sunlightMismatch.its") : t("sunlightMismatch.theyre")} {t("sunlightMismatch.plantedIn")}
       </Text>
       <View style={{ gap: 10, marginTop: 16 }}>
         {mismatches.map((m) => {
@@ -50,24 +53,24 @@ export const SunlightMismatchCard = memo(function SunlightMismatchCard({ theme, 
             <Pressable
               key={`sun-${m.areaName}-${m.plant.name}`}
               onPress={() => onOpenPlant && onOpenPlant(m.plant)}
-              style={{ flexDirection: "row", alignItems: "flex-start", gap: 12, backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: `${levelColor[m.level]}30` }}
+              style={{ flexDirection: "row", alignItems: "flex-start", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: `${levelColor[m.level]}30` }}
             >
               <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                {img ? <Image source={img} style={{ width: 36, height: 36 }} resizeMode="contain" /> : <Text style={{ fontSize: 22 }}>🌱</Text>}
+                {img ? <Image source={img} style={{ width: 36, height: 36 }} resizeMode="contain" /> : <Text style={{ fontSize: 20 }}>🌱</Text>}
               </View>
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900" }}>{m.plant.name}</Text>
-                  <View style={{ backgroundColor: `${levelColor[m.level]}22`, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 }}>
+                  <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{m.plant.name}</Text>
+                  <View style={{ backgroundColor: `${levelColor[m.level]}22`, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 }}>
                     <Text style={{ color: levelColor[m.level], fontSize: 10, fontWeight: "900" }}>
-                      {m.level === "high" ? "NEEDS FIXING" : m.level === "medium" ? "WATCH" : "MINOR"}
+                      {m.level === "high" ? t("sunlightMismatch.needsFixing") : m.level === "medium" ? "WATCH" : "MINOR"}
                     </Text>
                   </View>
                 </View>
-                <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 3 }}>
+                <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "800", marginTop: 4 }}>
                   {m.areaName} · {sunLabel[m.areaSun]}
                 </Text>
-                <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18, marginTop: 5 }}>
+                <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18, marginTop: 6 }}>
                   {m.text}
                 </Text>
               </View>

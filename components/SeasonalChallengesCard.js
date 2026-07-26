@@ -2,6 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, Vibration, View } from "react-native";
 import { getSeasonForMonth, successHaptic } from "../core";
+import { useTranslation } from "../lib/i18n";
 
 const STORAGE_KEY = "pp_claimedChallenges";
 
@@ -14,6 +15,7 @@ const inSeason = (dateVal, months) => {
 };
 
 export const SeasonalChallengesCard = memo(function SeasonalChallengesCard({ theme, wateringHistory, journalEntries, harvestLog, careLog, streakData, onReward }) {
+  const { t } = useTranslation();
   const [claimed, setClaimed] = useState({});
   const [loaded, setLoaded] = useState(false);
 
@@ -67,9 +69,9 @@ export const SeasonalChallengesCard = memo(function SeasonalChallengesCard({ the
     return (
       <View style={{ alignItems: "center", paddingVertical: 18 }}>
         <Text style={{ fontSize: 34 }}>🏆</Text>
-        <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900", marginTop: 8 }}>All {season.label.toLowerCase()} challenges done!</Text>
-        <Text style={{ color: theme.secondaryText, fontSize: 12.5, fontWeight: "700", marginTop: 4, textAlign: "center" }}>
-          You've claimed every reward this season. Fresh challenges arrive next season. 🌱
+        <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900", marginTop: 8 }}>All {season.label.toLowerCase()} {t("seasonalChallenges.challengesDone")}</Text>
+        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4, textAlign: "center" }}>
+          {t("seasonalChallenges.youveClaimedEveryRewardThis")}
         </Text>
       </View>
     );
@@ -77,8 +79,8 @@ export const SeasonalChallengesCard = memo(function SeasonalChallengesCard({ the
 
   return (
     <View>
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        {season.label} challenges · {claimedCount}/{challenges.length} claimed. Finish the rest for bonus XP — they reset each season.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
+        {season.label} {t("seasonalChallenges.challenges")} {claimedCount}/{challenges.length} {t("seasonalChallenges.claimedFinishTheRestFor")}
       </Text>
 
       <View style={{ gap: 8, marginTop: 14 }}>
@@ -86,24 +88,24 @@ export const SeasonalChallengesCard = memo(function SeasonalChallengesCard({ the
           const isDone = ch.progress >= ch.goal;
           const pct = Math.min(100, Math.round((ch.progress / ch.goal) * 100));
           return (
-            <View key={ch.id} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 14, padding: 12, borderWidth: 1, borderColor: isDone ? ch.color + "66" : "rgba(255,255,255,0.08)" }}>
+            <View key={ch.id} style={{ backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: isDone ? ch.color + "66" : "rgba(255, 255, 255, 0.08)" }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                 <Text style={{ fontSize: 20 }}>{ch.icon}</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: theme.text, fontSize: 13.5, fontWeight: "800" }}>{ch.title}</Text>
-                  <Text style={{ color: theme.secondaryText, fontSize: 11.5, fontWeight: "700", marginTop: 1 }}>
+                  <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }}>{ch.title}</Text>
+                  <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>
                     {Math.min(ch.progress, ch.goal)}/{ch.goal} · +{ch.reward} XP
                   </Text>
                 </View>
                 {isDone ? (
-                  <Pressable onPress={() => claim(ch)} style={{ backgroundColor: ch.color, borderRadius: 999, paddingHorizontal: 13, paddingVertical: 7 }}>
-                    <Text style={{ color: "#07120b", fontSize: 12.5, fontWeight: "900" }}>Claim</Text>
+                  <Pressable onPress={() => claim(ch)} style={{ backgroundColor: ch.color, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 }}>
+                    <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "900" }}>Claim</Text>
                   </Pressable>
                 ) : null}
               </View>
               {!isDone ? (
-                <View style={{ height: 6, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden", marginTop: 9 }}>
-                  <View style={{ height: 6, borderRadius: 3, width: `${pct}%`, backgroundColor: ch.color }} />
+                <View style={{ height: 6, borderRadius: 4, backgroundColor: "rgba(255, 255, 255, 0.08)", overflow: "hidden", marginTop: 10 }}>
+                  <View style={{ height: 6, borderRadius: 4, width: `${pct}%`, backgroundColor: ch.color }} />
                 </View>
               ) : null}
             </View>

@@ -2,8 +2,10 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { formatRelativeDate, tapHaptic } from "../core";
+import { useTranslation } from "../lib/i18n";
 
 export const HarvestLogCard = memo(function HarvestLogCard({ theme, harvestLog, setHarvestLog, onUndoToast }) {
+  const { t } = useTranslation();
   const total = harvestLog.length;
   const plantsHarvested = new Set(harvestLog.map((h) => h.plantName)).size;
   const thisMonth = harvestLog.filter((h) => {
@@ -30,7 +32,7 @@ return (
       <View style={styles.careLogStatsRow}>
         <View style={styles.careLogStatTile}>
           <Text style={styles.careLogStatValue}>{total}</Text>
-          <Text style={[styles.careLogStatLabel, { color: theme.secondaryText }]}>Total Harvests</Text>
+          <Text style={[styles.careLogStatLabel, { color: theme.secondaryText }]}>{t("harvestLog.totalHarvests")}</Text>
         </View>
         <View style={styles.careLogStatDivider} />
         <View style={styles.careLogStatTile}>
@@ -40,28 +42,28 @@ return (
         <View style={styles.careLogStatDivider} />
         <View style={styles.careLogStatTile}>
           <Text style={styles.careLogStatValue}>{thisMonth}</Text>
-          <Text style={[styles.careLogStatLabel, { color: theme.secondaryText }]}>This Month</Text>
+          <Text style={[styles.careLogStatLabel, { color: theme.secondaryText }]}>{t("harvestLog.thisMonth")}</Text>
         </View>
       </View>
 
       {total === 0 ? (
         <View style={styles.careLogEmpty}>
           <Text style={styles.careLogEmptyIcon}>🚜</Text>
-          <Text style={styles.careLogEmptyTitle}>No harvests logged yet</Text>
+          <Text style={styles.careLogEmptyTitle}>{t("harvestLog.noHarvestsLoggedYet")}</Text>
           <Text style={[styles.careLogEmptyText, { color: theme.secondaryText }]}>
-            Open a plant and tap "Log a Harvest" when you pick something. It'll show up here.
+            {t("harvestLog.openAPlantAndTap")}
           </Text>
         </View>
       ) : (
         <View style={{ gap: 10, marginTop: 4 }}>
           {harvestLog.map((entry) => (
-          <View key={entry.id} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.06)" }}>
+          <View key={entry.id} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "rgba(255, 255, 255, 0.06)" }}>
             <View style={{ flex: 1 }}>
               <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>{entry.plantName}</Text>
               <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", marginTop: 2 }}>{entry.amount} {entry.unit} · {formatRelativeDate(entry.createdAt)}</Text>
             </View>
-            <Pressable onPress={() => deleteEntry(entry.id)} style={{ padding: 6 }}>
-              <Text style={{ color: "#ff7b7b", fontSize: 15, fontWeight: "900" }}>✕</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.deleteEntry")} onPress={() => deleteEntry(entry.id)} style={{ padding: 6 }}>
+              <Text style={{ color: "#ff7b7b", fontSize: 14, fontWeight: "900" }}>✕</Text>
             </Pressable>
           </View>
         ))}

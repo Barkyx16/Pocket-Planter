@@ -4,10 +4,21 @@ import { useEffect, useRef, useState } from "react";
 import { Alert, Image, Modal, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { getAreaTag, getCompanionInfo, getCompatibilityScore, getPairReason, getTodayKey, resolvePlantImageSource } from "../core";
+import { canPlantInArea, getAreaTag, getCompanionInfo, getCompatibilityScore, getPairReason, getTodayKey, resolvePlantImageSource } from "../core";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
-export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas, savedPlants, wateredPlants, onAssignSlot, onClearSlot, onWaterArea, zone, weather, harvestTrackers, onOpenPlant, onPickPhoto, onDeleteArea }) {
+export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas, savedPlants, wateredPlants, onAssignSlot, onClearSlot, onWaterArea, zone, weather, harvestTrackers, onOpenPlant, onPickPhoto, onDeleteArea, focusAreaId, focusNonce }) {
+  const { t } = useTranslation();
   const [selectedAreaId, setSelectedAreaId] = useState(null);
+
+  // When a conflict elsewhere asks us to focus a bed, open that bed's detail view.
+  // Keyed on focusNonce so tapping the same conflict again re-opens it.
+  useEffect(() => {
+    if (focusAreaId && (gardenAreas || []).some((a) => a.id === focusAreaId)) {
+      setSelectedAreaId(focusAreaId);
+    }
+  }, [focusNonce]); // eslint-disable-line react-hooks/exhaustive-deps
   const [perfectGardenPlant, setPerfectGardenPlant] = useState(null);
   const seenPerfectRef = useRef(new Set());
 
@@ -55,7 +66,7 @@ export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas,
       setPerfectGardenPlant(null);
       return;
     }
-    const toAdd = companions.slice(0, emptySlots.length);
+    const toAdd = companions.filter((comp) => canPlantInArea(comp, area)).slice(0, emptySlots.length);
     toAdd.forEach((comp, idx) => onAssignSlot(area.id, emptySlots[idx], comp));
     setPerfectGardenPlant(null);
   }
@@ -78,9 +89,20 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
   }
 
   function choosePlantForSlot(areaId, slotId) {
-    const valid = savedPlants.filter(Boolean).map((p) => getPlantName(p)).filter(Boolean);
+    const area = gardenAreas.find((a) => a.id === areaId);
+    const valid = savedPlants
+      .filter(Boolean)
+      .map((p) => getPlantName(p))
+      .filter(Boolean)
+      .filter((n) => canPlantInArea(n, area));
     if (!valid.length) {
-      Alert.alert("Save plants first", "Open a plant card and tap Save, then place it in your garden.");
+      const flowerBed = area?.kind === "flower";
+      Alert.alert(
+        flowerBed ? "No flowers saved yet" : "Nothing to plant here",
+        flowerBed
+          ? "This is a flower bed — save some flowers, then place them here."
+          : "Save a plant that suits this bed, then place it here. (Flowers only go in your Flower Bed or Home Garden.)"
+      );
       return;
     }
     Alert.alert("Choose a plant", "Pick one for this plot.", [
@@ -94,8 +116,8 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
     return (
       <View style={styles.gardenMapEmptyState}>
         <Text style={styles.gardenMapEmptyIcon}>🗂️</Text>
-        <Text style={styles.gardenMapEmptyTitle}>Create an area first</Text>
-        <Text style={styles.gardenMapEmptyText}>Add a garden area above (like Backyard or Balcony), then place your saved plants into it.</Text>
+        <Text style={styles.gardenMapEmptyTitle}>{t("areaPlannerMap.createAnAreaFirst")}</Text>
+        <Text style={styles.gardenMapEmptyText}>{t("areaPlannerMap.addAGardenAreaAbove")}</Text>
       </View>
     );
   }
@@ -121,22 +143,22 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
             <Pressable
               key={area.id}
               onPress={() => setSelectedAreaId(area.id)}
-              style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 18, padding: 14, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}
             >
               {area.photo ? (
-                <Image source={{ uri: area.photo }} style={{ width: 48, height: 48, borderRadius: 13, borderWidth: 1, borderColor: "rgba(255,255,255,0.2)" }} />
+                <Image source={{ uri: area.photo }} style={{ width: 48, height: 48, borderRadius: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.2)" }} />
               ) : (
-                <View style={{ width: 48, height: 48, borderRadius: 13, alignItems: "center", justifyContent: "center", backgroundColor: `${getAreaTag(area).color}22`, borderWidth: 1, borderColor: `${getAreaTag(area).color}55` }}>
-                  <Text style={{ fontSize: 22 }}>{(getAreaTag(area).emoji || "").trim() || "📷"}</Text>
+                <View style={{ width: 48, height: 48, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: `${getAreaTag(area).color}22`, borderWidth: 1, borderColor: `${getAreaTag(area).color}55` }}>
+                  <Text style={{ fontSize: 20 }}>{(getAreaTag(area).emoji || "").trim() || "📷"}</Text>
                 </View>
               )}
               <View style={{ flex: 1 }}>
                 <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>{area.name}</Text>
                <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", marginTop: 2 }}>{areaPlantCount} planted</Text>
               </View>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: areaHasConflict ? "rgba(255,123,123,0.12)" : "rgba(92,255,137,0.12)", borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderColor: areaHasConflict ? "rgba(255,123,123,0.28)" : "rgba(92,255,137,0.28)" }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: areaHasConflict ? "rgba(255, 123, 123, 0.12)" : "rgba(92, 255, 137, 0.12)", borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderColor: areaHasConflict ? "rgba(255, 123, 123, 0.3)" : "rgba(92, 255, 137, 0.3)" }}>
                 <Text style={{ fontSize: 12 }}>{areaHasConflict ? "⚠️" : "✓"}</Text>
-                <Text style={{ color: areaHasConflict ? "#ff9b9b" : "#5cff89", fontSize: 13, fontWeight: "900" }}>{areaPct}%</Text>
+                <Text style={{ color: areaHasConflict ? "#ff9f9f" : "#5cff89", fontSize: 12, fontWeight: "900" }}>{areaPct}%</Text>
               </View>
               <Text style={{ color: "#5cff89", fontSize: 20, fontWeight: "900" }}>›</Text>
             </Pressable>
@@ -149,8 +171,8 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
  return (
     <View style={{ gap: 20 }}>
       <Modal visible={!!perfectGardenPlant} transparent animationType="fade" onRequestClose={() => setPerfectGardenPlant(null)}>
-        <Pressable onPress={() => setPerfectGardenPlant(null)} style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.82)", alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <Pressable onPress={() => {}} style={{ width: "100%", maxWidth: 420, backgroundColor: "#0d1f14", borderRadius: 28, borderWidth: 1, borderColor: "rgba(92,255,137,0.28)", padding: 22 }}>
+        <Pressable onPress={() => setPerfectGardenPlant(null)} style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.85)", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <Pressable onPress={() => {}} style={{ width: "100%", maxWidth: 420, backgroundColor: "#0e2414", borderRadius: 24, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", padding: 22 }}>
             {(() => {
               if (!perfectGardenPlant) return null;
               const info = getCompanionInfo(perfectGardenPlant) || {};
@@ -161,18 +183,24 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
               const tiles = [perfectGardenPlant, ...companions];
               return (
                 <>
-                  <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 4 }}>🌱 PERFECT GARDEN</Text>
-                  <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "900", marginBottom: 6 }}>A dream bed with {perfectGardenPlant}</Text>
-                  <Text style={{ color: "#8fbf9d", fontSize: 13, fontWeight: "700", lineHeight: 19, marginBottom: 16 }}>Here's how {perfectGardenPlant} thrives — surrounded by its best companions. Tap anywhere to close and build your own.</Text>
+                  <IconText label={t("areaPlannerMap.perfectGarden")} style={{
+  color: "#8effab",
+  fontSize: 12,
+  fontWeight: "900",
+  letterSpacing: 0.5,
+  marginBottom: 4
+}} />
+                  <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "900", marginBottom: 6 }}>{t("areaPlannerMap.aDreamBedWith")} {perfectGardenPlant}</Text>
+                  <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", lineHeight: 19, marginBottom: 16 }}>{t("areaPlannerMap.heresHow")} {perfectGardenPlant} {t("areaPlannerMap.thrivesSurroundedByItsBest")}</Text>
                   <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 18 }}>
                     {tiles.map((name, i) => {
                       const pd = produceData.find((p) => p.name.toLowerCase() === name.toLowerCase());
                       const img = pd ? resolvePlantImageSource(pd) : null;
                       const isCenter = i === 0;
                       return (
-                        <View key={`${name}-${i}`} style={{ width: "30%", aspectRatio: 1, borderRadius: 16, alignItems: "center", justifyContent: "center", padding: 6, backgroundColor: isCenter ? "rgba(92,255,137,0.16)" : "rgba(255,255,255,0.06)", borderWidth: isCenter ? 2 : 1, borderColor: isCenter ? "#5cff89" : "rgba(255,255,255,0.12)" }}>
-                          {img ? <Image source={img} style={{ width: 40, height: 40 }} resizeMode="contain" /> : <Text style={{ fontSize: 26 }}>🌱</Text>}
-                          <Text numberOfLines={1} style={{ color: isCenter ? "#8effab" : "#ffffff", fontSize: 11, fontWeight: "800", marginTop: 4 }}>{name}</Text>
+                        <View key={`${name}-${i}`} style={{ width: "30%", aspectRatio: 1, borderRadius: 16, alignItems: "center", justifyContent: "center", padding: 6, backgroundColor: isCenter ? "rgba(92, 255, 137, 0.16)" : "rgba(255, 255, 255, 0.06)", borderWidth: isCenter ? 2 : 1, borderColor: isCenter ? "#5cff89" : "rgba(255, 255, 255, 0.12)" }}>
+                          {img ? <Image source={img} style={{ width: 40, height: 40 }} resizeMode="contain" /> : <Text style={{ fontSize: 24 }}>🌱</Text>}
+                          <Text numberOfLines={1} style={{ color: isCenter ? "#8effab" : "#ffffff", fontSize: 10, fontWeight: "800", marginTop: 4 }}>{name}</Text>
                         </View>
                       );
                     })}
@@ -181,10 +209,10 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                     onPress={() => addPerfectCompanions(perfectGardenPlant)}
                     style={{ backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 14, alignItems: "center", marginBottom: 10 }}
                   >
-                    <Text style={{ color: "#07120b", fontSize: 15, fontWeight: "900" }}>Add these to my garden</Text>
+                    <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{t("areaPlannerMap.addTheseToMyGarden")}</Text>
                   </Pressable>
                   <Pressable onPress={() => setPerfectGardenPlant(null)} style={{ paddingVertical: 10, alignItems: "center" }}>
-                    <Text style={{ color: "#8fbf9d", fontSize: 14, fontWeight: "800" }}>Maybe later</Text>
+                    <Text style={{ color: "#8fbf9d", fontSize: 14, fontWeight: "800" }}>{t("areaPlannerMap.maybeLater")}</Text>
                   </Pressable>
                 </>
               );
@@ -197,7 +225,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
           onPress={() => setSelectedAreaId(null)}
           style={{ flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", paddingVertical: 6 }}
         >
-          <Text style={{ color: "#5cff89", fontSize: 15, fontWeight: "900" }}>‹ All gardens</Text>
+          <Text style={{ color: "#5cff89", fontSize: 14, fontWeight: "900" }}>{t("areaPlannerMap.allGardens")}</Text>
         </Pressable>
       </View>
       {gardenAreas.filter((area) => area.id === selectedAreaId).map((area) => {
@@ -210,15 +238,15 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10, flex: 1 }}>
                 <Pressable onPress={() => onPickPhoto && onPickPhoto(area.id)}>
                   {area.photo ? (
-                    <Image source={{ uri: area.photo }} style={{ width: 40, height: 40, borderRadius: 11, borderWidth: 1, borderColor: "rgba(255,255,255,0.2)" }} />
+                    <Image source={{ uri: area.photo }} style={{ width: 40, height: 40, borderRadius: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.2)" }} />
                   ) : (
-                    <View style={{ width: 40, height: 40, borderRadius: 11, alignItems: "center", justifyContent: "center", backgroundColor: `${getAreaTag(area).color}22`, borderWidth: 1, borderColor: `${getAreaTag(area).color}55` }}>
+                    <View style={{ width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: `${getAreaTag(area).color}22`, borderWidth: 1, borderColor: `${getAreaTag(area).color}55` }}>
                       <Text style={{ fontSize: 18 }}>{(getAreaTag(area).emoji || "").trim() || "📷"}</Text>
                     </View>
                   )}
                 </Pressable>
-                <Text style={{ color: "#ffffff", fontSize: 17, fontWeight: "900", flex: 1 }}>
-                  {area.name} <Text style={{ color: "#8fbf9d", fontSize: 13, fontWeight: "700" }}>· {areaPlants.length} planted</Text>
+                <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900", flex: 1 }}>
+                  {area.name} <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700" }}>· {areaPlants.length} planted</Text>
                 </Text>
                 </View>
               {areaPlants.length > 0 && onWaterArea ? (
@@ -226,9 +254,13 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                   onPress={() => onWaterArea(area.id)}
                   accessibilityRole="button"
                   accessibilityLabel={`Water all plants in ${area.name}`}
-                  style={{ backgroundColor: "rgba(107,199,255,0.14)", borderRadius: 14, paddingHorizontal: 14, paddingVertical: 9, borderWidth: 1, borderColor: "rgba(107,199,255,0.28)" }}
+                  style={{ backgroundColor: "rgba(107, 199, 255, 0.16)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.3)" }}
                 >
-                  <Text style={{ color: "#6bc7ff", fontSize: 13, fontWeight: "900" }}>💧 Water bed</Text>
+                  <IconText label={t("areaPlannerMap.waterBed")} style={{
+  color: "#6bc7ff",
+  fontSize: 12,
+  fontWeight: "900"
+}} />
                 </Pressable>
               ) : null}
             </View>
@@ -247,16 +279,16 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
               }
               const stats = [
                 { icon: "🌱", value: areaPlants.length, label: "plants", color: "#8effab" },
-                { icon: "💧", value: needWater, label: "need water", color: needWater > 0 ? "#6bc7ff" : "#8fbf9d" },
+                { icon: "💧", value: needWater, label: t("areaPlannerMap.needWater"), color: needWater > 0 ? "#6bc7ff" : "#8fbf9d" },
                 { icon: conflicts > 0 ? "⚠️" : "✓", value: conflicts, label: "conflicts", color: conflicts > 0 ? "#ff7b7b" : "#5cff89" },
               ];
               return (
                 <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
                   {stats.map((s) => (
-                    <View key={s.label} style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 12, paddingVertical: 9, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
-                      <Text style={{ fontSize: 13 }}>{s.icon}</Text>
+                    <View key={s.label} style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
+                      <Text style={{ fontSize: 12 }}>{s.icon}</Text>
                       <Text style={{ color: s.color, fontSize: 14, fontWeight: "900" }}>{s.value}</Text>
-                      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700" }}>{s.label}</Text>
+                      <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700" }}>{s.label}</Text>
                     </View>
                   ))}
                 </View>
@@ -268,7 +300,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                 const plant = produceData.find((item) => item?.name === plantName);
                 const imageSource = plant ? resolvePlantImageSource(plant) : null;
                 const hasConflict = plantName && areaPlants.some((c) => c !== plantName && getCompatibilityScore(plantName, c).label === "Avoid");
-                const hasExcellent = plantName && areaPlants.some((c) => c !== plantName && getCompatibilityScore(plantName, c).label === "Excellent Pair");
+                const hasExcellent = plantName && areaPlants.some((c) => c !== plantName && getCompatibilityScore(plantName, c).label === t("areaPlannerMap.excellentPair"));
                 const needsWater = plantName && wateredPlants?.[plantName] !== getTodayKey();
                 return (
                   <Pressable
@@ -276,9 +308,9 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                     onPress={() => choosePlantForSlot(area.id, slotId)}
                     style={[styles.gardenSlotV2, {
                       backgroundColor: plantName
-                        ? hasConflict ? "rgba(255,123,123,0.10)" : hasExcellent ? "rgba(92,255,137,0.12)" : "rgba(255,255,255,0.07)"
-                        : "rgba(255,255,255,0.04)",
-                      borderColor: hasConflict ? "#ff7b7b" : hasExcellent ? "#5cff89" : needsWater && plantName ? "#6bc7ff" : "rgba(255,255,255,0.10)",
+                        ? hasConflict ? "rgba(255, 123, 123, 0.1)" : hasExcellent ? "rgba(92, 255, 137, 0.12)" : "rgba(255, 255, 255, 0.08)"
+                        : "rgba(255, 255, 255, 0.04)",
+                      borderColor: hasConflict ? "#ff7b7b" : hasExcellent ? "#5cff89" : needsWater && plantName ? "#6bc7ff" : "rgba(255, 255, 255, 0.1)",
                       borderWidth: 1,
                     }]}
                   >
@@ -317,14 +349,20 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
               pairs.sort((x, y) => (x.score.label === "Avoid" ? -1 : 1) - (y.score.label === "Avoid" ? -1 : 1));
               const top = pairs.slice(0, 5);
               return (
-                <View style={{ marginTop: 12, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 18, padding: 14, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
-                  <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 4 }}>🤝 IN THIS BED</Text>
+                <View style={{ marginTop: 12, backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
+                  <IconText label={t("areaPlannerMap.inThisBed")} style={{
+  color: "#8fbf9d",
+  fontSize: 12,
+  fontWeight: "900",
+  letterSpacing: 0.5,
+  marginBottom: 4
+}} />
                   <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18, marginBottom: 10 }}>
-                    How the plants in {area.name} get along.
+                    {t("areaPlannerMap.howThePlantsIn")} {area.name} {t("areaPlannerMap.getAlong")}
                   </Text>
                   <View style={{ gap: 8 }}>
                     {top.map(({ a, b, score }) => {
-                      const isGood = score.label === "Excellent Pair";
+                      const isGood = score.label === t("areaPlannerMap.excellentPair");
                       const plantA = produceData.find((pd) => pd.name.toLowerCase() === a.toLowerCase());
                       const plantB = produceData.find((pd) => pd.name.toLowerCase() === b.toLowerCase());
                       const imgA = plantA ? resolvePlantImageSource(plantA) : null;
@@ -336,28 +374,28 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                             flexDirection: "row",
                             alignItems: "center",
                             gap: 10,
-                            backgroundColor: isGood ? "rgba(92,255,137,0.08)" : "rgba(255,123,123,0.08)",
-                            borderRadius: 14,
+                            backgroundColor: isGood ? "rgba(92, 255, 137, 0.08)" : "rgba(255, 123, 123, 0.08)",
+                            borderRadius: 12,
                             paddingHorizontal: 12,
                             paddingVertical: 10,
                             borderWidth: 1,
-                            borderColor: isGood ? "rgba(92,255,137,0.20)" : "rgba(255,123,123,0.22)",
+                            borderColor: isGood ? "rgba(92, 255, 137, 0.2)" : "rgba(255, 123, 123, 0.2)",
                           }}
                         >
-                          <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
+                          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                             {imgA ? <Image source={imgA} style={{ width: 26, height: 26 }} resizeMode="contain" /> : <Text style={{ fontSize: 18 }}>🌱</Text>}
                             <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "900" }}>+</Text>
                             {imgB ? <Image source={imgB} style={{ width: 26, height: 26 }} resizeMode="contain" /> : <Text style={{ fontSize: 18 }}>🌱</Text>}
                           </View>
                           <View style={{ flex: 1 }}>
-                            <Text style={{ color: isGood ? "#8effab" : "#ff9b9b", fontSize: 13, fontWeight: "800" }}>
+                            <Text style={{ color: isGood ? "#8effab" : "#ff9f9f", fontSize: 12, fontWeight: "800" }}>
                               {a} + {b}
                             </Text>
-                            <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "600", lineHeight: 15, marginTop: 2 }}>
+                            <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "600", lineHeight: 15, marginTop: 2 }}>
                               {getPairReason(a, b)}
                             </Text>
                           </View>
-                          <Text style={{ fontSize: 15, fontWeight: "900", color: isGood ? "#5cff89" : "#ff7b7b" }}>
+                          <Text style={{ fontSize: 14, fontWeight: "900", color: isGood ? "#5cff89" : "#ff7b7b" }}>
                             {isGood ? "✓" : "⚠"}
                           </Text>
                         </View>
@@ -385,10 +423,16 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
               const top = suggestions.slice(0, 4);
               if (!top.length) return null;
               return (
-                <View style={{ width: "100%", marginTop: 12, backgroundColor: "rgba(92,255,137,0.08)", borderRadius: 18, padding: 14, borderWidth: 1, borderColor: "rgba(92,255,137,0.20)" }}>
-                  <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 4 }}>🌱 GREAT COMPANIONS TO ADD</Text>
+                <View style={{ width: "100%", marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.08)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}>
+                  <IconText label={t("areaPlannerMap.greatCompanionsToAdd")} style={{
+  color: "#8effab",
+  fontSize: 12,
+  fontWeight: "900",
+  letterSpacing: 0.5,
+  marginBottom: 4
+}} />
                   <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18, marginBottom: 10 }}>
-                    These pair well with what you've already planted in {area.name}.
+                    {t("areaPlannerMap.thesePairWellWithWhat")} {area.name}.
                   </Text>
                  <View style={{ gap: 8 }}>
                     {top.map((s) => {
@@ -403,9 +447,9 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                           disabled={!suggestedPlant}
                           accessibilityRole="button"
                           accessibilityLabel={`View care guide for ${s.name}`}
-                          style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "rgba(92,255,137,0.10)", borderRadius: 14, paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(92,255,137,0.20)" }}
+                          style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
                         >
-                          <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
+                          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                             {partnerImage ? (
                               <Image source={partnerImage} style={{ width: 26, height: 26 }} resizeMode="contain" />
                             ) : <Text style={{ fontSize: 18 }}>🌱</Text>}
@@ -415,10 +459,10 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                             ) : <Text style={{ fontSize: 18 }}>🌱</Text>}
                           </View>
                           <View style={{ flex: 1 }}>
-                            <Text style={{ color: "#8effab", fontSize: 13, fontWeight: "800" }}>
+                            <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "800" }}>
                               {s.pairsWith} + {s.name}
                             </Text>
-                            <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "600", lineHeight: 15, marginTop: 2 }}>
+                            <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "600", lineHeight: 15, marginTop: 2 }}>
                               {getPairReason(s.pairsWith, s.name)}
                             </Text>
                           </View>
@@ -443,9 +487,13 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                   ]
                 );
               }}
-              style={{ marginTop: 20, alignSelf: "stretch", backgroundColor: "rgba(255,123,123,0.10)", borderRadius: 14, paddingVertical: 12, borderTopWidth: 1, borderColor: "rgba(255,123,123,0.25)", alignItems: "center" }}
+              style={{ marginTop: 20, alignSelf: "stretch", backgroundColor: "rgba(255, 123, 123, 0.1)", borderRadius: 12, paddingVertical: 12, borderTopWidth: 1, borderColor: "rgba(255, 123, 123, 0.24)", alignItems: "center" }}
             >
-              <Text style={{ color: "#ff9b9b", fontSize: 14, fontWeight: "900" }}>🗑 Delete garden</Text>
+              <IconText label={t("areaPlannerMap.deleteGarden")} style={{
+  color: "#ff9f9f",
+  fontSize: 14,
+  fontWeight: "900"
+}} />
             </Pressable>
           </View>
         );

@@ -2,6 +2,7 @@ import { memo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { resolvePlantImageSource } from "../core";
+import { useTranslation } from "../lib/i18n";
 
 const GUILDS = [
   { name: "Three Sisters", icon: "🌽", blurb: "The classic Native American trio — corn supports beans, beans feed the soil, squash shades out weeds.", plants: ["Corn", "Green Bean", "Butternut Squash", "Zucchini"] },
@@ -37,20 +38,54 @@ const GUILDS = [
   { name: "Melon Patch", icon: "🍈", blurb: "Sprawling, sun-hungry melons for peak-summer sweetness.", plants: ["Watermelon", "Cantaloupe", "Honeydew", "Corn", "Radish"] },
   { name: "Nightshade Bed", icon: "🍅", blurb: "Keep the whole nightshade family together for easy rotation.", plants: ["Tomato", "Pepper", "Eggplant", "Tomatillo", "Potato"] },
   { name: "Strawberry Companions", icon: "🍓", blurb: "Friends that boost berry yield and keep pests away.", plants: ["Strawberry", "Borage", "Thyme", "Chives", "Spinach"] },
+
+  // ── Flower-bed combos (for the Flower Bed & Home Garden) ──
+  { name: "Cottage Garden", icon: "🌸", blurb: "A romantic, informal mix of tall classic blooms for a flower bed.", plants: ["Rose", "Foxglove", "Delphinium", "Hollyhock", "Peony", "Larkspur"] },
+  { name: "Pollinator Blooms", icon: "🐝", blurb: "Nectar-rich flowers that keep bees and butterflies coming all season.", plants: ["Bee Balm", "Coneflower", "Black-Eyed Susan", "Yarrow", "Cosmos", "Zinnia"] },
+  { name: "Cutting Garden", icon: "💐", blurb: "Long-stemmed favorites bred for the vase — cut them and they bloom more.", plants: ["Dahlia", "Zinnia", "Snapdragon", "Sunflower", "Cosmos", "Sweet Pea"] },
+  { name: "Spring Bulbs", icon: "🌷", blurb: "Plant in fall for the first big splash of color after winter.", plants: ["Tulip", "Daffodil", "Crocus", "Hyacinth", "Anemone", "Ranunculus"] },
+  { name: "Shade Blooms", icon: "🌿", blurb: "Color for the cooler, shadier corners where sun-lovers sulk.", plants: ["Hosta", "Impatiens", "Hellebore", "Foxglove", "Fuchsia"] },
+  { name: "Fragrant Garden", icon: "🌼", blurb: "Scented shrubs and flowers to perfume a patio or path.", plants: ["Lavender", "Jasmine", "Gardenia", "Lilac", "Rose", "Sweet Alyssum"] },
+
+  // ── Expanded-catalog combos (culinary, orchard, houseplant) ──
+  { name: "Guacamole Garden", icon: "🥑", blurb: "Everything for a bowl of fresh guac.", plants: ["Avocado","Tomato","Onion","Cilantro","Jalapeño","Lime"] },
+  { name: "Gumbo Bed", icon: "🥘", blurb: "The Louisiana 'holy trinity' plus okra to thicken the pot.", plants: ["Okra","Bell Pepper","Celery","Onion","Tomato","Garlic"] },
+  { name: "Kimchi Garden", icon: "🌶️", blurb: "Ferment your own kimchi from the bed up.", plants: ["Napa Cabbage","Daikon","Scallion","Garlic","Ginger","Mustard Greens"] },
+  { name: "Borscht Bed", icon: "🥣", blurb: "Beets and roots for a ruby-red Eastern European soup.", plants: ["Beet","Cabbage","Carrot","Onion","Potato","Dill"] },
+  { name: "Poke Bowl", icon: "🍚", blurb: "Crisp, fresh toppings for a homemade poke bowl.", plants: ["Edamame","Cucumber","Radish","Scallion","Avocado","Ginger"] },
+  { name: "Chili Pot", icon: "🌶️", blurb: "Beans, tomatoes, and heat for a big pot of chili.", plants: ["Kidney Bean","Pinto Bean","Tomato","Bell Pepper","Onion","Cayenne"] },
+  { name: "Falafel Fixings", icon: "🧆", blurb: "Chickpeas and herbs for falafel and hummus.", plants: ["Chickpea","Parsley","Cilantro","Garlic","Onion","Lemon"] },
+  { name: "Pesto Patch", icon: "🌿", blurb: "Blend up a jar of bright green basil pesto.", plants: ["Basil","Garlic","Pine Nut","Arugula","Parsley"] },
+  { name: "Thai Kitchen", icon: "🍜", blurb: "Aromatic Thai staples for curry paste and stir-fries.", plants: ["Thai Chili Pepper","Lemongrass","Kaffir Lime","Holy Basil (Tulsi)","Cilantro","Galangal"] },
+  { name: "Antipasto Bed", icon: "🫒", blurb: "A Mediterranean grazing board, homegrown.", plants: ["Olive","Bell Pepper","Cherry Tomato","Basil","Garlic","Artichoke"] },
+  { name: "Backyard Orchard", icon: "🍎", blurb: "A mix of hardy fruit trees for months of harvest.", plants: ["Apple","Pear","Peach","Plum","Cherry","Apricot"] },
+  { name: "Citrus Grove", icon: "🍊", blurb: "Sun-loving citrus for juice, zest, and marmalade.", plants: ["Orange","Lemon","Lime","Grapefruit","Mandarin","Kumquat"] },
+  { name: "Tropical Grove", icon: "🥭", blurb: "Frost-free favorites for a taste of the tropics.", plants: ["Mango","Papaya","Banana","Pineapple","Guava","Passionfruit"] },
+  { name: "Nut Grove", icon: "🌰", blurb: "Long-lived trees for homegrown nuts.", plants: ["Almond","Walnut","Pecan","Hazelnut","Chestnut","Pistachio"] },
+  { name: "Vineyard Row", icon: "🍇", blurb: "Trellised vines for grapes and kiwi.", plants: ["Grapes","Concord Grape","Muscadine Grape","Kiwi"] },
+  { name: "Cocktail Garden", icon: "🍹", blurb: "Muddle-worthy herbs and fruit for garden cocktails.", plants: ["Mint","Lime","Lemon","Basil","Cucumber","Lavender"] },
+  { name: "Medicinal Corner", icon: "💊", blurb: "Time-honored healing herbs to dry and steep.", plants: ["Chamomile","Coneflower","Calendula","Lemon Balm","Valerian","Feverfew"] },
+  { name: "Baking Spices", icon: "🥧", blurb: "Warm spices and aromatics for pies and cakes.", plants: ["Cinnamon","Ginger","Nutmeg","Vanilla","Cardamom","Anise"] },
+  { name: "Low-Light Desk", icon: "🪴", blurb: "Tough houseplants that thrive in dim corners.", plants: ["Snake Plant","Pothos","ZZ Plant","Cast Iron Plant","Peace Lily"] },
+  { name: "Succulent Shelf", icon: "🌵", blurb: "Low-water succulents for a sunny windowsill.", plants: ["Aloe Vera","Jade Plant","Echeveria","Haworthia","Burro's Tail","Lithops (Living Stones)"] },
+  { name: "Air-Purifying Set", icon: "🌬️", blurb: "Easy houseplants that help clean indoor air.", plants: ["Snake Plant","Peace Lily","Spider Plant","Areca Palm","English Ivy"] },
+  { name: "Statement Foliage", icon: "🍃", blurb: "Big, bold leaves to anchor a bright room.", plants: ["Monstera","Fiddle Leaf Fig","Bird of Paradise","Rubber Plant","Philodendron"] },
+  { name: "Butterfly Buffet", icon: "🦋", blurb: "A nectar bar that keeps butterflies visiting all summer.", plants: ["Buddleia (Butterfly Bush)","Bee Balm","Zinnia","Cosmos","Verbena","Coneflower"] },
 ];
 
 const findItem = (name) => produceData.find((p) => p.name.toLowerCase() === name.toLowerCase());
 const inCatalog = (name) => !!findItem(name);
 
 export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, savedPlants, onSavePlant, onOpenPlant }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(null);
   const [visible, setVisible] = useState(4);
   const owned = new Set((savedPlants || []).map((n) => n.toLowerCase()));
 
   return (
     <View>
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Proven plant combos that grow better together. Tap a combo to see its plants and add the ones you want.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
+        {t("guildTemplates.provenPlantCombosThatGrow")}
       </Text>
 
       <View style={{ gap: 8, marginTop: 14 }}>
@@ -59,18 +94,18 @@ export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, save
           const plants = guild.plants.filter(inCatalog);
           const haveCount = plants.filter((p) => owned.has(p.toLowerCase())).length;
           return (
-            <View key={guild.name} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 14, borderWidth: 1, borderColor: open ? "rgba(92,255,137,0.3)" : "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-              <Pressable onPress={() => setExpanded(open ? null : guild.name)} style={{ flexDirection: "row", alignItems: "center", gap: 11, padding: 12 }}>
-                <Text style={{ fontSize: 22 }}>{guild.icon}</Text>
+            <View key={guild.name} style={{ backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 12, borderWidth: 1, borderColor: open ? "rgba(92, 255, 137, 0.3)" : "rgba(255, 255, 255, 0.08)", overflow: "hidden" }}>
+              <Pressable onPress={() => setExpanded(open ? null : guild.name)} style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 12 }}>
+                <Text style={{ fontSize: 20 }}>{guild.icon}</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: theme.text, fontSize: 14.5, fontWeight: "900" }}>{guild.name}</Text>
-                  <Text style={{ color: theme.secondaryText, fontSize: 11.5, fontWeight: "700", marginTop: 1 }}>{plants.length} plants · {haveCount} in your garden</Text>
+                  <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{guild.name}</Text>
+                  <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>{plants.length} {t("guildTemplates.plants")} {haveCount} {t("guildTemplates.inYourGarden")}</Text>
                 </View>
                 <Text style={{ color: "#8effab", fontSize: 16, fontWeight: "900" }}>{open ? "▾" : "▸"}</Text>
               </Pressable>
               {open ? (
                 <View style={{ paddingHorizontal: 12, paddingBottom: 12 }}>
-                  <Text style={{ color: theme.secondaryText, fontSize: 12.5, fontWeight: "700", lineHeight: 18, marginBottom: 10 }}>{guild.blurb}</Text>
+                  <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18, marginBottom: 10 }}>{guild.blurb}</Text>
                   <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                     {plants.map((p) => {
                       const item = findItem(p);
@@ -80,14 +115,14 @@ export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, save
                         <Pressable
                           key={p}
                           onPress={() => { if (have) { if (item && onOpenPlant) onOpenPlant(item); } else if (onSavePlant) { onSavePlant(item?.name || p); } }}
-                          style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: have ? "rgba(92,255,137,0.15)" : "rgba(255,255,255,0.05)", borderRadius: 999, paddingLeft: img ? 5 : 11, paddingRight: 11, paddingVertical: 6, borderWidth: 1, borderColor: have ? "rgba(92,255,137,0.35)" : "rgba(255,255,255,0.12)" }}
+                          style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: have ? "rgba(92, 255, 137, 0.16)" : "rgba(255, 255, 255, 0.06)", borderRadius: 999, paddingLeft: img ? 5 : 11, paddingRight: 12, paddingVertical: 6, borderWidth: 1, borderColor: have ? "rgba(92, 255, 137, 0.3)" : "rgba(255, 255, 255, 0.12)" }}
                         >
                           {img ? (
                             <View style={{ width: 24, height: 24, borderRadius: 8, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                               <Image source={img} style={{ width: 20, height: 20 }} resizeMode="contain" />
                             </View>
                           ) : null}
-                          <Text style={{ color: have ? "#8effab" : "#d7ebdc", fontSize: 12.5, fontWeight: "800" }}>{have ? "✓ " : "+ "}{p}</Text>
+                          <Text style={{ color: have ? "#8effab" : "#d7ebdc", fontSize: 12, fontWeight: "800" }}>{have ? "✓ " : "+ "}{p}</Text>
                         </Pressable>
                       );
                     })}
@@ -102,9 +137,9 @@ export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, save
       {GUILDS.length > visible ? (
         <Pressable
           onPress={() => setVisible((c) => c + 4)}
-          style={{ marginTop: 12, backgroundColor: "rgba(92,255,137,0.10)", borderRadius: 16, paddingVertical: 13, alignItems: "center", borderWidth: 1, borderColor: "rgba(92,255,137,0.24)" }}
+          style={{ marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
         >
-          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>Show more combos ({GUILDS.length - visible} more)</Text>
+          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("guildTemplates.showMoreCombos")}{GUILDS.length - visible} {t("guildTemplates.more")}</Text>
         </Pressable>
       ) : null}
     </View>

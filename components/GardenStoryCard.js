@@ -1,8 +1,11 @@
 import { memo, useRef } from "react";
 import { Pressable, Share, Text, View } from "react-native";
 import { estimateHarvestValue, tapHaptic } from "../core";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
 export const GardenStoryCard = memo(function GardenStoryCard({ theme, savedPlants, harvestLog, journalEntries, wateringHistory, streakData, gardenXP, gardenAreas }) {
+  const { t } = useTranslation();
   const shareRef = useRef(null);
   const totalWaterings = Object.values(wateringHistory || {}).reduce(
     (sum, dates) => sum + (Array.isArray(dates) ? dates.length : 0),
@@ -73,48 +76,60 @@ export const GardenStoryCard = memo(function GardenStoryCard({ theme, savedPlant
   return (
     <View>
       {/* Captured as the share image — fixed dark palette so it always looks good. */}
-      <View ref={shareRef} collapsable={false} style={{ backgroundColor: "#0d1f14", borderRadius: 22, padding: 18, borderWidth: 1, borderColor: "rgba(142,255,171,0.18)" }}>
-        <Text style={{ color: "#8effab", fontSize: 13, fontWeight: "900", letterSpacing: 0.6, textAlign: "center" }}>
-          🌱 MY POCKET PLANTER GARDEN
-        </Text>
+      <View ref={shareRef} collapsable={false} style={{ backgroundColor: "#0e2414", borderRadius: 24, padding: 18, borderWidth: 1, borderColor: "rgba(142, 255, 171, 0.16)" }}>
+        <IconText label={t("gardenStory.myPocketPlanterGarden")} style={{
+  color: "#8effab",
+  fontSize: 12,
+  fontWeight: "900",
+  letterSpacing: 0.6,
+  textAlign: "center"
+}} />
 
         {mvpPlant ? (
-          <View style={{ marginTop: 14, backgroundColor: "rgba(255,216,107,0.10)", borderRadius: 18, padding: 16, borderWidth: 1, borderColor: "rgba(255,216,107,0.28)", flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <View style={{ marginTop: 14, backgroundColor: "rgba(255, 216, 107, 0.1)", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "rgba(255, 216, 107, 0.3)", flexDirection: "row", alignItems: "center", gap: 12 }}>
             <Text style={{ fontSize: 32 }}>🏆</Text>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>YOUR MVP PLANT</Text>
+              <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>{t("gardenStory.yourMvpPlant")}</Text>
               <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "900", marginTop: 2 }}>{mvpPlant}</Text>
-              <Text style={{ color: "#a9c7b3", fontSize: 12, fontWeight: "700", marginTop: 2 }}>Your most-harvested plant</Text>
+              <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", marginTop: 2 }}>{t("gardenStory.yourMostharvestedPlant")}</Text>
             </View>
           </View>
         ) : null}
 
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 14 }}>
           {stats.map((s) => (
-            <View key={s.label} style={{ width: "47%", borderRadius: 20, padding: 16, backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(142,255,171,0.16)", alignItems: "center" }}>
-              <Text style={{ fontSize: 26 }}>{s.icon}</Text>
+            <View key={s.label} style={{ width: "47%", borderRadius: 16, padding: 16, backgroundColor: "rgba(255, 255, 255, 0.08)", borderWidth: 1, borderColor: "rgba(142, 255, 171, 0.16)", alignItems: "center" }}>
+              <Text style={{ fontSize: 24 }}>{s.icon}</Text>
               <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "900", marginTop: 6 }}>{s.value}</Text>
-              <Text style={{ color: "#a9c7b3", fontSize: 12, fontWeight: "800", marginTop: 3, textAlign: "center" }}>{s.label}</Text>
+              <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "800", marginTop: 4, textAlign: "center" }}>{s.label}</Text>
             </View>
           ))}
         </View>
 
         {areaCount > 0 ? (
-          <Text style={{ color: "#a9c7b3", fontSize: 13, fontWeight: "700", marginTop: 14, textAlign: "center" }}>
-            🗂️ Growing across {areaCount} garden area{areaCount === 1 ? "" : "s"}
+          <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", marginTop: 14, textAlign: "center" }}>
+            {t("gardenStory.growingAcross")} {areaCount} {t("gardenStory.gardenArea")}{areaCount === 1 ? "" : "s"}
           </Text>
         ) : null}
 
-        <Text style={{ color: "#8effab", fontSize: 11, fontWeight: "800", marginTop: 14, textAlign: "center" }}>
-          Growing smarter with Pocket Planter 🌿
+        <Text style={{ color: "#8effab", fontSize: 10, fontWeight: "800", marginTop: 14, textAlign: "center" }}>
+          {t("gardenStory.growingSmarterWithPocketPlanter")}
         </Text>
       </View>
 
-      <Pressable onPress={shareImage} style={{ marginTop: 16, backgroundColor: "#5cff89", borderRadius: 18, paddingVertical: 15, alignItems: "center" }}>
-        <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 15 }}>📸 Share as Image</Text>
+      <Pressable onPress={shareImage} style={{ marginTop: 16, backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 16, alignItems: "center" }}>
+        <IconText label={t("gardenStory.shareAsImage")} style={{
+  color: "#07120b",
+  fontWeight: "900",
+  fontSize: 14
+}} />
       </Pressable>
-      <Pressable onPress={shareStory} style={{ marginTop: 10, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 18, paddingVertical: 13, alignItems: "center", borderWidth: 1, borderColor: "rgba(142,255,171,0.20)" }}>
-        <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>📤 Share as Text</Text>
+      <Pressable onPress={shareStory} style={{ marginTop: 10, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(142, 255, 171, 0.2)" }}>
+        <IconText label={t("gardenStory.shareAsText")} style={{
+  color: "#8effab",
+  fontWeight: "900",
+  fontSize: 14
+}} />
       </Pressable>
     </View>
   );

@@ -2,8 +2,11 @@ import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
 import { getDateKey } from "../core";
+import { formatDate, useTranslation } from "../lib/i18n";
+import { EmptyState } from "./EmptyState";
 
 export const WeeklyWateringGrid = memo(function WeeklyWateringGrid({ theme, savedPlants, wateringHistory }) {
+  const { t } = useTranslation();
   if (!savedPlants || savedPlants.length === 0) return null;
 
   // Build the last 7 days (oldest → today)
@@ -14,7 +17,9 @@ export const WeeklyWateringGrid = memo(function WeeklyWateringGrid({ theme, save
     d.setDate(d.getDate() - i);
     days.push({
       key: getDateKey(d),
-      label: d.toLocaleDateString("en-US", { weekday: "narrow" }),
+      label: formatDate(d, {
+  weekday: "narrow"
+}),
       isToday: i === 0,
     });
   }
@@ -55,18 +60,20 @@ export const WeeklyWateringGrid = memo(function WeeklyWateringGrid({ theme, save
 
 return (
     <View>
-      <Text style={[styles.cardText, { color: theme.secondaryText }]}>
-        {weekTotal > 0
-          ? `${wateredTodayCount} of ${savedPlants.length} plant${savedPlants.length === 1 ? "" : "s"} watered today · ${weekTotal} logged this week.`
-          : "No waterings logged this week yet — tap a plant to get started."}
-      </Text>
+      {weekTotal > 0 ? (
+        <Text style={[styles.cardText, { color: theme.secondaryText }]}>
+          {`${wateredTodayCount} of ${savedPlants.length} plant${savedPlants.length === 1 ? "" : "s"} watered today · ${weekTotal} logged this week.`}
+        </Text>
+      ) : (
+        <EmptyState compact icon="water" title={t("empty.noWateringTitle")} body={t("empty.noWateringBody")} />
+      )}
 
       {/* Day header */}
       <View style={{ flexDirection: "row", marginTop: 16, marginBottom: 6 }}>
         <View style={{ width: 74 }} />
         {days.map((day) => (
           <View key={`hdr-${day.key}`} style={{ flex: 1, alignItems: "center" }}>
-            <Text style={{ color: day.isToday ? "#6bc7ff" : theme.secondaryText, fontSize: 11, fontWeight: "900" }}>
+            <Text style={{ color: day.isToday ? "#6bc7ff" : theme.secondaryText, fontSize: 10, fontWeight: "900" }}>
               {day.label}
             </Text>
           </View>
@@ -90,19 +97,19 @@ return (
               return (
                 <View key={`${name}-${day.key}`} style={{ flex: 1, alignItems: "center" }}>
                   <View style={{
-                    width: 22, height: 22, borderRadius: 7,
-                    backgroundColor: on ? "#6bc7ff" : "rgba(255,255,255,0.06)",
+                    width: 22, height: 22, borderRadius: 8,
+                    backgroundColor: on ? "#6bc7ff" : "rgba(255, 255, 255, 0.06)",
                     borderWidth: 1,
-                    borderColor: on ? "#6bc7ff" : day.isToday ? "rgba(107,199,255,0.35)" : "rgba(255,255,255,0.08)",
+                    borderColor: on ? "#6bc7ff" : day.isToday ? "rgba(107, 199, 255, 0.3)" : "rgba(255, 255, 255, 0.08)",
                     alignItems: "center", justifyContent: "center",
                   }}>
-                    {on ? <Text style={{ fontSize: 11 }}>💧</Text> : null}
+                    {on ? <Text style={{ fontSize: 10 }}>💧</Text> : null}
                   </View>
                 </View>
               );
             })}
             <View style={{ width: 46, alignItems: "flex-end" }}>
-              <Text style={{ color: status.color, fontSize: 11.5, fontWeight: "900" }}>{status.label}</Text>
+              <Text style={{ color: status.color, fontSize: 12, fontWeight: "900" }}>{status.label}</Text>
             </View>
           </View>
           );
@@ -110,8 +117,8 @@ return (
       </View>
 
       {savedPlants.length > 6 ? (
-        <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 10, textAlign: "center" }}>
-          Showing 6 of {savedPlants.length} saved plants
+        <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 10, textAlign: "center" }}>
+          {t("weeklyWateringGrid.showing6Of")} {savedPlants.length} {t("weeklyWateringGrid.savedPlants")}
         </Text>
       ) : null}
     </View>

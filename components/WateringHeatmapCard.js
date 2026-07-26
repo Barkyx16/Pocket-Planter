@@ -2,8 +2,10 @@ import { memo } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
 import { getDateKey } from "../core";
+import { useTranslation } from "../lib/i18n";
 
 export const WateringHeatmapCard = memo(function WateringHeatmapCard({ theme, wateringHistory }) {
+  const { t } = useTranslation();
   const WEEKS = 15; // ~15 weeks of history
 
   // Flatten all watering dates into a count per day-key
@@ -43,11 +45,11 @@ export const WateringHeatmapCard = memo(function WateringHeatmapCard({ theme, wa
 
   const cellColor = (count) => {
     if (count < 0) return "transparent";
-    if (count === 0) return "rgba(255,255,255,0.06)";
+    if (count === 0) return "rgba(255, 255, 255, 0.06)";
     const ratio = count / maxCount;
-    if (ratio > 0.66) return "#2fbf6b";
+    if (ratio > 0.66) return "#2fbf5f";
     if (ratio > 0.33) return "#5cff89";
-    return "rgba(92,255,137,0.4)";
+    return "rgba(92, 255, 137, 0.4)";
   };
 
   const activeDays = Object.keys(counts).length;
@@ -90,15 +92,15 @@ export const WateringHeatmapCard = memo(function WateringHeatmapCard({ theme, wa
 return (
     <View>
       <Text style={[styles.cardText, { color: theme.secondaryText }]}>
-        {totalWaterings} watering{totalWaterings === 1 ? "" : "s"} across {activeDays} day{activeDays === 1 ? "" : "s"}. Each square is a day — greener means more.
+        {totalWaterings} watering{totalWaterings === 1 ? "" : "s"} across {activeDays} day{activeDays === 1 ? "" : "s"}{t("wateringHeatmap.eachSquareIsADay")}
       </Text>
 
       {/* STATS ROW */}
       <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
         {stats.map((s) => (
-          <View key={s.label} style={{ flex: 1, alignItems: "center", backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 14, paddingVertical: 11, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
-            <Text style={{ color: s.color, fontSize: 19, fontWeight: "900" }}>{s.value}</Text>
-            <Text style={{ color: theme.secondaryText, fontSize: 10.5, fontWeight: "800", marginTop: 3 }}>{s.label}</Text>
+          <View key={s.label} style={{ flex: 1, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, paddingVertical: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
+            <Text style={{ color: s.color, fontSize: 18, fontWeight: "900" }}>{s.value}</Text>
+            <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "800", marginTop: 4 }}>{s.label}</Text>
           </View>
         ))}
       </View>
@@ -133,11 +135,11 @@ return (
 
       {/* Legend */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 14, justifyContent: "flex-end" }}>
-        <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700" }}>Less</Text>
-        {["rgba(255,255,255,0.06)", "rgba(92,255,137,0.4)", "#5cff89", "#2fbf6b"].map((c) => (
+        <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700" }}>Less</Text>
+        {["rgba(255, 255, 255, 0.06)", "rgba(92, 255, 137, 0.4)", "#5cff89", "#2fbf5f"].map((c) => (
           <View key={c} style={{ width: 13, height: 13, borderRadius: 4, backgroundColor: c }} />
         ))}
-        <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700" }}>More</Text>
+        <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700" }}>More</Text>
       </View>
     </View>
   );

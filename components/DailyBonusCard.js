@@ -1,6 +1,8 @@
 import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
 export const DailyBonusCard = memo(function DailyBonusCard({
   theme,
@@ -9,6 +11,7 @@ export const DailyBonusCard = memo(function DailyBonusCard({
   onClaim,
   streakData,
 }) {
+  const { t } = useTranslation();
 const claimedRecently =
     dailyBonusDate &&
     (Date.now() - new Date(dailyBonusDate).getTime()) < 24 * 60 * 60 * 1000;
@@ -24,15 +27,13 @@ const claimedRecently =
         {
           backgroundColor: theme.card,
           borderColor: claimedToday
-            ? "rgba(92,255,137,0.18)"
+            ? "rgba(92, 255, 137, 0.16)"
             : "#5cff89",
         },
       ]}
     >
       <View style={{ flex: 1 }}>
-        <Text style={styles.dailyBonusEyebrow}>
-          🎁 DAILY REWARD
-        </Text>
+        <IconText label={t("dailyBonus.dailyReward")} style={styles.dailyBonusEyebrow} />
 
         <Text
           style={[
@@ -49,10 +50,10 @@ const claimedRecently =
           ]}
         >
           {claimedToday
-  ? "Today's bonus has already been claimed. Come back tomorrow!"
+  ? t("dailyBonus.todaysBonusHasAlreadyBeen")
   : streakData?.count > 0 && streakData.count % 7 === 0
-  ? "🔥 7-Day Streak! Claim your 100 XP bonus today!"
-  : "Open Pocket Planter daily and claim +25 XP."}
+  ? t("dailyBonus.n7dayStreakClaimYour100")
+  : t("dailyBonus.openPocketPlanterDailyAnd")}
         </Text>
       </View>
 
@@ -67,10 +68,10 @@ const claimedRecently =
       >
         <Text style={styles.dailyBonusButtonText}>
           {claimedToday
-  ? "✅ Claimed Today"
+  ? t("dailyBonus.claimedToday")
   : streakData?.count > 0 && streakData.count % 7 === 0
-  ? "🔥 +100 XP"
-  : "+25 XP"}
+  ? t("dailyBonus.n100Xp")
+  : t("dailyBonus.n25Xp")}
         </Text>
       </Pressable>
     </View>

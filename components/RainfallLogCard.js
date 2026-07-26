@@ -2,10 +2,13 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
 import { formatLength, getDateKey, getTodayKey, tapHaptic } from "../core";
+import { useTranslation } from "../lib/i18n";
+import { RainBarrelSection } from "./RainBarrelSection";
 
 const STORAGE_KEY = "pp_rainfallLog";
 
 export const RainfallLogCard = memo(function RainfallLogCard({ theme, weather, unitSystem }) {
+  const { t } = useTranslation();
   const [log, setLog] = useState({}); // { dateKey: inches }
   const [loaded, setLoaded] = useState(false);
 
@@ -45,36 +48,39 @@ export const RainfallLogCard = memo(function RainfallLogCard({ theme, weather, u
 
   return (
     <View>
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Track rainfall so you don't over-water. Plants generally want about 1″ of water per week from rain + you.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
+        {t("rainfallLog.trackRainfallSoYouDont")}
       </Text>
 
       <View style={{ alignItems: "center", marginTop: 14, backgroundColor: `${advice.color}14`, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: `${advice.color}33` }}>
         <Text style={{ color: advice.color, fontSize: 32, fontWeight: "900" }}>{formatLength(weekTotal, unitSystem)}</Text>
-        <Text style={{ color: theme.text, fontSize: 13, fontWeight: "800" }}>rain this week</Text>
+        <Text style={{ color: theme.text, fontSize: 12, fontWeight: "800" }}>{t("rainfallLog.rainThisWeek")}</Text>
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 17, marginTop: 6, textAlign: "center" }}>{advice.text}</Text>
       </View>
 
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 14, marginBottom: 6 }}>
-        Log today's rain{log[today] ? ` · ${formatLength(log[today], unitSystem)} so far` : ""}
+        {t("rainfallLog.logTodaysRain")}{log[today] ? ` · ${formatLength(log[today], unitSystem)} so far` : ""}
       </Text>
       <View style={{ flexDirection: "row", gap: 6 }}>
         {[0.1, 0.25, 0.5, 1].map((v) => (
-          <Pressable key={v} onPress={() => addRain(v)} style={{ flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12, backgroundColor: "rgba(107,199,255,0.12)", borderWidth: 1, borderColor: "rgba(107,199,255,0.25)" }}>
-            <Text style={{ color: "#6bc7ff", fontSize: 13, fontWeight: "900" }}>{unitSystem === "metric" ? `+${Math.round(v * 25.4)}mm` : `+${v}″`}</Text>
+          <Pressable key={v} onPress={() => addRain(v)} style={{ flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12, backgroundColor: "rgba(107, 199, 255, 0.12)", borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.24)" }}>
+            <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900" }}>{unitSystem === "metric" ? `+${Math.round(v * 25.4)}mm` : `+${v}″`}</Text>
           </Pressable>
         ))}
         {log[today] ? (
-          <Pressable onPress={clearToday} style={{ alignItems: "center", justifyContent: "center", paddingHorizontal: 12, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
-            <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>Clear</Text>
+          <Pressable onPress={clearToday} style={{ alignItems: "center", justifyContent: "center", paddingHorizontal: 12, borderRadius: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.12)" }}>
+            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "900" }}>Clear</Text>
           </Pressable>
         ) : null}
       </View>
       {weather?.precipChance >= 50 ? (
-        <Text style={{ color: theme.secondaryText, fontSize: 11.5, fontWeight: "700", marginTop: 10, fontStyle: "italic" }}>
-          🌧️ {Math.round(weather.precipChance)}% rain chance today — remember to log it if it comes down.
+        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 10, fontStyle: "italic" }}>
+          🌧️ {Math.round(weather.precipChance)}{t("rainfallLog.rainChanceTodayRememberTo")}
         </Text>
       ) : null}
+
+      {/* Rain barrel / water-storage tracker */}
+      <RainBarrelSection theme={theme} unitSystem={unitSystem} />
     </View>
   );
 })

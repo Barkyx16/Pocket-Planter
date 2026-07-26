@@ -2,8 +2,10 @@ import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
 import { countInSeason, getSeasonForMonth } from "../core";
+import { useTranslation } from "../lib/i18n";
 
 export const SeasonComparisonCard = memo(function SeasonComparisonCard({ theme, harvestLog, journalEntries, wateringHistory }) {
+  const { t } = useTranslation();
   const now = new Date();
   const season = getSeasonForMonth(now.getMonth() + 1);
   const thisYear = now.getFullYear();
@@ -36,18 +38,18 @@ return (
     <View>
       <Text style={[styles.cardTitle, { color: theme.text }]}>Your {season.label} {thisYear}</Text>
       {!hasThisSeason ? (
-        <View style={{ marginTop: 16, backgroundColor: "rgba(107,199,255,0.08)", borderRadius: 18, padding: 16, borderWidth: 1, borderColor: "rgba(107,199,255,0.20)" }}>
+        <View style={{ marginTop: 16, backgroundColor: "rgba(107, 199, 255, 0.08)", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.2)" }}>
           <Text style={{ color: "#6bc7ff", fontSize: 14, fontWeight: "800", lineHeight: 21 }}>
-            Nothing logged this {season.label.toLowerCase()} yet. Water a plant, add a photo, or log a harvest and it'll show up here. 🌱
+            {t("seasonComparison.nothingLoggedThis")} {season.label.toLowerCase()} {t("seasonComparison.yetWaterAPlantAdd")}
           </Text>
         </View>
       ) : (
         <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
           {rows.map((r) => (
-            <View key={r.label} style={{ flex: 1, borderRadius: 18, paddingVertical: 18, alignItems: "center", backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(107,199,255,0.16)" }}>
+            <View key={r.label} style={{ flex: 1, borderRadius: 16, paddingVertical: 18, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.16)" }}>
               <Text style={{ fontSize: 24 }}>{r.icon}</Text>
               <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "900", marginTop: 6 }}>{r.value}</Text>
-              <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 3 }}>{r.label}</Text>
+              <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 4 }}>{r.label}</Text>
             </View>
           ))}
         </View>

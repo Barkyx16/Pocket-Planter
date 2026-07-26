@@ -3,8 +3,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LayoutAnimation, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { formatTemp, getTodayKey, tapHaptic } from "../core";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
 export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, recommendation, savedPlants, wateredPlants, harvestTrackers, unitSystem }) {
+  const { t } = useTranslation();
   const today = getTodayKey();
   const currentHour = new Date().getHours();
 
@@ -37,7 +40,7 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
   const getConditionDetails = () => {
     if (!weather) return { icon: "🌤️", label: "Loading", color: "#8effab", urgency: null };
     if (weather.minTempF <= 35) return { icon: "❄️", label: "Frost Risk", color: "#6bc7ff", urgency: "high" };
-    if (weather.maxTempF >= 98) return { icon: "🔥", label: "Extreme Heat", color: "#ff4444", urgency: "high" };
+    if (weather.maxTempF >= 98) return { icon: "🔥", label: "Extreme Heat", color: "#ff7b7b", urgency: "high" };
     if (weather.maxTempF >= 90) return { icon: "☀️", label: "Hot Day", color: "#ff7b7b", urgency: "medium" };
     if (weather.precipChance >= 70) return { icon: "🌧️", label: "Heavy Rain", color: "#6bc7ff", urgency: "medium" };
     if (weather.precipChance >= 40) return { icon: "🌦️", label: "Possible Rain", color: "#8effab", urgency: null };
@@ -86,7 +89,7 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
   const activeActions = smartActions.filter((a) => !doneIds[a.id]);
 
   const getTempColor = (temp) => {
-    if (temp >= 98) return "#ff4444";
+    if (temp >= 98) return "#ff7b7b";
     if (temp >= 90) return "#ff7b7b";
     if (temp >= 80) return "#ffd86b";
     if (temp >= 65) return "#5cff89";
@@ -109,28 +112,30 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
         </View>
         {condition.urgency === "high" ? (
           <View style={[styles.liveWeatherUrgentBadge, { backgroundColor: `${condition.color}25`, borderColor: condition.color }]}>
-            <Text style={[styles.liveWeatherUrgentText, { color: condition.color }]}>⚠️ Alert</Text>
+            <IconText label={t("liveWeather.alert")} style={[styles.liveWeatherUrgentText, {
+  color: condition.color
+}]} />
           </View>
         ) : null}
       </View>
 
       {/* MAIN WEATHER STATS */}
       <View style={styles.liveWeatherGrid}>
-        <View style={[styles.liveWeatherBox, { borderColor: weather ? `${getTempColor(weather.maxTempF)}30` : "rgba(255,255,255,0.08)" }]}>
+        <View style={[styles.liveWeatherBox, { borderColor: weather ? `${getTempColor(weather.maxTempF)}30` : "rgba(255, 255, 255, 0.08)" }]}>
           <Text style={styles.liveWeatherIcon}>☀️</Text>
           <Text style={styles.liveWeatherLabel}>High</Text>
           <Text style={[styles.liveWeatherValue, { color: weather ? getTempColor(weather.maxTempF) : "#ffffff" }]}>
             {weather ? formatTemp(weather.maxTempF, unitSystem) : "—"}
           </Text>
         </View>
-        <View style={[styles.liveWeatherBox, { borderColor: weather ? `${getTempColor(weather.minTempF)}30` : "rgba(255,255,255,0.08)" }]}>
+        <View style={[styles.liveWeatherBox, { borderColor: weather ? `${getTempColor(weather.minTempF)}30` : "rgba(255, 255, 255, 0.08)" }]}>
           <Text style={styles.liveWeatherIcon}>🌙</Text>
           <Text style={styles.liveWeatherLabel}>Low</Text>
           <Text style={[styles.liveWeatherValue, { color: weather ? getTempColor(weather.minTempF) : "#ffffff" }]}>
             {weather ? formatTemp(weather.minTempF, unitSystem) : "—"}
           </Text>
         </View>
-        <View style={[styles.liveWeatherBox, { borderColor: weather?.precipChance >= 70 ? "rgba(107,199,255,0.30)" : "rgba(255,255,255,0.08)" }]}>
+        <View style={[styles.liveWeatherBox, { borderColor: weather?.precipChance >= 70 ? "rgba(107, 199, 255, 0.3)" : "rgba(255, 255, 255, 0.08)" }]}>
           <Text style={styles.liveWeatherIcon}>🌧️</Text>
           <Text style={styles.liveWeatherLabel}>Rain</Text>
           <Text style={[styles.liveWeatherValue, { color: weather?.precipChance >= 70 ? "#6bc7ff" : weather?.precipChance >= 40 ? "#8effab" : "#ffffff" }]}>
@@ -143,28 +148,28 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
       {smartActions.length > 0 ? (
         <View style={styles.liveWeatherActionsWrap}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-            <Text style={styles.liveWeatherActionsTitle}>⚡ Smart Actions for Today</Text>
+            <IconText label={t("liveWeather.smartActionsForToday")} style={styles.liveWeatherActionsTitle} />
             <Text style={{ color: doneCount === smartActions.length ? "#5cff89" : "#8effab", fontSize: 12, fontWeight: "900" }}>
               {doneCount}/{smartActions.length}
             </Text>
           </View>
           {activeActions.length ? (
             <>
-              <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 2, marginBottom: 8 }}>
-                Tap one to check it off — it disappears. Refreshes each day.
+              <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 2, marginBottom: 8 }}>
+                {t("liveWeather.tapOneToCheckIt")}
               </Text>
               <View style={styles.liveWeatherActionsList}>
                 {activeActions.map((action) => {
                   const baseBg = action.priority === "high"
-                    ? "rgba(255,123,123,0.10)"
+                    ? "rgba(255, 123, 123, 0.1)"
                     : action.priority === "medium"
-                    ? "rgba(255,216,107,0.08)"
-                    : "rgba(255,255,255,0.05)";
+                    ? "rgba(255, 216, 107, 0.08)"
+                    : "rgba(255, 255, 255, 0.06)";
                   const baseBorder = action.priority === "high"
-                    ? "rgba(255,123,123,0.25)"
+                    ? "rgba(255, 123, 123, 0.24)"
                     : action.priority === "medium"
-                    ? "rgba(255,216,107,0.20)"
-                    : "rgba(255,255,255,0.08)";
+                    ? "rgba(255, 216, 107, 0.2)"
+                    : "rgba(255, 255, 255, 0.08)";
                   return (
                     <Pressable
                       key={action.id}
@@ -174,7 +179,7 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
                       style={[styles.liveWeatherActionRow, { backgroundColor: baseBg, borderColor: baseBorder }]}
                     >
                       <Text style={styles.liveWeatherActionIcon}>{action.icon}</Text>
-                      <Text style={[styles.liveWeatherActionText, { color: action.priority === "high" ? "#ffb3b3" : theme.secondaryText }]}>
+                      <Text style={[styles.liveWeatherActionText, { color: action.priority === "high" ? "#ff9f9f" : theme.secondaryText }]}>
                         {action.text}
                       </Text>
                       {action.priority === "high" ? (
@@ -189,8 +194,12 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
             </>
           ) : (
             <View style={{ alignItems: "center", paddingVertical: 14, marginTop: 2 }}>
-              <Text style={{ color: "#5cff89", fontSize: 14, fontWeight: "900" }}>🎉 All done for today!</Text>
-              <Text style={{ color: theme.secondaryText, fontSize: 11.5, fontWeight: "700", marginTop: 3 }}>Fresh actions refresh tomorrow.</Text>
+              <IconText label={t("liveWeather.allDoneForToday")} style={{
+  color: "#5cff89",
+  fontSize: 14,
+  fontWeight: "900"
+}} />
+              <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4 }}>{t("liveWeather.freshActionsRefreshTomorrow")}</Text>
             </View>
           )}
         </View>

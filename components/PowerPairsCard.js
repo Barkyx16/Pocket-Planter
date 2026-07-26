@@ -3,6 +3,8 @@ import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { getPowerPairs, normalizeType, resolvePlantImageSource } from "../core";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
 // A short, plausible explanation for why two plants help each other in a shared bed.
 const pairReason = (aObj, bObj) => {
@@ -37,15 +39,16 @@ const pairReason = (aObj, bObj) => {
 };
 
 export const PowerPairsCard = memo(function PowerPairsCard({ theme, gardenAreas, onOpenPlant }) {
+  const { t } = useTranslation();
   const pairs = getPowerPairs(gardenAreas);
   const [expanded, setExpanded] = useState(null);
   if (!pairs.length) return null;
 
   return (
     <View>
-      <Text style={styles.cardEyebrow}>🟢 POWER PAIRS</Text>
+      <IconText label={t("powerPairs.powerPairs")} style={styles.cardEyebrow} />
       <Text style={[styles.cardText, { color: theme.secondaryText, marginTop: 4 }]}>
-        These plants share a bed and genuinely help each other. Tap a pair to see why it works.
+        {t("powerPairs.thesePlantsShareABed")}
       </Text>
       <View style={{ gap: 10, marginTop: 16 }}>
         {pairs.map(({ a, b, areaName }, i) => {
@@ -62,30 +65,30 @@ export const PowerPairsCard = memo(function PowerPairsCard({ theme, gardenAreas,
               accessibilityRole="button"
               accessibilityState={{ expanded: isOpen }}
               accessibilityLabel={`${a} and ${b}, great pairing. Tap for why it works.`}
-              style={{ backgroundColor: "rgba(92,255,137,0.07)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(92,255,137,0.22)" }}
+              style={{ backgroundColor: "rgba(92, 255, 137, 0.08)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Pressable onPress={() => itemA && onOpenPlant(itemA)} style={{ width: 38, height: 38, borderRadius: 11, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden", zIndex: 2 }}>
+                  <Pressable onPress={() => itemA && onOpenPlant(itemA)} style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden", zIndex: 2 }}>
                     {imgA ? <Image source={imgA} style={{ width: 30, height: 30 }} resizeMode="contain" /> : <Text style={{ fontSize: 18 }}>🌱</Text>}
                   </Pressable>
-                  <Pressable onPress={() => itemB && onOpenPlant(itemB)} style={{ width: 38, height: 38, borderRadius: 11, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden", marginLeft: -10, borderWidth: 2, borderColor: theme.card }}>
+                  <Pressable onPress={() => itemB && onOpenPlant(itemB)} style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden", marginLeft: -10, borderWidth: 2, borderColor: theme.card }}>
                     {imgB ? <Image source={imgB} style={{ width: 30, height: 30 }} resizeMode="contain" /> : <Text style={{ fontSize: 18 }}>🌱</Text>}
                   </Pressable>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900" }}>{a} + {b}</Text>
+                  <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{a} + {b}</Text>
                   <Text style={{ color: "#5cff89", fontSize: 12, fontWeight: "800", marginTop: 2 }}>
-                    🟢 Great pairing in {areaName}
+                    {t("powerPairs.greatPairingIn")} {areaName}
                   </Text>
                 </View>
-                <Text style={{ color: "#5cff89", fontSize: 15, fontWeight: "900" }}>{isOpen ? "▾" : "▸"}</Text>
+                <Text style={{ color: "#5cff89", fontSize: 14, fontWeight: "900" }}>{isOpen ? "▾" : "▸"}</Text>
               </View>
 
               {isOpen ? (
-                <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 7, marginTop: 12, borderTopWidth: 1, borderTopColor: "rgba(92,255,137,0.18)", paddingTop: 10 }}>
-                  <Text style={{ fontSize: 13 }}>✅</Text>
-                  <Text style={{ color: "#a9e8bd", fontSize: 12.5, fontWeight: "700", lineHeight: 17, flex: 1 }}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8, marginTop: 12, borderTopWidth: 1, borderTopColor: "rgba(92, 255, 137, 0.16)", paddingTop: 10 }}>
+                  <Text style={{ fontSize: 12 }}>✅</Text>
+                  <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "700", lineHeight: 17, flex: 1 }}>
                     {pairReason(itemA, itemB)}
                   </Text>
                 </View>

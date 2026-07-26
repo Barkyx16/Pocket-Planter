@@ -1,0 +1,7 @@
+{
+  "NSPhotoLibraryUsageDescription": "Pocket Planter utilise ta photothèque pour ajouter des photos de progression au journal de ton jardin. Par exemple, tu peux documenter la croissance de ton plant de tomate.",
+  "NSCameraUsageDescription": "Pocket Planter utilise l'appareil photo pour capturer des photos de jardin pour ton journal.",
+  "NSLocationWhenInUseUsageDescription": "Pocket Planter utilise ta position pour détecter ton code postal et ta zone de culture locale.",
+  "NSFaceIDUsageDescription": "Pocket Planter utilise Face ID pour te connecter rapidement et en toute sécurité.",
+  "NSCalendarsUsageDescription": "Pocket Planter ajoute tes rappels de semis et de récolte à ton calendrier pour ne manquer aucune fenêtre."
+}

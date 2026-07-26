@@ -1,0 +1,7 @@
+{
+  "NSPhotoLibraryUsageDescription": "Pocket Planter आपकी फ़ोटो लाइब्रेरी का उपयोग बगीचे की डायरी में प्रगति की तस्वीरें जोड़ने के लिए करता है। जैसे, आप टमाटर के पौधे की बढ़त दर्ज कर सकते हैं।",
+  "NSCameraUsageDescription": "Pocket Planter आपकी डायरी के लिए बगीचे की तस्वीरें लेने हेतु कैमरे का उपयोग करता है।",
+  "NSLocationWhenInUseUsageDescription": "Pocket Planter आपके डाक कोड और स्थानीय उगाने के ज़ोन का पता लगाने के लिए आपके स्थान का उपयोग करता है।",
+  "NSFaceIDUsageDescription": "Pocket Planter आपको तेज़ी से और सुरक्षित रूप से साइन इन कराने के लिए Face ID का उपयोग करता है।",
+  "NSCalendarsUsageDescription": "Pocket Planter आपके बुवाई और कटाई के रिमाइंडर कैलेंडर में जोड़ता है ताकि कोई अवसर न छूटे।"
+}

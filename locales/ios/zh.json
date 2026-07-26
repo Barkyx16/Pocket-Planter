@@ -1,0 +1,7 @@
+{
+  "NSPhotoLibraryUsageDescription": "Pocket Planter 使用你的照片图库，将进展照片添加到菜园日志中。例如，你可以记录番茄的生长过程。",
+  "NSCameraUsageDescription": "Pocket Planter 使用相机为你的日志拍摄菜园照片。",
+  "NSLocationWhenInUseUsageDescription": "Pocket Planter 使用你的位置来识别邮政编码和当地种植区。",
+  "NSFaceIDUsageDescription": "Pocket Planter 使用面容 ID，让你快速安全地登录。",
+  "NSCalendarsUsageDescription": "Pocket Planter 会把播种和收获提醒添加到你的日历，以免错过时机。"
+}

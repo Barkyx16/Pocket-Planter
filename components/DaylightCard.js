@@ -1,8 +1,10 @@
 import { memo } from "react";
 import { Text, View } from "react-native";
 import { getDaylightInfo } from "../core";
+import { useTranslation } from "../lib/i18n";
 
 export const DaylightCard = memo(function DaylightCard({ theme, zipCoords }) {
+  const { t } = useTranslation();
   const info = getDaylightInfo(zipCoords);
   if (!info) return null;
 
@@ -16,18 +18,18 @@ export const DaylightCard = memo(function DaylightCard({ theme, zipCoords }) {
 return (
     <View>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-        <Text style={{ fontSize: 26 }}>{info.gaining ? "🌅" : "🌇"}</Text>
+        <Text style={{ fontSize: 24 }}>{info.gaining ? "🌅" : "🌇"}</Text>
         <View style={{ flex: 1 }}>
           <Text style={{ color: theme.text, fontSize: 24, fontWeight: "900", marginTop: 2 }}>{info.label}</Text>
         </View>
-        <View style={{ backgroundColor: `${accent}1a`, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1, borderColor: `${accent}33` }}>
-          <Text style={{ color: accent, fontSize: 13, fontWeight: "900" }}>
-            {info.gaining ? "▲" : "▼"} {info.deltaMin} min/day
+        <View style={{ backgroundColor: `${accent}1a`, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: `${accent}33` }}>
+          <Text style={{ color: accent, fontSize: 12, fontWeight: "900" }}>
+            {info.gaining ? "▲" : "▼"} {info.deltaMin} {t("daylight.minday")}
           </Text>
         </View>
       </View>
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 20, marginTop: 12 }}>
-        {info.gaining ? "Days are getting longer" : "Days are getting shorter"} by about {info.deltaMin} minute{info.deltaMin === 1 ? "" : "s"} a day. {note}
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 20, marginTop: 12 }}>
+        {info.gaining ? t("daylight.daysAreGettingLonger") : t("daylight.daysAreGettingShorter")} {t("daylight.byAbout")} {info.deltaMin} minute{info.deltaMin === 1 ? "" : "s"} {t("daylight.aDay")} {note}
       </Text>
     </View>
   );

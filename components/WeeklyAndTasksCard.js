@@ -1,8 +1,11 @@
 import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
 export const WeeklyAndTasksCard = memo(function WeeklyAndTasksCard({ theme, savedPlants, journalEntries, wateredPlants, gardenXP, streakData, weather }) {
+  const { t } = useTranslation();
   const wateredCount = Object.values(wateredPlants || {}).filter(Boolean).length;
   const hasAnyData = savedPlants.length > 0 || journalEntries.length > 0 || wateredCount > 0;
 
@@ -16,30 +19,30 @@ export const WeeklyAndTasksCard = memo(function WeeklyAndTasksCard({ theme, save
     <View style={[styles.weeklyRecapCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
       {hasAnyData ? (
         <>
-          <Text style={styles.weeklyRecapEyebrow}>WEEKLY RECAP</Text>
-          <Text style={[styles.weeklyRecapTitle, { color: theme.text }]}>Your Garden Progress 🌱</Text>
+          <Text style={styles.weeklyRecapEyebrow}>{t("weeklyAndTasks.weeklyRecap")}</Text>
+          <Text style={[styles.weeklyRecapTitle, { color: theme.text }]}>{t("weeklyAndTasks.yourGardenProgress")}</Text>
           <View style={styles.weeklyRecapGrid}>
-            {wateredCount > 0 && <Text style={styles.weeklyRecapItem}>💧 Watered: {wateredCount}</Text>}
-            {journalEntries.length > 0 && <Text style={styles.weeklyRecapItem}>📸 Photos: {journalEntries.length}</Text>}
-            {savedPlants.length > 0 && <Text style={styles.weeklyRecapItem}>🪴 Saved: {savedPlants.length}</Text>}
-            {gardenXP.xp > 0 && <Text style={styles.weeklyRecapItem}>⭐ XP: {gardenXP.xp}</Text>}
+            {wateredCount > 0 && <Text style={styles.weeklyRecapItem}>{t("weeklyAndTasks.watered")} {wateredCount}</Text>}
+            {journalEntries.length > 0 && <Text style={styles.weeklyRecapItem}>{t("weeklyAndTasks.photos")} {journalEntries.length}</Text>}
+            {savedPlants.length > 0 && <Text style={styles.weeklyRecapItem}>{t("weeklyAndTasks.saved")} {savedPlants.length}</Text>}
+            {gardenXP.xp > 0 && <Text style={styles.weeklyRecapItem}>{t("weeklyAndTasks.xp")} {gardenXP.xp}</Text>}
           </View>
-          <Text style={styles.weeklyRecapFooter}>🔥 Current streak: {streakData?.count || 0} days</Text>
+          <Text style={styles.weeklyRecapFooter}>{t("weeklyAndTasks.currentStreak")} {streakData?.count || 0} days</Text>
         </>
       ) : (
         <>
-          <Text style={styles.weeklyRecapEyebrow}>GET STARTED</Text>
-          <Text style={[styles.weeklyRecapTitle, { color: theme.text }]}>Start your garden story</Text>
-          <Text style={[styles.weeklyFirstUseText, { color: theme.secondaryText }]}>Save your first plant, log a photo, or mark something as watered — your recap will appear here.</Text>
+          <Text style={styles.weeklyRecapEyebrow}>{t("weeklyAndTasks.getStarted")}</Text>
+          <Text style={[styles.weeklyRecapTitle, { color: theme.text }]}>{t("weeklyAndTasks.startYourGardenStory")}</Text>
+          <Text style={[styles.weeklyFirstUseText, { color: theme.secondaryText }]}>{t("weeklyAndTasks.saveYourFirstPlantLog")}</Text>
           <View style={styles.weeklyFirstUseRow}>
-            <Text style={styles.weeklyFirstUsePill}>💧 Water a plant</Text>
-            <Text style={styles.weeklyFirstUsePill}>📸 Add a photo</Text>
-            <Text style={styles.weeklyFirstUsePill}>🌱 Save a plant</Text>
+            <IconText label={t("weeklyAndTasks.waterAPlant")} style={styles.weeklyFirstUsePill} />
+            <IconText label={t("weeklyAndTasks.addAPhoto")} style={styles.weeklyFirstUsePill} />
+            <IconText label={t("weeklyAndTasks.saveAPlant")} style={styles.weeklyFirstUsePill} />
           </View>
         </>
       )}
       <View style={styles.weeklyTaskDivider} />
-      <Text style={styles.weatherTaskEyebrow}>SMART TASKS</Text>
+      <Text style={styles.weatherTaskEyebrow}>{t("weeklyAndTasks.smartTasks")}</Text>
       {tasks.map((task) => (<Text key={task} style={styles.weatherTaskItem}>{task}</Text>))}
     </View>
   );

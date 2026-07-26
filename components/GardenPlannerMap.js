@@ -4,8 +4,11 @@ import { Alert, Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { GARDEN_SLOTS, getCompatibilityScore, getFertilizerDays, getPlantSeasonLabel, getTodayKey, resolvePlantImageSource } from "../core";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
 export const GardenPlannerMap = memo(function GardenPlannerMap({ theme, gardenMap, savedPlants, wateredPlants, onAssign, onClear, zone, weather, harvestTrackers, fertilizerTrackers }) {
+  const { t } = useTranslation();
   const [selectedSlot, setSelectedSlot] = useState(null);
 
   function getPlantName(plant) { return typeof plant === "string" ? plant : plant?.name || ""; }
@@ -61,19 +64,19 @@ const fertDueDays = getFertilizerDays(plantName);
       <View style={styles.gardenLegendRow}>
         <View style={styles.gardenLegendItem}>
           <View style={[styles.gardenLegendDot, { backgroundColor: "#5cff89" }]} />
-          <Text style={styles.gardenLegendText}>Great pair ✓</Text>
+          <Text style={styles.gardenLegendText}>{t("gardenPlannerMap.greatPair")}</Text>
         </View>
         <View style={styles.gardenLegendItem}>
           <View style={[styles.gardenLegendDot, { backgroundColor: "#ff7b7b" }]} />
-          <Text style={styles.gardenLegendText}>Conflict ⚠</Text>
+          <Text style={styles.gardenLegendText}>{t("gardenPlannerMap.conflict")}</Text>
         </View>
         <View style={styles.gardenLegendItem}>
           <View style={[styles.gardenLegendDot, { backgroundColor: "#6bc7ff" }]} />
-          <Text style={styles.gardenLegendText}>Needs water 💧</Text>
+          <Text style={styles.gardenLegendText}>{t("gardenPlannerMap.needsWater")}</Text>
         </View>
         <View style={styles.gardenLegendItem}>
-          <View style={[styles.gardenLegendDot, { backgroundColor: "rgba(255,255,255,0.15)" }]} />
-          <Text style={styles.gardenLegendText}>Empty ＋</Text>
+          <View style={[styles.gardenLegendDot, { backgroundColor: "rgba(255, 255, 255, 0.16)" }]} />
+          <Text style={styles.gardenLegendText}>{t("gardenPlannerMap.empty")}</Text>
         </View>
       </View>
 
@@ -82,13 +85,13 @@ const fertDueDays = getFertilizerDays(plantName);
         <View style={styles.gardenMapStatsBar}>
           <View style={styles.gardenMapStatPill}>
             <Text style={styles.gardenMapStatValue}>{filledCount}/12</Text>
-            <Text style={styles.gardenMapStatLabel}>Plots filled</Text>
+            <Text style={styles.gardenMapStatLabel}>{t("gardenPlannerMap.plotsFilled")}</Text>
           </View>
-          <View style={[styles.gardenMapStatPill, { borderColor: excellentCount > 0 ? "rgba(92,255,137,0.35)" : "rgba(255,255,255,0.08)" }]}>
+          <View style={[styles.gardenMapStatPill, { borderColor: excellentCount > 0 ? "rgba(92, 255, 137, 0.3)" : "rgba(255, 255, 255, 0.08)" }]}>
             <Text style={[styles.gardenMapStatValue, { color: excellentCount > 0 ? "#5cff89" : "#d7ebdc" }]}>{excellentCount}</Text>
-            <Text style={styles.gardenMapStatLabel}>Great pairs</Text>
+            <Text style={styles.gardenMapStatLabel}>{t("gardenPlannerMap.greatPairs")}</Text>
           </View>
-          <View style={[styles.gardenMapStatPill, { borderColor: conflictCount > 0 ? "rgba(255,123,123,0.35)" : "rgba(255,255,255,0.08)" }]}>
+          <View style={[styles.gardenMapStatPill, { borderColor: conflictCount > 0 ? "rgba(255, 123, 123, 0.3)" : "rgba(255, 255, 255, 0.08)" }]}>
             <Text style={[styles.gardenMapStatValue, { color: conflictCount > 0 ? "#ff7b7b" : "#d7ebdc" }]}>{conflictCount}</Text>
             <Text style={styles.gardenMapStatLabel}>Conflicts</Text>
           </View>
@@ -103,14 +106,14 @@ const fertDueDays = getFertilizerDays(plantName);
           const plant = produceData.find(item => item?.name === plantName);
           const imageSource = plant ? resolvePlantImageSource(plant) : null;
           const hasConflict = plantName && allPlants.some(c => c !== plantName && getCompatibilityScore(plantName, c).label === "Avoid");
-          const hasExcellent = plantName && allPlants.some(c => c !== plantName && getCompatibilityScore(plantName, c).label === "Excellent Pair");
+          const hasExcellent = plantName && allPlants.some(c => c !== plantName && getCompatibilityScore(plantName, c).label === t("gardenPlannerMap.excellentPair"));
           const needsWater = plantName && wateredPlants?.[plantName] !== getTodayKey();
           const isSelected = selectedSlot === slot.id;
           const harvestTracker = plantName ? harvestTrackers?.[plantName] : null;
           const harvestDaysLeft = harvestTracker ? Math.max(0, harvestTracker.days - Math.floor((new Date() - new Date(harvestTracker.startedAt)) / (1000 * 60 * 60 * 24))) : null;
           const isHarvestReady = harvestDaysLeft === 0;
           const seasonLabel = plant && zone ? getPlantSeasonLabel(plant, zone) : null;
-          const isInSeason = seasonLabel === "Plant now";
+          const isInSeason = seasonLabel === t("gardenPlannerMap.plantNow");
 
           return (
             <Pressable
@@ -127,13 +130,13 @@ const fertDueDays = getFertilizerDays(plantName);
                 styles.gardenSlotV2,
                 {
                   backgroundColor: plantName
-                    ? hasConflict ? "rgba(255,123,123,0.10)" : hasExcellent ? "rgba(92,255,137,0.12)" : "rgba(255,255,255,0.07)"
-                    : "rgba(255,255,255,0.04)",
+                    ? hasConflict ? "rgba(255, 123, 123, 0.1)" : hasExcellent ? "rgba(92, 255, 137, 0.12)" : "rgba(255, 255, 255, 0.08)"
+                    : "rgba(255, 255, 255, 0.04)",
                   borderColor: isSelected ? "#ffd86b"
                     : hasConflict ? "#ff7b7b"
                     : hasExcellent ? "#5cff89"
                     : needsWater && plantName ? "#6bc7ff"
-                    : "rgba(255,255,255,0.10)",
+                    : "rgba(255, 255, 255, 0.1)",
                   borderWidth: isSelected ? 2 : 1,
                 },
               ]}
@@ -158,21 +161,21 @@ const fertDueDays = getFertilizerDays(plantName);
               {plantName ? (
                 <View style={styles.gardenSlotBadgeRow}>
                   {needsWater ? (
-                    <View style={[styles.gardenSlotBadge, { backgroundColor: "rgba(107,199,255,0.18)" }]}>
+                    <View style={[styles.gardenSlotBadge, { backgroundColor: "rgba(107, 199, 255, 0.16)" }]}>
                       <Text style={[styles.gardenSlotBadgeText, { color: "#6bc7ff" }]}>💧</Text>
                     </View>
                   ) : (
-                    <View style={[styles.gardenSlotBadge, { backgroundColor: "rgba(92,255,137,0.18)" }]}>
+                    <View style={[styles.gardenSlotBadge, { backgroundColor: "rgba(92, 255, 137, 0.16)" }]}>
                       <Text style={[styles.gardenSlotBadgeText, { color: "#5cff89" }]}>✓</Text>
                     </View>
                   )}
                   {isHarvestReady ? (
-                    <View style={[styles.gardenSlotBadge, { backgroundColor: "rgba(255,216,107,0.25)" }]}>
+                    <View style={[styles.gardenSlotBadge, { backgroundColor: "rgba(255, 216, 107, 0.24)" }]}>
                       <Text style={[styles.gardenSlotBadgeText, { color: "#ffd86b" }]}>🎉</Text>
                     </View>
                   ) : null}
                   {isInSeason ? (
-                    <View style={[styles.gardenSlotBadge, { backgroundColor: "rgba(92,255,137,0.15)" }]}>
+                    <View style={[styles.gardenSlotBadge, { backgroundColor: "rgba(92, 255, 137, 0.16)" }]}>
                       <Text style={[styles.gardenSlotBadgeText, { color: "#8effab" }]}>🌱</Text>
                     </View>
                   ) : null}
@@ -201,38 +204,38 @@ const fertDueDays = getFertilizerDays(plantName);
           <View style={styles.gardenSlotDetailHeader}>
             <Text style={styles.gardenSlotDetailTitle}>{selectedPlantName}</Text>
             <Pressable onPress={() => choosePlantForSlot(selectedSlot)} style={styles.gardenSlotChangeButton}>
-              <Text style={styles.gardenSlotChangeText}>Change →</Text>
+              <Text style={styles.gardenSlotChangeText}>{t("gardenPlannerMap.change")}</Text>
             </Pressable>
           </View>
 
           {/* SEASON STATUS */}
           {selectedInsights.seasonLabel ? (
             <View style={[styles.gardenSlotInfoRow, {
-              backgroundColor: selectedInsights.seasonLabel === "Plant now" ? "rgba(92,255,137,0.12)" : "rgba(255,255,255,0.06)"
+              backgroundColor: selectedInsights.seasonLabel === t("gardenPlannerMap.plantNow") ? "rgba(92, 255, 137, 0.12)" : "rgba(255, 255, 255, 0.06)"
             }]}>
               <Text style={styles.gardenSlotInfoIcon}>📅</Text>
-              <Text style={styles.gardenSlotInfoText}>Season: {selectedInsights.seasonLabel}</Text>
+              <Text style={styles.gardenSlotInfoText}>{t("gardenPlannerMap.season")} {selectedInsights.seasonLabel}</Text>
             </View>
           ) : null}
 
           {/* WATERING STATUS */}
           <View style={[styles.gardenSlotInfoRow, {
-            backgroundColor: selectedInsights.wateredToday ? "rgba(92,255,137,0.10)" : "rgba(107,199,255,0.10)"
+            backgroundColor: selectedInsights.wateredToday ? "rgba(92, 255, 137, 0.1)" : "rgba(107, 199, 255, 0.1)"
           }]}>
             <Text style={styles.gardenSlotInfoIcon}>{selectedInsights.wateredToday ? "✅" : "💧"}</Text>
             <Text style={styles.gardenSlotInfoText}>
-              {selectedInsights.wateredToday ? "Watered today" : "Needs water today"}
+              {selectedInsights.wateredToday ? t("gardenPlannerMap.wateredToday") : t("gardenPlannerMap.needsWaterToday")}
             </Text>
           </View>
 
           {/* HARVEST STATUS */}
           {selectedInsights.harvestDaysLeft !== null ? (
             <View style={[styles.gardenSlotInfoRow, {
-              backgroundColor: selectedInsights.harvestDaysLeft === 0 ? "rgba(255,216,107,0.15)" : "rgba(255,255,255,0.06)"
+              backgroundColor: selectedInsights.harvestDaysLeft === 0 ? "rgba(255, 216, 107, 0.16)" : "rgba(255, 255, 255, 0.06)"
             }]}>
               <Text style={styles.gardenSlotInfoIcon}>🚜</Text>
               <Text style={styles.gardenSlotInfoText}>
-                {selectedInsights.harvestDaysLeft === 0 ? "🎉 Ready to harvest!" : `Harvest in ~${selectedInsights.harvestDaysLeft} days`}
+                {selectedInsights.harvestDaysLeft === 0 ? t("gardenPlannerMap.readyToHarvest") : `Harvest in ~${selectedInsights.harvestDaysLeft} days`}
               </Text>
             </View>
           ) : null}
@@ -240,7 +243,7 @@ const fertDueDays = getFertilizerDays(plantName);
           {/* FERTILIZER STATUS */}
           {selectedInsights.daysSinceFert !== null ? (
             <View style={[styles.gardenSlotInfoRow, {
-            backgroundColor: selectedInsights.daysSinceFert >= selectedInsights.fertDueDays ? "rgba(255,216,107,0.12)" : "rgba(255,255,255,0.06)"
+            backgroundColor: selectedInsights.daysSinceFert >= selectedInsights.fertDueDays ? "rgba(255, 216, 107, 0.12)" : "rgba(255, 255, 255, 0.06)"
             }]}>
               <Text style={styles.gardenSlotInfoIcon}>🌿</Text>
               <Text style={styles.gardenSlotInfoText}>
@@ -251,7 +254,7 @@ const fertDueDays = getFertilizerDays(plantName);
 
           {/* WEATHER ALERT */}
           {selectedInsights.weatherAlert ? (
-            <View style={[styles.gardenSlotInfoRow, { backgroundColor: "rgba(255,216,107,0.12)" }]}>
+            <View style={[styles.gardenSlotInfoRow, { backgroundColor: "rgba(255, 216, 107, 0.12)" }]}>
               <Text style={styles.gardenSlotInfoIcon}>{selectedInsights.weatherAlert.icon}</Text>
               <Text style={styles.gardenSlotInfoText}>{selectedInsights.weatherAlert.text}</Text>
             </View>
@@ -260,10 +263,10 @@ const fertDueDays = getFertilizerDays(plantName);
           {/* COMPANION PAIRS */}
           {selectedInsights.pairs.length > 0 ? (
             <View style={styles.gardenSlotCompanionRow}>
-              <Text style={styles.gardenSlotCompanionLabel}>🟢 Great pairs nearby:</Text>
+              <IconText label={t("gardenPlannerMap.greatPairsNearby")} style={styles.gardenSlotCompanionLabel} />
               <View style={styles.gardenSlotPillRow}>
                 {selectedInsights.pairs.map(p => (
-                  <View key={p} style={[styles.gardenSlotPill, { backgroundColor: "rgba(92,255,137,0.14)", borderColor: "rgba(92,255,137,0.28)" }]}>
+                  <View key={p} style={[styles.gardenSlotPill, { backgroundColor: "rgba(92, 255, 137, 0.16)", borderColor: "rgba(92, 255, 137, 0.3)" }]}>
                     <Text style={[styles.gardenSlotPillText, { color: "#5cff89" }]}>{p}</Text>
                   </View>
                 ))}
@@ -274,10 +277,10 @@ const fertDueDays = getFertilizerDays(plantName);
           {/* CONFLICTS */}
           {selectedInsights.conflicts.length > 0 ? (
             <View style={styles.gardenSlotCompanionRow}>
-              <Text style={styles.gardenSlotCompanionLabel}>🔴 Conflicts in your garden:</Text>
+              <IconText label={t("gardenPlannerMap.conflictsInYourGarden")} style={styles.gardenSlotCompanionLabel} />
               <View style={styles.gardenSlotPillRow}>
                 {selectedInsights.conflicts.map(p => (
-                  <View key={p} style={[styles.gardenSlotPill, { backgroundColor: "rgba(255,123,123,0.12)", borderColor: "rgba(255,123,123,0.28)" }]}>
+                  <View key={p} style={[styles.gardenSlotPill, { backgroundColor: "rgba(255, 123, 123, 0.12)", borderColor: "rgba(255, 123, 123, 0.3)" }]}>
                     <Text style={[styles.gardenSlotPillText, { color: "#ff7b7b" }]}>{p}</Text>
                   </View>
                 ))}
@@ -286,7 +289,7 @@ const fertDueDays = getFertilizerDays(plantName);
           ) : null}
 
           <Pressable onPress={() => { onClear(selectedSlot); setSelectedSlot(null); }} style={styles.gardenSlotClearButton}>
-            <Text style={styles.gardenSlotClearText}>🗑 Remove from plot</Text>
+            <IconText label={t("gardenPlannerMap.removeFromPlot")} style={styles.gardenSlotClearText} />
           </Pressable>
         </View>
       ) : null}
@@ -295,8 +298,8 @@ const fertDueDays = getFertilizerDays(plantName);
       {filledCount === 0 ? (
         <View style={styles.gardenMapEmptyState}>
           <Text style={styles.gardenMapEmptyIcon}>🌱</Text>
-          <Text style={styles.gardenMapEmptyTitle}>Tap any plot to place a plant</Text>
-          <Text style={styles.gardenMapEmptyText}>Pocket Planter will show companion pairing, watering status, harvest countdowns, and weather alerts for each plot.</Text>
+          <Text style={styles.gardenMapEmptyTitle}>{t("gardenPlannerMap.tapAnyPlotToPlace")}</Text>
+          <Text style={styles.gardenMapEmptyText}>{t("gardenPlannerMap.pocketPlanterWillShowCompanion")}</Text>
         </View>
       ) : null}
     </View>

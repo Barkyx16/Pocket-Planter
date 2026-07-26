@@ -2,8 +2,12 @@ import { memo } from "react";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
+import { BackgroundDecoration } from "./BackgroundDecoration";
+import { PREMIUM_FEATURES } from "../core";
+import { useTranslation } from "../lib/i18n";
 
-export const OnboardingCard = memo(function OnboardingCard({ onFinish }) {
+export const OnboardingCard = memo(function OnboardingCard({ onFinish, isDark = true }) {
+  const { t } = useTranslation();
   const [slide, setSlide] = useState(0);
 
   const slides = [
@@ -51,6 +55,15 @@ export const OnboardingCard = memo(function OnboardingCard({ onFinish }) {
         { icon: "✨", title: "Profile rewards", text: "Level up your gardener profile." },
       ],
     },
+    {
+      // Premium finale — showcases everything Premium unlocks. Rendered from the
+      // shared PREMIUM_FEATURES manifest so it always matches the Premium tab.
+      icon: "👑",
+      eyebrow: t("premiumCard.eyebrow"),
+      title: t("premiumCard.headline"),
+      text: t("premiumCard.blurb"),
+      features: PREMIUM_FEATURES.map((f) => ({ icon: f.icon, title: t(f.titleKey), text: t(f.bodyKey) })),
+    },
   ];
 
   const current = slides[slide];
@@ -58,6 +71,7 @@ export const OnboardingCard = memo(function OnboardingCard({ onFinish }) {
 
   return (
     <View style={styles.onboardingOverlay}>
+      <BackgroundDecoration isDark={isDark} />
       <View style={[styles.onboardingCard, { padding: 16, maxHeight: "92%" }]}>
         <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
           {/* HERO — matches the Premium screen */}
@@ -75,7 +89,7 @@ export const OnboardingCard = memo(function OnboardingCard({ onFinish }) {
           </View>
 
           {/* FEATURE TILES — matches the Premium feature grid */}
-          <View style={[styles.premiumFeaturesCard, { backgroundColor: "rgba(255,255,255,0.03)", borderColor: "rgba(92,255,137,0.16)" }]}>
+          <View style={[styles.premiumFeaturesCard, { backgroundColor: "rgba(255, 255, 255, 0.04)", borderColor: "rgba(92, 255, 137, 0.16)" }]}>
             <View style={styles.premiumFeaturesGrid}>
               {current.features.map((f) => (
                 <View key={f.title} style={styles.premiumFeatureTile}>
@@ -115,13 +129,13 @@ export const OnboardingCard = memo(function OnboardingCard({ onFinish }) {
           }}
         >
           <Text style={styles.onboardingButtonText}>
-            {isLast ? "Set My Zone 🌿" : "Next →"}
+            {isLast ? t("onboarding.setMyZone") : t("onboarding.next")}
           </Text>
         </Pressable>
 
         {!isLast ? (
           <Pressable onPress={onFinish} style={styles.onboardingSkipButton}>
-            <Text style={styles.onboardingSkipText}>Skip for now</Text>
+            <Text style={styles.onboardingSkipText}>{t("onboarding.skipForNow")}</Text>
           </Pressable>
         ) : null}
       </View>

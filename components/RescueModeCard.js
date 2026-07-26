@@ -2,8 +2,11 @@ import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { RESCUE_THRESHOLD_DAYS, getDaysSince, resolvePlantImageSource } from "../core";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
 export const RescueModeCard = memo(function RescueModeCard({ theme, savedPlants, wateredPlants, wateringHistory, onOpenPlant, onWater }) {
+  const { t } = useTranslation();
   const neglected = (savedPlants || [])
     .map((name) => {
       const history = wateringHistory?.[name];
@@ -19,18 +22,18 @@ export const RescueModeCard = memo(function RescueModeCard({ theme, savedPlants,
   if (!neglected.length) return null;
 
   return (
-    <View style={{ borderRadius: 26, padding: 18, marginBottom: 18, borderWidth: 1.5, backgroundColor: "rgba(255,159,67,0.10)", borderColor: "#ff9f43" }}>
+    <View style={{ borderRadius: 24, padding: 18, marginBottom: 18, borderWidth: 1.5, backgroundColor: "rgba(255, 159, 67, 0.1)", borderColor: "#ff9f43" }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-        <Text style={{ fontSize: 26 }}>🚨</Text>
+        <Text style={{ fontSize: 24 }}>🚨</Text>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>RESCUE MODE</Text>
+          <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>{t("rescueMode.rescueMode")}</Text>
           <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900", marginTop: 2 }}>
             {neglected.length} plant{neglected.length === 1 ? "" : "s"} need{neglected.length === 1 ? "s" : ""} attention
           </Text>
         </View>
       </View>
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 8 }}>
-        These haven't been watered in a while. A deep watering and a soil check can bring most plants back.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 8 }}>
+        {t("rescueMode.theseHaventBeenWateredIn")}
       </Text>
       <View style={{ gap: 10, marginTop: 14 }}>
         {neglected.map((p) => {
@@ -39,16 +42,16 @@ export const RescueModeCard = memo(function RescueModeCard({ theme, savedPlants,
           return (
             <View
               key={`rescue-${p.name}`}
-              style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 18, padding: 12, borderWidth: 1, borderColor: "rgba(255,159,67,0.25)" }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(255, 159, 67, 0.24)" }}
             >
               <Pressable onPress={() => plant && onOpenPlant(plant)} style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}>
                 <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                  {img ? <Image source={img} style={{ width: 36, height: 36 }} resizeMode="contain" /> : <Text style={{ fontSize: 22 }}>🌱</Text>}
+                  {img ? <Image source={img} style={{ width: 36, height: 36 }} resizeMode="contain" /> : <Text style={{ fontSize: 20 }}>🌱</Text>}
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900" }}>{p.name}</Text>
+                  <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{p.name}</Text>
                   <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "900", marginTop: 2 }}>
-                    ⏳ {p.days} days since watering
+                    ⏳ {p.days} {t("rescueMode.daysSinceWatering")}
                   </Text>
                 </View>
               </Pressable>
@@ -56,9 +59,13 @@ export const RescueModeCard = memo(function RescueModeCard({ theme, savedPlants,
                 onPress={() => onWater(p.name)}
                 accessibilityRole="button"
                 accessibilityLabel={`Water ${p.name} now`}
-                style={{ backgroundColor: "#6bc7ff", borderRadius: 14, paddingHorizontal: 16, paddingVertical: 11 }}
+                style={{ backgroundColor: "#6bc7ff", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12 }}
               >
-                <Text style={{ color: "#07120b", fontSize: 13, fontWeight: "900" }}>💧 Rescue</Text>
+                <IconText label={t("rescueMode.rescue")} style={{
+  color: "#07120b",
+  fontSize: 12,
+  fontWeight: "900"
+}} />
               </Pressable>
             </View>
           );

@@ -3,6 +3,7 @@ import { Pressable, Text, View } from "react-native";
 import { WeeklyWateringGrid } from "./WeeklyWateringGrid";
 import { WateringRhythmCard } from "./WateringRhythmCard";
 import { WateringHeatmapCard } from "./WateringHeatmapCard";
+import { useTranslation } from "../lib/i18n";
 
 const TABS = [
   { id: "week", label: "📅 Week" },
@@ -11,6 +12,7 @@ const TABS = [
 ];
 
 export const WateringInsightsCard = memo(function WateringInsightsCard({ theme, savedPlants, wateringHistory, onOpenPlant, extraTabs = [] }) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState("week");
   const hasHistory = Object.values(wateringHistory || {}).some((d) => (d || []).length);
   const allTabs = [...TABS, ...extraTabs.map((t) => ({ id: t.id, label: t.label }))];
@@ -28,9 +30,9 @@ export const WateringInsightsCard = memo(function WateringInsightsCard({ theme, 
               onPress={() => setTab(t.id)}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
-              style={{ borderRadius: 999, paddingHorizontal: 13, paddingVertical: 8, backgroundColor: active ? "#6bc7ff" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#6bc7ff" : "rgba(255,255,255,0.12)" }}
+              style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: active ? "#6bc7ff" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#6bc7ff" : "rgba(255, 255, 255, 0.12)" }}
             >
-              <Text numberOfLines={1} style={{ color: active ? "#07120b" : theme.secondaryText, fontSize: 12.5, fontWeight: "900" }}>{t.label}</Text>
+              <Text numberOfLines={1} style={{ color: active ? "#07120b" : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{t.label}</Text>
             </Pressable>
           );
         })}
@@ -48,8 +50,8 @@ export const WateringInsightsCard = memo(function WateringInsightsCard({ theme, 
         hasHistory ? (
           <WateringHeatmapCard theme={theme} wateringHistory={wateringHistory} />
         ) : (
-          <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", textAlign: "center", paddingVertical: 20 }}>
-            Log a few waterings to see your heatmap.
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", textAlign: "center", paddingVertical: 20 }}>
+            {t("wateringInsights.logAFewWateringsTo")}
           </Text>
         )
       ) : null}

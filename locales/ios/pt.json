@@ -1,0 +1,7 @@
+{
+  "NSPhotoLibraryUsageDescription": "O Pocket Planter usa sua fototeca para adicionar fotos de progresso ao diário da sua horta. Por exemplo, você pode documentar como seu pé de tomate cresce.",
+  "NSCameraUsageDescription": "O Pocket Planter usa a câmera para capturar fotos da horta para o seu diário.",
+  "NSLocationWhenInUseUsageDescription": "O Pocket Planter usa sua localização para detectar seu código postal e sua zona de cultivo local.",
+  "NSFaceIDUsageDescription": "O Pocket Planter usa o Face ID para você entrar de forma rápida e segura.",
+  "NSCalendarsUsageDescription": "O Pocket Planter adiciona seus lembretes de plantio e colheita ao calendário para você não perder nenhuma janela."
+}

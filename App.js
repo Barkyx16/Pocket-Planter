@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "./lib/supabase";
 import { isBiometricAvailable, getBiometricLabel, isBiometricEnabled, enableBiometricLogin, disableBiometricLogin, authenticateAndGetCredentials } from "./lib/biometricAuth";
 import { hydrateTabHeroes } from "./components/TabHero";
 import {
+  ActivityIndicator,
   Alert,
   Animated,
   Appearance,
@@ -38,6 +39,33 @@ import * as StoreReview from "expo-store-review";
 import Purchases from 'react-native-purchases';
 import prismLogo from "./assets/prism-logo.png";
 import zipZoneData from "./data/zipZoneData";
+import themeTokens from "./theme";
+import { initReducedMotion, isReducedMotion, duration as motionDuration, DURATION, EASING } from "./lib/motion";
+import {
+  DEFAULT_LOCALE,
+  LANGUAGES,
+  LanguageProvider,
+  detectDeviceLocale,
+  getLanguage,
+  isSupportedLocale,
+  setLocale,
+  t,
+  formatDate,
+} from "./lib/i18n";
+import {
+  COUNTRIES,
+  DEFAULT_COUNTRY,
+  getCountry,
+  hasZipTable,
+  isPostalComplete,
+  normalizePostal,
+  postalLabelFor,
+  postalPlaceholderFor,
+  resolveZone,
+  resolveZoneFromCoords,
+  searchCountries,
+  usesZipFormat,
+} from "./lib/zoneResolver";
 import produceData from "./data/produceData";
 import { styles } from "./styles";
 import { getDateKey,
@@ -69,8 +97,11 @@ import { getDateKey,
   WHATS_NEW_ITEMS,
   WHATS_NEW_VERSION,
   applyGardenTemplate,
+  applyModuleBackup,
   buildCsv,
   calculateGardenHealth,
+  canPlantInArea,
+  collectModuleBackup,
   countInSeason,
   csvEscape,
   dayOfYear,
@@ -82,6 +113,7 @@ import { getDateKey,
   frostOverrideRef,
   gardenBuddyImage,
   getAchievementBadges,
+  buildWidgetSnapshot,
   getActivePests,
   getAreaTag,
   getBaseWaterInterval,
@@ -109,9 +141,14 @@ import { getDateKey,
   getMonthEmoji,
   getNextWaterInfo,
   getPairReason,
+  getPlantDetails,
   getPlantDifficulty,
+  getPestForName,
+  getDiseaseForName,
+  getPlantHealth,
   getPlantHealthStatus,
   getPlantQuickFacts,
+  getActivationSteps,
   getPlantSeasonLabel,
   getPlantSpecificTip,
   getPlantSunNeed,
@@ -146,6 +183,7 @@ import { getDateKey,
   getZipRecord,
   harvestDays,
   homeBuddyImage,
+  isOrnamental,
   isPerennial,
   journalBuddyImage,
   loadingScreenImage,
@@ -153,7 +191,6 @@ import { getDateKey,
   maybeAskForReview,
   migrateGardenToAreas,
   normalizeType,
-  normalizeZip,
   parseFrostOverride,
   parseHarvestQuantity,
   plantImages,
@@ -163,6 +200,7 @@ import { getDateKey,
   resolvePlantImageSource,
   setFrostOverrideRef,
   setHapticsEnabled,
+  setHemisphereFromLatitude,
   successHaptic,
   tapHaptic,
   toGallons,
@@ -176,10 +214,15 @@ import { ConfettiBurst } from "./components/ConfettiBurst";
 import { getBadgeImage } from "./data/badgeImageMap";
 import { getBannerImage } from "./data/bannerImageMap";
 import { GlobalSearchModal } from "./components/GlobalSearchModal";
+import { GardenConflictModal } from "./components/GardenConflictModal";
+import { getPestImage } from "./data/pestImageMap";
+import { getDiseaseImage } from "./data/diseaseImageMap";
+import { syncWidgets } from "./lib/widgets";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { OnboardingCard } from "./components/OnboardingCard";
 import { PestDetailScreen } from "./components/PestDetailScreen";
+import { DiseaseDetailScreen } from "./components/DiseaseDetailScreen";
 import { PlantGrowthTimeline } from "./components/PlantGrowthTimeline";
 import { PremiumLockedCard } from "./components/PremiumLockedCard";
 import { PremiumLockedSection } from "./components/PremiumLockedSection";
@@ -187,11 +230,14 @@ import { WeatherParticles } from "./components/WeatherParticles";
 import { GardenTab } from "./screens/GardenTab";
 import { HomeTab } from "./screens/HomeTab";
 import { JournalTab } from "./screens/JournalTab";
+import { FlowerTab } from "./screens/FlowerTab";
 import { PlantsTab } from "./screens/PlantsTab";
 import { PremiumTab } from "./screens/PremiumTab";
 import { ProfileTab } from "./screens/ProfileTab";
 import { SettingsTab } from "./screens/SettingsTab";
 import { WeatherTab } from "./screens/WeatherTab";
+import { IconText } from "./components/IconText";
+import { AppIntroCard } from "./components/AppIntroCard";
 import {
   useFonts,
   Inter_400Regular,
@@ -214,18 +260,31 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // ── Global Inter typography ──────────────────────────────────────────────────
 // Custom fonts don't honor fontWeight, so map each weight to the matching Inter
-// family. This also softens the hierarchy (900->ExtraBold, 800->Bold, 700->SemiBold)
-// so the UI reads polished instead of all-black-weight. Patched once onto Text /
-// TextInput so it covers StyleSheet AND inline styles everywhere. If anything fails
-// it returns the original element, so the app simply falls back to the system font.
+// family. Patched once onto Text / TextInput so it covers StyleSheet AND inline
+// styles everywhere. If anything fails it returns the original element, so the
+// app simply falls back to the system font.
+//
+// The map is also the app's weight policy, and it is deliberately one step
+// lighter than what the styles declare. The codebase has ~595 `fontWeight: "900"`
+// declarations; rendering those as true Black would flatten all hierarchy —
+// when everything shouts, nothing reads as important. Remapping here fixes the
+// whole app at once instead of editing hundreds of style rules, and lighter
+// faces are narrower, so it can only reduce text overflow, never cause it.
+//
+//   declared 900 -> Bold        (titles)
+//   declared 800 -> SemiBold    (section headings)
+//   declared 700 -> Medium      (body, labels)
+//   declared 600 -> Medium
+//
+// To make something genuinely heavier, change the map — not the call site.
 const INTER_BY_WEIGHT = {
   "300": "Inter_400Regular",
   "400": "Inter_400Regular",
-  "500": "Inter_500Medium",
-  "600": "Inter_600SemiBold",
-  "700": "Inter_600SemiBold",
-  "800": "Inter_700Bold",
-  "900": "Inter_800ExtraBold",
+  "500": "Inter_400Regular",
+  "600": "Inter_500Medium",
+  "700": "Inter_500Medium",
+  "800": "Inter_600SemiBold",
+  "900": "Inter_700Bold",
   normal: "Inter_400Regular",
   bold: "Inter_700Bold",
 };
@@ -254,6 +313,41 @@ if (TextInput.render && !TextInput.__interPatched) {
   TextInput.__interPatched = true;
 }
 
+// ── Global press feedback ────────────────────────────────────────────────────
+// 321 of the app's 325 Pressables had no pressed state, so most buttons gave no
+// response to touch — the single most "unfinished" feeling thing in a UI.
+// Patched the same way as the Inter font shim above: once, at the primitive, so
+// every call site benefits without editing hundreds of components.
+//
+// Deliberately skipped when the call site already passes a style *function*
+// (it's handling its own pressed state) or is disabled. On any failure the
+// original element is returned untouched, so the worst case is the previous
+// behaviour rather than a broken button.
+if (Pressable && Pressable.type && !Pressable.__ppPressPatched) {
+  const InnerPressable = Pressable.type;
+  const PatchedPressable = (props) => {
+    if (typeof props.style === "function" || props.disabled) {
+      return React.createElement(InnerPressable, props);
+    }
+    const baseStyle = props.style;
+    return React.createElement(InnerPressable, {
+      ...props,
+      style: ({ pressed }) => [baseStyle, pressed ? themeTokens.pressed : null],
+    });
+  };
+  PatchedPressable.displayName = "Pressable";
+  try {
+    Pressable.type = PatchedPressable;
+    Pressable.__ppPressPatched = true;
+  } catch (e) {
+    // Older/newer RN internals — leave Pressable exactly as it was.
+  }
+}
+
+// Destinations that live behind the "More" tab rather than in the bar itself.
+// The tab bar highlights "More" whenever one of these is the active tab.
+const OVERFLOW_TAB_IDS = ["flowers", "journal", "profile", "settings", "premium"];
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     // Foreground display — new SDK keys (shouldShowAlert was deprecated).
@@ -275,7 +369,7 @@ if (Platform.OS === "android") {
   }).catch(() => {});
 }
 
-function AppInner() {
+function AppInner({ language, setLanguage }) {
   const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -305,6 +399,22 @@ function AppInner() {
         }
         if (params.type === "recovery" || url.includes("reset-password")) {
           setShowResetPassword(true);
+          return;
+        }
+        // Widget / Siri-shortcut routes: pocketplanter://<action>[/<arg>]
+        if (!params.access_token && /^pocketplanter:\/\//.test(url)) {
+          const route = url.replace(/^pocketplanter:\/\//, "").replace(/[#?].*$/, "");
+          const parts = route.split("/").filter(Boolean);
+          const action = parts[0] || "open";
+          const arg = parts.length > 1 ? decodeURIComponent(parts.slice(1).join("/")) : null;
+          switch (action) {
+            case "water": jumpToTab("plants"); break;
+            case "weather": case "frost": jumpToTab("weather"); break;
+            case "harvest": jumpToTab("garden"); break;
+            case "journal": jumpToTab("journal"); break;
+            case "plant": if (arg) openPlantByName(arg); else jumpToTab("plants"); break;
+            case "open": default: jumpToTab("home"); break;
+          }
         }
       } catch (e) {
         console.log("Deep link handling error:", e?.message);
@@ -338,6 +448,10 @@ function AppInner() {
   const [harvestTrackers, setHarvestTrackers] = useState({});
   const [gardenMap, setGardenMap] = useState({});
   const [gardenAreas, setGardenAreas] = useState([]);
+  const [gardenConflictPrompt, setGardenConflictPrompt] = useState(null); // { plantName, conflicts, cleanBeds, anyFreeBed } — drives GardenConflictModal
+  const [gardenFocusAreaId, setGardenFocusAreaId] = useState(null); // { areaId, n } — asks AreaPlannerMap to open a bed (n bumps each tap so re-taps re-open)
+  const [harvestLogPlant, setHarvestLogPlant] = useState(null); // plant name being logged — drives the cross-platform harvest-log modal (Alert.prompt is iOS-only)
+  const [harvestLogText, setHarvestLogText] = useState("");
   const [areaHistory, setAreaHistory] = useState({}); // { areaId: [{ family, plant, season, year, dateKey }] }
 const [sowLog, setSowLog] = useState({}); // { plantName: dateKey } — last succession sow
 const [frostOverrides, setFrostOverrides] = useState({}); // { lastFrost: "MM-DD", firstFrost: "MM-DD" }
@@ -346,6 +460,23 @@ const vacationRef = useRef(vacation);
 useEffect(() => { vacationRef.current = vacation; }, [vacation]);
   const [weather, setWeather] = useState(null);
   const [zipCoords, setZipCoords] = useState(null);
+  // Drives northern/southern seasonal timing. Resolved from GPS or from the
+  // geocoded ZIP coords; null until one of those lands, which leaves the app on
+  // its northern-hemisphere default.
+  const [latitude, setLatitude] = useState(null);
+  // Which country's postal format the location field is collecting.
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [showMoreSheet, setShowMoreSheet] = useState(false);
+  // Cross-fade for tab content. Switching tabs was an instant swap, which reads
+  // as a jump cut; a short fade makes the change feel intentional.
+  const tabFade = useRef(new Animated.Value(1)).current;
+  const [countrySearch, setCountrySearch] = useState("");
+  const [showLanguagePicker, setShowLanguagePicker] = useState(false);
+  // Bumped by "Find my zone" so a failed resolve can be retried without the
+  // user having to alter their postal code.
+  const [zoneRetryToken, setZoneRetryToken] = useState(0);
+  const countryResults = useMemo(() => searchCountries(countrySearch), [countrySearch]);
   const [premiumUnlocked, setPremiumUnlocked] = useState(false);
   const [subscriptionPlan, setSubscriptionPlan] = useState("Free");
   const [showPremiumIntro, setShowPremiumIntro] = useState(true);
@@ -357,6 +488,7 @@ useEffect(() => { vacationRef.current = vacation; }, [vacation]);
   const [showSearch, setShowSearch] = useState(false);
   const [selectedPlant, setSelectedPlant] = useState(null);
   const [selectedPest, setSelectedPest] = useState(null);
+  const [selectedDisease, setSelectedDisease] = useState(null);
   const [returnSection, setReturnSection] = useState(null);
   const [remindersOn, setRemindersOn] = useState(false);
   const [frostAlertsOn, setFrostAlertsOn] = useState(false);
@@ -365,11 +497,16 @@ useEffect(() => { vacationRef.current = vacation; }, [vacation]);
   const [loading, setLoading] = useState(true);
   const [streakData, setStreakData] = useState({ count: 1, lastOpened: getTodayKey() });
   const [streakRecoveryOffer, setStreakRecoveryOffer] = useState(null); // { prevCount } after a 1-day miss
-  const [profileName, setProfileName] = useState("My Gardener Profile!");
+  const [profileName, setProfileName] = useState("My Gardener Profile");
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [selectedProfileTheme, setSelectedProfileTheme] = useState("forest");
   const [shownAchievements, setShownAchievements] = useState([]);
   const [cloudProfileLoaded, setCloudProfileLoaded] = useState(false);
+  // Mirrors the state for the mount-time AsyncStorage loaders below. Their
+  // promises resolve inside a `[]`-deps closure, so they can only ever see the
+  // initial `false` — without this ref a slow local read can land after the
+  // cloud sync and overwrite it with a stale device-local value.
+  const cloudProfileLoadedRef = useRef(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [celebrationBadge, setCelebrationBadge] = useState(null);
   const [shownBanners, setShownBanners] = useState([]);
@@ -394,8 +531,9 @@ const [plantSearch, setPlantSearch] = useState("");
 const [plantDifficultyFilter, setPlantDifficultyFilter] = useState("All"); // All | Easy | Medium | Hard
 const [plantNowOnly, setPlantNowOnly] = useState(false); // when true, only "Plant now" plants for the zone
 const [plantSortMode, setPlantSortMode] = useState("smart"); // smart | az | harvest | difficulty
+const [plantAttrFilters, setPlantAttrFilters] = useState([]); // subset of ["container","fullsun","perennial"] — AND semantics, backed by getPlantDetails
 const [plantsVisibleCount, setPlantsVisibleCount] = useState(20);
-useEffect(() => { setPlantsVisibleCount(20); }, [selectedType, plantSearch]);
+useEffect(() => { setPlantsVisibleCount(20); }, [selectedType, plantSearch, plantAttrFilters]);
 const [recentPlants, setRecentPlants] = useState([]);
 const [pinnedPlants, setPinnedPlants] = useState([]);
 const [plantSaveDates, setPlantSaveDates] = useState({}); // { plantName: dateKey first saved }
@@ -447,6 +585,7 @@ const [refreshing, setRefreshing] = useState(false);
 const [weatherRefreshToken, setWeatherRefreshToken] = useState(0);
 const [homeBannerDismissedDate, setHomeBannerDismissedDate] = useState(null);
 const [plantPickDismissedDate, setPlantPickDismissedDate] = useState(null);
+const [gettingStartedDismissed, setGettingStartedDismissed] = useState(false);
 const [showScrollTop, setShowScrollTop] = useState(false);
 const [showStreakCelebration, setShowStreakCelebration] = useState(null);
 const [milestoneCelebration, setMilestoneCelebration] = useState(null); // { emoji, title, text }
@@ -457,6 +596,7 @@ const [showFirstSave, setShowFirstSave] = useState(false);
 const [showCareLogModal, setShowCareLogModal] = useState(false);
 const [undoToast, setUndoToast] = useState(null); // { message, onUndo }
 const [syncFailed, setSyncFailed] = useState(false); // cloud save failed → show banner
+const [lastSyncedAt, setLastSyncedAt] = useState(null); // ms timestamp of the last successful cloud save
 const [showResetPassword, setShowResetPassword] = useState(false);
 const [resetPasswordValue, setResetPasswordValue] = useState("");
 const undoTimerRef = useRef(null);
@@ -469,26 +609,7 @@ const [questXP, setQuestXP] = useState(0);
 const [completedQuestIds, setCompletedQuestIds] = useState({});
 const [activeBannerId, setActiveBannerId] = useState(null);
 const [seenGardenGod, setSeenGardenGod] = useState(false);
-  const signUp = async (email, password) => {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: "pocketplanter://auth",
-    },
-  });
-
-  console.log("SIGNUP:", data, error);
-};
-const signIn = async (email, password) => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  console.log("LOGIN:", data, error);
-};
-const handleAuth = async () => {
+  const handleAuth = async () => {
   if (authMode === "signup") {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -498,24 +619,23 @@ const handleAuth = async () => {
       },
     });
 
-    console.log("SIGNUP:", data, error);
+    // Never log the auth response in production — `data` carries the session
+    // access + refresh tokens.
+    if (__DEV__) console.log("SIGNUP:", error?.message || "ok");
 
     if (error) {
       Alert.alert(error.message);
       return;
     }
 
-    Alert.alert(
-      "Check Your Email 📧",
-      "Your account was created! We've sent a confirmation email — please open it and confirm your email address before logging in."
-    );
+    Alert.alert(t("auth.checkEmailTitle"), t("auth.confirmSentBody"));
   } else {
     const { data, error } =
       await supabase.auth.signInWithPassword({
         email,
         password,
       });
-    console.log("LOGIN:", data, error);
+    if (__DEV__) console.log("LOGIN:", error?.message || "ok");
 
     if (error) {
       Alert.alert(error.message);
@@ -530,12 +650,12 @@ const handleAuth = async () => {
 const maybeOfferBiometric = (loginEmail, loginPassword) => {
   if (!biometricAvailable || biometricEnabled) return;
   Alert.alert(
-    `Enable ${biometricLabel}?`,
-    `Sign in faster next time with ${biometricLabel} instead of typing your password.`,
+    t("auth.enableBiometricTitle", { label: biometricLabel }),
+    t("auth.enableBiometricBody", { label: biometricLabel }),
     [
-      { text: "Not now", style: "cancel" },
+      { text: t("common.notNow"), style: "cancel" },
       {
-        text: `Enable ${biometricLabel}`,
+        text: t("auth.enableBiometricConfirm", { label: biometricLabel }),
         onPress: async () => {
           const ok = await enableBiometricLogin(loginEmail, loginPassword);
           if (ok) setBiometricEnabled(true);
@@ -547,7 +667,7 @@ const maybeOfferBiometric = (loginEmail, loginPassword) => {
 
 // Sign in using the stored credentials, unlocked by the device biometric check.
 const handleBiometricLogin = async () => {
-  const creds = await authenticateAndGetCredentials(`Sign in with ${biometricLabel}`);
+  const creds = await authenticateAndGetCredentials(t("auth.signInWithBiometric", { label: biometricLabel }));
   if (!creds) return;
   const { error } = await supabase.auth.signInWithPassword({
     email: creds.email,
@@ -557,7 +677,7 @@ const handleBiometricLogin = async () => {
     // Stored password no longer works (e.g. it was changed) — clear it so the user falls back to typing.
     await disableBiometricLogin();
     setBiometricEnabled(false);
-    Alert.alert(`${biometricLabel} sign-in failed`, "Please sign in with your email and password.");
+    Alert.alert(t("auth.biometricFailedTitle", { label: biometricLabel }), t("auth.signInPrompt"));
   }
 };
 
@@ -587,6 +707,8 @@ useEffect(() => {
 const clearLocalAccountData = async () => {
   setPremiumUnlocked(false);
   setSubscriptionPlan("Free");
+  setLastSyncedAt(null);
+  AsyncStorage.removeItem("pp_lastSyncedAt").catch(() => {});
   setSavedPlants([]);
   setComparePlants([]);
   setPlantNotes({});
@@ -606,16 +728,27 @@ const clearLocalAccountData = async () => {
   setActiveBannerId(null);
   setShownAchievements([]);
   setShownBanners([]);
-  setProfileName("My Gardener Profile!");
+  setProfileName("My Gardener Profile");
   setProfilePhoto(null);
   setSelectedProfileTheme("forest");
   setDailyBonusClaimed(false);
   setDailyBonusDate(null);
   setCloudProfileLoaded(false);
+  cloudProfileLoadedRef.current = false;
+  setLatitude(null);
+  setHemisphereFromLatitude(0); // back to the northern default
+  setCountry(DEFAULT_COUNTRY);
+  setRecord(null);
+  setLanguage(detectDeviceLocale());
   try {
     const keys = Object.values(STORAGE_KEYS);
+    // Zone and weather caches are keyed per location, so they have to be swept
+    // by prefix rather than listed.
+    const allKeys = await AsyncStorage.getAllKeys();
+    const cached = allKeys.filter((k) => k.startsWith("pp_zoneCache_") || k.startsWith("pp_weatherCache_"));
     await AsyncStorage.multiRemove([
       ...keys,
+      ...cached,
       "pp_careLog",
       "pp_activeBannerId",
       "pp_bonusXP",
@@ -635,7 +768,7 @@ const handleLogout = async () => {
 const handleForgotPassword = async () => {
   const cleanEmail = email.trim();
   if (!cleanEmail) {
-    Alert.alert("Enter Your Email", "Type your email address in the field above first, then tap Forgot Password.");
+    Alert.alert(t("auth.enterEmailTitle"), t("auth.enterEmailBody"));
     return;
   }
   try {
@@ -643,13 +776,13 @@ const handleForgotPassword = async () => {
       redirectTo: "pocketplanter://reset-password",
     });
     if (error) {
-      Alert.alert("Reset Failed", error.message);
+      Alert.alert(t("auth.resetFailed"), error.message);
       return;
     }
-    Alert.alert("Check Your Email 📧", "If an account exists for that email, a password reset link is on its way.");
+    Alert.alert(t("auth.checkEmailTitle"), t("auth.resetSentBody"));
   } catch (err) {
     console.log("FORGOT PASSWORD CRASH:", err);
-    Alert.alert("Something went wrong", "Please try again.");
+    Alert.alert(t("common.somethingWrong"), t("common.pleaseTryAgain"));
   }
 };
 const logZoneActivity = async (userArg, zoneArg, plantName, action) => {
@@ -668,10 +801,14 @@ const logZoneActivity = async (userArg, zoneArg, plantName, action) => {
 const saveProfileToSupabase = async () => {
   if (!user) return;
 
-  const { error } = await supabase
-    .from("profiles")
-    .upsert({
+  // module_data carries every self-persisting tracker (compost, rain barrel,
+  // germination, chores, soil temp, tool maintenance, grow-lights, pruning,
+  // propagation, plant rooms, houseplant care log, vases, seed inventory, custom
+  // tasks, toolkit) as one JSON blob so they sync across devices in this same save.
+  const moduleData = await collectModuleBackup().catch(() => null);
+  const profileRow = {
       id: user.id,
+      module_data: moduleData,
       email: user.email,
       zip_code: zip,
       
@@ -726,14 +863,27 @@ const saveProfileToSupabase = async () => {
 
       last_synced_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    });
+  };
+
+  let { error } = await supabase.from("profiles").upsert(profileRow);
+  // If the module_data column doesn't exist yet, retry the core sync without it
+  // so everything else still saves. (Add the column in Supabase to enable it.)
+  if (error && profileRow.module_data != null && /module_data|column|schema cache/i.test(error.message || "")) {
+    const { module_data, ...core } = profileRow;
+    ({ error } = await supabase.from("profiles").upsert(core));
+  }
 
   if (error) {
-    console.log("PROFILE SAVE ERROR:", error);
+    if (__DEV__) console.log("PROFILE SAVE ERROR:", error.message);
     setSyncFailed(true);
   } else {
-    console.log("Full cloud save ✅");
+    if (__DEV__) console.log("Full cloud save ✅");
     setSyncFailed(false);
+    // Record when the sync actually succeeded so the account card can show an
+    // honest "last synced" time instead of a hardcoded label.
+    const now = Date.now();
+    setLastSyncedAt(now);
+    AsyncStorage.setItem("pp_lastSyncedAt", String(now)).catch(() => {});
   }
 
   // Optional preference columns — synced separately so that if the profiles
@@ -749,11 +899,16 @@ const saveProfileToSupabase = async () => {
           unit_system: unitSystem,
           badge_earned_dates: badgeEarnedDates,
           banner_earned_dates: bannerEarnedDates,
+          // Worldwide zone support: `country` tells another device how to read
+          // the synced zip_code, and `latitude` carries the hemisphere so
+          // seasonal timing is right before any weather call resolves.
+          country,
+          latitude,
         })
         .eq("id", user.id);
       if (prefErr) {
         optionalPrefsUnavailable.current = true;
-        console.log("Optional prefs sync disabled — add unit_system / badge_earned_dates / banner_earned_dates columns to enable:", prefErr.message);
+        console.log("Optional prefs sync disabled — add unit_system / badge_earned_dates / banner_earned_dates / country / latitude columns to enable:", prefErr.message);
       }
     } catch (e) {
       optionalPrefsUnavailable.current = true;
@@ -780,11 +935,29 @@ if (error && error.code !== "PGRST116") {
 if (!data) {
   console.log("No profile yet — new user, will create on first save");
   setCloudProfileLoaded(true);
+  cloudProfileLoadedRef.current = true;
   return;
 }
 
+// Restore the self-persisting trackers (compost, rain barrel, propagation, etc.)
+// from the cloud. They write straight to AsyncStorage; each card reads its key
+// when its tab next mounts, so the data shows up without a relaunch.
+if (data?.module_data && typeof data.module_data === "object")
+  applyModuleBackup(data.module_data);
+
+// Country and latitude come first: the zip_code below is meaningless without
+// knowing which country's format it is, and the hemisphere has to be applied
+// before the seasonal helpers run in the next render pass.
+if (data?.country && COUNTRIES.some((c) => c.code === data.country))
+  setCountry(data.country);
+
+if (typeof data?.latitude === "number" && !Number.isNaN(data.latitude)) {
+  setLatitude(data.latitude);
+  setHemisphereFromLatitude(data.latitude);
+}
+
 if (data?.zip_code)
-  setZip(data.zip_code);
+  setZip(normalizePostal(data.zip_code, data?.country || country));
 if (data?.profile_name)
   setProfileName(data.profile_name);
 if (data?.profile_photo)
@@ -933,6 +1106,7 @@ if (Array.isArray(data?.watering_amounts))
 setDailyBonusClaimed(data?.daily_bonus_date === getTodayKey());
  
      setCloudProfileLoaded(true);
+  cloudProfileLoadedRef.current = true;
 
   console.log("Full cloud profile loaded ✅");
 
@@ -956,8 +1130,68 @@ setDailyBonusClaimed(data?.daily_bonus_date === getTodayKey());
   // FIX #4: Move record/zone here — before any useEffect that references them.
   // Previously they were declared ~200 lines later, causing temporal dead zone
   // issues in the dependency arrays of the effects below.
-  const record = useMemo(() => getZipRecord(zip), [zip]);
+  //
+  // Resolution is async now that zones come from climate data outside the US, so
+  // `record` is state rather than a useMemo. US ZIPs still resolve synchronously
+  // from the bundled table, so they never show a loading state.
+  const [record, setRecord] = useState(null);
+  const [zoneLoading, setZoneLoading] = useState(false);
+  const [zoneError, setZoneError] = useState(null);
   const zone = record?.zone || null;
+
+  useEffect(() => {
+    let cancelled = false;
+    setZoneError(null);
+
+    if (!isPostalComplete(zip, country)) {
+      setRecord(null);
+      setZoneLoading(false);
+      return undefined;
+    }
+
+    // Already resolved for exactly this input — including the coordinate-shaped
+    // placeholder that GPS detection sets, which is not a geocodable postal code.
+    if (record?.zipcode === zip && record?.countryCode === country) {
+      setZoneLoading(false);
+      return undefined;
+    }
+
+    // Instant offline path for mainland US ZIPs. Territories use ZIP-format
+    // codes but are absent from the bundled table, so they resolve async.
+    if (hasZipTable(country)) {
+      const row = getZipRecord(zip);
+      if (row) {
+        setRecord({ ...row, countryCode: country, source: "table", lat: null, lon: null });
+        setZoneLoading(false);
+        return undefined;
+      }
+    }
+
+    setZoneLoading(true);
+    resolveZone({ postal: zip, countryCode: country })
+      .then((resolved) => {
+        if (cancelled) return;
+        if (resolved) {
+          setRecord(resolved);
+          if (typeof resolved.lat === "number") setLatitude(resolved.lat);
+        } else {
+          setRecord(null);
+          setZoneError("notFound");
+        }
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setRecord(null);
+        // Transient upstream trouble — never tell the user their postcode is
+        // wrong when the service was simply unreachable or rate-limited.
+        setZoneError(error?.transient ? "busy" : "notFound");
+      })
+      .finally(() => {
+        if (!cancelled) setZoneLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [zip, country, zoneRetryToken]);
 
   const combinedGardenMap = useMemo(() => {
     const merged = {};
@@ -981,6 +1215,7 @@ setDailyBonusClaimed(data?.daily_bonus_date === getTodayKey());
   const reminderY = useRef(0);
   const plantReturnY = useRef(0);
   const pestReturnY = useRef(0);
+  const diseaseReturnY = useRef(0);
   const currentScrollY = useRef(0);
   const optionalPrefsUnavailable = useRef(false);
   const previousXP = useRef(0);
@@ -998,10 +1233,39 @@ setDailyBonusClaimed(data?.daily_bonus_date === getTodayKey());
     return getCompatiblePlants(zone);
   }, [zone]);
 
+  // The user's own plants (saved + anything planted in a bed) as full objects —
+  // drives the personalized Pest Watch ("what threatens YOUR plants this month").
+  const savedPlantObjs = useMemo(() => {
+    const names = new Set(savedPlants);
+    (gardenAreas || []).forEach((a) => Object.values(a.plots || {}).forEach((n) => { if (n) names.add(n); }));
+    return produceData.filter((item) => names.has(item.name));
+  }, [savedPlants, gardenAreas]);
+
   const monthlySuggestions = useMemo(() => {
     if (!zone) return [];
     return getSuggestionsForMonth(zone, selectedMonth);
   }, [zone, selectedMonth]);
+
+  // New-user "first wins" checklist for the Home tab. Every step is derived from
+  // real saved state, so it self-completes and the card auto-hides once done.
+  const activationSteps = useMemo(
+    () => getActivationSteps({ zone, zip, savedPlants, gardenAreas, wateringHistory, wateredPlants, journalEntries }),
+    [zone, zip, savedPlants, gardenAreas, wateringHistory, wateredPlants, journalEntries]
+  );
+  const dismissGettingStarted = useCallback(() => {
+    setGettingStartedDismissed(true);
+    AsyncStorage.setItem("pp_gettingStartedDismissed", "1").catch(() => {});
+  }, []);
+
+  // Keep the home-screen widgets / Live Activities fed with a fresh "what needs
+  // attention today" snapshot whenever the underlying garden state changes.
+  // No-ops safely until the native widget target is wired in (see lib/widgets.js).
+  useEffect(() => {
+    syncWidgets(buildWidgetSnapshot({
+      savedPlantObjs, wateredPlants, wateringHistory, weather,
+      harvestTrackers, streakData, plantPick: monthlySuggestions[0] || null, zone,
+    }));
+  }, [savedPlantObjs, wateredPlants, wateringHistory, weather, harvestTrackers, streakData, monthlySuggestions, zone]);
 
   const filteredPlants = useMemo(() => {
   const DIFF_ORDER = { Easy: 0, Medium: 1, Hard: 2 };
@@ -1012,6 +1276,15 @@ setDailyBonusClaimed(data?.daily_bonus_date === getTodayKey());
     if (!matchesType(item, selectedType)) return false;
     if (plantDifficultyFilter !== "All" && getPlantDifficulty(item).label !== plantDifficultyFilter) return false;
     if (plantNowOnly && getPlantSeasonLabel(item, zone) !== "Plant now") return false;
+    if (plantAttrFilters.length) {
+      // Attribute filters read authored growing data (getPlantDetails). AND
+      // semantics: every active chip must match. Plants without authored data
+      // simply don't match these attributes.
+      const d = getPlantDetails(item);
+      if (plantAttrFilters.includes("container") && !(d && d.containerFriendly)) return false;
+      if (plantAttrFilters.includes("fullsun") && !(d && d.sunlight === "full")) return false;
+      if (plantAttrFilters.includes("perennial") && !(d && d.perennial)) return false;
+    }
     if (terms.length) {
       // Multi-term search: every word must appear somewhere in the plant's fields.
       const haystack = [
@@ -1046,7 +1319,16 @@ setDailyBonusClaimed(data?.daily_bonus_date === getTodayKey());
   plantDifficultyFilter,
   plantNowOnly,
   plantSortMode,
+  plantAttrFilters,
 ]);
+
+  // Names currently planted in any garden bed — lets plant cards show an
+  // "In garden" state and drives the add-to-garden button.
+  const gardenPlantNames = useMemo(() => {
+    const s = new Set();
+    (gardenAreas || []).forEach((a) => Object.values(a.plots || {}).forEach((n) => { if (n) s.add(n); }));
+    return s;
+  }, [gardenAreas]);
 
 const searchableGalleryPlants = useMemo(() => {
   const plantToday =
@@ -1226,20 +1508,20 @@ const theme = useMemo(
           card: "rgba(16, 41, 23, 0.92)",
           text: "#ffffff",
           secondaryText: "#d7ebdc",
-          border: "rgba(142, 255, 171, 0.18)",
+          border: "rgba(142, 255, 171, 0.16)",
           glow: activeThemeAccent,
-          input: "rgba(255,255,255,0.10)",
+          input: "rgba(255, 255, 255, 0.1)",
           accent: activeThemeAccent,
         }
       : {
           isDark,
           background: "#f4fbf2",
           card: "#ffffff",
-          text: "#102917",
-          secondaryText: "#496b55",
-          border: "rgba(47, 125, 70, 0.18)",
+          text: "#0e2414",
+          secondaryText: "#314c39",
+          border: "rgba(47, 125, 70, 0.16)",
           glow: activeThemeAccent,
-          input: "#eef7ee",
+          input: "#f4fbf2",
           accent: activeThemeAccent,
         },
   [isDark, activeThemeAccent]
@@ -1300,37 +1582,69 @@ function recordRecentPlant(item) {
     setSelectedPest(null);
     setTimeout(() => { scrollRef.current?.scrollTo({ y: pestReturnY.current, animated: false }); }, 80);
   }
+  function openDisease(disease) {
+    if (!disease) return;
+    tapHaptic("light");
+    diseaseReturnY.current = currentScrollY.current;
+    setSelectedDisease(disease);
+  }
+  function handleBackFromDisease() {
+    setSelectedDisease(null);
+    setTimeout(() => { scrollRef.current?.scrollTo({ y: diseaseReturnY.current, animated: false }); }, 80);
+  }
+
+  // Honour the OS reduced-motion setting for every animation in the app.
+  useEffect(() => initReducedMotion(), []);
 
   // ── Animations ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    Animated.loop(Animated.sequence([Animated.timing(glowAnimation, { toValue: 1, duration: 2200, useNativeDriver: true }), Animated.timing(glowAnimation, { toValue: 0, duration: 2200, useNativeDriver: true })])).start();
-    Animated.loop(Animated.sequence([Animated.timing(heroFloat, { toValue: -8, duration: 2500, useNativeDriver: true }), Animated.timing(heroFloat, { toValue: 0, duration: 2500, useNativeDriver: true })])).start();
-    Animated.timing(fadeAnimation, { toValue: 1, duration: 900, useNativeDriver: true }).start();
-  }, [fadeAnimation, glowAnimation, heroFloat]);
+    // Ambient loops are skipped entirely under reduced motion rather than
+    // shortened. Continuous background movement is precisely what triggers
+    // vestibular symptoms, so the right answer is stillness, not speed.
+    if (!isReducedMotion()) {
+      const glow = Animated.loop(Animated.sequence([
+        Animated.timing(glowAnimation, { toValue: 1, duration: DURATION.ambient, useNativeDriver: true }),
+        Animated.timing(glowAnimation, { toValue: 0, duration: DURATION.ambient, useNativeDriver: true }),
+      ]));
+      const float = Animated.loop(Animated.sequence([
+        Animated.timing(heroFloat, { toValue: -8, duration: DURATION.ambient, useNativeDriver: true }),
+        Animated.timing(heroFloat, { toValue: 0, duration: DURATION.ambient, useNativeDriver: true }),
+      ]));
+      glow.start(); float.start();
+      // Stop the loops on unmount instead of leaving them running forever.
+      return () => { glow.stop(); float.stop(); };
+    }
+    glowAnimation.setValue(0);
+    heroFloat.setValue(0);
+    return undefined;
+  }, [glowAnimation, heroFloat]);
+
+  useEffect(() => {
+    Animated.timing(fadeAnimation, {
+      toValue: 1, duration: motionDuration("slow"), easing: EASING.decelerate, useNativeDriver: true,
+    }).start();
+  }, [fadeAnimation]);
 
   useEffect(() => {
     if (record) {
-      Animated.timing(zoneRevealAnim, { toValue: 1, duration: 700, useNativeDriver: true }).start();
+      Animated.timing(zoneRevealAnim, { toValue: 1, duration: motionDuration("slow"), easing: EASING.decelerate, useNativeDriver: true }).start();
     } else {
       zoneRevealAnim.setValue(0);
     }
   }, [record]);
 
   useEffect(() => {
-  Animated.loop(
+  if (isReducedMotion()) { avatarGlow.setValue(0); return undefined; }
+  const loop = Animated.loop(
     Animated.sequence([
-      Animated.timing(avatarGlow, {
-        toValue: 1,
-        duration: 1800,
-        useNativeDriver: false,
-      }),
-      Animated.timing(avatarGlow, {
-        toValue: 0,
-        duration: 1800,
-        useNativeDriver: false,
-      }),
+      // useNativeDriver stays false here: this value drives shadowOpacity,
+      // which the native driver cannot animate.
+      Animated.timing(avatarGlow, { toValue: 1, duration: DURATION.ambient, useNativeDriver: false }),
+      Animated.timing(avatarGlow, { toValue: 0, duration: DURATION.ambient, useNativeDriver: false }),
     ])
-  ).start();
+  );
+  loop.start();
+  return () => loop.stop();
 }, [avatarGlow]);
 
 useEffect(() => {
@@ -1416,6 +1730,8 @@ wateringAmounts,
 areaHistory,
 sowLog,
 frostOverrides,
+country,
+latitude,
 ]);
 // ── Storage load ───────────────────────────────────────────────────────────
 useEffect(() => {
@@ -1447,6 +1763,7 @@ useEffect(() => {
         STORAGE_KEYS.profilePhoto,
         "pp_homeBannerDismissedDate",
         "pp_plantPickDismissedDate",
+        "pp_gettingStartedDismissed",
         "pp_whatsNewSeen",
         "pp_gardenAreas",
       ]);
@@ -1556,6 +1873,7 @@ if (map[STORAGE_KEYS.harvestTrackers])
         if (map[STORAGE_KEYS.profileTheme]) setSelectedProfileTheme(map[STORAGE_KEYS.profileTheme]);
         if (map["pp_homeBannerDismissedDate"]) setHomeBannerDismissedDate(map["pp_homeBannerDismissedDate"]);
         if (map["pp_plantPickDismissedDate"]) setPlantPickDismissedDate(map["pp_plantPickDismissedDate"]);
+        if (map["pp_gettingStartedDismissed"]) setGettingStartedDismissed(true);
         if (map["pp_whatsNewSeen"] !== WHATS_NEW_VERSION) setShowWhatsNew(true);
         updateDailyStreak();
         checkHarvestNotifications();
@@ -1670,6 +1988,14 @@ useEffect(() => {
   AsyncStorage.setItem("pp_frostOverrides", JSON.stringify(frostOverrides));
   setFrostOverrideRef(frostOverrides); // keep the pure date helpers in sync
 }, [frostOverrides]);
+useEffect(() => {
+  if (latitude == null || Number.isNaN(latitude)) return;
+  AsyncStorage.setItem(STORAGE_KEYS.latitude, String(latitude));
+  setHemisphereFromLatitude(latitude); // keep the seasonal helpers in sync
+}, [latitude]);
+useEffect(() => {
+  AsyncStorage.setItem(STORAGE_KEYS.country, country);
+}, [country]);
 useEffect(() => {
   AsyncStorage.setItem(
     STORAGE_KEYS.wateredPlants,
@@ -1791,8 +2117,8 @@ useEffect(() => {
 // Remember the Plants-tab filters between sessions.
 useEffect(() => {
   if (!persistHydrated.current.plantFilters) { persistHydrated.current.plantFilters = true; return; }
-  AsyncStorage.setItem("pp_plantFilters", JSON.stringify({ selectedType, plantDifficultyFilter, plantNowOnly, plantSortMode })).catch(() => {});
-}, [selectedType, plantDifficultyFilter, plantNowOnly, plantSortMode]);
+  AsyncStorage.setItem("pp_plantFilters", JSON.stringify({ selectedType, plantDifficultyFilter, plantNowOnly, plantSortMode, plantAttrFilters })).catch(() => {});
+}, [selectedType, plantDifficultyFilter, plantNowOnly, plantSortMode, plantAttrFilters]);
 
 useEffect(() => {
   AsyncStorage.getItem("pp_plantFilters").then((val) => {
@@ -1803,6 +2129,7 @@ useEffect(() => {
       if (typeof f.plantDifficultyFilter === "string") setPlantDifficultyFilter(f.plantDifficultyFilter);
       if (typeof f.plantNowOnly === "boolean") setPlantNowOnly(f.plantNowOnly);
       if (typeof f.plantSortMode === "string") setPlantSortMode(f.plantSortMode);
+      if (Array.isArray(f.plantAttrFilters)) setPlantAttrFilters(f.plantAttrFilters.filter((k) => ["container", "fullsun", "perennial"].includes(k)));
     } catch (e) { /* ignore bad data */ }
   }).catch(() => {});
 }, []);
@@ -1874,6 +2201,27 @@ useEffect(() => {
         }
       } catch (e) {}
     }
+  });
+}, []);
+useEffect(() => {
+  AsyncStorage.getItem(STORAGE_KEYS.latitude).then((val) => {
+    if (cloudProfileLoadedRef.current) return; // cloud value is newer
+    const parsed = parseFloat(val);
+    if (Number.isNaN(parsed)) return;
+    setLatitude(parsed);
+    setHemisphereFromLatitude(parsed); // apply before first render pass
+  });
+}, []);
+useEffect(() => {
+  AsyncStorage.getItem(STORAGE_KEYS.country).then((val) => {
+    if (cloudProfileLoadedRef.current) return; // cloud value is newer
+    if (val && COUNTRIES.some((c) => c.code === val)) setCountry(val);
+  });
+}, []);
+useEffect(() => {
+  AsyncStorage.getItem("pp_lastSyncedAt").then((val) => {
+    const n = parseInt(val, 10);
+    if (!Number.isNaN(n)) setLastSyncedAt(n);
   });
 }, []);
 useEffect(() => {
@@ -2005,8 +2353,8 @@ await scheduleDailyReminder({
       id: "daily-watering",
       hour: wateringReminderTime.hour,
       minute: wateringReminderTime.minute,
-      title: "💧 Daily Watering Check",
-      body: "Time to check your garden and water any plants that need moisture today.",
+      title: t("notify.dailyWaterTitle"),
+      body: t("notify.dailyWaterBody"),
     });
   })();
 }, [wateringReminderTime, dailyWateringOn]);
@@ -2082,9 +2430,15 @@ useEffect(() => {
           setUser(session.user);
         } else {
           setUser(null);
-          clearLocalAccountData();
+          // Only wipe local data on a deliberate sign-out. A transient
+          // token-refresh failure (network blip) or the null INITIAL_SESSION on
+          // a logged-out launch also lands here with no session — clearing then
+          // would throw away the user's saved plants, journal and garden for
+          // what may be a momentary hiccup. Supabase re-emits with a session
+          // once refresh recovers.
+          if (event === "SIGNED_OUT") clearLocalAccountData();
         }
-        console.log("AUTH EVENT:", event);
+        if (__DEV__) console.log("AUTH EVENT:", event);
       }
     );
 
@@ -2094,7 +2448,11 @@ useEffect(() => {
     if (data?.session?.user) {
       setUser(data.session.user);
     }
-    setTimeout(() => { setLoading(false); }, 2000);
+    // getSession reads from local storage and resolves near-instantly, so the
+    // old fixed 2s timer was dead wait on every launch. A short floor keeps the
+    // branded splash from flashing without stalling startup; the cloud profile
+    // loads asynchronously either way.
+    setTimeout(() => { setLoading(false); }, 600);
   });
 
   return () => {
@@ -2111,11 +2469,11 @@ useEffect(() => {
     if (settings.canAskAgain === false) {
       return new Promise((resolve) => {
         Alert.alert(
-          "Notifications are off",
+          t("notify.offTitle"),
           "Turn on notifications for Pocket Planter in your phone's Settings to get watering, frost, and harvest reminders.",
           [
-            { text: "Not now", style: "cancel", onPress: () => resolve(false) },
-            { text: "Open Settings", onPress: () => { Linking.openSettings().catch(() => {}); resolve(false); } },
+            { text: t("common.notNow"), style: "cancel", onPress: () => resolve(false) },
+            { text: t("common.openSettings"), onPress: () => { Linking.openSettings().catch(() => {}); resolve(false); } },
           ]
         );
       });
@@ -2125,11 +2483,11 @@ useEffect(() => {
     // we don't burn it on a hesitant user (which would then require a Settings trip).
     const wantsIt = await new Promise((resolve) => {
       Alert.alert(
-        "Stay on top of your garden 🌱",
+        t("notify.promptTitle"),
         "Pocket Planter can remind you when to water, warn you before frost or heat, and tell you when plants are ready to harvest. Turn on notifications?",
         [
-          { text: "Not now", style: "cancel", onPress: () => resolve(false) },
-          { text: "Turn On", onPress: () => resolve(true) },
+          { text: t("common.notNow"), style: "cancel", onPress: () => resolve(false) },
+          { text: t("common.turnOn"), onPress: () => resolve(true) },
         ]
       );
     });
@@ -2202,7 +2560,7 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
         const daysSinceFreeze = (currentDate - freezeDate) / (1000 * 60 * 60 * 24);
         // Freeze was used within the missed window — protect the streak.
         if (daysSinceFreeze <= 2) {
-          const popup = { id: Date.now().toString(), amount: "❄️ Streak freeze saved you!" };
+          const popup = { id: Date.now().toString(), amount: t("streak.savedTitle") };
           setXpPopups((popups) => [...popups, popup]);
           setTimeout(() => setXpPopups((popups) => popups.filter((p) => p.id !== popup.id)), 2500);
           return { count: current.count || 1, lastOpened: today };
@@ -2224,12 +2582,12 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
     const { prevCount } = streakRecoveryOffer;
     if (!streakFreeze.available) { setStreakRecoveryOffer(null); return; }
     Alert.alert(
-      "❄️ Save your streak?",
+      t("streak.saveTitle"),
       `You missed a day, so your streak reset. Use your weekly Streak Freeze to restore your ${prevCount}-day streak?`,
       [
-        { text: "No thanks", style: "cancel", onPress: () => setStreakRecoveryOffer(null) },
+        { text: t("common.noThanks"), style: "cancel", onPress: () => setStreakRecoveryOffer(null) },
         {
-          text: "Use freeze ❄️",
+          text: t("streak.useFreeze"),
           onPress: () => {
             const today = getTodayKey();
             setStreakFreeze((f) => ({ ...f, available: false, lastUsed: today }));
@@ -2259,8 +2617,8 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
 
   if (!permission.granted) {
     Alert.alert(
-      "Photos Permission Needed",
-      "Allow photo access to add garden journal pictures."
+      t("photos.permissionTitle"),
+      t("photos.permissionJournal")
     );
     return;
   }
@@ -2410,6 +2768,13 @@ async function exportFullBackup() {
     frostOverrides, streakData, followedPlants, plantFolders, suppliesSpent,
     bonusXP, questXP, completedQuestIds, wateringAmounts,
   };
+  // Fold in the self-persisting modules (compost, rain barrel, germination,
+  // chores, seed inventory, etc.) so the backup is complete.
+  try {
+    backup._modules = await collectModuleBackup();
+  } catch (e) {
+    console.log("Module backup skipped:", e?.message);
+  }
   try {
     tapHaptic("light");
     await Share.share({ title: "Pocket Planter Backup", message: JSON.stringify(backup) });
@@ -2421,16 +2786,16 @@ async function exportFullBackup() {
 function restoreFromBackup(text) {
   let data;
   try { data = JSON.parse(text); } catch (e) {
-    Alert.alert("Invalid backup", "That doesn't look right. Paste the full text from a Pocket Planter backup.");
+    Alert.alert(t("backup.invalidTitle"), t("backup.invalidPasteBody"));
     return;
   }
   if (!data || data._app !== "PocketPlanter") {
-    Alert.alert("Invalid backup", "This isn't a Pocket Planter backup. Paste the full exported text.");
+    Alert.alert(t("backup.invalidTitle"), t("backup.notBackupBody"));
     return;
   }
   Alert.alert(
-    "Restore this backup?",
-    "This replaces your current garden data with the backup. This can't be undone.",
+    t("backup.restoreTitle"),
+    t("backup.restoreBody"),
     [
       { text: "Cancel", style: "cancel" },
       {
@@ -2458,8 +2823,12 @@ function restoreFromBackup(text) {
           if (typeof data.questXP === "number") setQuestXP(data.questXP);
           if (data.completedQuestIds && typeof data.completedQuestIds === "object") setCompletedQuestIds(data.completedQuestIds);
           if (Array.isArray(data.wateringAmounts)) setWateringAmounts(data.wateringAmounts);
+          // Restore self-persisting module data (compost, rain barrel,
+          // germination, chores, seed inventory…). Those cards re-read their
+          // key when their tab next mounts, so the data reappears on navigation.
+          if (data._modules) applyModuleBackup(data._modules);
           successHaptic();
-          Alert.alert("Restored ✅", "Your garden data has been restored from the backup.");
+          Alert.alert(t("backup.restoredTitle"), t("backup.restoredBody"));
         },
       },
     ]
@@ -2581,7 +2950,7 @@ async function togglePlantOfDay(value) {
     if (value) {
       const granted = await ensureNotificationPermission();
       if (!granted) {
-        Alert.alert("Notifications Disabled", "Enable notifications in your phone settings to get daily plant picks.");
+        Alert.alert(t("notify.disabledTitle"), t("notify.enableForPicks"));
         setPlantOfDayOn(false);
         return;
       }
@@ -2589,15 +2958,15 @@ async function togglePlantOfDay(value) {
         id: "plant-of-day",
         hour: 8,
         minute: 30,
-        title: "🌱 Today's Plant Pick",
-        body: "A fresh plant recommendation is waiting — open Pocket Planter to see what to grow today.",
+        title: t("notify.plantPickTitle"),
+        body: t("notify.plantPickBody"),
       });
       if (ok) {
-        Alert.alert("Plant of the Day On 🌱", "You'll get a daily plant pick every morning at 8:30 AM.");
+        Alert.alert(t("notify.plantOfDayOnTitle"), t("notify.plantOfDayOnBody"));
       }
     } else {
       await cancelReminder("plant-of-day");
-      Alert.alert("Plant of the Day Off", "You'll no longer get daily plant pick notifications.");
+      Alert.alert(t("notify.plantOfDayOffTitle"), t("notify.plantOfDayOffBody"));
     }
   }
 
@@ -2639,7 +3008,7 @@ async function scheduleSnoozeSummary(snoozeMap) {
 async function scheduleFertilizerReminder(plantName, days) {
     const granted = await ensureNotificationPermission();
     if (!granted) {
-      Alert.alert("Notifications Disabled", "Enable notifications in your phone settings to get fertilizer reminders.");
+      Alert.alert(t("notify.disabledTitle"), t("notify.enableForFertilizer"));
       return;
     }
     const fireDate = new Date();
@@ -2658,7 +3027,7 @@ async function scheduleFertilizerReminder(plantName, days) {
         date: fireDate,
       },
     });
-    Alert.alert("Reminder Set 🌾", `You'll get a reminder to fertilize ${plantName} in ${days} days.`);
+    Alert.alert(t("notify.reminderSetFertilizer"), `You'll get a reminder to fertilize ${plantName} in ${days} days.`);
   }
 
   async function checkHarvestNotifications() {
@@ -2676,8 +3045,8 @@ async function scheduleFertilizerReminder(plantName, days) {
   async function schedulePlantReminder(plantName) {
   if (!remindersOn) {
     Alert.alert(
-      "Enable Reminders First",
-      "Go to the Garden tab and turn on Watering Reminders before adding plant reminders.",
+      t("notify.enableFirstTitle"),
+      t("notify.enableFirstBody"),
       [{ text: "OK" }]
     );
     return;
@@ -2685,7 +3054,7 @@ async function scheduleFertilizerReminder(plantName, days) {
 
   Alert.alert(
     `Set Reminder for ${plantName}`,
-    "What time would you like your daily check-in reminder?",
+    t("notify.timePrompt"),
     [
       {
         text: "7:00 AM",
@@ -2724,8 +3093,8 @@ async function scheduleReminder(plantName, hour, minute) {
 
     if (!ok) {
       Alert.alert(
-        "Notifications Disabled",
-        "Enable notifications in your phone settings to receive plant reminders."
+        t("notify.disabledTitle"),
+        t("notify.enableForPlants")
       );
       return;
     }
@@ -2736,12 +3105,12 @@ async function scheduleReminder(plantName, hour, minute) {
     }));
 
     Alert.alert(
-      "Reminder Set! 🌱",
+      t("notify.reminderSet"),
       `You'll get a daily ${plantName} check-in at ${hour}:${minute === 0 ? "00" : minute} AM every morning.`
     );
   } catch (error) {
     console.log("Reminder error:", error);
-    Alert.alert("Error", "Could not set reminder. Please try again.");
+    Alert.alert("Error", t("notify.reminderFailed"));
   }
 }
 // Schedule a one-off notification for a plant's next watering, based on its
@@ -2787,8 +3156,8 @@ async function claimDailyBonus() {
 
   if (dailyBonusDate && (Date.now() - new Date(dailyBonusDate).getTime()) < 24 * 60 * 60 * 1000) {
     Alert.alert(
-      "Already Claimed 🌱",
-      "You already claimed your garden bonus. Come back in a bit!"
+      t("bonus.alreadyClaimedTitle"),
+      t("bonus.alreadyClaimedBody")
     );
     setDailyBonusClaimed(true);
     return;
@@ -2875,7 +3244,7 @@ function markPlantWatered(plantName) {
     const today = getTodayKey();
     const unwatered = savedPlants.filter((name) => wateredPlants[name] !== today);
     if (!unwatered.length) {
-      Alert.alert("All watered", "Every saved plant is already watered today. 🌱");
+      Alert.alert(t("garden.allWateredTitle"), t("garden.allWateredBody"));
       return;
     }
     successHaptic();
@@ -2942,7 +3311,7 @@ function logHarvest(plantName, amount, unit, note) {
   logZoneActivity(user, zone, plantName, "harvested");
   successHaptic();
   Vibration.vibrate([0, 80, 60, 120]);
-  Alert.alert("Harvest logged! 🎉", `${plantName} harvest saved to your garden record.`);
+  Alert.alert(t("garden.harvestLogged"), `${plantName} harvest saved to your garden record.`);
 }
 
 function toggleFertilizerTracker(plantName) {
@@ -2973,13 +3342,13 @@ function clearGardenSlot(slotId) {
 }
 function useStreakFreeze() {
   if (!streakFreeze.available) {
-    Alert.alert("No freeze available", "You've already used your streak freeze this week. It refreshes at the start of next week. ❄️");
+    Alert.alert(t("streak.noFreezeTitle"), "You've already used your streak freeze this week. It refreshes at the start of next week. ❄️");
     return;
   }
   const today = getTodayKey();
   successHaptic();
   setStreakFreeze((current) => ({ ...current, available: false, lastUsed: today }));
-  Alert.alert("Streak frozen! ❄️", "Your streak is protected for today. Even if you miss watering, it won't reset. Come back tomorrow!");
+  Alert.alert(t("streak.frozenTitle"), "Your streak is protected for today. Even if you miss watering, it won't reset. Come back tomorrow!");
 }
 function snoozePlantWatering(plantName) {
   const tomorrow = new Date();
@@ -3008,7 +3377,7 @@ function waterArea(areaId) {
   const names = Array.from(new Set(Object.values(area.plots || {}).filter(Boolean)));
   const unwatered = names.filter((name) => wateredPlants[name] !== today);
   if (!unwatered.length) {
-    Alert.alert("All watered", `Every plant in ${area.name} is already watered today. 🌱`);
+    Alert.alert(t("garden.allWateredTitle"), `Every plant in ${area.name} is already watered today. 🌱`);
     return;
   }
   successHaptic();
@@ -3138,7 +3507,12 @@ function getCompanionImage(name) {
   return plant ? resolvePlantImageSource(plant) : null;
 }
 
-function assignPlantToAreaSlot(areaId, slotId, plantName) {
+function assignPlantToAreaSlot(areaId, slotId, plantName, opts = {}) {
+  // Enforce the flower rule as a safety net for every path (picker, auto-optimize,
+  // companion auto-add). The picker UI already filters, so a user tap never lands
+  // here illegally — programmatic callers just skip silently.
+  const targetArea = (gardenAreas || []).find((a) => a.id === areaId);
+  if (targetArea && !canPlantInArea(plantName, targetArea)) return;
   setGardenAreas((current) =>
     current.map((area) =>
       area.id === areaId
@@ -3179,14 +3553,14 @@ function assignPlantToAreaSlot(areaId, slotId, plantName) {
       const result = getCompatibilityScore(plantName, neighbor);
       return result && result.label === "Avoid"; // guard against undefined
     });
-    if (conflicts.length > 0) {
+    if (conflicts.length > 0 && !opts.silent) {
       const conflictList = conflicts.slice(0, 3).join(", ");
       Vibration.vibrate([0, 60, 40, 60]);
       setTimeout(() => {
         Alert.alert(
-          "⚠️ Companion conflict",
+          t("garden.conflictTitle"),
           `${plantName} doesn't pair well with ${conflictList} in the same bed — they can compete or attract the same pests. It's still planted; just something to keep in mind. Open Companion Check for a one-tap fix.`,
-          [{ text: "Got it" }]
+          [{ text: t("common.gotIt") }]
         );
       }, 300);
     }
@@ -3221,26 +3595,108 @@ function quickAddPlantToGarden(plantName) {
 
   const existing = (gardenAreas || []).find((a) => Object.values(a.plots || {}).includes(plantName));
   if (existing) {
-    Alert.alert("Already planted", `${plantName} is already in ${existing.name}. Rearrange it anytime in the Garden tab.`, [{ text: "OK" }, { text: "Open Garden", onPress: openGarden }]);
+    Alert.alert("Already planted", `${plantName} is already in ${existing.name}. Rearrange it anytime in the Garden tab.`, [{ text: "OK" }, { text: t("garden.openGarden"), onPress: openGarden }]);
     return;
   }
-  const target = (gardenAreas || []).find((a) => freeSlot(a) !== null);
-  if (!target) {
-    Alert.alert("No open beds yet", "Add a garden bed first, then you can drop plants into it. Set one up in the Garden tab.", [{ text: "Not now", style: "cancel" }, { text: "Open Garden", onPress: openGarden }]);
-    return;
-  }
-  const slot = freeSlot(target);
-  const neighbors = Array.from(new Set(Object.values(target.plots || {}).filter(Boolean)));
-  const willConflict = neighbors.some((n) => getCompatibilityScore(plantName, n)?.label === "Avoid");
-  assignPlantToAreaSlot(target.id, slot, plantName); // fires its own companion-conflict alert if needed
-  successHaptic();
-  // Only show the success alert when there's no conflict — otherwise the assign's
-  // conflict warning already covers it (and confirms it was placed).
-  if (!willConflict) {
+  const isAvoid = (a, b) => getCompatibilityScore(a, b)?.label === "Avoid";
+  const bedEmoji = (a) => a.emoji || a.icon || null;
+
+  // Which already-planted plants would this new plant clash with? (Avoid pairs.)
+  const conflicts = [];
+  (gardenAreas || []).forEach((a) => {
+    Object.entries(a.plots || {}).forEach(([slotId, name]) => {
+      if (name && name !== plantName && canPlantInArea(plantName, a) && isAvoid(plantName, name)) {
+        conflicts.push({ areaId: a.id, areaName: a.name, areaEmoji: bedEmoji(a), slotId, plant: name });
+      }
+    });
+  });
+
+  // Beds with a free slot where this plant can legally go AND clashes with nothing.
+  const cleanBeds = (gardenAreas || [])
+    .filter((a) => canPlantInArea(plantName, a) && freeSlot(a) !== null)
+    .filter((a) => !Object.values(a.plots || {}).filter(Boolean).some((n) => isAvoid(plantName, n)))
+    .map((a) => ({ areaId: a.id, areaName: a.name, areaEmoji: bedEmoji(a), slot: freeSlot(a) }));
+
+  // No clash anywhere → keep the original one-tap behavior: drop into the first
+  // legal free bed, or point the user to make one.
+  if (conflicts.length === 0) {
+    const target = (gardenAreas || []).find((a) => canPlantInArea(plantName, a) && freeSlot(a) !== null);
+    if (!target) {
+      Alert.alert(t("garden.noBedsTitle"), t("garden.noBedsBody"), [{ text: t("common.notNow"), style: "cancel" }, { text: t("garden.openGarden"), onPress: openGarden }]);
+      return;
+    }
+    const slot = freeSlot(target);
+    assignPlantToAreaSlot(target.id, slot, plantName);
+    successHaptic();
     setTimeout(() => {
-      Alert.alert("Added to your garden 🌱", `${plantName} was placed in ${target.name}. Rearrange it anytime in the Garden tab.`, [{ text: "Done" }, { text: "Open Garden", onPress: openGarden }]);
+      Alert.alert(t("garden.addedTitle"), `${plantName} was placed in ${target.name}. Rearrange it anytime in the Garden tab.`, [{ text: "Done" }, { text: t("garden.openGarden"), onPress: openGarden }]);
     }, 350);
+    return;
   }
+
+  // Clash detected → let the user replace a clashing plant or place it elsewhere.
+  const firstFree = (gardenAreas || []).find((a) => canPlantInArea(plantName, a) && freeSlot(a) !== null);
+  const anyFreeBed = firstFree ? { areaId: firstFree.id, areaName: firstFree.name, slot: freeSlot(firstFree) } : null;
+  Vibration.vibrate([0, 40, 30, 40]);
+  setGardenConflictPrompt({ plantName, conflicts, cleanBeds, anyFreeBed });
+}
+
+// Swap the new plant into a clashing plant's exact slot (removing the old plant).
+function replaceGardenPlant(conflict, newPlant) {
+  assignPlantToAreaSlot(conflict.areaId, conflict.slotId, newPlant, { silent: true });
+  setGardenConflictPrompt(null);
+  successHaptic();
+  setTimeout(() => {
+    Alert.alert("Swapped", `${newPlant} replaced ${conflict.plant} in ${conflict.areaName}.`, [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab("garden") }]);
+  }, 250);
+}
+
+// Drop the new plant into a specific bed that has room and no clash.
+function placeGardenPlantInBed(bed, newPlant) {
+  assignPlantToAreaSlot(bed.areaId, bed.slot, newPlant, { silent: true });
+  setGardenConflictPrompt(null);
+  successHaptic();
+  setTimeout(() => {
+    Alert.alert(t("garden.addedTitle"), `${newPlant} was placed in ${bed.areaName}.`, [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab("garden") }]);
+  }, 250);
+}
+
+// Add despite the clash — into the first free bed (fires the standard warning).
+function addGardenPlantAnyway(bed, newPlant) {
+  setGardenConflictPrompt(null);
+  assignPlantToAreaSlot(bed.areaId, bed.slot, newPlant); // not silent — keeps the "kept in mind" heads-up
+  successHaptic();
+}
+
+// From the Companion Check: tapping a conflict scrolls up to the Garden Map,
+// opens the offending bed, and shows a popup explaining how to fix it (with a
+// one-tap relocation when a clean destination exists).
+function focusGardenConflict(conflict) {
+  scrollRef.current?.scrollTo({ y: Math.max(0, (gardenY.current || 0) - 12), animated: true });
+  setGardenFocusAreaId((prev) => ({ areaId: conflict.areaId, n: (prev?.n || 0) + 1 }));
+  tapHaptic("light");
+  const s = conflict.suggestion;
+  const fixLine = s
+    ? `Move ${s.move} to ${s.toAreaName} — it has room and no conflicts there.`
+    : `Move ${conflict.plantA} or ${conflict.plantB} to a different bed to give them space.`;
+  const message = `${conflict.plantA} and ${conflict.plantB} shouldn't share ${conflict.areaName} — they compete for nutrients and root space, or attract the same pests.\n\n✅ Fix: ${fixLine}`;
+  const buttons = [];
+  if (s) {
+    buttons.push({
+      text: `Move ${s.move}`,
+      onPress: () => {
+        clearAreaSlot(s.fromAreaId, s.fromSlot);
+        assignPlantToAreaSlot(s.toAreaId, s.toSlot, s.move, { silent: true });
+        successHaptic();
+        setGardenFocusAreaId((prev) => ({ areaId: s.toAreaId, n: (prev?.n || 0) + 1 }));
+      },
+    });
+  }
+  buttons.push({ text: t("common.gotIt"), style: "cancel" });
+  // Let the scroll settle so the popup doesn't cover the bed opening.
+  setTimeout(() => {
+    Alert.alert(`${conflict.plantA} ✕ ${conflict.plantB}`, message, buttons);
+  }, 450);
 }
 
 // One-tap layout optimizer: greedily relocate conflicting plants into beds where
@@ -3281,7 +3737,7 @@ function autoOptimizeGarden() {
 
   const before = countConflicts(areas);
   if (before === 0) {
-    Alert.alert("Garden looks great! 🌿", "No companion conflicts to fix — your layout is already harmonious.");
+    Alert.alert(t("garden.looksGreatTitle"), t("garden.looksGreatBody"));
     return;
   }
 
@@ -3319,18 +3775,18 @@ function autoOptimizeGarden() {
   }
 
   Alert.alert(
-    "Auto-optimize layout?",
+    t("garden.optimizeTitle"),
     `This will move ${moved} plant${moved === 1 ? "" : "s"} and resolve ${resolved} of ${before} conflict${before === 1 ? "" : "s"}${after > 0 ? ` (${after} would need more space)` : ""}. Apply it?`,
     [
       { text: "Cancel", style: "cancel" },
       {
-        text: "✨ Optimize",
+        text: t("garden.optimizeConfirm"),
         onPress: () => {
           setGardenAreas(areas);
           successHaptic();
           Vibration.vibrate(60);
           Alert.alert(
-            "Garden optimized! 🌿",
+            t("garden.optimizedTitle"),
             after > 0
               ? `Moved ${moved} plant${moved === 1 ? "" : "s"} to better beds. ${after} conflict${after === 1 ? "" : "s"} remain — you'll need more bed space to fix ${after === 1 ? "it" : "them"}.`
               : `Moved ${moved} plant${moved === 1 ? "" : "s"} — every companion conflict is now resolved!`
@@ -3352,19 +3808,25 @@ const AREA_TAG_PRESETS = [
   { emoji: "🍓", color: "#ff9f43" },
 ];
 
-function addGardenArea(name, size) {
+function addGardenArea(name, size, kind) {
   const clean = String(name || "").trim();
   if (!clean) return;
   const safeSize = Math.max(1, Math.min(12, Number(size) || 12));
+  // Flower beds hold only flowers; home gardens hold anything. Infer from the
+  // preset name so the special beds behave right even after a rename.
+  const lc = clean.toLowerCase();
+  const resolvedKind = kind || (lc === "flower bed" ? "flower" : (lc === "home garden" || lc === "my garden" ? "home" : undefined));
   setGardenAreas((current) => {
     // Rotate through presets so each new area looks distinct.
     const preset = AREA_TAG_PRESETS[current.length % AREA_TAG_PRESETS.length];
     // Hanging planters (size 1) get a plain blue tag with no emoji.
-    const emoji = safeSize === 1 ? " " : preset.emoji;
-    const color = safeSize === 1 ? "#6bc7ff" : preset.color;
+    let emoji = safeSize === 1 ? " " : preset.emoji;
+    let color = safeSize === 1 ? "#6bc7ff" : preset.color;
+    if (resolvedKind === "flower") { emoji = "🌸"; color = "#ffb6c1"; }
+    else if (resolvedKind === "home") { emoji = "🏡"; color = "#8effab"; }
     return [
       ...current,
-      { id: `area-${Date.now()}`, name: clean, plots: {}, emoji, color, size: safeSize },
+      { id: `area-${Date.now()}`, name: clean, plots: {}, emoji, color, size: safeSize, ...(resolvedKind ? { kind: resolvedKind } : {}) },
     ];
   });
   successHaptic();
@@ -3372,7 +3834,7 @@ function addGardenArea(name, size) {
 
 async function pickAreaPhoto(areaId) {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!permission.granted) { Alert.alert("Photos Permission Needed", "Allow photo access to add a garden photo."); return; }
+  if (!permission.granted) { Alert.alert(t("photos.permissionTitle"), t("photos.permissionGarden")); return; }
   const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7, allowsEditing: true, aspect: [1, 1] });
   if (!result.canceled && result.assets?.[0]?.uri) {
     setAreaStyle(areaId, { photo: result.assets[0].uri });
@@ -3400,8 +3862,8 @@ function renameGardenArea(areaId, name) {
 
 function deleteGardenArea(areaId) {
   Alert.alert(
-    "Delete this area?",
-    "This removes the area and everything planted in it. This cannot be undone.",
+    t("garden.deleteAreaTitle"),
+    t("garden.deleteAreaBody"),
     [
       { text: "Cancel", style: "cancel" },
       {
@@ -3433,36 +3895,61 @@ async function detectLocationAndZone() {
   try {
     const permission = await Location.requestForegroundPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert("Location Denied", "Allow location access to auto-detect your growing zone.");
+      Alert.alert(t("location.deniedTitle"), t("location.deniedBody"));
       return;
     }
     const position = await Location.getCurrentPositionAsync({});
-    const reverse = await Location.reverseGeocodeAsync({
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude,
-    });
-    const postalCode = reverse?.[0]?.postalCode;
-    if (!postalCode) {
-      Alert.alert("ZIP Not Found", "Pocket Planter couldn't detect your ZIP code.");
+    const { latitude: lat, longitude: lon } = position.coords;
+    setLatitude(lat);
+    const reverse = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lon });
+    const place = reverse?.[0];
+
+    // Adopt the detected country first so the postal code is interpreted with
+    // the right format.
+    const detectedCountry = place?.isoCountryCode;
+    const supported = detectedCountry && COUNTRIES.some((c) => c.code === detectedCountry);
+    if (supported) setCountry(detectedCountry);
+    const activeCountry = supported ? detectedCountry : country;
+
+    const postalCode = place?.postalCode;
+    if (postalCode) {
+      setZip(normalizePostal(postalCode, activeCountry));
       return;
     }
-    setZip(postalCode);
+    // Plenty of countries have no postal code at that point, and reverse
+    // geocoding can come back sparse anywhere. Resolve straight from the
+    // coordinates instead of dead-ending.
+    if (place?.city) {
+      setZip(normalizePostal(place.city, activeCountry));
+      return;
+    }
+    setZoneLoading(true);
+    const resolved = await resolveZoneFromCoords(lat, lon, activeCountry);
+    setZoneLoading(false);
+    if (resolved) {
+      setZip(resolved.zipcode);
+      setRecord(resolved);
+      return;
+    }
+    Alert.alert(t("location.notFoundTitle"), t("location.notFoundBody"));
   } catch (error) {
     console.log(error);
-    Alert.alert("Location Error", "Unable to detect your location right now.");
+    Alert.alert(t("location.errorTitle"), t("location.errorBody"));
   }
 }
 
   // ── Weather ────────────────────────────────────────────────────────────────
   useEffect(() => {
   async function loadWeather() {
-    if (!record || zip.length !== 5) {
+    if (!record || !isPostalComplete(zip, country)) {
       setWeather(null);
       return;
     }
     try {
-      const cacheKey = `pp_weatherCache_${zip}`;
-      let coords = zipCoords;
+      const cacheKey = `pp_weatherCache_${country}_${zip}`;
+      // Climate-resolved records already carry coordinates from the geocoder, so
+      // only US table rows still need a lookup here.
+      let coords = zipCoords || (typeof record.lat === "number" ? { lat: record.lat, lon: record.lon } : null);
       // Instant paint from the last cached forecast + reuse saved coords, so the
       // rate-limited geocoder is only ever called once per ZIP. A fresh forecast
       // is still fetched below and re-cached.
@@ -3476,7 +3963,7 @@ async function detectLocationAndZone() {
       } catch (e) {}
 if (!coords) {
   const zipResponse = await fetch(
-    `https://nominatim.openstreetmap.org/search?postalcode=${zip}&country=US&format=json&limit=1`,
+    `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(zip)}&countrycodes=${country.toLowerCase()}&format=json&limit=1`,
     { headers: { "Accept": "application/json", "User-Agent": "PocketPlanter/1.0" } }
   );
   const zipText = await zipResponse.text();
@@ -3495,6 +3982,7 @@ if (!coords) {
   coords = { lat: zipPlace.lat, lon: zipPlace.lon };
   setZipCoords(coords);
 }
+if (coords?.lat != null) setLatitude(parseFloat(coords.lat));
 const weatherResponse = await fetch(
   `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&forecast_days=7`
 );
@@ -3519,7 +4007,7 @@ AsyncStorage.setItem(cacheKey, JSON.stringify({ coords, weather: freshWeather, t
     }
   }
 loadWeather();
-}, [zip, record, weatherRefreshToken]);
+}, [zip, country, record, weatherRefreshToken]);
 
 useEffect(() => {
     if (!dailyWateringOn) return;
@@ -3533,8 +4021,8 @@ useEffect(() => {
           id: "daily-watering",
           hour: wateringReminderTime.hour,
           minute: wateringReminderTime.minute,
-          title: "💧 Daily Watering Check",
-          body: "Time to check your garden and water any plants that need moisture today.",
+          title: t("notify.dailyWaterTitle"),
+          body: t("notify.dailyWaterBody"),
         });
       }
     })();
@@ -3574,11 +4062,26 @@ useEffect(() => {
     if (idx === -1) return;
     const day = days[idx];
     if (lastHeatAlertDate.current === day.date) return;
-    lastHeatAlertDate.current = day.date;
     const whenText = idx === 0 ? "today" : idx === 1 ? "tomorrow" : `in ${idx} days`;
     (async () => {
+      // Only one heat alert per forecast day, delivered at the phone's local
+      // midnight — NOT immediately. Otherwise every weather refresh through the
+      // day fires another notification. The guard is persisted so an app reload
+      // (which resets the in-memory ref) can't repeat it either.
+      let alreadySent = null;
+      try { alreadySent = await AsyncStorage.getItem("pp_heatAlertDay"); } catch (e) { /* ignore */ }
+      if (alreadySent === day.date) { lastHeatAlertDate.current = day.date; return; }
+
       const granted = await ensureNotificationPermission();
       if (!granted) return;
+
+      lastHeatAlertDate.current = day.date;
+      try { await AsyncStorage.setItem("pp_heatAlertDay", day.date); } catch (e) { /* ignore */ }
+
+      // The device's next local midnight (00:00).
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0);
+
       await Notifications.scheduleNotificationAsync({
         identifier: "heat-detected",
         content: {
@@ -3586,7 +4089,7 @@ useEffect(() => {
           body: "Water deeply before 9 AM, shade young transplants, and hold off on planting until it cools.",
           sound: true,
         },
-        trigger: null,
+        trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: midnight },
       });
     })();
   }, [weather, frostAlertsOn, unitSystem]);
@@ -3619,7 +4122,7 @@ useEffect(() => {
     // where they can now manage or cancel their plan.
     if (activeTab === "premium") setActiveTab("settings");
     await AsyncStorage.setItem(STORAGE_KEYS.seenPremiumIntro, JSON.stringify(true));
-    Alert.alert("Premium Unlocked 👑", `Pocket Planter ${plan} activated successfully.`);
+    Alert.alert(t("premium.unlocked"), `Pocket Planter ${plan} activated successfully.`);
   }
   function dismissPremiumIntro() {
     setShowPremiumIntro(false);
@@ -3632,7 +4135,7 @@ useEffect(() => {
       tapHaptic("light");
       if (current.includes(name)) { cancelPlantWaterReminder(name); return current.filter((item) => item !== name); }
       if (!premiumUnlocked && current.length >= 5) {
-        Alert.alert("Premium saves locked", "Free users can save up to 5 plants. Upgrade to Premium to save unlimited plants.", [{ text: "Maybe later", style: "cancel" }, { text: "View Premium", onPress: () => jumpToTab("premium") }]);
+        Alert.alert(t("premium.savesLockedTitle"), t("premium.savesLockedBody"), [{ text: t("common.maybeLater"), style: "cancel" }, { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") }]);
         return current;
       }
       if (current.length === 0) {
@@ -3827,15 +4330,29 @@ const glowOpacity =
   });
 
 function jumpToTab(tab) {
-  setActiveTab(tab);
-  setSelectedPlant(null);
+  const out = motionDuration("fast");
+  const swap = () => {
+    setActiveTab(tab);
+    setSelectedPlant(null);
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+    Animated.timing(tabFade, {
+      toValue: 1,
+      duration: motionDuration("base"),
+      easing: EASING.decelerate,
+      useNativeDriver: true,
+    }).start();
+  };
 
-  setTimeout(() => {
-    scrollRef.current?.scrollTo({
-      y: 0,
-      animated: false,
-    });
-  }, 50);
+  // With reduced motion on, `duration` returns 0 and this collapses to an
+  // instant swap rather than a fade — the state change still happens.
+  if (!out) { tabFade.setValue(1); swap(); return; }
+
+  Animated.timing(tabFade, {
+    toValue: 0,
+    duration: out,
+    easing: EASING.accelerate,
+    useNativeDriver: true,
+  }).start(swap);
 }
   function jumpToSmartReminders() {
     setActiveTab("garden");
@@ -3848,7 +4365,7 @@ function jumpToTab(tab) {
 
   if (showOnboarding) {
     return (
-      <OnboardingCard onFinish={async () => { setShowOnboarding(false); await AsyncStorage.setItem(STORAGE_KEYS.seenOnboarding, "true"); }} />
+      <OnboardingCard isDark={isDark} onFinish={async () => { setShowOnboarding(false); await AsyncStorage.setItem(STORAGE_KEYS.seenOnboarding, "true"); }} />
     );
   }
   if (selectedPest) {
@@ -3865,6 +4382,20 @@ function jumpToTab(tab) {
       </SafeAreaView>
     );
   }
+  if (selectedDisease) {
+    return (
+      <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
+        <StatusBar barStyle="light-content" />
+        <BackgroundDecoration isDark={isDark} />
+        <DiseaseDetailScreen
+          theme={theme}
+          disease={selectedDisease}
+          onBack={handleBackFromDisease}
+          onOpenPlant={(name) => { setSelectedDisease(null); openPlantByName(name); }}
+        />
+      </SafeAreaView>
+    );
+  }
   if (selectedPlant) {
     const plantImage = resolvePlantImageSource(selectedPlant);
     const companionInfo = getCompanionInfo(selectedPlant.name) || {};
@@ -3874,6 +4405,7 @@ function jumpToTab(tab) {
     const avoidCompanions = (Array.isArray(companionInfo.avoid) ? companionInfo.avoid : []).filter(inCatalog);
     const seasonLabel = getPlantSeasonLabel(selectedPlant, zone);
     const quickFacts = getPlantQuickFacts(selectedPlant);
+    const plantHealth = getPlantHealth(selectedPlant);
     const plantingWindow = getPlantingWindowText(selectedPlant);
     const plantingSteps = getPlantingSteps(selectedPlant);
     const isSaved = savedPlants.includes(selectedPlant.name);
@@ -3987,6 +4519,8 @@ function jumpToTab(tab) {
     />
   ) : (
     <>
+      {!isOrnamental(selectedPlant) ? (
+      <>
       <View style={styles.harvestTrackerCard}>
         <Text style={styles.harvestTrackerEmoji}>🚜</Text>
         <View style={{ flex: 1 }}>
@@ -4018,31 +4552,24 @@ function jumpToTab(tab) {
         </Pressable>
       </View>
       <Pressable
-        onPress={() => {
-          Alert.prompt(
-            "Log Harvest 🎉",
-            `How much ${selectedPlant.name} did you harvest? (e.g. "6 tomatoes" or "2 lbs")`,
-            [
-              { text: "Cancel", style: "cancel" },
-              {
-                text: "Log It",
-                onPress: (text) => logHarvest(selectedPlant.name, text || "", "", ""),
-              },
-            ],
-            "plain-text"
-          );
-        }}
-        style={{ marginTop: 10, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 11, alignItems: "center" }}
+        onPress={() => { setHarvestLogText(""); setHarvestLogPlant(selectedPlant.name); }}
+        style={{ marginTop: 10, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 12, alignItems: "center" }}
       >
-        <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 13.5 }}>🎉 Log a Harvest</Text>
+        <IconText label={"🎉 Log a Harvest"} style={{
+  color: "#07120b",
+  fontWeight: "900",
+  fontSize: 14
+}} />
       </Pressable>
+      </>
+      ) : null}
       <View style={styles.harvestTrackerCard}>
         <Text style={styles.harvestTrackerEmoji}>🌾</Text>
         <View style={{ flex: 1 }}>
           <Text style={styles.harvestTrackerTitle}>Fertilizer Tracker</Text>
           <Text style={styles.harvestTrackerText}>
             {fertilizerTrackers[selectedPlant.name]
-              ? `Last fed ${new Date(fertilizerTrackers[selectedPlant.name].lastFertilized).toLocaleDateString()}`
+              ? `Last fed ${formatDate(new Date(fertilizerTrackers[selectedPlant.name].lastFertilized))}`
               : "Track fertilizer applications"}
           </Text>
         </View>
@@ -4095,17 +4622,19 @@ function jumpToTab(tab) {
 />
 
 <View style={styles.card}>
-  <Text style={styles.cardEyebrow}>Smart Care!</Text>
+  <Text style={styles.cardEyebrow}>Smart Care</Text>
   <Text style={styles.cardText}>{getShouldGrowText(selectedPlant, zone, weather)}</Text>
   <View style={styles.detailMiniGrid}>
     {[
       { icon: "☀️", label: "Sun", value: quickFacts.sun },
+      { icon: "💧", label: "Water needs", value: quickFacts.water },
+      { icon: "📏", label: "Spacing", value: quickFacts.spacing },
       { icon: "🌱", label: "Soil", value: quickFacts.soil },
       { icon: "🏆", label: "Difficulty", value: quickFacts.difficulty },
       { icon: "📅", label: "Planting window", value: plantingWindow },
       // Premium users already get a rich Watering Forecast in Daily controls above,
-      // so only show the generic watering tip to free users (no duplicate).
-      ...(!premiumUnlocked ? [{ icon: "💧", label: "Watering", value: getWateringTip(weather) }] : []),
+      // so only show the generic weather-based watering tip to free users (no duplicate).
+      ...(!premiumUnlocked ? [{ icon: "🚿", label: "Watering today", value: getWateringTip(weather) }] : []),
       { icon: "📍", label: "Best spot", value: getWhereToPlantText(selectedPlant) },
       { icon: "🌤️", label: "Weather advice", value: getPlantSpecificTip(selectedPlant, zone, weather) },
     ].map((fact) => (
@@ -4119,6 +4648,102 @@ function jumpToTab(tab) {
     ))}
   </View>
 </View>
+{plantHealth ? (
+<View style={styles.card}>
+  <IconText label={"🐛 Problems & Protection"} style={styles.cardEyebrow} />
+  <Text style={[styles.cardText, { marginTop: 2 }]}>
+    Pests and diseases to watch for on {selectedPlant.name} — tap any one for its full guide.
+  </Text>
+  {plantHealth.pests?.length ? (
+    <>
+      <View style={styles.companionSectionHeader}>
+        <Text style={styles.companionSectionEmoji}>🐛</Text>
+        <Text style={styles.companionSectionTitle}>Common Pests</Text>
+        <View style={{ backgroundColor: "rgba(255, 123, 123, 0.18)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
+          <Text style={{ color: "#ff9f9f", fontSize: 10, fontWeight: "900" }}>{plantHealth.pests.length}</Text>
+        </View>
+      </View>
+      <View style={styles.companionExcellentGrid}>
+        {plantHealth.pests.map((pestName) => {
+          const pestObj = getPestForName(pestName);
+          const img = pestObj ? getPestImage(pestObj.name) : null;
+          const label = pestObj ? pestObj.name : pestName;
+          const chipStyle = [styles.companionChip, { backgroundColor: "rgba(255, 123, 123, 0.1)", borderColor: "rgba(255, 123, 123, 0.28)" }];
+          const inner = (
+            <>
+              <View style={[styles.companionChipIconWrap, { backgroundColor: "rgba(255, 123, 123, 0.16)", overflow: "hidden" }]}>
+                {img ? (
+                  <Image source={img} style={{ width: 34, height: 34 }} resizeMode="cover" />
+                ) : (
+                  <Text style={{ fontSize: 18 }}>{pestObj?.emoji || "🐛"}</Text>
+                )}
+              </View>
+              <Text style={styles.companionChipName} numberOfLines={1}>{label}</Text>
+            </>
+          );
+          return pestObj ? (
+            <Pressable key={`pest-${pestName}`} onPress={() => openPest(pestObj)} accessibilityRole="button" accessibilityLabel={`${label} — tap for the pest guide`} style={chipStyle}>{inner}</Pressable>
+          ) : (
+            <View key={`pest-${pestName}`} style={chipStyle}>{inner}</View>
+          );
+        })}
+      </View>
+    </>
+  ) : null}
+  {plantHealth.diseases?.length ? (
+    <>
+      <View style={styles.companionSectionHeader}>
+        <Text style={styles.companionSectionEmoji}>🦠</Text>
+        <Text style={styles.companionSectionTitle}>Common Diseases</Text>
+        <View style={{ backgroundColor: "rgba(255, 207, 139, 0.16)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
+          <Text style={{ color: "#ffcf8b", fontSize: 10, fontWeight: "900" }}>{plantHealth.diseases.length}</Text>
+        </View>
+      </View>
+      <View style={styles.companionExcellentGrid}>
+        {plantHealth.diseases.map((diseaseName) => {
+          const diseaseObj = getDiseaseForName(diseaseName);
+          const img = diseaseObj ? getDiseaseImage(diseaseObj.name) : null;
+          const label = diseaseObj ? diseaseObj.name : diseaseName;
+          const chipStyle = [styles.companionChip, { backgroundColor: "rgba(255, 207, 139, 0.1)", borderColor: "rgba(255, 207, 139, 0.28)" }];
+          const inner = (
+            <>
+              <View style={[styles.companionChipIconWrap, { backgroundColor: "rgba(255, 207, 139, 0.16)", overflow: "hidden" }]}>
+                {img ? (
+                  <Image source={img} style={{ width: 34, height: 34 }} resizeMode="cover" />
+                ) : (
+                  <Text style={{ fontSize: 18 }}>{diseaseObj?.emoji || "🦠"}</Text>
+                )}
+              </View>
+              <Text style={styles.companionChipName} numberOfLines={1}>{label}</Text>
+            </>
+          );
+          return diseaseObj ? (
+            <Pressable key={`dis-${diseaseName}`} onPress={() => openDisease(diseaseObj)} accessibilityRole="button" accessibilityLabel={`${label} — tap for the disease guide`} style={chipStyle}>{inner}</Pressable>
+          ) : (
+            <View key={`dis-${diseaseName}`} style={chipStyle}>{inner}</View>
+          );
+        })}
+      </View>
+    </>
+  ) : null}
+  {plantHealth.symptoms ? (
+    <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
+      <Text style={{ fontSize: 13 }}>⚠️</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "600", lineHeight: 19, flex: 1 }}>
+        <Text style={{ color: "#ff9f9f", fontWeight: "900" }}>Watch for: </Text>{plantHealth.symptoms}
+      </Text>
+    </View>
+  ) : null}
+  {plantHealth.prevent ? (
+    <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
+      <Text style={{ fontSize: 13 }}>✅</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "600", lineHeight: 19, flex: 1 }}>
+        <Text style={{ color: "#8effab", fontWeight: "900" }}>Prevent & treat: </Text>{plantHealth.prevent}
+      </Text>
+    </View>
+  ) : null}
+</View>
+) : null}
 <View style={styles.card}>
   <Text style={styles.cardEyebrow}>Step by step</Text>
   {!premiumUnlocked ? (
@@ -4144,7 +4769,7 @@ function jumpToTab(tab) {
                 <Text style={styles.stepNumberText}>{index + 1}</Text>
               </View>
               {index < plantingSteps.length - 1 ? (
-                <View style={{ width: 2, flex: 1, backgroundColor: "rgba(92,255,137,0.25)", marginTop: 2, minHeight: 14 }} />
+                <View style={{ width: 2, flex: 1, backgroundColor: "rgba(92, 255, 137, 0.24)", marginTop: 2, minHeight: 14 }} />
               ) : null}
             </View>
             <Text style={styles.stepText}>{step}</Text>
@@ -4156,7 +4781,7 @@ function jumpToTab(tab) {
 </View>
 
 <View style={styles.card}>
-  <Text style={styles.cardEyebrow}>🌿 Companion Intelligence</Text>
+  <IconText label={"🌿 Companion Intelligence"} style={styles.cardEyebrow} />
   {!premiumUnlocked ? (
    <PremiumLockedCard
       theme={theme}
@@ -4176,8 +4801,8 @@ function jumpToTab(tab) {
           <View style={styles.companionSectionHeader}>
             <Text style={styles.companionSectionEmoji}>🟢</Text>
             <Text style={styles.companionSectionTitle}>Plant Together</Text>
-            <View style={{ backgroundColor: "rgba(92,255,137,0.20)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
-              <Text style={{ color: "#5cff89", fontSize: 11, fontWeight: "900" }}>{excellentCompanions.length}</Text>
+            <View style={{ backgroundColor: "rgba(92, 255, 137, 0.2)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
+              <Text style={{ color: "#5cff89", fontSize: 10, fontWeight: "900" }}>{excellentCompanions.length}</Text>
             </View>
           </View>
           <View style={styles.companionExcellentGrid}>
@@ -4203,14 +4828,14 @@ function jumpToTab(tab) {
           <View style={styles.companionSectionHeader}>
             <Text style={styles.companionSectionEmoji}>🟡</Text>
             <Text style={styles.companionSectionTitle}>OK Nearby</Text>
-            <View style={{ backgroundColor: "rgba(255,216,107,0.18)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
-              <Text style={{ color: "#ffd86b", fontSize: 11, fontWeight: "900" }}>{neutralCompanions.length}</Text>
+            <View style={{ backgroundColor: "rgba(255, 216, 107, 0.16)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
+              <Text style={{ color: "#ffd86b", fontSize: 10, fontWeight: "900" }}>{neutralCompanions.length}</Text>
             </View>
           </View>
           <View style={styles.companionExcellentGrid}>
             {neutralCompanions.map((item) => (
-              <Pressable key={`neutral-${item}`} onPress={() => openPlantByName(item)} style={[styles.companionChip, { backgroundColor: "rgba(255,216,107,0.08)", borderColor: "rgba(255,216,107,0.22)" }]}>
-                <View style={[styles.companionChipIconWrap, { backgroundColor: "rgba(255,216,107,0.14)" }]}>
+              <Pressable key={`neutral-${item}`} onPress={() => openPlantByName(item)} style={[styles.companionChip, { backgroundColor: "rgba(255, 216, 107, 0.08)", borderColor: "rgba(255, 216, 107, 0.2)" }]}>
+                <View style={[styles.companionChipIconWrap, { backgroundColor: "rgba(255, 216, 107, 0.16)" }]}>
                   {getCompanionImage(item) ? (
                     <Image source={getCompanionImage(item)} style={{ width: 26, height: 26 }} resizeMode="contain" />
                   ) : (
@@ -4230,14 +4855,14 @@ function jumpToTab(tab) {
           <View style={styles.companionSectionHeader}>
             <Text style={styles.companionSectionEmoji}>🔴</Text>
             <Text style={styles.companionSectionTitle}>Keep Apart</Text>
-            <View style={{ backgroundColor: "rgba(255,123,123,0.18)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
-              <Text style={{ color: "#ff7b7b", fontSize: 11, fontWeight: "900" }}>{avoidCompanions.length}</Text>
+            <View style={{ backgroundColor: "rgba(255, 123, 123, 0.16)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
+              <Text style={{ color: "#ff7b7b", fontSize: 10, fontWeight: "900" }}>{avoidCompanions.length}</Text>
             </View>
           </View>
           <View style={styles.companionExcellentGrid}>
             {avoidCompanions.map((item) => (
-              <Pressable key={`avoid-${item}`} onPress={() => openPlantByName(item)} style={[styles.companionChip, { backgroundColor: "rgba(255,123,123,0.08)", borderColor: "rgba(255,123,123,0.22)" }]}>
-                <View style={[styles.companionChipIconWrap, { backgroundColor: "rgba(255,123,123,0.14)" }]}>
+              <Pressable key={`avoid-${item}`} onPress={() => openPlantByName(item)} style={[styles.companionChip, { backgroundColor: "rgba(255, 123, 123, 0.08)", borderColor: "rgba(255, 123, 123, 0.2)" }]}>
+                <View style={[styles.companionChipIconWrap, { backgroundColor: "rgba(255, 123, 123, 0.16)" }]}>
                   {getCompanionImage(item) ? (
                     <Image source={getCompanionImage(item)} style={{ width: 26, height: 26 }} resizeMode="contain" />
                   ) : (
@@ -4427,11 +5052,11 @@ function jumpToTab(tab) {
               <Pressable
                 onPress={handleBiometricLogin}
                 accessibilityRole="button"
-                accessibilityLabel={`Sign in with ${biometricLabel}`}
-                style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12, borderRadius: 18, paddingVertical: 15, backgroundColor: "rgba(92,255,137,0.10)", borderWidth: 1, borderColor: "rgba(92,255,137,0.4)" }}
+                accessibilityLabel={t("auth.signInWithBiometric", { label: biometricLabel })}
+                style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12, borderRadius: 16, paddingVertical: 16, backgroundColor: "rgba(92, 255, 137, 0.1)", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.4)" }}
               >
                 <Ionicons name={biometricLabel === "Touch ID" ? "finger-print" : "scan-outline"} size={20} color="#8effab" />
-                <Text style={{ color: "#8effab", fontSize: 15, fontWeight: "900" }}>Sign in with {biometricLabel}</Text>
+                <Text style={{ color: "#8effab", fontSize: 14, fontWeight: "900" }}>{t("auth.signInWithBiometric", { label: biometricLabel })}</Text>
               </Pressable>
             ) : null}
 
@@ -4470,9 +5095,9 @@ function jumpToTab(tab) {
     <BackgroundDecoration isDark={isDark} />
 
     {syncFailed ? (
-      <View style={{ position: "absolute", top: 8, left: 16, right: 16, zIndex: 950, flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255,159,67,0.96)", borderRadius: 14, paddingVertical: 10, paddingHorizontal: 14, shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 18 }}>
+      <View style={{ position: "absolute", top: 8, left: 16, right: 16, zIndex: 950, flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255, 159, 67, 0.96)", borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14, shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 18 }}>
         <Text style={{ fontSize: 14 }}>☁️</Text>
-        <Text style={{ color: "#3d2600", fontSize: 12, fontWeight: "900", flex: 1 }}>Changes aren't syncing to the cloud right now — they'll retry automatically.</Text>
+        <Text style={{ color: "#3d2c00", fontSize: 12, fontWeight: "900", flex: 1 }}>Changes aren't syncing to the cloud right now — they'll retry automatically.</Text>
       </View>
     ) : null}
 
@@ -4485,42 +5110,85 @@ function jumpToTab(tab) {
       onOpenPlant={(item) => openPlantFromList(item)}
       onOpenPest={(pest) => openPest(pest)}
       onGoToJournal={() => jumpToTab("journal")}
+      onJumpToTab={(tab) => jumpToTab(tab)}
     />
+
+    <GardenConflictModal
+      prompt={gardenConflictPrompt}
+      theme={theme}
+      onReplace={(conflict) => replaceGardenPlant(conflict, gardenConflictPrompt.plantName)}
+      onPlaceIn={(bed) => placeGardenPlantInBed(bed, gardenConflictPrompt.plantName)}
+      onAddAnyway={() => addGardenPlantAnyway(gardenConflictPrompt.anyFreeBed, gardenConflictPrompt.plantName)}
+      onClose={() => setGardenConflictPrompt(null)}
+    />
+
+    <Modal visible={!!harvestLogPlant} animationType="fade" transparent onRequestClose={() => setHarvestLogPlant(null)}>
+      <Pressable style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", alignItems: "center", justifyContent: "center", padding: 24 }} onPress={() => setHarvestLogPlant(null)}>
+        <Pressable onPress={(e) => e.stopPropagation?.()} style={{ width: "100%", maxWidth: 420, backgroundColor: theme.card, borderRadius: 24, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", padding: 22 }}>
+          <IconText label={"🎉 LOG A HARVEST"} style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 10 }} />
+          <Text style={{ color: theme.text, fontSize: 16, fontWeight: "900" }}>{harvestLogPlant}</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "600", marginTop: 4, marginBottom: 12 }}>How much did you harvest?</Text>
+          <TextInput
+            value={harvestLogText}
+            onChangeText={setHarvestLogText}
+            placeholder={'e.g. "6 tomatoes" or "2 lbs"'}
+            placeholderTextColor="#8fbf9d"
+            autoFocus
+            returnKeyType="done"
+            onSubmitEditing={() => { if (harvestLogPlant) { logHarvest(harvestLogPlant, harvestLogText.trim(), "", ""); setHarvestLogPlant(null); } }}
+            style={{ backgroundColor: theme.input, color: theme.text, borderColor: theme.border, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 }}
+          />
+          <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
+            <Pressable onPress={() => setHarvestLogPlant(null)} style={{ flex: 1, borderRadius: 14, paddingVertical: 13, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.12)" }}>
+              <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>Cancel</Text>
+            </Pressable>
+            <Pressable onPress={() => { if (harvestLogPlant) { logHarvest(harvestLogPlant, harvestLogText.trim(), "", ""); setHarvestLogPlant(null); } }} style={{ flex: 1, borderRadius: 14, paddingVertical: 13, alignItems: "center", backgroundColor: "#5cff89" }}>
+              <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>Log it</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Pressable>
+    </Modal>
 
     {showResetPassword ? (
       <Modal visible transparent animationType="fade" onRequestClose={() => setShowResetPassword(false)}>
-        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.8)", alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <View style={{ width: "100%", maxWidth: 420, backgroundColor: "#0d1f14", borderRadius: 26, borderWidth: 1, borderColor: "rgba(92,255,137,0.28)", padding: 22 }}>
-            <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>🔒 RESET PASSWORD</Text>
-            <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "900", marginTop: 6 }}>Set a new password</Text>
-            <Text style={{ color: "#a9c7b3", fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 8 }}>Enter a new password for your account.</Text>
+        <View style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.85)", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <View style={{ width: "100%", maxWidth: 420, backgroundColor: "#0e2414", borderRadius: 24, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", padding: 22 }}>
+            <IconText label={"🔒 RESET PASSWORD"} style={{
+  color: "#8effab",
+  fontSize: 12,
+  fontWeight: "900",
+  letterSpacing: 0.5
+}} />
+            <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "900", marginTop: 6 }}>{t("auth.setNewPasswordTitle")}</Text>
+            <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 8 }}>{t("auth.setNewPasswordBody")}</Text>
             <TextInput
               value={resetPasswordValue}
               onChangeText={setResetPasswordValue}
               secureTextEntry
-              placeholder="New password"
+              placeholder={t("auth.newPasswordPlaceholder")}
               placeholderTextColor="#8fbf9d"
-              style={{ marginTop: 16, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 14, borderWidth: 1, borderColor: "rgba(92,255,137,0.22)", color: "#ffffff", fontSize: 15, fontWeight: "700", paddingHorizontal: 16, paddingVertical: 14 }}
+              style={{ marginTop: 16, backgroundColor: "rgba(255, 255, 255, 0.08)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)", color: "#ffffff", fontSize: 14, fontWeight: "700", paddingHorizontal: 16, paddingVertical: 14 }}
             />
             <Pressable
               onPress={async () => {
-                if ((resetPasswordValue || "").length < 6) { Alert.alert("Too short", "Password must be at least 6 characters."); return; }
+                if ((resetPasswordValue || "").length < 6) { Alert.alert(t("auth.tooShortTitle"), t("auth.tooShortBody")); return; }
                 try {
                   const { error } = await supabase.auth.updateUser({ password: resetPasswordValue });
-                  if (error) { Alert.alert("Couldn't update password", error.message); return; }
-                  Alert.alert("Password updated ✅", "Your password has been changed. You're all set.");
+                  if (error) { Alert.alert(t("auth.updateFailedTitle"), error.message); return; }
+                  Alert.alert(t("auth.passwordUpdatedTitle"), t("auth.passwordUpdatedBody"));
                   setShowResetPassword(false);
                   setResetPasswordValue("");
                 } catch (e) {
-                  Alert.alert("Something went wrong", "Please try again.");
+                  Alert.alert(t("common.somethingWrong"), t("common.pleaseTryAgain"));
                 }
               }}
-              style={{ marginTop: 14, backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 15, alignItems: "center" }}
+              style={{ marginTop: 14, backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 16, alignItems: "center" }}
             >
-              <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 15 }}>Update password</Text>
+              <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 14 }}>{t("auth.updatePasswordButton")}</Text>
             </Pressable>
             <Pressable onPress={() => { setShowResetPassword(false); setResetPasswordValue(""); }} style={{ marginTop: 10, paddingVertical: 12, alignItems: "center" }}>
-              <Text style={{ color: "#8fbf9d", fontWeight: "800", fontSize: 14 }}>Cancel</Text>
+              <Text style={{ color: "#8fbf9d", fontWeight: "800", fontSize: 14 }}>{t("common.cancel")}</Text>
             </Pressable>
           </View>
         </View>
@@ -4528,10 +5196,10 @@ function jumpToTab(tab) {
     ) : null}
 
     {undoToast ? (
-      <View style={{ position: "absolute", bottom: 96, left: 16, right: 16, zIndex: 900, flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(16,41,23,0.98)", borderRadius: 18, paddingVertical: 14, paddingHorizontal: 18, borderWidth: 1, borderColor: "rgba(92,255,137,0.30)", shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 20 }}>
+      <View style={{ position: "absolute", bottom: 96, left: 16, right: 16, zIndex: 900, flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(16, 41, 23, 0.98)", borderRadius: 16, paddingVertical: 14, paddingHorizontal: 18, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 20 }}>
         <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800", flex: 1 }}>{undoToast.message}</Text>
-        <Pressable onPress={undoToast.onUndo} hitSlop={10} style={{ marginLeft: 12, backgroundColor: "#5cff89", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 9 }}>
-          <Text style={{ color: "#07120b", fontSize: 13, fontWeight: "900" }}>Undo</Text>
+        <Pressable onPress={undoToast.onUndo} hitSlop={10} style={{ marginLeft: 12, backgroundColor: "#5cff89", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10 }}>
+          <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "900" }}>Undo</Text>
         </Pressable>
       </View>
     ) : null}
@@ -4548,7 +5216,7 @@ function jumpToTab(tab) {
           <Text style={[styles.levelUpText, { fontSize: 12, fontWeight: "900", letterSpacing: 1, color: "#5cff89", marginBottom: 6 }]}>ACHIEVEMENT UNLOCKED</Text>
           <Text style={styles.levelUpTitle}>{celebrationBadge.title}</Text>
           <Text style={styles.levelUpText}>{celebrationBadge.text}</Text>
-          <Text style={[styles.levelUpText, { fontSize: 13, marginTop: 8, opacity: 0.7 }]}>Tap anywhere to close</Text>
+          <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>Tap anywhere to close</Text>
         </View>
       </Pressable>
     ) : null}
@@ -4565,7 +5233,7 @@ function jumpToTab(tab) {
           <Text style={[styles.levelUpText, { fontSize: 12, fontWeight: "900", letterSpacing: 1, color: celebrationBanner.gradient ? celebrationBanner.gradient[0] : "#5cff89", marginBottom: 6 }]}>NEW BANNER UNLOCKED</Text>
           <Text style={styles.levelUpTitle}>{celebrationBanner.title}</Text>
           <Text style={styles.levelUpText}>{celebrationBanner.subtitle}</Text>
-          <Text style={[styles.levelUpText, { fontSize: 13, marginTop: 8, opacity: 0.7 }]}>Tap to close · equip it in your profile</Text>
+          <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>Tap to close · equip it in your profile</Text>
         </View>
       </Pressable>
     ) : null}
@@ -4587,7 +5255,7 @@ function jumpToTab(tab) {
           <Text style={styles.levelUpEmoji}>{milestoneCelebration.emoji}</Text>
           <Text style={styles.levelUpTitle}>{milestoneCelebration.title}</Text>
           <Text style={styles.levelUpText}>{milestoneCelebration.text}</Text>
-          <Text style={[styles.levelUpText, { fontSize: 13, marginTop: 8, opacity: 0.7 }]}>Tap anywhere to close</Text>
+          <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>Tap anywhere to close</Text>
         </View>
       </Pressable>
     ) : null}
@@ -4604,7 +5272,7 @@ function jumpToTab(tab) {
               ? "You've been growing with Pocket Planter for a whole year. What a journey! 🌳"
               : `You've been gardening with Pocket Planter for ${showAnniversary} days. Your garden has come so far! 🌱`}
           </Text>
-          <Text style={[styles.levelUpText, { fontSize: 13, marginTop: 8, opacity: 0.7 }]}>Tap anywhere to close</Text>
+          <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>Tap anywhere to close</Text>
         </View>
       </Pressable>
     ) : null}
@@ -4615,7 +5283,7 @@ function jumpToTab(tab) {
           <Text style={styles.levelUpEmoji}>🌱</Text>
           <Text style={styles.levelUpTitle}>FIRST PLANT!</Text>
           <Text style={styles.levelUpText}>You just saved your very first plant. Welcome to your garden journey! 🌿</Text>
-          <Text style={[styles.levelUpText, { fontSize: 13, marginTop: 8, opacity: 0.7 }]}>Tap anywhere to close</Text>
+          <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>Tap anywhere to close</Text>
         </View>
       </Pressable>
     ) : null}
@@ -4640,6 +5308,8 @@ function jumpToTab(tab) {
       }
      contentContainerStyle={styles.container}
     >
+      {/* Cross-fades on tab change; opacity is driven on the native thread. */}
+      <Animated.View style={{ opacity: tabFade }}>
           <>
           {activeTab === "home" ? (
   <>
@@ -4650,32 +5320,182 @@ function jumpToTab(tab) {
   <View style={styles.welcomeGlowOrbTwo} />
   <Image
     source={welcomeBuddyImage}
-    style={{ width: "100%", height: SCREEN_WIDTH * 1.35, borderRadius: 30 }}
+    style={{ width: "100%", height: SCREEN_WIDTH * 1.35, borderRadius: 24 }}
     resizeMode="cover"
   />
 </Animated.View>
 <View style={[styles.card, styles.zoneCardGlow, { backgroundColor: theme.card, borderColor: theme.border }]}>
   <View style={styles.zoneHeaderRow}>
     <View style={styles.zoneIconGlow}><Text style={styles.zoneIconText}>📍</Text></View>
-            <Text style={[styles.cardTitle, { color: theme.text, flex: 1 }]}>Find your Garden Zone!</Text>
+            <Text style={[styles.cardTitle, { color: theme.text, flex: 1 }]}>{t("zone.findTitle")}</Text>
           </View>
-          <Text style={[styles.cardText, { color: theme.secondaryText }]}>Enter your ZIP code so Pocket Planter can match plants to your local growing zone.</Text>
-          <TextInput value={zip} onChangeText={(value) => setZip(normalizeZip(value))} keyboardType="number-pad" maxLength={5} placeholder="Enter ZIP code" placeholderTextColor="#8fbf9d" style={[styles.input, styles.zoneInput, { backgroundColor: theme.input, color: theme.text, borderColor: theme.border }]} />
+          <Text style={[styles.cardText, { color: theme.secondaryText }]}>{t("zone.findBody")}</Text>
+
+          <Pressable
+            onPress={() => { tapHaptic(); setShowLanguagePicker(true); }}
+            style={[styles.input, styles.zoneInput, { backgroundColor: theme.input, borderColor: theme.border, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}
+          >
+            <Text style={{ color: theme.text, fontSize: 16, fontWeight: "600" }}>
+              🌐  {getLanguage(language).nativeName}
+            </Text>
+            <Ionicons name="chevron-down" size={18} color={theme.secondaryText} />
+          </Pressable>
+
+          <Pressable
+            onPress={() => { tapHaptic(); setShowCountryPicker(true); }}
+            style={[styles.input, styles.zoneInput, { backgroundColor: theme.input, borderColor: theme.border, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}
+          >
+            <Text style={{ color: theme.text, fontSize: 16, fontWeight: "600" }}>
+              {getCountry(country).flag}  {getCountry(country).displayName}
+            </Text>
+            <Ionicons name="chevron-down" size={18} color={theme.secondaryText} />
+          </Pressable>
+
+          <TextInput
+            value={zip}
+            onChangeText={(value) => setZip(normalizePostal(value, country))}
+            keyboardType={usesZipFormat(country) ? "number-pad" : "default"}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            maxLength={usesZipFormat(country) ? 5 : 64}
+            placeholder={postalPlaceholderFor(country)}
+            placeholderTextColor="#8fbf9d"
+            style={[styles.input, styles.zoneInput, { backgroundColor: theme.input, color: theme.text, borderColor: theme.border }]}
+          />
+
           <View style={styles.actionRow}>
-            <Pressable style={[styles.primaryButton, styles.glowPrimaryButton]} onPress={() => Keyboard.dismiss()}><Text style={styles.primaryButtonText}>Apply ZIP</Text></Pressable>
-            <Pressable style={[styles.secondaryButton, styles.glowSecondaryButton, { borderColor: theme.border }]} onPress={detectLocationAndZone}><Text style={[styles.secondaryButtonText, { color: theme.text }]}>Use location</Text></Pressable>
+            <Pressable style={[styles.primaryButton, styles.glowPrimaryButton]} onPress={() => { Keyboard.dismiss(); setZoneRetryToken((value) => value + 1); }}><Text style={styles.primaryButtonText}>{t("zone.findButton")}</Text></Pressable>
+            <Pressable style={[styles.secondaryButton, styles.glowSecondaryButton, { borderColor: theme.border }]} onPress={detectLocationAndZone}><Text style={[styles.secondaryButtonText, { color: theme.text }]}>{t("zone.useLocation")}</Text></Pressable>
           </View>
-          {zip.length === 5 && !record ? (<Text style={styles.errorText}>Couldn't find that ZIP in your zone file.</Text>) : null}
+
+          {zoneLoading ? (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10 }}>
+              <ActivityIndicator size="small" color="#5cff89" />
+              <Text style={[styles.cardText, { color: theme.secondaryText, marginTop: 0 }]}>
+                {t("zone.loading")}
+              </Text>
+            </View>
+          ) : null}
+
+          {!zoneLoading && zoneError && isPostalComplete(zip, country) ? (
+            <Text style={styles.errorText}>
+              {zoneError === "busy"
+                ? t("zone.errorBusy")
+                : t("zone.errorNotFound", { country: getCountry(country).displayName })}
+            </Text>
+          ) : null}
         </View>
+
+        <AppIntroCard theme={theme} />
+
+        <Modal visible={showLanguagePicker} animationType="slide" transparent onRequestClose={() => setShowLanguagePicker(false)}>
+          <View style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", justifyContent: "flex-end" }}>
+            <View style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "80%", paddingTop: 18 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingBottom: 12 }}>
+                <Text style={[styles.cardTitle, { color: theme.text, flex: 1 }]}>{t("language.select")}</Text>
+                <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.close")} onPress={() => { tapHaptic(); setShowLanguagePicker(false); }} hitSlop={12}>
+                  <Ionicons name="close" size={24} color={theme.secondaryText} />
+                </Pressable>
+              </View>
+              <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+                {LANGUAGES.map((item) => (
+                  <Pressable
+                    key={item.code}
+                    onPress={() => {
+                      tapHaptic();
+                      setLanguage(item.code);
+                      setShowLanguagePicker(false);
+                    }}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 14,
+                      paddingHorizontal: 20,
+                      backgroundColor: item.code === language ? theme.input : "transparent",
+                    }}
+                  >
+                    <Text style={{ fontSize: 20, marginRight: 12 }}>{item.flag}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: theme.text, fontSize: 16, fontWeight: "600" }}>{item.nativeName}</Text>
+                      {item.nativeName !== item.name ? (
+                        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "600" }}>{item.name}</Text>
+                      ) : null}
+                    </View>
+                    {item.code === language ? <Ionicons name="checkmark" size={20} color="#5cff89" /> : null}
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+        <Modal visible={showCountryPicker} animationType="slide" transparent onRequestClose={() => setShowCountryPicker(false)}>
+          <View style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", justifyContent: "flex-end" }}>
+            <View style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "80%", paddingTop: 18 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingBottom: 12 }}>
+                <Text style={[styles.cardTitle, { color: theme.text, flex: 1 }]}>{t("country.select")}</Text>
+                <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.close")} onPress={() => { tapHaptic(); setShowCountryPicker(false); setCountrySearch(""); }} hitSlop={12}>
+                  <Ionicons name="close" size={24} color={theme.secondaryText} />
+                </Pressable>
+              </View>
+
+              <TextInput
+                value={countrySearch}
+                onChangeText={setCountrySearch}
+                placeholder={t("country.search", { count: COUNTRIES.length })}
+                placeholderTextColor="#8fbf9d"
+                autoCorrect={false}
+                autoCapitalize="none"
+                style={[styles.input, { backgroundColor: theme.input, color: theme.text, borderColor: theme.border, marginHorizontal: 20, marginBottom: 8 }]}
+              />
+
+              {countryResults.length === 0 ? (
+                <Text style={[styles.cardText, { color: theme.secondaryText, paddingHorizontal: 20, paddingVertical: 24, textAlign: "center" }]}>
+                  {t("country.noMatch", { query: countrySearch })}
+                </Text>
+              ) : null}
+
+              <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 40 }}>
+                {countryResults.map((item) => (
+                  <Pressable
+                    key={item.code}
+                    onPress={() => {
+                      tapHaptic();
+                      if (item.code !== country) setZip(""); // formats differ between countries
+                      setCountry(item.code);
+                      setShowCountryPicker(false);
+                      setCountrySearch("");
+                    }}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 14,
+                      paddingHorizontal: 20,
+                      backgroundColor: item.code === country ? theme.input : "transparent",
+                    }}
+                  >
+                    <Text style={{ fontSize: 20, marginRight: 12 }}>{item.flag}</Text>
+                    <Text style={{ color: theme.text, fontSize: 16, fontWeight: "600", flex: 1 }}>{item.displayName || item.name}</Text>
+                    {item.code === country ? <Ionicons name="checkmark" size={20} color="#5cff89" /> : null}
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
       </>
     ) : null}
   </>
 ) : null}
 {record && activeTab === "home" ? (
   <HomeTab
+  activationSteps={activationSteps}
+  gettingStartedDismissed={gettingStartedDismissed}
+  dismissGettingStarted={dismissGettingStarted}
   claimDailyBonus={claimDailyBonus}
   combinedGardenMap={combinedGardenMap}
   compatiblePlants={compatiblePlants}
+  savedPlantObjs={savedPlantObjs}
   completedQuestIds={completedQuestIds}
   dailyBonusClaimed={dailyBonusClaimed}
   dailyBonusDate={dailyBonusDate}
@@ -4742,6 +5562,7 @@ function jumpToTab(tab) {
           ) : null}
           {record && activeTab === "garden" ? (
   <GardenTab
+  unitSystem={unitSystem}
   onAutoOptimize={autoOptimizeGarden}
   onSavePlant={toggleSavedPlant}
   addGardenArea={addGardenArea}
@@ -4751,8 +5572,10 @@ function jumpToTab(tab) {
   deleteGardenArea={deleteGardenArea}
   fertilizerTrackers={fertilizerTrackers}
   gardenAreas={gardenAreas}
+  gardenFocusAreaId={gardenFocusAreaId}
   gardenY={gardenY}
   harvestTrackers={harvestTrackers}
+  onFocusConflict={focusGardenConflict}
   openPlantFromList={openPlantFromList}
   scheduleFertilizerReminder={scheduleFertilizerReminder}
   setCareLog={setCareLog}
@@ -4788,6 +5611,10 @@ function jumpToTab(tab) {
   setPlantNowOnly={setPlantNowOnly}
   plantSortMode={plantSortMode}
   setPlantSortMode={setPlantSortMode}
+  plantAttrFilters={plantAttrFilters}
+  setPlantAttrFilters={setPlantAttrFilters}
+  addPlantToGarden={quickAddPlantToGarden}
+  gardenPlantNames={gardenPlantNames}
   plantsListY={plantsListY}
   plantsVisibleCount={plantsVisibleCount}
   recentPlants={recentPlants}
@@ -4834,14 +5661,38 @@ function jumpToTab(tab) {
 />
 ) : null}
 
+{record && activeTab === "flowers" ? (
+  <FlowerTab
+    theme={theme}
+    savedPlants={savedPlants}
+    openPlantFromList={openPlantFromList}
+    gardenAreas={gardenAreas}
+    addGardenArea={addGardenArea}
+    assignPlantToAreaSlot={assignPlantToAreaSlot}
+    clearAreaSlot={clearAreaSlot}
+    deleteGardenArea={deleteGardenArea}
+    waterArea={waterArea}
+    pickAreaPhoto={pickAreaPhoto}
+    harvestTrackers={harvestTrackers}
+    wateredPlants={wateredPlants}
+    weather={weather}
+    zone={zone}
+  />
+) : null}
+
 {activeTab === "journal" ? (
   <JournalTab
+  achievementBadges={achievementBadges}
+  badgeEarnedDates={badgeEarnedDates}
   careLog={careLog}
   deleteJournalEntry={deleteJournalEntry}
   harvestGoal={harvestGoal}
   harvestLog={harvestLog}
   journalEntries={journalEntries}
   journalY={journalY}
+  plantSaveDates={plantSaveDates}
+  sowLog={sowLog}
+  wateringHistory={wateringHistory}
   openPlantFromList={openPlantFromList}
   pickJournalPhoto={pickJournalPhoto}
   plantNotes={plantNotes}
@@ -4926,6 +5777,8 @@ function jumpToTab(tab) {
 ) : null}
 {record && activeTab === "settings" ? (
   <SettingsTab
+  language={language}
+  setLanguage={setLanguage}
   appearanceMode={appearanceMode}
   setAppearanceMode={setAppearanceMode}
   hapticsOn={hapticsOn}
@@ -4986,6 +5839,7 @@ function jumpToTab(tab) {
 />
 ) : null}
 </>
+      </Animated.View>
 </ScrollView>
 {record && showScrollTop ? (
   <Pressable
@@ -5006,30 +5860,101 @@ function jumpToTab(tab) {
     ])}
     accessibilityRole="button"
     accessibilityLabel="Quick log a garden action"
-    style={{ position: "absolute", right: 18, bottom: 156, width: 52, height: 52, borderRadius: 26, backgroundColor: "#6bc7ff", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 16, zIndex: 51 }}
+    style={{ position: "absolute", right: 18, bottom: 156, width: 52, height: 52, borderRadius: 24, backgroundColor: "#6bc7ff", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 16, zIndex: 51 }}
   >
     <Text style={{ fontSize: 24 }}>⚡</Text>
   </Pressable>
 ) : null}
+<Modal visible={showMoreSheet} animationType="slide" transparent onRequestClose={() => setShowMoreSheet(false)}>
+  <Pressable style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", justifyContent: "flex-end" }} onPress={() => setShowMoreSheet(false)}>
+    <Pressable
+      onPress={(e) => e.stopPropagation()}
+      style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 18, paddingBottom: 34 }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingBottom: 12 }}>
+        <Text style={[styles.cardTitle, { color: theme.text, flex: 1 }]}>{t("tabs.more")}</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t("a11y.close")}
+          onPress={() => { tapHaptic(); setShowMoreSheet(false); }}
+          hitSlop={12}
+        >
+          <Ionicons name="close" size={24} color={theme.secondaryText} />
+        </Pressable>
+      </View>
+
+      {[
+        { id: "flowers", label: "Flowers & Home", icon: "flower", premium: false },
+        { id: "journal", label: t("tabs.journal"), icon: "book", premium: true },
+        { id: "profile", label: t("tabs.quests"), icon: "flash", premium: false },
+        { id: "settings", label: t("tabs.settings"), icon: "settings", premium: false },
+        { id: "premium", label: t("tabs.premium"), icon: "star", premium: false },
+      ].filter((item) => !(item.id === "premium" && premiumUnlocked)).map((item) => {
+        const locked = item.premium && !premiumUnlocked;
+        const selected = activeTab === item.id;
+        return (
+          <Pressable
+            key={item.id}
+            accessibilityRole="button"
+            accessibilityState={{ selected }}
+            accessibilityLabel={item.label}
+            onPress={() => {
+              tapHaptic();
+              setShowMoreSheet(false);
+              jumpToTab(locked ? "premium" : item.id);
+            }}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              paddingVertical: 14,
+              paddingHorizontal: 20,
+              backgroundColor: selected ? "rgba(92, 255, 137, 0.12)" : "transparent",
+            }}
+          >
+            <View style={{ width: 30, height: 30, borderRadius: 8, marginRight: 12, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(92, 255, 137, 0.12)" }}>
+              <Ionicons name={item.icon} size={17} color="#5cff89" />
+            </View>
+            <Text style={{ color: theme.text, fontSize: 16, fontWeight: "700", flex: 1 }}>{item.label}</Text>
+            {locked ? <Ionicons name="lock-closed" size={16} color={theme.secondaryText} /> : null}
+            {selected ? <Ionicons name="checkmark" size={20} color="#5cff89" /> : null}
+          </Pressable>
+        );
+      })}
+    </Pressable>
+  </Pressable>
+</Modal>
+
 {record ? (
   <View style={styles.bottomTabs}>
   {[
-    { id: "home", label: "Home", icon: "home", premium: false },
-    { id: "plants", label: "Plants", icon: "leaf", premium: false },
-    { id: "garden", label: "Garden", icon: "grid", premium: true },
-    { id: "weather", label: "Weather", icon: "cloud", premium: false },
-    { id: "journal", label: "Journal", icon: "book", premium: true },
-    { id: "profile", label: "Quests", icon: "flash", premium: false },
-    { id: "settings", label: "Settings", icon: "settings", premium: false },
-    { id: "premium", label: "Premium", icon: "star", premium: false },
-  ].filter((tab) => !(tab.id === "premium" && premiumUnlocked)).map((tab) => {
-      const active = activeTab === tab.id;
+    // Five primary destinations. Apple and Google both cap a tab bar at five;
+    // the previous eight forced an 8pt label that could not survive translation.
+    // Weather stays in the bar because it drives a daily decision (water or
+    // don't, frost tonight); Journal is a periodic activity, so it moves behind
+    // More. Swapping the two is a one-line change here plus one in OVERFLOW_TABS.
+    { id: "home", label: t("tabs.home"), icon: "home", premium: false },
+    { id: "plants", label: t("tabs.plants"), icon: "leaf", premium: false },
+    { id: "garden", label: t("tabs.garden"), icon: "grid", premium: true },
+    { id: "weather", label: t("tabs.weather"), icon: "cloud", premium: true },
+    { id: "more", label: t("tabs.more"), icon: "ellipsis-horizontal", premium: false },
+  ].map((tab) => {
+      // "More" reads as selected while any of the destinations behind it is open.
+      const active = tab.id === "more"
+        ? OVERFLOW_TAB_IDS.includes(activeTab)
+        : activeTab === tab.id;
       const locked = tab.premium && !premiumUnlocked;
       return (
-        <Pressable key={tab.id} onPress={() => { if (locked) { jumpToTab("premium"); return; } jumpToTab(tab.id); }} style={({ pressed }) => [styles.bottomTabButton, active && styles.bottomTabButtonActive, active && styles.bottomTabGlow, pressed && styles.bottomTabPressed]}>
+        <Pressable key={tab.id} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={tab.label} onPress={() => { if (tab.id === "more") { tapHaptic(); setShowMoreSheet(true); return; } if (locked) { jumpToTab("premium"); return; } jumpToTab(tab.id); }} style={({ pressed }) => [styles.bottomTabButton, active && styles.bottomTabButtonActive, active && styles.bottomTabGlow, pressed && styles.bottomTabPressed]}>
           <View style={[styles.bottomTabInner, active && styles.bottomTabInnerActive]}>
             <Ionicons name={tab.icon} size={18} color={active ? "#07120b" : "#d7ebdc"} />
-            <Text numberOfLines={1} style={[styles.bottomTabText, active && styles.bottomTabTextActive]}>{tab.label}</Text>
+            <Text
+              numberOfLines={1}
+              // Tab labels are translated, and some languages run longer than
+              // English. Shrink to fit rather than ellipsising the word.
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}
+              style={[styles.bottomTabText, active && styles.bottomTabTextActive]}
+            >{tab.label}</Text>
           </View>
         </Pressable>
       );
@@ -5042,9 +5967,32 @@ function jumpToTab(tab) {
 }
 
 export default function App() {
+  // Language lives here rather than inside AppInner so the provider sits above
+  // every one of AppInner's early returns (splash, auth, loading), and so that
+  // memoised components anywhere in the tree re-render on a language change.
+  const [language, setLanguageState] = useState(DEFAULT_LOCALE);
+
+  useEffect(() => {
+    AsyncStorage.getItem(STORAGE_KEYS.language).then((stored) => {
+      // An explicit choice wins; otherwise follow the device language.
+      const chosen = isSupportedLocale(stored) ? stored : detectDeviceLocale();
+      setLanguageState(chosen);
+      setLocale(chosen); // apply before the first render pass
+    });
+  }, []);
+
+  const setLanguage = useCallback((code) => {
+    const next = isSupportedLocale(code) ? code : DEFAULT_LOCALE;
+    setLanguageState(next);
+    setLocale(next); // keep the ref in sync for non-React callers
+    AsyncStorage.setItem(STORAGE_KEYS.language, next).catch(() => {});
+  }, []);
+
   return (
     <ErrorBoundary>
-      <AppInner />
+      <LanguageProvider language={language}>
+        <AppInner language={language} setLanguage={setLanguage} />
+      </LanguageProvider>
     </ErrorBoundary>
   );
 }

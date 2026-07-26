@@ -1,9 +1,11 @@
 import { memo } from "react";
 import { Text, View } from "react-native";
+import { useTranslation } from "../lib/i18n";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export const TrendsCard = memo(function TrendsCard({ theme, harvestLog, wateringHistory, journalEntries }) {
+  const { t } = useTranslation();
   // Build the last 6 month buckets (oldest → current).
   const buckets = Array.from({ length: 6 }, (_, i) => {
     const d = new Date();
@@ -24,8 +26,8 @@ export const TrendsCard = memo(function TrendsCard({ theme, harvestLog, watering
   const hasAny = buckets.some((b) => b.harvests || b.waterings || b.photos);
   if (!hasAny) {
     return (
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Log waterings, photos, and harvests and your season trends will chart here month by month.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
+        {t("trends.logWateringsPhotosAndHarvests")}
       </Text>
     );
   }
@@ -37,14 +39,14 @@ export const TrendsCard = memo(function TrendsCard({ theme, harvestLog, watering
       <View style={{ marginTop: 14 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
           <Text style={{ color, fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>{title}</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 11.5, fontWeight: "800" }}>{total} total</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{total} total</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 6, height: 70 }}>
           {buckets.map((b, i) => (
             <View key={i} style={{ flex: 1, alignItems: "center" }}>
               <Text style={{ color: b[keyName] > 0 ? color : "transparent", fontSize: 10, fontWeight: "900", marginBottom: 2 }}>{b[keyName] || ""}</Text>
               <View style={{ width: "100%", height: 44, justifyContent: "flex-end" }}>
-                <View style={{ width: "100%", height: `${Math.max(4, (b[keyName] / max) * 100)}%`, backgroundColor: b[keyName] > 0 ? color : "rgba(255,255,255,0.06)", borderRadius: 5 }} />
+                <View style={{ width: "100%", height: `${Math.max(4, (b[keyName] / max) * 100)}%`, backgroundColor: b[keyName] > 0 ? color : "rgba(255, 255, 255, 0.06)", borderRadius: 4 }} />
               </View>
               <Text style={{ color: theme.secondaryText, fontSize: 9, fontWeight: "800", marginTop: 4 }}>{b.label}</Text>
             </View>
@@ -56,12 +58,12 @@ export const TrendsCard = memo(function TrendsCard({ theme, harvestLog, watering
 
   return (
     <View>
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Your last 6 months of garden activity at a glance.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
+        {t("trends.yourLast6MonthsOf")}
       </Text>
-      <Chart title="💧 WATERINGS" color="#6bc7ff" keyName="waterings" />
-      <Chart title="📸 PHOTOS" color="#ffd86b" keyName="photos" />
-      <Chart title="🚜 HARVESTS" color="#5cff89" keyName="harvests" />
+      <Chart title={t("trends.waterings")} color="#6bc7ff" keyName="waterings" />
+      <Chart title={t("trends.photos")} color="#ffd86b" keyName="photos" />
+      <Chart title={t("trends.harvests")} color="#5cff89" keyName="harvests" />
     </View>
   );
 })

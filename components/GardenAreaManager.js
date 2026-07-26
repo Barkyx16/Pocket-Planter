@@ -1,193 +1,137 @@
-import { memo } from "react";
-import { useState } from "react";
-import { Keyboard, Pressable, Text, TextInput, View } from "react-native";
+import { memo, useState } from "react";
+import { Keyboard, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
-import { getAreaTag } from "../core";
 
-export const GardenAreaManager = memo(function GardenAreaManager({ theme, gardenAreas, onAddArea, onRenameArea, onDeleteArea, onSetAreaStyle }) {
-  const [newAreaSize, setNewAreaSize] = useState(6);
-  const [showCreator, setShowCreator] = useState(false);
-  const [renamingId, setRenamingId] = useState(null);
-  const [renameDraft, setRenameDraft] = useState("");
-  const [stylingId, setStylingId] = useState(null);
+// One button, one panel. Everything about creating a bed — the design and how
+// many plants it holds — lives in a single sheet instead of several stacked
+// rows of chips and buttons. `mode` keeps the Garden tab (edibles) and the
+// Flowers tab (flowers) as two separate planners.
+const GARDEN_DESIGNS = [
+  "Vegetable Patch",
+  "Front Yard",
+  "Backyard",
+  "Balcony",
+  "Indoors",
+  "Raised Bed",
+  "Herb Garden",
+  "Hanging Planter",
+];
+const FLOWER_DESIGNS = [
+  "Flower Bed",
+  "Cutting Garden",
+  "Cottage Border",
+  "Window Box",
+  "Container Pot",
+  "Hanging Basket",
+];
 
-  const EMOJI_CHOICES = ["🌿", "🌻", "🪴", "🍅", "🌸", "🏡", "🌵", "🍓", "🥬", "🌽", "🌶️", "🫐"];
-  const COLOR_CHOICES = ["#5cff89", "#ffd86b", "#8effab", "#ff7b7b", "#ffb6c1", "#6bc7ff", "#a3d5ff", "#ff9f43"];
+export const GardenAreaManager = memo(function GardenAreaManager({ theme, gardenAreas, onAddArea, mode = "garden" }) {
+  const flower = mode === "flower";
+  const DESIGNS = flower ? FLOWER_DESIGNS : GARDEN_DESIGNS;
+  const [open, setOpen] = useState(false);
+  const [design, setDesign] = useState(null);
+  const [size, setSize] = useState(6);
 
-  const PRESETS = ["Front Yard", "Backyard", "Balcony", "Indoors", "Raised Bed", "Herb Garden"];
-  const usedNames = gardenAreas.map((a) => a.name.toLowerCase());
+  const close = () => { setOpen(false); Keyboard.dismiss(); };
+  const pickDesign = (d) => {
+    setDesign((cur) => (cur === d ? null : d));
+    if (d === "Hanging Planter" || d === "Window Box" || d === "Container Pot") setSize(d === "Window Box" ? 3 : 1);
+  };
+  const create = () => {
+    const fallback = flower ? `Flower Bed ${(gardenAreas?.length || 0) + 1}` : `Garden Bed ${(gardenAreas?.length || 0) + 1}`;
+    onAddArea(design || fallback, size, flower ? "flower" : undefined);
+    setDesign(null);
+    setSize(6);
+    close();
+  };
 
- return (
+  const label = design ? `Add a ${size}-plant ${design}` : flower ? `Add a ${size}-plant flower bed` : `Add a ${size}-plant bed`;
+
+  return (
     <View>
+      {/* The single entry point */}
       <Pressable
-        onPress={() => setShowCreator((v) => !v)}
-        style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(92,255,137,0.10)", borderRadius: 14, paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, borderColor: "rgba(92,255,137,0.24)", marginTop: 4, marginBottom: showCreator ? 14 : 0 }}
+        onPress={() => setOpen(true)}
+        accessibilityRole="button"
+        accessibilityLabel={flower ? "Add a flower bed" : "Add a garden bed"}
+        style={({ pressed }) => [{
+          flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+          backgroundColor: flower ? "#ffb6c1" : "#5cff89", borderRadius: 16, paddingVertical: 16, marginTop: 4,
+        }, pressed && { opacity: 0.85 }]}
       >
-        <Text style={{ color: "#8effab", fontSize: 14, fontWeight: "900" }}>{showCreator ? "Hide Garden Maps" : "🗂️ View Garden Maps"}</Text>
-        <Text style={{ color: "#5cff89", fontSize: 18, fontWeight: "900" }}>{showCreator ? "▾" : "▸"}</Text>
+        <Text style={{ color: "#07120b", fontSize: 15, fontWeight: "900" }}>{flower ? "＋  Add a Flower Bed" : "＋  Add a Garden Bed"}</Text>
       </Pressable>
 
-      {showCreator ? (
-      <>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-        {PRESETS.filter((p) => !usedNames.includes(p.toLowerCase())).map((preset) => (
+      <Modal visible={open} transparent animationType="slide" onRequestClose={close}>
+        <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" }} onPress={close}>
           <Pressable
-            key={preset}
-            onPress={() => onAddArea(preset)}
-            style={{ backgroundColor: "rgba(92,255,137,0.10)", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 9, borderWidth: 1, borderColor: "rgba(92,255,137,0.24)" }}
+            onPress={(e) => e.stopPropagation()}
+            style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 30, maxHeight: "85%" }}
           >
-            <Text style={{ color: "#8effab", fontSize: 13, fontWeight: "800" }}>+ {preset}</Text>
-          </Pressable>
-        ))}
-      </View>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
+              <Text style={[styles.cardTitle, { color: theme.text, flex: 1 }]}>New garden bed</Text>
+              <Pressable onPress={close} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close">
+                <Text style={{ color: theme.secondaryText, fontSize: 20, fontWeight: "900" }}>✕</Text>
+              </Pressable>
+            </View>
 
-      <Pressable
-        onPress={() => onAddArea("Hanging Planter", 1)}
-        style={{ alignSelf: "flex-start", marginTop: 12, backgroundColor: "rgba(92,255,137,0.10)", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 9, borderWidth: 1, borderColor: "rgba(92,255,137,0.24)" }}
-      >
-        <Text style={{ color: "#8effab", fontSize: 13, fontWeight: "800" }}>+ Hanging Planter (1 plant)</Text>
-      </Pressable>
-
-      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 18, marginBottom: 8 }}>HOW MANY PLANTS? ({newAreaSize})</Text>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-        {[1,2,3,4,5,6,7,8,9,10,11,12].map((n) => {
-          const selected = newAreaSize === n;
-          return (
-            <Pressable
-              key={n}
-              onPress={() => setNewAreaSize(n)}
-              style={{ width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: selected ? "#5cff89" : "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: selected ? "#5cff89" : "rgba(255,255,255,0.12)" }}
-            >
-              <Text style={{ color: selected ? "#07120b" : theme.secondaryText, fontSize: 15, fontWeight: "900" }}>{n}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      <Pressable
-        onPress={() => { onAddArea(`Garden Bed ${gardenAreas.length + 1}`, newAreaSize); setNewAreaSize(6); Keyboard.dismiss(); }}
-        style={{ marginTop: 16, backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 13, alignItems: "center" }}
-      >
-        <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 14 }}>+ Add a {newAreaSize}-plant bed</Text>
-      </Pressable>
-      </>
-      ) : null}
-
-      {false ? (
-        <View style={{ marginTop: 16, gap: 10 }}>
-          {gardenAreas.map((area) => {
-            const plotCount = Object.values(area.plots || {}).filter(Boolean).length;
-            const isRenaming = renamingId === area.id;
-            return (
-              <View key={area.id} style={{ backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 10, padding: 12 }}>
-               {isRenaming ? (
-                  <TextInput
-                    value={renameDraft}
-                    onChangeText={setRenameDraft}
-                    placeholder="New name"
-                    placeholderTextColor="#8fbf9d"
-                    autoFocus
-                    style={{ flex: 1, color: "#ffffff", fontSize: 15, fontWeight: "800", paddingVertical: 4 }}
-                  />
-                ) : (
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 10, flex: 1 }}>
-                    <View style={{ width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: `${getAreaTag(area).color}22`, borderWidth: 1, borderColor: `${getAreaTag(area).color}55` }}>
-                      <Text style={{ fontSize: 20 }}>{getAreaTag(area).emoji}</Text>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: "#ffffff", fontSize: 15, fontWeight: "900" }}>{area.name}</Text>
-                      <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", marginTop: 2 }}>{plotCount} plant{plotCount === 1 ? "" : "s"}</Text>
-                    </View>
-                  </View>
-                )}
-
-                {isRenaming ? (
-                  <Pressable onPress={() => { onRenameArea(area.id, renameDraft); setRenamingId(null); }} style={{ backgroundColor: "#5cff89", borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 }}>
-                    <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "900" }}>Save</Text>
-                  </Pressable>
-                ) : (
-                  <>
-                    <Pressable onPress={() => { setStylingId(stylingId === area.id ? null : area.id); setRenamingId(null); }} style={{ padding: 6 }}>
-                      <Text style={{ color: "#ffd86b", fontSize: 13, fontWeight: "900" }}>Tag</Text>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {/* Design */}
+              <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "900", letterSpacing: 0.6, marginBottom: 8 }}>DESIGN</Text>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                {DESIGNS.map((d) => {
+                  const active = design === d;
+                  return (
+                    <Pressable
+                      key={d}
+                      onPress={() => pickDesign(d)}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: active }}
+                      style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: active ? "#5cff89" : "rgba(92,255,137,0.1)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(92,255,137,0.24)" }}
+                    >
+                      <Text style={{ color: active ? "#07120b" : "#8effab", fontSize: 12, fontWeight: "800" }}>{active ? "✓ " : ""}{d}</Text>
                     </Pressable>
-                    <Pressable onPress={() => { setRenamingId(area.id); setRenameDraft(area.name); setStylingId(null); }} style={{ padding: 6 }}>
-                      <Text style={{ color: "#8effab", fontSize: 13, fontWeight: "900" }}>Rename</Text>
-                    </Pressable>
-                  </>
-                )}
-                <Pressable onPress={() => onDeleteArea(area.id)} style={{ padding: 6 }}>
-                  <Text style={{ color: "#ff7b7b", fontSize: 16, fontWeight: "900" }}>✕</Text>
-                </Pressable>
-                </View>
-
-                {stylingId === area.id ? (
-                  <View style={{ paddingHorizontal: 12, paddingBottom: 14, paddingTop: 2, gap: 12 }}>
-                    <View>
-                      <Text style={{ color: "#8effab", fontSize: 11, fontWeight: "900", letterSpacing: 0.5, marginBottom: 8 }}>EMOJI</Text>
-                      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                        {EMOJI_CHOICES.map((em) => {
-                          const active = getAreaTag(area).emoji === em;
-                          return (
-                            <Pressable
-                              key={`${area.id}-em-${em}`}
-                              onPress={() => onSetAreaStyle && onSetAreaStyle(area.id, { emoji: em })}
-                              style={{ width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: active ? "rgba(92,255,137,0.18)" : "rgba(255,255,255,0.05)", borderWidth: active ? 2 : 1, borderColor: active ? "#5cff89" : "rgba(255,255,255,0.08)" }}
-                            >
-                              <Text style={{ fontSize: 20 }}>{em}</Text>
-                            </Pressable>
-                          );
-                        })}
-                      </View>
-                    </View>
-                    <View>
-                      <Text style={{ color: "#8effab", fontSize: 11, fontWeight: "900", letterSpacing: 0.5, marginBottom: 8 }}>COLOR</Text>
-                      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-                        {COLOR_CHOICES.map((col) => {
-                          const active = getAreaTag(area).color === col;
-                          return (
-                            <Pressable
-                              key={`${area.id}-col-${col}`}
-                              onPress={() => onSetAreaStyle && onSetAreaStyle(area.id, { color: col })}
-                              style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: col, borderWidth: active ? 3 : 0, borderColor: "#ffffff" }}
-                            />
-                          );
-                        })}
-                      </View>
-                    </View>
-
-<View>
-                      <Text style={{ color: "#8effab", fontSize: 11, fontWeight: "900", letterSpacing: 0.5, marginBottom: 8 }}>SUNLIGHT</Text>
-                      <View style={{ flexDirection: "row", gap: 8 }}>
-                        {[
-                          { id: "full", label: "☀️ Full sun" },
-                          { id: "partial", label: "⛅ Partial" },
-                          { id: "shade", label: "🌥️ Shade" },
-                        ].map((opt) => {
-                          const active = (area.sunExposure || "full") === opt.id;
-                          return (
-                            <Pressable
-                              key={`${area.id}-sun-${opt.id}`}
-                              onPress={() => onSetAreaStyle && onSetAreaStyle(area.id, { sunExposure: opt.id })}
-                              style={{ flex: 1, borderRadius: 12, paddingVertical: 10, alignItems: "center", backgroundColor: active ? "rgba(92,255,137,0.18)" : "rgba(255,255,255,0.05)", borderWidth: active ? 2 : 1, borderColor: active ? "#5cff89" : "rgba(255,255,255,0.08)" }}
-                            >
-                              <Text style={{ color: active ? "#8effab" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{opt.label}</Text>
-                            </Pressable>
-                          );
-                        })}
-                      </View>
-                    </View>
-
-                    <Pressable onPress={() => setStylingId(null)} style={{ alignSelf: "flex-start", marginTop: 2, backgroundColor: "rgba(92,255,137,0.12)", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 9, borderWidth: 1, borderColor: "rgba(92,255,137,0.24)" }}>
-                      <Text style={{ color: "#8effab", fontSize: 13, fontWeight: "900" }}>Done</Text>
-                    </Pressable>
-                  </View>
-                ) : null}
+                  );
+                })}
               </View>
-            );
-          })}
-        </View>
-      ) : null}
+
+              {/* Size */}
+              <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "900", letterSpacing: 0.6, marginTop: 20, marginBottom: 8 }}>
+                HOW MANY PLANTS?  ({size})
+              </Text>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => {
+                  const active = size === n;
+                  return (
+                    <Pressable
+                      key={n}
+                      onPress={() => setSize(n)}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: active }}
+                      style={{ width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: active ? "#5cff89" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255,255,255,0.12)" }}
+                    >
+                      <Text style={{ color: active ? "#07120b" : theme.secondaryText, fontSize: 14, fontWeight: "900" }}>{n}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              {/* Confirm */}
+              <Pressable
+                onPress={create}
+                accessibilityRole="button"
+                accessibilityLabel={label}
+                style={({ pressed }) => [{ marginTop: 22, backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 16, alignItems: "center" }, pressed && { opacity: 0.85 }]}
+              >
+                <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 15 }}>{label}</Text>
+              </Pressable>
+              <Pressable onPress={close} style={{ paddingVertical: 14, alignItems: "center" }}>
+                <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "800" }}>Cancel</Text>
+              </Pressable>
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 })

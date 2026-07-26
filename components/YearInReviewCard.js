@@ -1,8 +1,11 @@
 import { memo } from "react";
 import { Pressable, Share, Text, View } from "react-native";
 import { estimateHarvestValue, tapHaptic } from "../core";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
 export const YearInReviewCard = memo(function YearInReviewCard({ theme, savedPlants, harvestLog, journalEntries, wateringHistory, streakData, gardenXP }) {
+  const { t } = useTranslation();
   const now = new Date();
   const yearAgo = new Date(now); yearAgo.setFullYear(now.getFullYear() - 1);
   const inLastYear = (dateStr) => {
@@ -59,28 +62,32 @@ return (
     <View>
 
       {harvestValue.total > 0 ? (
-        <View style={{ marginTop: 16, backgroundColor: "rgba(255,216,107,0.10)", borderRadius: 18, padding: 16, borderWidth: 1, borderColor: "rgba(255,216,107,0.28)", flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <View style={{ marginTop: 16, backgroundColor: "rgba(255, 216, 107, 0.1)", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "rgba(255, 216, 107, 0.3)", flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Text style={{ fontSize: 32 }}>💰</Text>
           <View style={{ flex: 1 }}>
-            <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>GROWN THIS YEAR</Text>
+            <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>{t("yearInReview.grownThisYear")}</Text>
             <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "900", marginTop: 2 }}>~${harvestValue.total}</Text>
-            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>Estimated value of your harvests</Text>
+            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>{t("yearInReview.estimatedValueOfYourHarvests")}</Text>
           </View>
         </View>
       ) : null}
 
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 16 }}>
         {stats.map((s) => (
-          <View key={s.label} style={{ width: "47%", borderRadius: 20, padding: 16, backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(255,216,107,0.16)", alignItems: "center" }}>
-            <Text style={{ fontSize: 26 }}>{s.icon}</Text>
+          <View key={s.label} style={{ width: "47%", borderRadius: 16, padding: 16, backgroundColor: "rgba(255, 255, 255, 0.08)", borderWidth: 1, borderColor: "rgba(255, 216, 107, 0.16)", alignItems: "center" }}>
+            <Text style={{ fontSize: 24 }}>{s.icon}</Text>
             <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "900", marginTop: 6 }}>{s.value}</Text>
-            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 3, textAlign: "center" }}>{s.label}</Text>
+            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 4, textAlign: "center" }}>{s.label}</Text>
           </View>
         ))}
       </View>
 
-      <Pressable onPress={shareReview} style={{ marginTop: 16, backgroundColor: "#ffd86b", borderRadius: 18, paddingVertical: 15, alignItems: "center" }}>
-        <Text style={{ color: "#3d2c00", fontWeight: "900", fontSize: 15 }}>📤 Share My Year in Review</Text>
+      <Pressable onPress={shareReview} style={{ marginTop: 16, backgroundColor: "#ffd86b", borderRadius: 16, paddingVertical: 16, alignItems: "center" }}>
+        <IconText label={t("yearInReview.shareMyYearInReview")} style={{
+  color: "#3d2c00",
+  fontWeight: "900",
+  fontSize: 14
+}} />
       </Pressable>
     </View>
   );

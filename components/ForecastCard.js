@@ -2,8 +2,10 @@ import { memo } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
 import { formatTemp, getClimateBucket, getTodayKey, getWeatherIconFromDay } from "../core";
+import { formatDate, useTranslation } from "../lib/i18n";
 
 export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, savedPlants, wateredPlants, unitSystem }) {
+  const { t } = useTranslation();
   const forecast = weather?.forecast || [];
   const today = getTodayKey();
   const climate = getClimateBucket(zone);
@@ -22,7 +24,9 @@ export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, s
     const diff = Math.round((date - todayDate) / (1000 * 60 * 60 * 24));
     if (diff === 0) return "Today";
     if (diff === 1) return "Tmrw";
-    return date.toLocaleDateString("en-US", { weekday: "short" });
+    return formatDate(date, {
+  weekday: "short"
+});
   };
 
   // Advice thresholds shift by climate — 92°F is a scorcher in Zone 4 but a normal
@@ -41,13 +45,13 @@ export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, s
   };
 
   const getTempColor = (temp) => {
-    if (temp >= 98) return "#ff4444";
+    if (temp >= 98) return "#ff7b7b";
     if (temp >= 90) return "#ff7b7b";
     if (temp >= 80) return "#ffd86b";
     if (temp >= 65) return "#5cff89";
     if (temp >= 50) return "#8effab";
     if (temp >= 35) return "#6bc7ff";
-    return "#b3d9ff";
+    return "#a3d5ff";
   };
 
   const getRainColor = (chance) => {
@@ -82,7 +86,7 @@ export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, s
 
       {/* HEADER — title comes from the collapsible card; keep a useful one-liner here */}
       <Text style={[styles.forecastSubtitle, { color: theme.secondaryText }]}>
-        Zone {zone || "—"} • 🌱 Best planting day: <Text style={{ color: "#5cff89", fontWeight: "900" }}>{formatDayLabel(bestDay.date)}</Text>
+        Zone {zone || "—"} {t("forecast.bestPlantingDay")} <Text style={{ color: "#5cff89", fontWeight: "900" }}>{formatDayLabel(bestDay.date)}</Text>
       </Text>
 
       {/* WEEKLY SUMMARY STATS */}
@@ -91,28 +95,28 @@ export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, s
           <Text style={[styles.forecastWeeklyStatValue, { color: getTempColor(weeklyHigh) }]}>
             {formatTemp(weeklyHigh, unitSystem)}
           </Text>
-          <Text style={[styles.forecastWeeklyStatLabel, { color: theme.secondaryText }]}>Week High</Text>
+          <Text style={[styles.forecastWeeklyStatLabel, { color: theme.secondaryText }]}>{t("forecast.weekHigh")}</Text>
         </View>
         <View style={styles.forecastWeeklyDivider} />
         <View style={styles.forecastWeeklyStat}>
           <Text style={[styles.forecastWeeklyStatValue, { color: getTempColor(weeklyLow) }]}>
             {formatTemp(weeklyLow, unitSystem)}
           </Text>
-          <Text style={[styles.forecastWeeklyStatLabel, { color: theme.secondaryText }]}>Week Low</Text>
+          <Text style={[styles.forecastWeeklyStatLabel, { color: theme.secondaryText }]}>{t("forecast.weekLow")}</Text>
         </View>
         <View style={styles.forecastWeeklyDivider} />
         <View style={styles.forecastWeeklyStat}>
           <Text style={[styles.forecastWeeklyStatValue, { color: getRainColor(avgRain) }]}>
             {rainyDays}
           </Text>
-          <Text style={[styles.forecastWeeklyStatLabel, { color: theme.secondaryText }]}>Rainy Days</Text>
+          <Text style={[styles.forecastWeeklyStatLabel, { color: theme.secondaryText }]}>{t("forecast.rainyDays")}</Text>
         </View>
         <View style={styles.forecastWeeklyDivider} />
         <View style={styles.forecastWeeklyStat}>
           <Text style={[styles.forecastWeeklyStatValue, { color: "#5cff89" }]}>
             {formatDayLabel(bestDay.date)}
           </Text>
-          <Text style={[styles.forecastWeeklyStatLabel, { color: theme.secondaryText }]}>Best Day</Text>
+          <Text style={[styles.forecastWeeklyStatLabel, { color: theme.secondaryText }]}>{t("forecast.bestDay")}</Text>
         </View>
       </View>
 
@@ -147,15 +151,15 @@ export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, s
                 styles.forecastDayCardV2,
                 {
                   backgroundColor: isToday
-                    ? "rgba(92,255,137,0.14)"
+                    ? "rgba(92, 255, 137, 0.16)"
                     : isBestDay
-                    ? "rgba(92,255,137,0.08)"
-                    : "rgba(255,255,255,0.06)",
+                    ? "rgba(92, 255, 137, 0.08)"
+                    : "rgba(255, 255, 255, 0.06)",
                   borderColor: isToday
                     ? "#5cff89"
                     : isBestDay
-                    ? "rgba(92,255,137,0.35)"
-                    : "rgba(255,255,255,0.08)",
+                    ? "rgba(92, 255, 137, 0.3)"
+                    : "rgba(255, 255, 255, 0.08)",
                   borderWidth: isToday ? 2 : 1,
                 },
               ]}

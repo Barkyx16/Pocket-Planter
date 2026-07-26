@@ -2,8 +2,10 @@ import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { resolvePlantImageSource } from "../core";
+import { useTranslation } from "../lib/i18n";
 
 export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries, harvestLog, onOpenPlant }) {
+  const { t } = useTranslation();
   const now = new Date();
   now.setHours(12, 0, 0, 0);
 
@@ -46,18 +48,18 @@ export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries
   if (!memories.length) return null;
 
   return (
-    <View style={{ borderRadius: 26, padding: 18, marginBottom: 18, borderWidth: 1.5, backgroundColor: "rgba(216,200,255,0.10)", borderColor: "#d8c8ff" }}>
+    <View style={{ borderRadius: 24, padding: 18, marginBottom: 18, borderWidth: 1.5, backgroundColor: "rgba(216, 200, 255, 0.1)", borderColor: "#d8c8ff" }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-        <Text style={{ fontSize: 26 }}>📅</Text>
+        <Text style={{ fontSize: 24 }}>📅</Text>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: "#d8c8ff", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>ON THIS DAY</Text>
+          <Text style={{ color: "#d8c8ff", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>{t("onThisDay.onThisDay")}</Text>
           <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900", marginTop: 2 }}>
-            {memories.length === 1 ? "A memory from your garden" : "Memories from your garden"}
+            {memories.length === 1 ? t("onThisDay.aMemoryFromYourGarden") : t("onThisDay.memoriesFromYourGarden")}
           </Text>
         </View>
       </View>
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 8 }}>
-        Look how far you've come. Here's what your garden was up to around this time.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 8 }}>
+        {t("onThisDay.lookHowFarYouveCome")}
       </Text>
 
       <View style={{ gap: 12, marginTop: 14 }}>
@@ -68,10 +70,10 @@ export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries
               <Pressable
                 key={`otd-photo-${m.entry.id}`}
                 onPress={() => plant && onOpenPlant(plant)}
-                style={{ borderRadius: 18, overflow: "hidden", backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(216,200,255,0.22)" }}
+                style={{ borderRadius: 16, overflow: "hidden", backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(216, 200, 255, 0.2)" }}
               >
                 <Image source={{ uri: m.entry.imageUri }} style={{ width: "100%", height: 160 }} resizeMode="cover" />
-                <View style={{ position: "absolute", top: 10, left: 10, backgroundColor: "rgba(0,0,0,0.6)", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5 }}>
+                <View style={{ position: "absolute", top: 10, left: 10, backgroundColor: "rgba(0, 0, 0, 0.6)", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 }}>
                   <Text style={{ color: "#ffffff", fontSize: 12, fontWeight: "900" }}>🕐 {m.match.label}</Text>
                 </View>
                 <View style={{ padding: 12 }}>
@@ -89,13 +91,13 @@ export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries
             <Pressable
               key={`otd-harvest-${m.entry.id}`}
               onPress={() => plant && onOpenPlant(plant)}
-              style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 18, padding: 12, borderWidth: 1, borderColor: "rgba(216,200,255,0.22)" }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(216, 200, 255, 0.2)" }}
             >
               <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                {img ? <Image source={img} style={{ width: 36, height: 36 }} resizeMode="contain" /> : <Text style={{ fontSize: 22 }}>🎉</Text>}
+                {img ? <Image source={img} style={{ width: 36, height: 36 }} resizeMode="contain" /> : <Text style={{ fontSize: 20 }}>🎉</Text>}
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900" }}>Harvested {m.entry.plantName}</Text>
+                <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>Harvested {m.entry.plantName}</Text>
                 <Text style={{ color: "#d8c8ff", fontSize: 12, fontWeight: "900", marginTop: 2 }}>
                   🕐 {m.match.label}{m.entry.amount ? ` · ${m.entry.amount} ${m.entry.unit || ""}`.trimEnd() : ""}
                 </Text>

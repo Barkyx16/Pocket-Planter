@@ -1980,5 +1980,4395 @@ const produceData = [
     notes:
       "Barberry is a thorny, drought-tolerant shrub whose tart red berries are used in cooking. It thrives in full sun and a range of soils and is very low maintenance. Harvest the berries in fall once they turn deep red.",
   },
+  {
+    name: "Ackee",
+    type: "Fruit",
+    image: "ackee",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Ackee is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Adzuki Bean",
+    type: "Vegetable",
+    image: "adzukibean",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Adzuki Bean grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 100 days.",
+  },
+  {
+    name: "Agapanthus",
+    type: "Flower",
+    image: "agapanthus",
+    minZone: "7a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Agapanthus is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Agave",
+    type: "Houseplant",
+    image: "agave",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Agave is a low-water succulent. Give it bright light and fast-draining soil, water sparingly, and keep it above freezing — grow it indoors in cold climates.",
+  },
+  {
+    name: "Almond",
+    type: "Nut",
+    image: "almond",
+    minZone: "7a",
+    maxZone: "9b",
+    plantMonths: [1, 2],
+    notes:
+      "Almond is a long-lived nut tree for full sun and deep, well-drained soil. Plant it while dormant, give it room to spread, and expect nuts once it establishes over several years.",
+  },
+  {
+    name: "Alocasia",
+    type: "Houseplant",
+    image: "alocasia",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Alocasia is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Aloe Vera",
+    type: "Houseplant",
+    image: "aloevera",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Aloe Vera is a low-water succulent. Give it bright light and fast-draining soil, water sparingly, and keep it above freezing — grow it indoors in cold climates.",
+  },
+  {
+    name: "Amaranth",
+    type: "Vegetable",
+    image: "amaranth",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Amaranth grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 50 days.",
+  },
+  {
+    name: "Amaryllis",
+    type: "Flower",
+    image: "amaryllis",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [10, 11],
+    notes:
+      "Amaryllis is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Anaheim Pepper",
+    type: "Vegetable",
+    image: "anaheimpepper",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Anaheim Pepper grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 80 days.",
+  },
+  {
+    name: "Anemone",
+    type: "Flower",
+    image: "anemone",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [9, 10],
+    notes:
+      "Anemone is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Areca Palm",
+    type: "Houseplant",
+    image: "arecapalm",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Areca Palm is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Arrowroot",
+    type: "Vegetable",
+    image: "arrowroot",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Arrowroot grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 300 days.",
+  },
+  {
+    name: "Ash Gourd",
+    type: "Vegetable",
+    image: "ashgourd",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Ash Gourd grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 120 days.",
+  },
+  {
+    name: "Aster",
+    type: "Flower",
+    image: "aster",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Aster is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Atemoya",
+    type: "Fruit",
+    image: "atemoya",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Atemoya is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Barley",
+    type: "Grain",
+    image: "barley",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [3, 4],
+    notes:
+      "Barley is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "Bay Tree",
+    type: "Herb",
+    image: "baytree",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Bay Tree is a perennial herb for full sun and well-drained soil. Trim it regularly to keep it bushy and harvest the leaves as you need them.",
+  },
+  {
+    name: "Bee Balm",
+    type: "Flower",
+    image: "beebalm",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Bee Balm is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Beefsteak Tomato",
+    type: "Vegetable",
+    image: "beefsteaktomato",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Beefsteak Tomato grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 85 days.",
+  },
+  {
+    name: "Bilberry",
+    type: "Berry",
+    image: "bilberry",
+    minZone: "3a",
+    maxZone: "7b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Bilberry is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "Bird of Paradise",
+    type: "Houseplant",
+    image: "birdofparadise",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Bird of Paradise is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Bird's Nest Fern",
+    type: "Houseplant",
+    image: "birdsnestfern",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Bird's Nest Fern is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Black Currant",
+    type: "Berry",
+    image: "blackcurrant",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [2, 3],
+    notes:
+      "Black Currant is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "Black-Eyed Pea",
+    type: "Vegetable",
+    image: "blackeyedpea",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Black-Eyed Pea grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 90 days.",
+  },
+  {
+    name: "Black-Eyed Susan",
+    type: "Flower",
+    image: "blackeyedsusan",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Black-Eyed Susan is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Black Sapote",
+    type: "Fruit",
+    image: "blacksapote",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Black Sapote is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Boston Fern",
+    type: "Houseplant",
+    image: "bostonfern",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Boston Fern is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Bottle Gourd",
+    type: "Vegetable",
+    image: "bottlegourd",
+    minZone: "6a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Bottle Gourd grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 120 days.",
+  },
+  {
+    name: "Thornless Boysenberry",
+    type: "Berry",
+    image: "boysenthorn",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Thornless Boysenberry is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "Breadfruit",
+    type: "Fruit",
+    image: "breadfruit",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Breadfruit is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Buckwheat",
+    type: "Grain",
+    image: "buckwheat",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [5, 6],
+    notes:
+      "Buckwheat is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "Buddha's Hand",
+    type: "Fruit Tree",
+    image: "buddhashand",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Buddha's Hand is an evergreen citrus that loves full sun and well-drained soil. Protect it from frost, water deeply and feed regularly, and harvest the fruit once it is fully colored.",
+  },
+  {
+    name: "Burro's Tail",
+    type: "Houseplant",
+    image: "burrostail",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Burro's Tail is a low-water succulent. Give it bright light and fast-draining soil, water sparingly, and keep it above freezing — grow it indoors in cold climates.",
+  },
+  {
+    name: "Calamondin",
+    type: "Fruit Tree",
+    image: "calamondin",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Calamondin is an evergreen citrus that loves full sun and well-drained soil. Protect it from frost, water deeply and feed regularly, and harvest the fruit once it is fully colored.",
+  },
+  {
+    name: "Calathea",
+    type: "Houseplant",
+    image: "calathea",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Calathea is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Calendula",
+    type: "Flower",
+    image: "calendula",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Calendula is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Camellia",
+    type: "Flower",
+    image: "camellia",
+    minZone: "7a",
+    maxZone: "10b",
+    plantMonths: [9, 10],
+    notes:
+      "Camellia is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Canistel",
+    type: "Fruit",
+    image: "canistel",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Canistel is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Cannellini Bean",
+    type: "Vegetable",
+    image: "cannellinibean",
+    minZone: "3a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Cannellini Bean grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 90 days.",
+  },
+  {
+    name: "Cardoon",
+    type: "Vegetable",
+    image: "cardoon",
+    minZone: "7a",
+    maxZone: "10b",
+    plantMonths: [3, 4],
+    notes:
+      "Cardoon grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 120 days.",
+  },
+  {
+    name: "Cashew",
+    type: "Nut",
+    image: "cashew",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Cashew is a long-lived nut tree for full sun and deep, well-drained soil. Plant it while dormant, give it room to spread, and expect nuts once it establishes over several years.",
+  },
+  {
+    name: "Cassava",
+    type: "Vegetable",
+    image: "cassava",
+    minZone: "9a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Cassava grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 300 days.",
+  },
+  {
+    name: "Celtuce",
+    type: "Vegetable",
+    image: "celtuce",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [3, 4],
+    notes:
+      "Celtuce grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 80 days.",
+  },
+  {
+    name: "Chayote",
+    type: "Vegetable",
+    image: "chayote",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Chayote grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 120 days.",
+  },
+  {
+    name: "Cherry Tomato",
+    type: "Vegetable",
+    image: "cherrytomato",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Cherry Tomato grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 65 days.",
+  },
+  {
+    name: "Chestnut",
+    type: "Nut",
+    image: "chestnut",
+    minZone: "4a",
+    maxZone: "8b",
+    plantMonths: [2, 3],
+    notes:
+      "Chestnut is a long-lived nut tree for full sun and deep, well-drained soil. Plant it while dormant, give it room to spread, and expect nuts once it establishes over several years.",
+  },
+  {
+    name: "Chinese Evergreen",
+    type: "Houseplant",
+    image: "chineseevergreen",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Chinese Evergreen is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Chinese Yam",
+    type: "Vegetable",
+    image: "chineseyam",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [4, 5],
+    notes:
+      "Chinese Yam grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 180 days.",
+  },
+  {
+    name: "Christmas Cactus",
+    type: "Houseplant",
+    image: "christmascactus",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Christmas Cactus is a low-water succulent. Give it bright light and fast-draining soil, water sparingly, and keep it above freezing — grow it indoors in cold climates.",
+  },
+  {
+    name: "Cloudberry",
+    type: "Berry",
+    image: "cloudberry",
+    minZone: "2a",
+    maxZone: "6b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Cloudberry is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "Coleus",
+    type: "Houseplant",
+    image: "coleus",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Coleus is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Coneflower",
+    type: "Flower",
+    image: "coneflower",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Coneflower is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Coreopsis",
+    type: "Flower",
+    image: "coreopsis",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Coreopsis is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Cosmos",
+    type: "Flower",
+    image: "cosmos",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Cosmos is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Cowpea",
+    type: "Vegetable",
+    image: "cowpea",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Cowpea grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 80 days.",
+  },
+  {
+    name: "Crocus",
+    type: "Flower",
+    image: "crocus",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [9, 10],
+    notes:
+      "Crocus is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Cubanelle Pepper",
+    type: "Vegetable",
+    image: "cubanellepepper",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Cubanelle Pepper grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 70 days.",
+  },
+  {
+    name: "Culantro",
+    type: "Herb",
+    image: "culantro",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Culantro thrives in full sun with well-drained soil. Pinch it back regularly and harvest the leaves as you need them.",
+  },
+  {
+    name: "Curry Leaf",
+    type: "Herb",
+    image: "curryleaf",
+    minZone: "9a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Curry Leaf is a perennial herb for full sun and well-drained soil. Trim it regularly to keep it bushy and harvest the leaves as you need them.",
+  },
+  {
+    name: "Custard Apple",
+    type: "Fruit",
+    image: "custardapple",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Custard Apple is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Cyclamen",
+    type: "Flower",
+    image: "cyclamen",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [9, 10],
+    notes:
+      "Cyclamen is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Daffodil",
+    type: "Flower",
+    image: "daffodil",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [9, 10, 11],
+    notes:
+      "Daffodil is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Dahlia",
+    type: "Flower",
+    image: "dahlia",
+    minZone: "3a",
+    maxZone: "11b",
+    plantMonths: [3, 4],
+    notes:
+      "Dahlia is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Delphinium",
+    type: "Flower",
+    image: "delphinium",
+    minZone: "3a",
+    maxZone: "7b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Delphinium is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Dewberry",
+    type: "Berry",
+    image: "dewberry",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Dewberry is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "Dieffenbachia",
+    type: "Houseplant",
+    image: "dieffenbachia",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Dieffenbachia is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Durian",
+    type: "Fruit",
+    image: "durian",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Durian is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Echeveria",
+    type: "Houseplant",
+    image: "echeveria",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Echeveria is a low-water succulent. Give it bright light and fast-draining soil, water sparingly, and keep it above freezing — grow it indoors in cold climates.",
+  },
+  {
+    name: "Black Elderberry",
+    type: "Berry",
+    image: "elderberryblack",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [2, 3],
+    notes:
+      "Black Elderberry is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "Elephant Ear",
+    type: "Houseplant",
+    image: "elephantear",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Elephant Ear is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Epazote",
+    type: "Herb",
+    image: "epazote",
+    minZone: "6a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Epazote thrives in full sun with well-drained soil. Pinch it back regularly and harvest the leaves as you need them.",
+  },
+  {
+    name: "Fern",
+    type: "Houseplant",
+    image: "fern",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Fern is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Fiddle Leaf Fig",
+    type: "Houseplant",
+    image: "fiddleleaffig",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Fiddle Leaf Fig is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Finger Lime",
+    type: "Fruit Tree",
+    image: "fingerlime",
+    minZone: "9b",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Finger Lime is an evergreen citrus that loves full sun and well-drained soil. Protect it from frost, water deeply and feed regularly, and harvest the fruit once it is fully colored.",
+  },
+  {
+    name: "Foxglove",
+    type: "Flower",
+    image: "foxglove",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [5, 6],
+    notes:
+      "Foxglove is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Freesia",
+    type: "Flower",
+    image: "freesia",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [9, 10],
+    notes:
+      "Freesia is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Fuchsia",
+    type: "Flower",
+    image: "fuchsia",
+    minZone: "6a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Fuchsia is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Chinese Broccoli (Gai Lan)",
+    type: "Vegetable",
+    image: "gailan",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 8, 9],
+    notes:
+      "Chinese Broccoli (Gai Lan) grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 60 days.",
+  },
+  {
+    name: "Gaillardia",
+    type: "Flower",
+    image: "gaillardia",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Gaillardia is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Gardenia",
+    type: "Flower",
+    image: "gardenia",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Gardenia is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Geranium",
+    type: "Flower",
+    image: "geranium",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Geranium is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Gladiolus",
+    type: "Flower",
+    image: "gladiolus",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [3, 4],
+    notes:
+      "Gladiolus is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Honeyberry (Haskap)",
+    type: "Berry",
+    image: "haskap",
+    minZone: "2a",
+    maxZone: "7b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Honeyberry (Haskap) is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "Hazelnut",
+    type: "Nut",
+    image: "hazelnut",
+    minZone: "4a",
+    maxZone: "8b",
+    plantMonths: [2, 3],
+    notes:
+      "Hazelnut is a long-lived nut tree for full sun and deep, well-drained soil. Plant it while dormant, give it room to spread, and expect nuts once it establishes over several years.",
+  },
+  {
+    name: "Heirloom Tomato",
+    type: "Vegetable",
+    image: "heirloomtomato",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Heirloom Tomato grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 80 days.",
+  },
+  {
+    name: "Hellebore",
+    type: "Flower",
+    image: "hellebore",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [9, 10],
+    notes:
+      "Hellebore is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Hens and Chicks",
+    type: "Houseplant",
+    image: "hensandchicks",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Hens and Chicks is a low-water succulent. Give it bright light and fast-draining soil, water sparingly, and keep it above freezing — grow it indoors in cold climates.",
+  },
+  {
+    name: "Hibiscus",
+    type: "Flower",
+    image: "hibiscus",
+    minZone: "5a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Hibiscus is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Hollyhock",
+    type: "Flower",
+    image: "hollyhock",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [5, 6],
+    notes:
+      "Hollyhock is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Hosta",
+    type: "Flower",
+    image: "hosta",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Hosta is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Hyacinth",
+    type: "Flower",
+    image: "hyacinth",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [9, 10, 11],
+    notes:
+      "Hyacinth is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Hydrangea",
+    type: "Flower",
+    image: "hydrangea",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Hydrangea is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Impatiens",
+    type: "Flower",
+    image: "impatiens",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Impatiens is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Iris",
+    type: "Flower",
+    image: "iris",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [8, 9],
+    notes:
+      "Iris is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Jabuticaba",
+    type: "Fruit",
+    image: "jabuticaba",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Jabuticaba is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Jade Plant",
+    type: "Houseplant",
+    image: "jadeplant",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Jade Plant is a low-water succulent. Give it bright light and fast-draining soil, water sparingly, and keep it above freezing — grow it indoors in cold climates.",
+  },
+  {
+    name: "Jasmine",
+    type: "Flower",
+    image: "jasmine",
+    minZone: "7a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Jasmine is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "June Plum",
+    type: "Fruit",
+    image: "juneplum",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "June Plum is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Water Spinach (Kangkong)",
+    type: "Vegetable",
+    image: "kangkong",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [5, 6],
+    notes:
+      "Water Spinach (Kangkong) grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 50 days.",
+  },
+  {
+    name: "Kentia Palm",
+    type: "Houseplant",
+    image: "kentiapalm",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Kentia Palm is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Key Lime",
+    type: "Fruit Tree",
+    image: "keylime",
+    minZone: "9b",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Key Lime is an evergreen citrus that loves full sun and well-drained soil. Protect it from frost, water deeply and feed regularly, and harvest the fruit once it is fully colored.",
+  },
+  {
+    name: "Kidney Bean",
+    type: "Vegetable",
+    image: "kidneybean",
+    minZone: "3a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Kidney Bean grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 100 days.",
+  },
+  {
+    name: "Komatsuna",
+    type: "Vegetable",
+    image: "komatsuna",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 8, 9],
+    notes:
+      "Komatsuna grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 40 days.",
+  },
+  {
+    name: "Larkspur",
+    type: "Flower",
+    image: "larkspur",
+    minZone: "2a",
+    maxZone: "9b",
+    plantMonths: [9, 10, 3],
+    notes:
+      "Larkspur is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Lavatera",
+    type: "Flower",
+    image: "lavatera",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Lavatera is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Lemon Balm",
+    type: "Herb",
+    image: "lemonbalm",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4],
+    notes:
+      "Lemon Balm is a perennial herb for full sun and well-drained soil. Trim it regularly to keep it bushy and harvest the leaves as you need them.",
+  },
+  {
+    name: "Lilac",
+    type: "Flower",
+    image: "lilac",
+    minZone: "3a",
+    maxZone: "7b",
+    plantMonths: [9, 10],
+    notes:
+      "Lilac is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Lily",
+    type: "Flower",
+    image: "lily",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 10],
+    notes:
+      "Lily is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Lobelia",
+    type: "Flower",
+    image: "lobella",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Lobelia is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Longkong (Langsat)",
+    type: "Fruit",
+    image: "longkong",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Longkong (Langsat) is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Lotus Root",
+    type: "Vegetable",
+    image: "lotusroot",
+    minZone: "5a",
+    maxZone: "10b",
+    plantMonths: [4, 5],
+    notes:
+      "Lotus Root grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 120 days.",
+  },
+  {
+    name: "Lupini Bean",
+    type: "Vegetable",
+    image: "lupin",
+    minZone: "4a",
+    maxZone: "8b",
+    plantMonths: [4, 5],
+    notes:
+      "Lupini Bean grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 100 days.",
+  },
+  {
+    name: "Lupine",
+    type: "Flower",
+    image: "lupineflower",
+    minZone: "4a",
+    maxZone: "8b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Lupine is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Macadamia",
+    type: "Nut",
+    image: "macadamia",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [3, 4],
+    notes:
+      "Macadamia is a long-lived nut tree for full sun and deep, well-drained soil. Plant it while dormant, give it room to spread, and expect nuts once it establishes over several years.",
+  },
+  {
+    name: "Maidenhair Fern",
+    type: "Houseplant",
+    image: "maidenhairfern",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Maidenhair Fern is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Malabar Spinach",
+    type: "Vegetable",
+    image: "malabarspinach",
+    minZone: "7a",
+    maxZone: "11b",
+    plantMonths: [5, 6],
+    notes:
+      "Malabar Spinach grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 55 days.",
+  },
+  {
+    name: "Mangosteen",
+    type: "Fruit",
+    image: "mangosteen",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Mangosteen is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Meyer Lemon",
+    type: "Fruit Tree",
+    image: "meyerlemon",
+    minZone: "8b",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Meyer Lemon is an evergreen citrus that loves full sun and well-drained soil. Protect it from frost, water deeply and feed regularly, and harvest the fruit once it is fully colored.",
+  },
+  {
+    name: "Millet",
+    type: "Grain",
+    image: "millet",
+    minZone: "5a",
+    maxZone: "10b",
+    plantMonths: [5, 6],
+    notes:
+      "Millet is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "Miracle Fruit",
+    type: "Fruit",
+    image: "miraclefruit",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Miracle Fruit is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Mizuna",
+    type: "Vegetable",
+    image: "mizuna",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 8, 9],
+    notes:
+      "Mizuna grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 40 days.",
+  },
+  {
+    name: "Monstera",
+    type: "Houseplant",
+    image: "monstera",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Monstera is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Drumstick Tree (Moringa)",
+    type: "Vegetable",
+    image: "moringa",
+    minZone: "9a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Drumstick Tree (Moringa) is a productive perennial in frost-free climates, grown for its edible leaves, pods or roots. Give it full sun and harvest regularly once it establishes.",
+  },
+  {
+    name: "Red Mulberry",
+    type: "Berry",
+    image: "mulberryred",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [2, 3],
+    notes:
+      "Red Mulberry is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "White Mulberry",
+    type: "Berry",
+    image: "mulberrywhite",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [2, 3],
+    notes:
+      "White Mulberry is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "Mung Bean",
+    type: "Vegetable",
+    image: "mungbean",
+    minZone: "5a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Mung Bean grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 90 days.",
+  },
+  {
+    name: "Mustard Spinach",
+    type: "Vegetable",
+    image: "mustardspinach",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 8, 9],
+    notes:
+      "Mustard Spinach grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 40 days.",
+  },
+  {
+    name: "Nasturtium",
+    type: "Flower",
+    image: "nasturtium",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Nasturtium is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Navy Bean",
+    type: "Vegetable",
+    image: "navybean",
+    minZone: "3a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Navy Bean grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 100 days.",
+  },
+  {
+    name: "New Zealand Spinach",
+    type: "Vegetable",
+    image: "newzealandspinach",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "New Zealand Spinach grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 55 days.",
+  },
+  {
+    name: "Oats",
+    type: "Grain",
+    image: "oats",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [3, 4],
+    notes:
+      "Oats is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "Red Okra",
+    type: "Vegetable",
+    image: "okrared",
+    minZone: "5a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Red Okra grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 55 days.",
+  },
+  {
+    name: "Orchid",
+    type: "Flower",
+    image: "orchid",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Orchid is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Pansy",
+    type: "Flower",
+    image: "pansy",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 9],
+    notes:
+      "Pansy is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Parlor Palm",
+    type: "Houseplant",
+    image: "parlorpalm",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Parlor Palm is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Pecan",
+    type: "Nut",
+    image: "pecan",
+    minZone: "6a",
+    maxZone: "9b",
+    plantMonths: [2, 3],
+    notes:
+      "Pecan is a long-lived nut tree for full sun and deep, well-drained soil. Plant it while dormant, give it room to spread, and expect nuts once it establishes over several years.",
+  },
+  {
+    name: "Peony",
+    type: "Flower",
+    image: "peony",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [9, 10],
+    notes:
+      "Peony is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Peppermint",
+    type: "Herb",
+    image: "peppermint",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4],
+    notes:
+      "Peppermint is a perennial herb for full sun and well-drained soil. Trim it regularly to keep it bushy and harvest the leaves as you need them.",
+  },
+  {
+    name: "Petunia",
+    type: "Flower",
+    image: "petunia",
+    minZone: "3a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Petunia is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Philodendron",
+    type: "Houseplant",
+    image: "philodendron",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Philodendron is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Phlox",
+    type: "Flower",
+    image: "phlox",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Phlox is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Pigeon Pea",
+    type: "Vegetable",
+    image: "pigeonpea",
+    minZone: "9a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Pigeon Pea grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 120 days.",
+  },
+  {
+    name: "Pimento Pepper",
+    type: "Vegetable",
+    image: "pimentopepper",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Pimento Pepper grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 75 days.",
+  },
+  {
+    name: "Pistachio",
+    type: "Nut",
+    image: "pistachio",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [2, 3],
+    notes:
+      "Pistachio is a long-lived nut tree for full sun and deep, well-drained soil. Plant it while dormant, give it room to spread, and expect nuts once it establishes over several years.",
+  },
+  {
+    name: "Pomelo",
+    type: "Fruit Tree",
+    image: "pomelo",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Pomelo is an evergreen citrus that loves full sun and well-drained soil. Protect it from frost, water deeply and feed regularly, and harvest the fruit once it is fully colored.",
+  },
+  {
+    name: "Pothos",
+    type: "Houseplant",
+    image: "pothos",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Pothos is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Prayer Plant",
+    type: "Houseplant",
+    image: "prayerplant",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Prayer Plant is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Purslane",
+    type: "Vegetable",
+    image: "purslane",
+    minZone: "5a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Purslane grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 40 days.",
+  },
+  {
+    name: "Quinoa",
+    type: "Grain",
+    image: "quinoa",
+    minZone: "4a",
+    maxZone: "8b",
+    plantMonths: [4, 5],
+    notes:
+      "Quinoa is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "Ranunculus",
+    type: "Flower",
+    image: "ranunculus",
+    minZone: "4a",
+    maxZone: "10b",
+    plantMonths: [9, 10],
+    notes:
+      "Ranunculus is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Red Currant",
+    type: "Berry",
+    image: "redcurrant",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [2, 3],
+    notes:
+      "Red Currant is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "Rice",
+    type: "Grain",
+    image: "rice",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Rice is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "Ridge Gourd",
+    type: "Vegetable",
+    image: "ridgegourd",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Ridge Gourd grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 90 days.",
+  },
+  {
+    name: "Romanesco",
+    type: "Vegetable",
+    image: "romanesco",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [3, 7],
+    notes:
+      "Romanesco grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 90 days.",
+  },
+  {
+    name: "Roma Tomato",
+    type: "Vegetable",
+    image: "romatomato",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Roma Tomato grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 75 days.",
+  },
+  {
+    name: "Rose",
+    type: "Flower",
+    image: "rose",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Rose is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Rose Apple",
+    type: "Fruit",
+    image: "roseapple",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Rose Apple is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Rye",
+    type: "Grain",
+    image: "rye",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [9, 10],
+    notes:
+      "Rye is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "San Marzano Tomato",
+    type: "Vegetable",
+    image: "sanmarzanotomato",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "San Marzano Tomato grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 80 days.",
+  },
+  {
+    name: "Santol",
+    type: "Fruit",
+    image: "santol",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Santol is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Scabiosa",
+    type: "Flower",
+    image: "scabiosa",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Scabiosa is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Scotch Bonnet Pepper",
+    type: "Vegetable",
+    image: "scotchbonnetpepper",
+    minZone: "7a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Scotch Bonnet Pepper grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 100 days.",
+  },
+  {
+    name: "Sea Buckthorn",
+    type: "Berry",
+    image: "seabuckthorn",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Sea Buckthorn is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "Sedum",
+    type: "Flower",
+    image: "sedum",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Sedum is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Shishito Pepper",
+    type: "Vegetable",
+    image: "shishitopepper",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Shishito Pepper grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 60 days.",
+  },
+  {
+    name: "Shiso",
+    type: "Herb",
+    image: "shiso",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Shiso thrives in full sun with well-drained soil. Pinch it back regularly and harvest the leaves as you need them.",
+  },
+  {
+    name: "Salak (Snake Fruit)",
+    type: "Fruit",
+    image: "snakefruit",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Salak (Snake Fruit) is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Snake Gourd",
+    type: "Vegetable",
+    image: "snakegourd",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Snake Gourd grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 90 days.",
+  },
+  {
+    name: "Snake Plant",
+    type: "Houseplant",
+    image: "snakeplant",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Snake Plant is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Snapdragon",
+    type: "Flower",
+    image: "snapdragon",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Snapdragon is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Sorghum",
+    type: "Grain",
+    image: "sorghum",
+    minZone: "5a",
+    maxZone: "11b",
+    plantMonths: [5, 6],
+    notes:
+      "Sorghum is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "Soursop",
+    type: "Fruit",
+    image: "soursop",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Soursop is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Spearmint",
+    type: "Herb",
+    image: "spearmint",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4],
+    notes:
+      "Spearmint is a perennial herb for full sun and well-drained soil. Trim it regularly to keep it bushy and harvest the leaves as you need them.",
+  },
+  {
+    name: "Spider Plant",
+    type: "Houseplant",
+    image: "spiderplant",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Spider Plant is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Star Apple",
+    type: "Fruit",
+    image: "starapple",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Star Apple is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Stock",
+    type: "Flower",
+    image: "stock",
+    minZone: "2a",
+    maxZone: "8b",
+    plantMonths: [3, 4, 9],
+    notes:
+      "Stock is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "String of Pearls",
+    type: "Houseplant",
+    image: "stringofpearls",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "String of Pearls is a low-water succulent. Give it bright light and fast-draining soil, water sparingly, and keep it above freezing — grow it indoors in cold climates.",
+  },
+  {
+    name: "Sudachi",
+    type: "Fruit Tree",
+    image: "sudachi",
+    minZone: "8b",
+    maxZone: "10b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Sudachi is an evergreen citrus that loves full sun and well-drained soil. Protect it from frost, water deeply and feed regularly, and harvest the fruit once it is fully colored.",
+  },
+  {
+    name: "Sugar Apple",
+    type: "Fruit",
+    image: "sugarapple",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Sugar Apple is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Sunflower",
+    type: "Flower",
+    image: "sunflower",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Sunflower is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Sweet Alyssum",
+    type: "Flower",
+    image: "sweetalyssum",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Sweet Alyssum is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Sweet Pea",
+    type: "Flower",
+    image: "sweetpea",
+    minZone: "2a",
+    maxZone: "8b",
+    plantMonths: [2, 3, 4],
+    notes:
+      "Sweet Pea is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Taro",
+    type: "Vegetable",
+    image: "taro",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Taro grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 200 days.",
+  },
+  {
+    name: "Tatsoi",
+    type: "Vegetable",
+    image: "tatsoi",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 8, 9],
+    notes:
+      "Tatsoi grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 45 days.",
+  },
+  {
+    name: "Thai Chili Pepper",
+    type: "Vegetable",
+    image: "thaichilipepper",
+    minZone: "5a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Thai Chili Pepper grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 90 days.",
+  },
+  {
+    name: "Tulip",
+    type: "Flower",
+    image: "tulip",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [9, 10, 11],
+    notes:
+      "Tulip is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Holy Basil (Tulsi)",
+    type: "Herb",
+    image: "tulsi",
+    minZone: "10a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Holy Basil (Tulsi) thrives in full sun with well-drained soil. Pinch it back regularly and harvest the leaves as you need them.",
+  },
+  {
+    name: "Verbena",
+    type: "Flower",
+    image: "verbena",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Verbena is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Vietnamese Coriander",
+    type: "Herb",
+    image: "vietnamesecoriander",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Vietnamese Coriander is a perennial herb for full sun and well-drained soil. Trim it regularly to keep it bushy and harvest the leaves as you need them.",
+  },
+  {
+    name: "Viola",
+    type: "Flower",
+    image: "viola",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 9],
+    notes:
+      "Viola is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Walnut",
+    type: "Nut",
+    image: "walnut",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [2, 3],
+    notes:
+      "Walnut is a long-lived nut tree for full sun and deep, well-drained soil. Plant it while dormant, give it room to spread, and expect nuts once it establishes over several years.",
+  },
+  {
+    name: "Wasabi",
+    type: "Vegetable",
+    image: "wasabi",
+    minZone: "7a",
+    maxZone: "10b",
+    plantMonths: [4, 5],
+    notes:
+      "Wasabi grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 540 days.",
+  },
+  {
+    name: "Water Chestnut",
+    type: "Vegetable",
+    image: "waterchestnut",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Water Chestnut grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 220 days.",
+  },
+  {
+    name: "Wax Apple",
+    type: "Fruit",
+    image: "waxapple",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Wax Apple is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Wheat",
+    type: "Grain",
+    image: "wheat",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4],
+    notes:
+      "Wheat is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "White Currant",
+    type: "Berry",
+    image: "whitecurrant",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [2, 3],
+    notes:
+      "White Currant is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "White Sapote",
+    type: "Fruit",
+    image: "whitesapote",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "White Sapote is a tropical tree that needs heat, humidity and protection from any frost. Grow it in full sun and harvest the fruit as it softens and colors up.",
+  },
+  {
+    name: "Wineberry",
+    type: "Berry",
+    image: "wineberry",
+    minZone: "5a",
+    maxZone: "8b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Wineberry is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "Winter Savory",
+    type: "Herb",
+    image: "wintersavory",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [4, 5],
+    notes:
+      "Winter Savory is a perennial herb for full sun and well-drained soil. Trim it regularly to keep it bushy and harvest the leaves as you need them.",
+  },
+  {
+    name: "Yam",
+    type: "Vegetable",
+    image: "yam",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Yam grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 180 days.",
+  },
+  {
+    name: "Yarrow",
+    type: "Flower",
+    image: "yarrow",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Yarrow is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Yucca",
+    type: "Houseplant",
+    image: "yucca",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Yucca is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Zinnia",
+    type: "Flower",
+    image: "zinnia",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Zinnia is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "ZZ Plant",
+    type: "Houseplant",
+    image: "zzplant",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "ZZ Plant is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Snow Pea",
+    type: "Vegetable",
+    image: "snowpea",
+    minZone: "2a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 8],
+    notes:
+      "Snow Pea grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 60 days.",
+  },
+  {
+    name: "Yardlong Bean",
+    type: "Vegetable",
+    image: "yardlongbean",
+    minZone: "7a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Yardlong Bean grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 75 days.",
+  },
+  {
+    name: "Winged Bean",
+    type: "Vegetable",
+    image: "wingedbean",
+    minZone: "9a",
+    maxZone: "12b",
+    plantMonths: [5, 6],
+    notes:
+      "Winged Bean grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 100 days.",
+  },
+  {
+    name: "Cluster Bean (Guar)",
+    type: "Vegetable",
+    image: "clusterbean",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [5, 6],
+    notes:
+      "Cluster Bean (Guar) grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 90 days.",
+  },
+  {
+    name: "Ivy Gourd (Tindora)",
+    type: "Vegetable",
+    image: "ivygourd",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Ivy Gourd (Tindora) is a productive perennial in frost-free climates, grown for its edible leaves, pods or roots. Give it full sun and harvest regularly once it establishes.",
+  },
+  {
+    name: "Pointed Gourd (Parwal)",
+    type: "Vegetable",
+    image: "pointedgourd",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Pointed Gourd (Parwal) grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 120 days.",
+  },
+  {
+    name: "Broccoli Rabe (Rapini)",
+    type: "Vegetable",
+    image: "broccolirabe",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 8, 9],
+    notes:
+      "Broccoli Rabe (Rapini) grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 45 days.",
+  },
+  {
+    name: "Broccolini",
+    type: "Vegetable",
+    image: "broccolini",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 7],
+    notes:
+      "Broccolini grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 60 days.",
+  },
+  {
+    name: "Choy Sum",
+    type: "Vegetable",
+    image: "choysum",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 8, 9],
+    notes:
+      "Choy Sum grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 45 days.",
+  },
+  {
+    name: "Yu Choy",
+    type: "Vegetable",
+    image: "yuchoy",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 8, 9],
+    notes:
+      "Yu Choy grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 45 days.",
+  },
+  {
+    name: "Molokhia (Jute Mallow)",
+    type: "Vegetable",
+    image: "molokhia",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [5, 6],
+    notes:
+      "Molokhia (Jute Mallow) grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 60 days.",
+  },
+  {
+    name: "Roselle",
+    type: "Vegetable",
+    image: "roselle",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [5, 6],
+    notes:
+      "Roselle grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 120 days.",
+  },
+  {
+    name: "Chinese Celery",
+    type: "Vegetable",
+    image: "chinesecelery",
+    minZone: "5a",
+    maxZone: "10b",
+    plantMonths: [3, 8],
+    notes:
+      "Chinese Celery grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 70 days.",
+  },
+  {
+    name: "Garlic Chives",
+    type: "Herb",
+    image: "garlicchives",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4],
+    notes:
+      "Garlic Chives is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Bamboo Shoot",
+    type: "Vegetable",
+    image: "bambooshoot",
+    minZone: "7a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Bamboo Shoot is a productive perennial in frost-free climates, grown for its edible leaves, pods or roots. Give it full sun and harvest regularly once it establishes.",
+  },
+  {
+    name: "Nopal (Cactus Pad)",
+    type: "Vegetable",
+    image: "nopal",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Nopal (Cactus Pad) is a productive perennial in frost-free climates, grown for its edible leaves, pods or roots. Give it full sun and harvest regularly once it establishes.",
+  },
+  {
+    name: "Samphire (Sea Bean)",
+    type: "Vegetable",
+    image: "samphire",
+    minZone: "6a",
+    maxZone: "10b",
+    plantMonths: [4, 5],
+    notes:
+      "Samphire (Sea Bean) grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 60 days.",
+  },
+  {
+    name: "Dandelion Greens",
+    type: "Vegetable",
+    image: "dandeliongreens",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 9],
+    notes:
+      "Dandelion Greens grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 55 days.",
+  },
+  {
+    name: "Plantain",
+    type: "Fruit",
+    image: "plantain",
+    minZone: "9a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Plantain is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Sugar Beet",
+    type: "Vegetable",
+    image: "sugarbeet",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4],
+    notes:
+      "Sugar Beet grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 90 days.",
+  },
+  {
+    name: "Carolina Reaper",
+    type: "Vegetable",
+    image: "carolinareaper",
+    minZone: "5a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Carolina Reaper grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 100 days.",
+  },
+  {
+    name: "Bird's Eye Chili",
+    type: "Vegetable",
+    image: "birdseyechili",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Bird's Eye Chili grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 90 days.",
+  },
+  {
+    name: "Padrón Pepper",
+    type: "Vegetable",
+    image: "padronpepper",
+    minZone: "5a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Padrón Pepper grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 75 days.",
+  },
+  {
+    name: "Fresno Pepper",
+    type: "Vegetable",
+    image: "fresnopepper",
+    minZone: "5a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Fresno Pepper grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 80 days.",
+  },
+  {
+    name: "Hungarian Wax",
+    type: "Vegetable",
+    image: "hungarianwax",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Hungarian Wax grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 70 days.",
+  },
+  {
+    name: "Ají Amarillo",
+    type: "Vegetable",
+    image: "ajiamarillo",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5, 6],
+    notes:
+      "Ají Amarillo grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 100 days.",
+  },
+  {
+    name: "Cherimoya",
+    type: "Fruit",
+    image: "cherimoya",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Cherimoya is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Sapodilla (Chikoo)",
+    type: "Fruit",
+    image: "sapodilla",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Sapodilla (Chikoo) is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Mamey Sapote",
+    type: "Fruit",
+    image: "mameysapote",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Mamey Sapote is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Jujube",
+    type: "Fruit Tree",
+    image: "jujube",
+    minZone: "6a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Jujube is a fruit tree that does best in full sun and well-drained soil. Plant it while dormant, water deeply, and harvest the fruit once it is fully colored and ripe.",
+  },
+  {
+    name: "Tamarillo (Tree Tomato)",
+    type: "Fruit",
+    image: "tamarillo",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Tamarillo (Tree Tomato) is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Naranjilla (Lulo)",
+    type: "Fruit",
+    image: "naranjilla",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Naranjilla (Lulo) is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Acerola",
+    type: "Fruit",
+    image: "acerola",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Acerola is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Surinam Cherry",
+    type: "Fruit",
+    image: "surinamcherry",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Surinam Cherry is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Bilimbi",
+    type: "Fruit",
+    image: "bilimbi",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Bilimbi is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Bael (Wood Apple)",
+    type: "Fruit",
+    image: "bael",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Bael (Wood Apple) is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Jamun (Java Plum)",
+    type: "Fruit",
+    image: "jamun",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Jamun (Java Plum) is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Mamoncillo (Genip)",
+    type: "Fruit",
+    image: "mamoncillo",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Mamoncillo (Genip) is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Pawpaw (American)",
+    type: "Fruit Tree",
+    image: "pawpaw",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Pawpaw (American) is a fruit tree that does best in full sun and well-drained soil. Plant it while dormant, water deeply, and harvest the fruit once it is fully colored and ripe.",
+  },
+  {
+    name: "Serviceberry",
+    type: "Berry",
+    image: "serviceberry",
+    minZone: "2a",
+    maxZone: "8b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Serviceberry is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "Jostaberry",
+    type: "Berry",
+    image: "jostaberry",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [2, 3],
+    notes:
+      "Jostaberry is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "Loganberry",
+    type: "Berry",
+    image: "loganberry",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Loganberry is a hardy perennial that fruits on established plants. Grow it in full sun to part shade in rich, well-drained soil and pick the berries when fully ripe.",
+  },
+  {
+    name: "Hardy Kiwi (Kiwiberry)",
+    type: "Fruit",
+    image: "hardykiwi",
+    minZone: "4a",
+    maxZone: "8b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Hardy Kiwi (Kiwiberry) is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Concord Grape",
+    type: "Fruit",
+    image: "concordgrape",
+    minZone: "4a",
+    maxZone: "8b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Concord Grape is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Cornelian Cherry",
+    type: "Fruit Tree",
+    image: "corneliancherry",
+    minZone: "4a",
+    maxZone: "8b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Cornelian Cherry is a fruit tree that does best in full sun and well-drained soil. Plant it while dormant, water deeply, and harvest the fruit once it is fully colored and ripe.",
+  },
+  {
+    name: "Medlar",
+    type: "Fruit Tree",
+    image: "medlar",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Medlar is a fruit tree that does best in full sun and well-drained soil. Plant it while dormant, water deeply, and harvest the fruit once it is fully colored and ripe.",
+  },
+  {
+    name: "Sweet Lime (Mosambi)",
+    type: "Fruit Tree",
+    image: "sweetlime",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Sweet Lime (Mosambi) is a fruit tree that does best in full sun and well-drained soil. Plant it while dormant, water deeply, and harvest the fruit once it is fully colored and ripe.",
+  },
+  {
+    name: "Ugli Fruit",
+    type: "Fruit Tree",
+    image: "uglifruit",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Ugli Fruit is a fruit tree that does best in full sun and well-drained soil. Plant it while dormant, water deeply, and harvest the fruit once it is fully colored and ripe.",
+  },
+  {
+    name: "Sea Grape",
+    type: "Fruit",
+    image: "seagrape",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Sea Grape is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Gac Fruit",
+    type: "Fruit",
+    image: "gacfruit",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Gac Fruit is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Noni",
+    type: "Fruit",
+    image: "noni",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Noni is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Cupuaçu",
+    type: "Fruit",
+    image: "cupuacu",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Cupuaçu is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Abiu",
+    type: "Fruit",
+    image: "abiu",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Abiu is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Rollinia",
+    type: "Fruit",
+    image: "rollinia",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Rollinia is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Chempedak",
+    type: "Fruit",
+    image: "chempedak",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Chempedak is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Marang",
+    type: "Fruit",
+    image: "marang",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Marang is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Pulasan",
+    type: "Fruit",
+    image: "pulasan",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Pulasan is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Che (Melonberry)",
+    type: "Fruit",
+    image: "che",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Che (Melonberry) is grown for its fruit and loves full sun. Protect it from hard frost where needed, keep it well watered, and harvest when the fruit softens and colors up.",
+  },
+  {
+    name: "Cardamom",
+    type: "Herb",
+    image: "cardamom",
+    minZone: "10a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Cardamom is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Vanilla",
+    type: "Herb",
+    image: "vanilla",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Vanilla is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Saffron",
+    type: "Herb",
+    image: "saffron",
+    minZone: "6a",
+    maxZone: "9b",
+    plantMonths: [8, 9],
+    notes:
+      "Saffron is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Galangal",
+    type: "Herb",
+    image: "galangal",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Galangal is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Kaffir Lime",
+    type: "Herb",
+    image: "kaffirlime",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Kaffir Lime is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Lemon Verbena",
+    type: "Herb",
+    image: "lemonverbena",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Lemon Verbena is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Pandan",
+    type: "Herb",
+    image: "pandan",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Pandan is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Sichuan Pepper",
+    type: "Herb",
+    image: "sichuanpepper",
+    minZone: "6a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Sichuan Pepper is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Cinnamon",
+    type: "Herb",
+    image: "cinnamon",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Cinnamon is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Clove",
+    type: "Herb",
+    image: "clove",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Clove is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Nutmeg",
+    type: "Herb",
+    image: "nutmeg",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Nutmeg is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Allspice",
+    type: "Herb",
+    image: "allspice",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Allspice is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Fenugreek (Methi)",
+    type: "Herb",
+    image: "fenugreek",
+    minZone: "3a",
+    maxZone: "11b",
+    plantMonths: [3, 4],
+    notes:
+      "Fenugreek (Methi) thrives in full sun with well-drained soil. Pinch it back regularly and harvest the leaves as you need them.",
+  },
+  {
+    name: "Comfrey",
+    type: "Herb",
+    image: "comfrey",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Comfrey is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Valerian",
+    type: "Herb",
+    image: "valerian",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Valerian is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Ashwagandha",
+    type: "Herb",
+    image: "ashwagandha",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Ashwagandha thrives in full sun with well-drained soil. Pinch it back regularly and harvest the leaves as you need them.",
+  },
+  {
+    name: "Gotu Kola",
+    type: "Herb",
+    image: "gotukola",
+    minZone: "7a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Gotu Kola is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Rue",
+    type: "Herb",
+    image: "rue",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Rue is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Hyssop",
+    type: "Herb",
+    image: "hyssop",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Hyssop is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Angelica",
+    type: "Herb",
+    image: "angelica",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Angelica is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Feverfew",
+    type: "Herb",
+    image: "feverfew",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Feverfew is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Wormwood",
+    type: "Herb",
+    image: "wormwood",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Wormwood is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Curry Plant",
+    type: "Herb",
+    image: "curryplant",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Curry Plant is a perennial for full sun and well-drained soil. Trim it regularly and harvest the leaves, roots or spice as you need them.",
+  },
+  {
+    name: "Spelt",
+    type: "Grain",
+    image: "spelt",
+    minZone: "4a",
+    maxZone: "8b",
+    plantMonths: [3, 4],
+    notes:
+      "Spelt is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "Teff",
+    type: "Grain",
+    image: "teff",
+    minZone: "5a",
+    maxZone: "10b",
+    plantMonths: [5, 6],
+    notes:
+      "Teff is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "Farro (Emmer)",
+    type: "Grain",
+    image: "farro",
+    minZone: "4a",
+    maxZone: "8b",
+    plantMonths: [3, 4],
+    notes:
+      "Farro (Emmer) is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "Wild Rice",
+    type: "Grain",
+    image: "wildrice",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [5],
+    notes:
+      "Wild Rice is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "Triticale",
+    type: "Grain",
+    image: "triticale",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [9, 10],
+    notes:
+      "Triticale is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "Job's Tears",
+    type: "Grain",
+    image: "jobstears",
+    minZone: "6a",
+    maxZone: "11b",
+    plantMonths: [5, 6],
+    notes:
+      "Job's Tears is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "Popcorn",
+    type: "Grain",
+    image: "popcorn",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [4, 5],
+    notes:
+      "Popcorn is a field grain for full sun. Sow into a prepared, weed-free bed and harvest once the seed heads dry and turn golden.",
+  },
+  {
+    name: "Peanut",
+    type: "Vegetable",
+    image: "peanut",
+    minZone: "6a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Peanut grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 130 days.",
+  },
+  {
+    name: "Soybean",
+    type: "Vegetable",
+    image: "soybean",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [5, 6],
+    notes:
+      "Soybean grows best in full sun with rich, well-drained soil and steady watering. Sow it in its season and harvest in roughly 100 days.",
+  },
+  {
+    name: "Brazil Nut",
+    type: "Nut",
+    image: "brazilnut",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Brazil Nut is a long-lived nut tree for full sun and deep, well-drained soil. Plant it while dormant, give it room to spread, and expect nuts once it establishes over several years.",
+  },
+  {
+    name: "Pine Nut",
+    type: "Nut",
+    image: "pinenut",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [2, 3],
+    notes:
+      "Pine Nut is a long-lived nut tree for full sun and deep, well-drained soil. Plant it while dormant, give it room to spread, and expect nuts once it establishes over several years.",
+  },
+  {
+    name: "Ginkgo",
+    type: "Nut",
+    image: "ginkgo",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [2, 3],
+    notes:
+      "Ginkgo is a long-lived nut tree for full sun and deep, well-drained soil. Plant it while dormant, give it room to spread, and expect nuts once it establishes over several years.",
+  },
+  {
+    name: "Carob",
+    type: "Nut",
+    image: "carob",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Carob is a long-lived nut tree for full sun and deep, well-drained soil. Plant it while dormant, give it room to spread, and expect nuts once it establishes over several years.",
+  },
+  {
+    name: "Kola Nut",
+    type: "Nut",
+    image: "kolanut",
+    minZone: "10a",
+    maxZone: "12b",
+    plantMonths: [4, 5],
+    notes:
+      "Kola Nut is a long-lived nut tree for full sun and deep, well-drained soil. Plant it while dormant, give it room to spread, and expect nuts once it establishes over several years.",
+  },
+  {
+    name: "Black Walnut",
+    type: "Nut",
+    image: "blackwalnut",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [2, 3],
+    notes:
+      "Black Walnut is a long-lived nut tree for full sun and deep, well-drained soil. Plant it while dormant, give it room to spread, and expect nuts once it establishes over several years.",
+  },
+  {
+    name: "Chrysanthemum",
+    type: "Flower",
+    image: "chrysanthemum",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Chrysanthemum is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Carnation",
+    type: "Flower",
+    image: "carnation",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Carnation is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Gerbera Daisy",
+    type: "Flower",
+    image: "gerberadaisy",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Gerbera Daisy is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Shasta Daisy",
+    type: "Flower",
+    image: "shastadaisy",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Shasta Daisy is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Poppy",
+    type: "Flower",
+    image: "poppy",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 9],
+    notes:
+      "Poppy is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Begonia",
+    type: "Flower",
+    image: "begonia",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Begonia is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Primrose",
+    type: "Flower",
+    image: "primrose",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [8, 9],
+    notes:
+      "Primrose is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Poinsettia",
+    type: "Flower",
+    image: "poinsettia",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Poinsettia is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Bougainvillea",
+    type: "Flower",
+    image: "bougainvillea",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Bougainvillea is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Wisteria",
+    type: "Flower",
+    image: "wisteria",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Wisteria is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Clematis",
+    type: "Flower",
+    image: "clematis",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Clematis is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Morning Glory",
+    type: "Flower",
+    image: "morningglory",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Morning Glory is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Moonflower",
+    type: "Flower",
+    image: "moonflower",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Moonflower is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Nigella",
+    type: "Flower",
+    image: "nigella",
+    minZone: "2a",
+    maxZone: "9b",
+    plantMonths: [3, 9],
+    notes:
+      "Nigella is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Statice",
+    type: "Flower",
+    image: "statice",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Statice is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Strawflower",
+    type: "Flower",
+    image: "strawflower",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Strawflower is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Gomphrena",
+    type: "Flower",
+    image: "gomphrena",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Gomphrena is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Celosia (Cockscomb)",
+    type: "Flower",
+    image: "celosia",
+    minZone: "2a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Celosia (Cockscomb) is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Sweet William",
+    type: "Flower",
+    image: "sweetwilliam",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [5, 6],
+    notes:
+      "Sweet William is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Cornflower",
+    type: "Flower",
+    image: "cornflower",
+    minZone: "2a",
+    maxZone: "9b",
+    plantMonths: [3, 9],
+    notes:
+      "Cornflower is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Baby's Breath",
+    type: "Flower",
+    image: "babysbreath",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Baby's Breath is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Calla Lily",
+    type: "Flower",
+    image: "callalily",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [3, 4],
+    notes:
+      "Calla Lily is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Canna Lily",
+    type: "Flower",
+    image: "cannalily",
+    minZone: "7a",
+    maxZone: "11b",
+    plantMonths: [3, 4],
+    notes:
+      "Canna Lily is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Lily of the Valley",
+    type: "Flower",
+    image: "lilyofthevalley",
+    minZone: "2a",
+    maxZone: "7b",
+    plantMonths: [9, 10],
+    notes:
+      "Lily of the Valley is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Forget-Me-Not",
+    type: "Flower",
+    image: "forgetmenot",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [8, 9],
+    notes:
+      "Forget-Me-Not is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Columbine",
+    type: "Flower",
+    image: "columbine",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Columbine is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Bleeding Heart",
+    type: "Flower",
+    image: "bleedingheart",
+    minZone: "2a",
+    maxZone: "8b",
+    plantMonths: [9, 10],
+    notes:
+      "Bleeding Heart is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Astilbe",
+    type: "Flower",
+    image: "astilbe",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Astilbe is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Snowdrop",
+    type: "Flower",
+    image: "snowdrop",
+    minZone: "3a",
+    maxZone: "7b",
+    plantMonths: [9, 10],
+    notes:
+      "Snowdrop is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Bluebell",
+    type: "Flower",
+    image: "bluebell",
+    minZone: "4a",
+    maxZone: "8b",
+    plantMonths: [9, 10],
+    notes:
+      "Bluebell is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Portulaca (Moss Rose)",
+    type: "Flower",
+    image: "portulaca",
+    minZone: "5a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Portulaca (Moss Rose) is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Vinca (Periwinkle)",
+    type: "Flower",
+    image: "vinca",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Vinca (Periwinkle) is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Osteospermum",
+    type: "Flower",
+    image: "osteospermum",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Osteospermum is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Protea",
+    type: "Flower",
+    image: "protea",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Protea is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Passion Flower",
+    type: "Flower",
+    image: "passionflower",
+    minZone: "6a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Passion Flower is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Buddleia (Butterfly Bush)",
+    type: "Flower",
+    image: "buddleia",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Buddleia (Butterfly Bush) is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Azalea",
+    type: "Flower",
+    image: "azalea",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [9, 10],
+    notes:
+      "Azalea is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Rhododendron",
+    type: "Flower",
+    image: "rhododendron",
+    minZone: "4a",
+    maxZone: "8b",
+    plantMonths: [9, 10],
+    notes:
+      "Rhododendron is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Magnolia",
+    type: "Flower",
+    image: "magnolia",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [3, 4],
+    notes:
+      "Magnolia is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Plumeria (Frangipani)",
+    type: "Flower",
+    image: "plumeria",
+    minZone: "9a",
+    maxZone: "12b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Plumeria (Frangipani) is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Cherry Blossom",
+    type: "Flower",
+    image: "cherryblossom",
+    minZone: "5a",
+    maxZone: "8b",
+    plantMonths: [3, 4],
+    notes:
+      "Cherry Blossom is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
+  },
+  {
+    name: "Rubber Plant",
+    type: "Houseplant",
+    image: "rubberplant",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Rubber Plant is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Peace Lily",
+    type: "Houseplant",
+    image: "peacelily",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Peace Lily is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Croton",
+    type: "Houseplant",
+    image: "croton",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Croton is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "English Ivy",
+    type: "Houseplant",
+    image: "englishivy",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "English Ivy is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Dracaena",
+    type: "Houseplant",
+    image: "dracaena",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Dracaena is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Cordyline",
+    type: "Houseplant",
+    image: "cordyline",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Cordyline is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Pilea (Chinese Money Plant)",
+    type: "Houseplant",
+    image: "pilea",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Pilea is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "String of Hearts",
+    type: "Houseplant",
+    image: "stringofhearts",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "String of Hearts is a trailing indoor plant grown for its cascading stems. Give it bright, indirect light, let the soil dry between waterings, and protect it from frost.",
+  },
+  {
+    name: "Hoya (Wax Plant)",
+    type: "Houseplant",
+    image: "hoya",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Hoya is grown indoors as a foliage plant with thick, waxy leaves. Give it bright, indirect light and let the soil dry well between waterings; protect it from frost.",
+  },
+  {
+    name: "Air Plant (Tillandsia)",
+    type: "Houseplant",
+    image: "airplant",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Air Plant needs no soil — mount it or set it in a dish. Give it bright, indirect light and soak or mist it regularly, letting it dry fully between waterings.",
+  },
+  {
+    name: "Nerve Plant (Fittonia)",
+    type: "Houseplant",
+    image: "nerveplant",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Nerve Plant is grown indoors for its colorful foliage. Give it bright, indirect light, keep the soil lightly moist with steady humidity, and protect it from frost.",
+  },
+  {
+    name: "Polka Dot Plant",
+    type: "Houseplant",
+    image: "polkadotplant",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Polka Dot Plant is grown indoors for its colorful foliage. Give it bright, indirect light, keep the soil lightly moist with steady humidity, and protect it from frost.",
+  },
+  {
+    name: "Inch Plant (Tradescantia)",
+    type: "Houseplant",
+    image: "inchplant",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Inch Plant is a trailing indoor plant grown for its cascading stems. Give it bright, indirect light, let the soil dry between waterings, and protect it from frost.",
+  },
+  {
+    name: "Rex Begonia",
+    type: "Houseplant",
+    image: "rexbegonia",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Rex Begonia is grown indoors for its colorful foliage. Give it bright, indirect light, keep the soil lightly moist with steady humidity, and protect it from frost.",
+  },
+  {
+    name: "Begonia Maculata",
+    type: "Houseplant",
+    image: "begoniamaculata",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Begonia Maculata is grown indoors for its colorful foliage. Give it bright, indirect light, keep the soil lightly moist with steady humidity, and protect it from frost.",
+  },
+  {
+    name: "Kalanchoe",
+    type: "Houseplant",
+    image: "kalanchoe",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Kalanchoe is a low-water succulent. Give it bright light and fast-draining soil, water sparingly, and keep it above freezing — grow it indoors in cold climates.",
+  },
+  {
+    name: "Haworthia",
+    type: "Houseplant",
+    image: "haworthia",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Haworthia is a low-water succulent. Give it bright light and fast-draining soil, water sparingly, and keep it above freezing — grow it indoors in cold climates.",
+  },
+  {
+    name: "Ponytail Palm",
+    type: "Houseplant",
+    image: "ponytailpalm",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Ponytail Palm is a low-water succulent. Give it bright light and fast-draining soil, water sparingly, and keep it above freezing — grow it indoors in cold climates.",
+  },
+  {
+    name: "Money Tree (Pachira)",
+    type: "Houseplant",
+    image: "moneytree",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Money Tree is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Norfolk Island Pine",
+    type: "Houseplant",
+    image: "norfolkpine",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Norfolk Island Pine is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Cast Iron Plant",
+    type: "Houseplant",
+    image: "castironplant",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Cast Iron Plant is an easygoing foliage plant that tolerates low light. Let the soil dry between waterings and keep it above freezing — a forgiving indoor grower.",
+  },
+  {
+    name: "Staghorn Fern",
+    type: "Houseplant",
+    image: "staghornfern",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Staghorn Fern is grown indoors for its foliage. Give it bright, indirect light and steady humidity, keep the soil or mount lightly moist, and protect it from frost.",
+  },
+  {
+    name: "Asparagus Fern",
+    type: "Houseplant",
+    image: "asparagusfern",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Asparagus Fern is grown indoors for its foliage. Give it bright, indirect light and steady humidity, keep the soil or mount lightly moist, and protect it from frost.",
+  },
+  {
+    name: "Lucky Bamboo",
+    type: "Houseplant",
+    image: "luckybamboo",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Lucky Bamboo grows in water or soil in bright, indirect light. In water, keep the roots submerged and refresh it every couple of weeks; protect it from frost.",
+  },
+  {
+    name: "Venus Flytrap",
+    type: "Houseplant",
+    image: "venusflytrap",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Venus Flytrap is a carnivorous bog plant. Give it bright light and nutrient-poor peat and sand, water only with rain or distilled water, and never fertilize it.",
+  },
+  {
+    name: "Pitcher Plant",
+    type: "Houseplant",
+    image: "pitcherplant",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Pitcher Plant is a carnivorous bog plant. Give it bright light and nutrient-poor peat and sand, water only with rain or distilled water, and never fertilize it.",
+  },
+  {
+    name: "African Violet",
+    type: "Houseplant",
+    image: "africanviolet",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "African Violet blooms indoors in bright, indirect light. Water from below to keep the crown dry, avoid wetting the fuzzy leaves, and protect it from frost.",
+  },
+  {
+    name: "Bromeliad",
+    type: "Houseplant",
+    image: "bromeliad",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Bromeliad is grown for its colorful bracts. Give it bright, indirect light, keep a little water in its central cup, use fast-draining mix, and protect it from frost.",
+  },
+  {
+    name: "Guzmania",
+    type: "Houseplant",
+    image: "guzmania",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Guzmania is grown for its colorful bracts. Give it bright, indirect light, keep a little water in its central cup, use fast-draining mix, and protect it from frost.",
+  },
+  {
+    name: "Anthurium",
+    type: "Houseplant",
+    image: "anthurium",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Anthurium blooms indoors in bright, indirect light. Keep it in a chunky, airy mix that stays lightly moist, maintain humidity, and protect it from frost.",
+  },
+  {
+    name: "Umbrella Plant (Schefflera)",
+    type: "Houseplant",
+    image: "umbrellaplant",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Umbrella Plant is grown mainly indoors as a foliage plant. Give it bright, indirect light and let the soil dry between waterings; move it outside only in warm, frost-free weather.",
+  },
+  {
+    name: "Lithops (Living Stones)",
+    type: "Houseplant",
+    image: "lithops",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Lithops is a tiny, very low-water succulent. Give it strong light and gritty soil, water only during active growth, and keep it dry and above freezing.",
+  },
+  {
+    name: "Aeonium",
+    type: "Houseplant",
+    image: "aeonium",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Aeonium is a low-water succulent. Give it bright light and fast-draining soil, water sparingly, and keep it above freezing — grow it indoors in cold climates.",
+  },
+  {
+    name: "Ghost Plant",
+    type: "Houseplant",
+    image: "ghostplant",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Ghost Plant is a low-water succulent. Give it bright light and fast-draining soil, water sparingly, and keep it above freezing — grow it indoors in cold climates.",
+  },
+  {
+    name: "Panda Plant",
+    type: "Houseplant",
+    image: "pandaplant",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Panda Plant is a low-water succulent. Give it bright light and fast-draining soil, water sparingly, and keep it above freezing — grow it indoors in cold climates.",
+  },
+  {
+    name: "String of Bananas",
+    type: "Houseplant",
+    image: "stringofbananas",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "String of Bananas is a trailing indoor plant grown for its cascading stems. Give it bright, indirect light, let the soil dry between waterings, and protect it from frost.",
+  },
+  {
+    name: "Bunny Ear Cactus",
+    type: "Houseplant",
+    image: "bunnyearcactus",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Bunny Ear Cactus is a desert cactus. Give it strong light and gritty, fast-draining soil, water sparingly, and protect it from frost — grow it indoors in cold climates.",
+  },
+  {
+    name: "Barrel Cactus",
+    type: "Houseplant",
+    image: "barrelcactus",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Barrel Cactus is a desert cactus. Give it strong light and gritty, fast-draining soil, water sparingly, and protect it from frost — grow it indoors in cold climates.",
+  },
+  {
+    name: "Prickly Pear Cactus",
+    type: "Houseplant",
+    image: "pricklypearcactus",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Prickly Pear Cactus is a desert cactus. Give it strong light and gritty, fast-draining soil, water sparingly, and protect it from frost — grow it indoors in cold climates.",
+  },
+  {
+    name: "Phalaenopsis Orchid",
+    type: "Houseplant",
+    image: "phalaenopsis",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Phalaenopsis Orchid is an indoor orchid. Grow it in bark mix in bright, indirect light, water when the roots turn silvery, and protect it from frost.",
+  },
+  {
+    name: "Dendrobium Orchid",
+    type: "Houseplant",
+    image: "dendrobium",
+    minZone: "1",
+    maxZone: "13",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Dendrobium Orchid is an indoor orchid. Grow it in bark mix in bright, indirect light, water when the roots turn silvery, and protect it from frost.",
+  },
+  {
+    name: "Iceberg Lettuce",
+    type: "Vegetable",
+    image: "iceberglettuce",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [2, 3, 4, 9, 10],
+    notes:
+      "Iceberg Lettuce forms crisp heads in cool weather and rich, moist soil. Keep it well watered and harvest before summer heat makes it bolt or turn bitter.",
+  },
+  {
+    name: "Butterhead Lettuce",
+    type: "Vegetable",
+    image: "butterheadlettuce",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [2, 3, 4, 9, 10],
+    notes:
+      "Butterhead Lettuce grows soft, loose heads that love cool weather and steady moisture. Harvest outer leaves often, and give it afternoon shade in the heat.",
+  },
+  {
+    name: "Oak Leaf Lettuce",
+    type: "Vegetable",
+    image: "oakleaflettuce",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [2, 3, 4, 9, 10],
+    notes:
+      "Oak Leaf is a tender loose-leaf lettuce for cool seasons. Cut outer leaves as you need them and it will keep producing until heat triggers bolting.",
+  },
+  {
+    name: "Red Cabbage",
+    type: "Vegetable",
+    image: "redcabbage",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [2, 3, 8, 9],
+    notes:
+      "Red Cabbage thrives in cool weather with rich soil and steady moisture. Give heads room to form and harvest before summer heat causes them to split.",
+  },
+  {
+    name: "Savoy Cabbage",
+    type: "Vegetable",
+    image: "savoycabbage",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [2, 3, 8, 9],
+    notes:
+      "Savoy Cabbage forms crinkled, tender heads and takes light frost well. Grow it in fertile soil with steady water and harvest heads once firm.",
+  },
+  {
+    name: "Lacinato Kale (Cavolo Nero)",
+    type: "Vegetable",
+    image: "lacinatokale",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [2, 3, 4, 9, 10],
+    notes:
+      "Lacinato Kale grows dark, strappy leaves that sweeten after frost. Harvest from the bottom up and it will keep producing through cold weather.",
+  },
+  {
+    name: "Elephant Garlic",
+    type: "Vegetable",
+    image: "elephantgarlic",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [9, 10, 11],
+    notes:
+      "Elephant Garlic makes huge, mild cloves. Plant cloves in fall in loose, fertile soil, mulch for winter, and harvest the following summer as the leaves brown.",
+  },
+  {
+    name: "Pearl Onion",
+    type: "Vegetable",
+    image: "pearlonion",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [2, 3, 4],
+    notes:
+      "Pearl Onions are small onions grown close together for pickling and roasting. Give them full sun and loose soil, and harvest once the tops fall over.",
+  },
+  {
+    name: "Scarlet Runner Bean",
+    type: "Vegetable",
+    image: "scarletrunnerbean",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Scarlet Runner Bean climbs fast and shows off scarlet flowers loved by pollinators. Sow after frost by a trellis, keep it watered, and pick pods young.",
+  },
+  {
+    name: "Cranberry Bean (Borlotti)",
+    type: "Vegetable",
+    image: "cranberrybean",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Cranberry Bean is a speckled shelling bean for warm weather. Sow after frost in full sun and let pods dry on the plant for plump, creamy beans.",
+  },
+  {
+    name: "Crookneck Squash",
+    type: "Vegetable",
+    image: "crooknecksquash",
+    minZone: "3a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Crookneck is a bright yellow summer squash that produces heavily. Give it full sun, rich soil, and steady water, and pick fruit small and tender.",
+  },
+  {
+    name: "Hubbard Squash",
+    type: "Vegetable",
+    image: "hubbardsquash",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [5, 6],
+    notes:
+      "Hubbard is a large winter squash that stores for months. Give vines plenty of room and a long warm season, and cure the fruit before storing.",
+  },
+  {
+    name: "Chicory",
+    type: "Vegetable",
+    image: "chicory",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [4, 5, 8],
+    notes:
+      "Chicory is grown for its slightly bitter leaves and roots. Give it full sun and steady moisture, and blanch or force the crowns for milder winter chicons.",
+  },
+  {
+    name: "Marrow",
+    type: "Vegetable",
+    image: "marrow",
+    minZone: "4a",
+    maxZone: "10b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Marrow is a summer squash left to grow large and firm. Give it rich soil, full sun, and plenty of water, and harvest once it reaches full size.",
+  },
+  {
+    name: "Tabasco Pepper",
+    type: "Vegetable",
+    image: "tabascopepper",
+    minZone: "5a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Tabasco Pepper produces upright, fiery little peppers. It loves heat and full sun with even moisture, and fruit ripens from green to bright red.",
+  },
+  {
+    name: "Peperoncini",
+    type: "Vegetable",
+    image: "peperoncini",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Peperoncini are mild, tangy peppers great for pickling. Give them full sun and steady moisture, and pick them green or let them ripen to red.",
+  },
+  {
+    name: "Aleppo Pepper",
+    type: "Vegetable",
+    image: "aleppopepper",
+    minZone: "5a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Aleppo Pepper ripens to deep red and is usually dried and flaked. It thrives in heat and full sun with even water; harvest when fully colored.",
+  },
+  {
+    name: "Chrysanthemum Greens (Shungiku)",
+    type: "Vegetable",
+    image: "chrysanthemumgreens",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [3, 4, 9],
+    notes:
+      "Shungiku is an edible chrysanthemum grown for aromatic leaves. Sow in cool weather, harvest young shoots before it flowers, and it regrows after cutting.",
+  },
+  {
+    name: "Corn Salad (Mache)",
+    type: "Vegetable",
+    image: "cornsalad",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 9, 10],
+    notes:
+      "Corn Salad (Mâche) is a cold-hardy salad green that grows through winter. Sow in cool weather and cut the tender rosettes whole or leaf by leaf.",
+  },
+  {
+    name: "Frisee",
+    type: "Vegetable",
+    image: "frisee",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 8, 9],
+    notes:
+      "Frisée is a curly, slightly bitter endive for cool seasons. Grow it in steady moisture and blanch the center a week before harvest to sweeten it.",
+  },
+  {
+    name: "Garden Cress",
+    type: "Vegetable",
+    image: "gardencress",
+    minZone: "3a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5, 9],
+    notes:
+      "Garden Cress is a peppery green ready in weeks. Sow thickly in cool weather, keep it moist, and snip the young seedlings for salads and sandwiches.",
+  },
+  {
+    name: "Orach",
+    type: "Vegetable",
+    image: "orach",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Orach, or mountain spinach, is a heat-tolerant leafy green. Sow in spring, harvest young leaves often, and pinch flower stalks to keep it producing.",
+  },
+  {
+    name: "Sea Kale",
+    type: "Vegetable",
+    image: "seakale",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 9],
+    notes:
+      "Sea Kale is a hardy perennial grown for its blanched spring shoots. Plant it in full sun and well-drained soil, and force the crowns in early spring.",
+  },
+  {
+    name: "Fiddlehead Fern",
+    type: "Vegetable",
+    image: "fiddleheadfern",
+    minZone: "3a",
+    maxZone: "7b",
+    plantMonths: [4, 5],
+    notes:
+      "Fiddlehead Fern (ostrich fern) is a shade-loving perennial harvested in spring. Pick the tightly coiled fronds young, and always cook them before eating.",
+  },
+  {
+    name: "Ramps (Wild Leek)",
+    type: "Vegetable",
+    image: "ramps",
+    minZone: "3a",
+    maxZone: "7b",
+    plantMonths: [3, 4],
+    notes:
+      "Ramps are a woodland perennial onion harvested in early spring. Grow them in rich, shaded, moist soil and harvest sparingly so the patch can spread.",
+  },
+  {
+    name: "Stinging Nettle",
+    type: "Vegetable",
+    image: "stingingnettle",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Stinging Nettle is a nutritious perennial green harvested in spring. Grow it in moist, rich soil, wear gloves to pick the young tops, and cook before eating.",
+  },
+  {
+    name: "Welsh Onion",
+    type: "Vegetable",
+    image: "welshonion",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Welsh Onion is a perennial bunching onion grown for its hollow green stalks. Give it full sun and steady moisture, and snip stalks as you need them.",
+  },
+  {
+    name: "Burdock (Gobo)",
+    type: "Vegetable",
+    image: "burdock",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [4, 5],
+    notes:
+      "Burdock (Gobo) grows long, slender roots prized in Japanese cooking. Give it deep, loose, stone-free soil, keep it watered, and dig roots in fall.",
+  },
+  {
+    name: "Scorzonera",
+    type: "Vegetable",
+    image: "scorzonera",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [4, 5],
+    notes:
+      "Scorzonera is a black-skinned root with a delicate, oyster-like flavor. Grow it in deep, loose soil, keep moisture steady, and harvest roots in fall.",
+  },
+  {
+    name: "Prickly Pear (Cactus Pear)",
+    type: "Fruit",
+    image: "pricklypear",
+    minZone: "8a",
+    maxZone: "11b",
+    plantMonths: [4, 5],
+    notes:
+      "Prickly Pear is a hardy cactus grown for its edible pads and sweet fruit. Give it full sun and gritty, fast-draining soil, and water sparingly.",
+  },
+  {
+    name: "Muscadine Grape",
+    type: "Fruit",
+    image: "muscadinegrape",
+    minZone: "6a",
+    maxZone: "10b",
+    plantMonths: [2, 3],
+    notes:
+      "Muscadine is a vigorous Southern grapevine that shrugs off heat and humidity. Give it full sun and a sturdy trellis, and prune hard each dormant season.",
+  },
+  {
+    name: "Kiwano (Horned Melon)",
+    type: "Fruit",
+    image: "kiwano",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Kiwano is a spiky African melon grown on warm-season vines. Give it full sun, a trellis, and steady water, and harvest once the rind turns golden orange.",
+  },
+  {
+    name: "Korean Melon",
+    type: "Fruit",
+    image: "koreanmelon",
+    minZone: "4a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Korean Melon (Chamoe) is a sweet golden melon on warm-season vines. Give it full sun and steady water, and pick fruit when it turns bright yellow.",
+  },
+  {
+    name: "Charentais Melon",
+    type: "Fruit",
+    image: "charentaismelon",
+    minZone: "5a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Charentais is a fragrant French cantaloupe type. Give it full sun, warm soil, and steady water, and harvest when it smells sweet and slips from the vine.",
+  },
+  {
+    name: "Canary Melon",
+    type: "Fruit",
+    image: "canarymelon",
+    minZone: "5a",
+    maxZone: "11b",
+    plantMonths: [4, 5, 6],
+    notes:
+      "Canary Melon has bright yellow skin and pale, sweet flesh. Give it full sun and a long warm season, and harvest once the rind turns deep yellow.",
+  },
+  {
+    name: "Tangelo",
+    type: "Fruit Tree",
+    image: "tangelo",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [2, 3],
+    notes:
+      "Tangelo is a juicy tangerine-grapefruit cross for warm, frost-free climates. Give it full sun and well-drained soil; grow it in a pot to shelter in winter.",
+  },
+  {
+    name: "Satsuma",
+    type: "Fruit Tree",
+    image: "satsuma",
+    minZone: "8b",
+    maxZone: "11b",
+    plantMonths: [2, 3],
+    notes:
+      "Satsuma is a cold-hardy, easy-peel mandarin. Give it full sun and well-drained soil, feed it through the growing season, and protect it from hard frost.",
+  },
+  {
+    name: "Cara Cara Orange",
+    type: "Fruit Tree",
+    image: "caracaraorange",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [2, 3],
+    notes:
+      "Cara Cara is a sweet, pink-fleshed navel orange. Give it full sun and well-drained soil in a frost-free spot, or grow it potted to move indoors in winter.",
+  },
+  {
+    name: "Seville Orange",
+    type: "Fruit Tree",
+    image: "sevilleorange",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [2, 3],
+    notes:
+      "Seville is a bitter orange prized for marmalade. Give it full sun and well-drained soil in a warm, frost-free spot, and harvest fruit in late winter.",
+  },
+  {
+    name: "Citron",
+    type: "Fruit Tree",
+    image: "citron",
+    minZone: "9b",
+    maxZone: "11b",
+    plantMonths: [2, 3],
+    notes:
+      "Citron is a fragrant citrus grown mostly for its thick, aromatic peel. It needs full sun and frost-free warmth; grow it potted to move indoors in cold areas.",
+  },
+  {
+    name: "Crabapple",
+    type: "Fruit Tree",
+    image: "crabapple",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [1, 2],
+    notes:
+      "Crabapple is a hardy tree with tart little fruit good for jelly. Plant it dormant in full sun, prune yearly, and it also helps pollinate other apples.",
+  },
+  {
+    name: "Sour Cherry (Morello)",
+    type: "Fruit Tree",
+    image: "sourcherry",
+    minZone: "4a",
+    maxZone: "8b",
+    plantMonths: [1, 2, 3],
+    notes:
+      "Sour Cherry is a hardy, self-fertile tree for baking cherries. Give it full sun and winter chill, plant while dormant, and net the fruit against birds.",
+  },
+  {
+    name: "Damson Plum",
+    type: "Fruit Tree",
+    image: "damsonplum",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [1, 2, 3],
+    notes:
+      "Damson is a small, tart plum ideal for jam and preserves. Give it full sun, plant while dormant, and thin the heavy fruit set for better size.",
+  },
+  {
+    name: "Greengage",
+    type: "Fruit Tree",
+    image: "greengage",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [1, 2, 3],
+    notes:
+      "Greengage is a richly sweet green plum. Give it full sun and winter chill, plant it dormant, and thin the fruit so branches don't overload.",
+  },
+  {
+    name: "Mirabelle Plum",
+    type: "Fruit Tree",
+    image: "mirabelleplum",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [1, 2, 3],
+    notes:
+      "Mirabelle is a small, honey-sweet golden plum. Plant it dormant in full sun with well-drained soil, and prune lightly to keep an open canopy.",
+  },
+  {
+    name: "Tayberry",
+    type: "Berry",
+    image: "tayberry",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [3, 4],
+    notes:
+      "Tayberry is a raspberry-blackberry cross with long, sweet-tart fruit. Train the canes on a trellis, give it full sun, and cut out old canes after fruiting.",
+  },
+  {
+    name: "Saskatoon Berry",
+    type: "Berry",
+    image: "saskatoonberry",
+    minZone: "2a",
+    maxZone: "7b",
+    plantMonths: [3, 4],
+    notes:
+      "Saskatoon is a super-hardy shrub with sweet, blueberry-like fruit. Give it full sun and well-drained soil, and it needs little care once established.",
+  },
+  {
+    name: "Thimbleberry",
+    type: "Berry",
+    image: "thimbleberry",
+    minZone: "3a",
+    maxZone: "8b",
+    plantMonths: [3, 4],
+    notes:
+      "Thimbleberry is a thornless native cane with soft, tart-sweet berries. Give it partial sun and moist soil; the delicate fruit is best eaten fresh.",
+  },
+  {
+    name: "Alpine Strawberry",
+    type: "Berry",
+    image: "alpinestrawberry",
+    minZone: "3a",
+    maxZone: "10b",
+    plantMonths: [2, 3, 4],
+    notes:
+      "Alpine Strawberry makes tiny, intensely aromatic berries all season. It tolerates part shade, doesn't send runners, and grows well in pots and borders.",
+  },
+  {
+    name: "Pineberry",
+    type: "Berry",
+    image: "pineberry",
+    minZone: "4a",
+    maxZone: "9b",
+    plantMonths: [3, 4],
+    notes:
+      "Pineberry is a white strawberry with a pineapple-like flavor. Grow it like a strawberry in full sun and rich soil, and plant a red variety nearby to pollinate.",
+  },
+  {
+    name: "Strawberry Guava",
+    type: "Fruit",
+    image: "strawberryguava",
+    minZone: "9a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Strawberry Guava is a small evergreen tree with sweet red fruit. Give it full sun and well-drained soil in a frost-free spot, or grow it in a large pot.",
+  },
+  {
+    name: "Rose Hip",
+    type: "Fruit",
+    image: "rosehip",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [3, 4],
+    notes:
+      "Rose Hip is the vitamin-rich fruit of rugosa and other roses. Give the shrub full sun, skip deadheading in late summer, and pick hips after the first frost.",
+  },
+  {
+    name: "Goumi Berry",
+    type: "Berry",
+    image: "goumiberry",
+    minZone: "5a",
+    maxZone: "9b",
+    plantMonths: [3, 4],
+    notes:
+      "Goumi is a hardy, nitrogen-fixing shrub with tart-sweet red berries. Give it full sun, and it thrives even in poor soil once established.",
+  },
+  {
+    name: "Chilean Guava (Ugni)",
+    type: "Berry",
+    image: "chileanguava",
+    minZone: "7a",
+    maxZone: "10b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Chilean Guava (Ugni) is a compact evergreen shrub with aromatic red berries. Give it full sun to part shade and well-drained soil; it grows well in pots.",
+  },
+  {
+    name: "Grape Hyacinth",
+    type: "Flower",
+    image: "grapehyacinth",
+    minZone: "3a",
+    maxZone: "9b",
+    plantMonths: [9, 10, 11],
+    notes:
+      "Grape Hyacinth is a hardy little spring bulb with clusters of tiny, grape-like blue blooms. Plant bulbs in fall in full sun to part shade and well-drained soil; it naturalizes and spreads easily.",
+  },
+  {
+    name: "Jocote (Spanish Plum)",
+    type: "Fruit",
+    image: "jocote",
+    minZone: "10a",
+    maxZone: "11b",
+    plantMonths: [3, 4, 5],
+    notes:
+      "Jocote, or Spanish Plum, is a small tropical tree with tart-sweet, plum-like fruit. Give it full sun and well-drained soil in a frost-free climate; it tolerates heat and drought once established.",
+  },
 ];
 export default produceData;

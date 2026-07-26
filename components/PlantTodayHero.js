@@ -2,8 +2,10 @@ import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { getHarvestCountdown, getPlantDifficulty, getPlantSeasonLabel, normalizeType, resolvePlantImageSource } from "../core";
+import { useTranslation } from "../lib/i18n";
 
 export const PlantTodayHero = memo(function PlantTodayHero({ theme, monthlySuggestions, compatiblePlants, savedPlants = [], zone, weather, onOpen }) {
+  const { t } = useTranslation();
   const basePool = monthlySuggestions.length > 0 ? monthlySuggestions : compatiblePlants;
   const unsavedPool = basePool.filter((p) => !savedPlants.includes(p.name));
   const plantPool = unsavedPool.length > 0 ? unsavedPool : basePool;
@@ -56,7 +58,7 @@ return (
             <Text style={styles.plantTodayTagText}>🌿 {type}</Text>
           </View>
         </View>
-        <Text style={styles.plantTodayButtonText}>View care guide →</Text>
+        <Text style={styles.plantTodayButtonText}>{t("plantTodayHero.viewCareGuide")}</Text>
       </View>
       {imageSource ? (
         <View style={styles.plantTodayImageWrap}>

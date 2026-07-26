@@ -2,8 +2,10 @@ import { memo } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
 import { formatTemp, getClimateBucket, getSuggestionsForMonth, getTodayKey } from "../core";
+import { formatDate, useTranslation } from "../lib/i18n";
 
 export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ theme, weather, zone, savedPlants, wateredPlants, gardenMap, harvestTrackers, onOpenPlant, unitSystem }) {
+  const { t } = useTranslation();
   const forecast = weather?.forecast || [];
   const today = getTodayKey();
   const currentMonth = new Date().getMonth() + 1;
@@ -18,7 +20,9 @@ export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ the
     const diff = Math.round((date - todayDate) / (1000 * 60 * 60 * 24));
     if (diff === 0) return "Today";
     if (diff === 1) return "Tomorrow";
-    return date.toLocaleDateString("en-US", { weekday: "short" });
+    return formatDate(date, {
+  weekday: "short"
+});
   };
 
   const bestPlantingDay = forecast.find((d) => d.maxTempF >= 65 && d.maxTempF <= 90 && d.minTempF >= 42 && d.precipChance < 55) || forecast[0];
@@ -63,16 +67,19 @@ export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ the
   return (
     <View>
       <Text style={[styles.gardenIntelligenceSub, { color: theme.secondaryText, marginTop: 0 }]}>
-        Zone {zone || "—"} · {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+        Zone {zone || "—"} · {formatDate(new Date(), {
+  month: "long",
+  day: "numeric"
+})}
       </Text>
 
       {/* WEEKLY SNAPSHOT */}
       <View style={styles.gardenIntelWeeklyRow}>
         {[
-          { icon: "🌡️", value: formatTemp(weeklyHigh, unitSystem), label: "Week High", color: undefined },
-          { icon: "🌙", value: formatTemp(weeklyLow, unitSystem), label: "Week Low", color: undefined },
-          { icon: "🌧️", value: rainyDays, label: "Rainy Days", color: undefined },
-          { icon: "💧", value: unwateredCount, label: "Need Water", color: unwateredCount > 0 ? "#6bc7ff" : "#5cff89" },
+          { icon: "🌡️", value: formatTemp(weeklyHigh, unitSystem), label: t("gardenIntelligence.weekHigh"), color: undefined },
+          { icon: "🌙", value: formatTemp(weeklyLow, unitSystem), label: t("gardenIntelligence.weekLow"), color: undefined },
+          { icon: "🌧️", value: rainyDays, label: t("gardenIntelligence.rainyDays"), color: undefined },
+          { icon: "💧", value: unwateredCount, label: t("gardenIntelligence.needWater"), color: unwateredCount > 0 ? "#6bc7ff" : "#5cff89" },
         ].map((s) => (
           <View key={s.label} style={styles.gardenIntelWeeklyStat}>
             <Text style={styles.gardenIntelWeeklyIcon}>{s.icon}</Text>
@@ -89,19 +96,19 @@ export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ the
       </View>
 
       {harvestsReady > 0 ? (
-        <View style={[styles.gardenIntelInsightBanner, { backgroundColor: "rgba(255,216,107,0.12)", borderColor: "rgba(255,216,107,0.35)" }]}>
+        <View style={[styles.gardenIntelInsightBanner, { backgroundColor: "rgba(255, 216, 107, 0.12)", borderColor: "rgba(255, 216, 107, 0.3)" }]}>
           <Text style={styles.gardenIntelInsightIcon}>🎉</Text>
           <Text style={[styles.gardenIntelInsightText, { color: "#ffd86b" }]}>
-            {harvestsReady} plant{harvestsReady === 1 ? "" : "s"} ready to harvest today!
+            {harvestsReady} plant{harvestsReady === 1 ? "" : "s"} {t("gardenIntelligence.readyToHarvestToday")}
           </Text>
         </View>
       ) : null}
 
       {/* ZONE-SPECIFIC: plant now */}
       {plantNow.length ? (
-        <View style={{ marginTop: 12, backgroundColor: "rgba(92,255,137,0.08)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(92,255,137,0.20)" }}>
-          <Text style={{ color: "#8effab", fontSize: 11, fontWeight: "800", letterSpacing: 0.5, marginBottom: 10 }}>
-            🌱 PLANT NOW IN ZONE {zone || "—"}
+        <View style={{ marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.08)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}>
+          <Text style={{ color: "#8effab", fontSize: 10, fontWeight: "800", letterSpacing: 0.5, marginBottom: 10 }}>
+            {t("gardenIntelligence.plantNowInZone")} {zone || "—"}
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
             {plantNow.map((item) => (
@@ -110,9 +117,9 @@ export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ the
                 onPress={() => onOpenPlant && onOpenPlant(item)}
                 accessibilityRole="button"
                 accessibilityLabel={`Open ${item.name} care guide`}
-                style={{ backgroundColor: "rgba(92,255,137,0.12)", borderRadius: 999, paddingHorizontal: 13, paddingVertical: 8, borderWidth: 1, borderColor: "rgba(92,255,137,0.24)" }}
+                style={{ backgroundColor: "rgba(92, 255, 137, 0.12)", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
               >
-                <Text style={{ color: "#8effab", fontSize: 12.5, fontWeight: "800" }}>{item.name} ›</Text>
+                <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "800" }}>{item.name} ›</Text>
               </Pressable>
             ))}
           </ScrollView>
@@ -124,11 +131,11 @@ export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ the
         {tiles.map((t) => (
           <View key={t.label} style={{ width: "47%", borderRadius: 16, padding: 12, backgroundColor: `${t.color}12`, borderWidth: 1, borderColor: `${t.color}30` }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Text style={{ fontSize: 15 }}>{t.icon}</Text>
+              <Text style={{ fontSize: 14 }}>{t.icon}</Text>
               <Text numberOfLines={1} style={{ color: t.color, fontSize: 14, fontWeight: "800", flexShrink: 1 }}>{t.value}</Text>
             </View>
-            <Text style={{ color: theme.text, fontSize: 11.5, fontWeight: "700", marginTop: 5 }}>{t.label}</Text>
-            <Text numberOfLines={1} style={{ color: theme.secondaryText, fontSize: 10.5, fontWeight: "600", marginTop: 2 }}>{t.sub}</Text>
+            <Text style={{ color: theme.text, fontSize: 12, fontWeight: "700", marginTop: 6 }}>{t.label}</Text>
+            <Text numberOfLines={1} style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "600", marginTop: 2 }}>{t.sub}</Text>
           </View>
         ))}
       </View>

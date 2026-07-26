@@ -3,8 +3,11 @@ import { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { styles } from "../styles";
 import { getFirstFrostDate, getLastFrostDate } from "../core";
+import { IconText } from "./IconText";
+import { formatDate, useTranslation } from "../lib/i18n";
 
 export const FrostOverrideCard = memo(function FrostOverrideCard({ theme, zone, frostOverrides, onSave, onHide }) {
+  const { t } = useTranslation();
   const [lastFrost, setLastFrost] = useState(frostOverrides?.lastFrost || "");
   const [firstFrost, setFirstFrost] = useState(frostOverrides?.firstFrost || "");
   const [editing, setEditing] = useState(false);
@@ -16,7 +19,10 @@ export const FrostOverrideCard = memo(function FrostOverrideCard({ theme, zone, 
   // Zone estimates, used as placeholders and the default timeline.
   const estLast = getLastFrostDate(zone);
   const estFirst = getFirstFrostDate(zone);
-  const fmt = (d) => (d ? d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—");
+  const fmt = (d) => (d ? formatDate(d, {
+  month: "short",
+  day: "numeric"
+}) : "—");
   const valid = (v) => v === "" || /^\d{1,2}-\d{1,2}$/.test(v);
   const bothValid = valid(lastFrost) && valid(firstFrost);
 
@@ -55,14 +61,14 @@ export const FrostOverrideCard = memo(function FrostOverrideCard({ theme, zone, 
   }
 
   const inputStyle = {
-    backgroundColor: "rgba(255,255,255,0.06)",
+    backgroundColor: "rgba(255, 255, 255, 0.06)",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.15)",
+    borderColor: "rgba(255, 255, 255, 0.16)",
     color: theme.text,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "700",
     flex: 1,
   };
@@ -71,93 +77,100 @@ export const FrostOverrideCard = memo(function FrostOverrideCard({ theme, zone, 
     <View>
       {/* ── HERO: frost-free growing window ── */}
       <View style={{
-        borderRadius: 20,
+        borderRadius: 16,
         paddingVertical: 20,
         paddingHorizontal: 16,
         alignItems: "center",
-        backgroundColor: "rgba(92,255,137,0.08)",
+        backgroundColor: "rgba(92, 255, 137, 0.08)",
         borderWidth: 1,
-        borderColor: "rgba(92,255,137,0.28)",
+        borderColor: "rgba(92, 255, 137, 0.3)",
         marginTop: 4,
       }}>
-        <Text style={{ fontSize: 26, marginBottom: 2 }}>❄️  🌱  ❄️</Text>
+        <IconText label={"❄️  🌱  ❄️"} style={{
+  fontSize: 24,
+  marginBottom: 2
+}} />
         <Text style={{ color: GROW, fontSize: 40, fontWeight: "900", marginTop: 6, letterSpacing: -1 }}>{frostFreeDays}</Text>
-        <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900", marginTop: -2 }}>frost-free growing days</Text>
-        <Text style={{ color: theme.secondaryText, fontSize: 12.5, fontWeight: "700", marginTop: 4, textAlign: "center" }}>
-          {"That's about "}{months} month{months === 1 ? "" : "s"} of prime planting in Zone {zone || "—"}
+        <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900", marginTop: -2 }}>{t("frostOverride.frostfreeGrowingDays")}</Text>
+        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4, textAlign: "center" }}>
+          {t("frostOverride.thatsAbout")}{months} month{months === 1 ? "" : "s"} {t("frostOverride.ofPrimePlantingInZone")} {zone || "—"}
         </Text>
-        <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: isCustom ? "rgba(92,255,137,0.15)" : "rgba(255,255,255,0.06)", borderRadius: 999, paddingVertical: 5, paddingHorizontal: 12, borderWidth: 1, borderColor: isCustom ? "rgba(92,255,137,0.4)" : "rgba(255,255,255,0.12)" }}>
-          <Text style={{ color: isCustom ? GROW : theme.secondaryText, fontSize: 11.5, fontWeight: "900" }}>
-            {isCustom ? "✓ Using your custom dates" : "📍 Estimated from your zone"}
+        <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: isCustom ? "rgba(92, 255, 137, 0.16)" : "rgba(255, 255, 255, 0.06)", borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12, borderWidth: 1, borderColor: isCustom ? "rgba(92, 255, 137, 0.4)" : "rgba(255, 255, 255, 0.12)" }}>
+          <Text style={{ color: isCustom ? GROW : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>
+            {isCustom ? t("frostOverride.usingYourCustomDates") : t("frostOverride.estimatedFromYourZone")}
           </Text>
         </View>
       </View>
 
       {/* ── SEASON TIMELINE ── */}
       <View style={{ flexDirection: "row", alignItems: "stretch", marginTop: 16, gap: 8 }}>
-        <View style={{ flex: 1, backgroundColor: "rgba(107,199,255,0.10)", borderRadius: 16, borderWidth: 1, borderColor: SPRING + "44", padding: 12 }}>
+        <View style={{ flex: 1, backgroundColor: "rgba(107, 199, 255, 0.1)", borderRadius: 16, borderWidth: 1, borderColor: SPRING + "44", padding: 12 }}>
           <Text style={{ fontSize: 18 }}>🌸</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 10.5, fontWeight: "900", letterSpacing: 0.5, marginTop: 6 }}>LAST SPRING FROST</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "900", letterSpacing: 0.5, marginTop: 6 }}>{t("frostOverride.lastSpringFrost")}</Text>
           <Text style={{ color: SPRING, fontSize: 18, fontWeight: "900", marginTop: 2 }}>{fmt(effLast)}</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 2 }}>Safe to plant out ✓</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 2 }}>{t("frostOverride.safeToPlantOut")}</Text>
         </View>
-        <View style={{ flex: 1, backgroundColor: "rgba(255,159,67,0.10)", borderRadius: 16, borderWidth: 1, borderColor: FALL + "44", padding: 12 }}>
+        <View style={{ flex: 1, backgroundColor: "rgba(255, 159, 67, 0.1)", borderRadius: 16, borderWidth: 1, borderColor: FALL + "44", padding: 12 }}>
           <Text style={{ fontSize: 18 }}>🍂</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 10.5, fontWeight: "900", letterSpacing: 0.5, marginTop: 6 }}>FIRST FALL FROST</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "900", letterSpacing: 0.5, marginTop: 6 }}>{t("frostOverride.firstFallFrost")}</Text>
           <Text style={{ color: FALL, fontSize: 18, fontWeight: "900", marginTop: 2 }}>{fmt(effFirst)}</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 2 }}>Harvest by then 🧺</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 2 }}>{t("frostOverride.harvestByThen")}</Text>
         </View>
       </View>
 
       {/* growing-season bar */}
       <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10, gap: 8 }}>
-        <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: SPRING }} />
-        <View style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: GROW, opacity: 0.85 }} />
-        <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: FALL }} />
+        <View style={{ width: 10, height: 10, borderRadius: 4, backgroundColor: SPRING }} />
+        <View style={{ flex: 1, height: 6, borderRadius: 4, backgroundColor: GROW, opacity: 0.85 }} />
+        <View style={{ width: 10, height: 10, borderRadius: 4, backgroundColor: FALL }} />
       </View>
-      <Text style={{ color: GROW, fontSize: 11.5, fontWeight: "800", textAlign: "center", marginTop: 6 }}>
-        🌱 Your growing season
-      </Text>
+      <IconText label={t("frostOverride.yourGrowingSeason")} style={{
+  color: GROW,
+  fontSize: 12,
+  fontWeight: "800",
+  textAlign: "center",
+  marginTop: 6
+}} />
 
       {/* ── CUSTOMIZE ── */}
       {!editing ? (
         <Pressable
           onPress={() => setEditing(true)}
-          style={{ marginTop: 18, backgroundColor: "rgba(107,199,255,0.12)", borderRadius: 999, paddingVertical: 13, alignItems: "center", borderWidth: 1, borderColor: "rgba(107,199,255,0.35)" }}
+          style={{ marginTop: 18, backgroundColor: "rgba(107, 199, 255, 0.12)", borderRadius: 999, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.3)" }}
         >
           <Text style={{ color: SPRING, fontSize: 14, fontWeight: "900" }}>
-            {isCustom ? "✏️  Edit my frost dates" : "🎯  Dial in my real local dates"}
+            {isCustom ? t("frostOverride.editMyFrostDates") : t("frostOverride.dialInMyRealLocal")}
           </Text>
         </Pressable>
       ) : (
         <View style={{ marginTop: 18 }}>
           <Text style={[styles.cardText, { color: theme.secondaryText, marginBottom: 4 }]}>
-            Know your real local frost dates? Enter them as MM-DD to sharpen every seed-starting and frost-window tip in the app.
+            {t("frostOverride.knowYourRealLocalFrost")}
           </Text>
 
-          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 14, marginBottom: 6 }}>LAST SPRING FROST (MM-DD)</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 14, marginBottom: 6 }}>{t("frostOverride.lastSpringFrostMmdd")}</Text>
           <TextInput
             value={lastFrost}
             onChangeText={setLastFrost}
-            placeholder="e.g. 03-15"
+            placeholder={t("frostOverride.eg0315")}
             placeholderTextColor={theme.secondaryText}
-            style={[inputStyle, !valid(lastFrost) && { borderColor: "#ff7a7a" }]}
+            style={[inputStyle, !valid(lastFrost) && { borderColor: "#ff7b7b" }]}
             autoCapitalize="none"
           />
 
-          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 14, marginBottom: 6 }}>FIRST FALL FROST (MM-DD)</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 14, marginBottom: 6 }}>{t("frostOverride.firstFallFrostMmdd")}</Text>
           <TextInput
             value={firstFrost}
             onChangeText={setFirstFrost}
-            placeholder="e.g. 11-15"
+            placeholder={t("frostOverride.eg1115")}
             placeholderTextColor={theme.secondaryText}
-            style={[inputStyle, !valid(firstFrost) && { borderColor: "#ff7a7a" }]}
+            style={[inputStyle, !valid(firstFrost) && { borderColor: "#ff7b7b" }]}
             autoCapitalize="none"
           />
 
           {!bothValid && (
-            <Text style={{ color: "#ff7a7a", fontSize: 12, fontWeight: "700", marginTop: 8 }}>
-              Use MM-DD format, like 03-15.
+            <Text style={{ color: "#ff7b7b", fontSize: 12, fontWeight: "700", marginTop: 8 }}>
+              {t("frostOverride.useMmddFormatLike0315")}
             </Text>
           )}
 
@@ -165,13 +178,13 @@ export const FrostOverrideCard = memo(function FrostOverrideCard({ theme, zone, 
             <Pressable
               onPress={handleSave}
               disabled={!bothValid}
-              style={{ flex: 1, backgroundColor: bothValid ? "rgba(107,199,255,0.2)" : "rgba(255,255,255,0.06)", borderRadius: 999, paddingVertical: 12, alignItems: "center", borderWidth: 1, borderColor: bothValid ? "rgba(107,199,255,0.44)" : "rgba(255,255,255,0.12)" }}
+              style={{ flex: 1, backgroundColor: bothValid ? "rgba(107, 199, 255, 0.2)" : "rgba(255, 255, 255, 0.06)", borderRadius: 999, paddingVertical: 12, alignItems: "center", borderWidth: 1, borderColor: bothValid ? "rgba(107, 199, 255, 0.4)" : "rgba(255, 255, 255, 0.12)" }}
             >
-              <Text style={{ color: bothValid ? SPRING : theme.secondaryText, fontSize: 14, fontWeight: "900" }}>Save frost dates</Text>
+              <Text style={{ color: bothValid ? SPRING : theme.secondaryText, fontSize: 14, fontWeight: "900" }}>{t("frostOverride.saveFrostDates")}</Text>
             </Pressable>
             <Pressable
               onPress={handleClear}
-              style={{ backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 999, paddingVertical: 12, paddingHorizontal: 18, alignItems: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}
+              style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 999, paddingVertical: 12, paddingHorizontal: 18, alignItems: "center", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.12)" }}
             >
               <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>Reset</Text>
             </Pressable>
@@ -180,7 +193,11 @@ export const FrostOverrideCard = memo(function FrostOverrideCard({ theme, zone, 
       )}
 
       <Pressable onPress={onHide} style={{ marginTop: 12, alignItems: "center", paddingVertical: 10 }}>
-        <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "800" }}>🌵 No frost in my area — hide this card</Text>
+        <IconText label={t("frostOverride.noFrostInMyArea")} style={{
+  color: theme.secondaryText,
+  fontSize: 12,
+  fontWeight: "800"
+}} />
       </Pressable>
     </View>
   );

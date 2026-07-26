@@ -1,8 +1,12 @@
 import { memo } from "react";
 import { Pressable, Share, Text, View } from "react-native";
 import { findGardenConflicts, tapHaptic } from "../core";
+import { IconText } from "./IconText";
+import { PlantLabelsSection } from "./PlantLabelsSection";
+import { useTranslation } from "../lib/i18n";
 
 export const GardenPlanExportCard = memo(function GardenPlanExportCard({ theme, gardenAreas, savedPlants, zone }) {
+  const { t } = useTranslation();
   const areas = (gardenAreas || []).filter((a) => a && a.name);
   const totalPlanted = areas.reduce((sum, a) => sum + Object.values(a.plots || {}).filter(Boolean).length, 0);
 
@@ -31,32 +35,43 @@ export const GardenPlanExportCard = memo(function GardenPlanExportCard({ theme, 
 
   if (!areas.length) {
     return (
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Build a garden map with a few beds and plants, then export the whole plan to share or save for reference.
-      </Text>
+      <View>
+        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
+          {t("gardenPlanExport.buildAGardenMapWith")}
+        </Text>
+        {/* Labels don't need beds — only saved plants */}
+        <PlantLabelsSection theme={theme} savedPlants={savedPlants} zone={zone} />
+      </View>
     );
   }
 
   return (
     <View>
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Export your full garden layout — every bed and its plants — as a shareable plan you can send, save, or print.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
+        {t("gardenPlanExport.exportYourFullGardenLayout")}
       </Text>
 
       <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
-        <View style={{ flex: 1, alignItems: "center", backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 14, paddingVertical: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
+        <View style={{ flex: 1, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, paddingVertical: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
           <Text style={{ color: "#5cff89", fontSize: 20, fontWeight: "900" }}>{areas.length}</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 10.5, fontWeight: "800", marginTop: 2 }}>Beds</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "800", marginTop: 2 }}>Beds</Text>
         </View>
-        <View style={{ flex: 1, alignItems: "center", backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 14, paddingVertical: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
+        <View style={{ flex: 1, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, paddingVertical: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
           <Text style={{ color: "#8effab", fontSize: 20, fontWeight: "900" }}>{totalPlanted}</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 10.5, fontWeight: "800", marginTop: 2 }}>Plants placed</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "800", marginTop: 2 }}>{t("gardenPlanExport.plantsPlaced")}</Text>
         </View>
       </View>
 
-      <Pressable onPress={exportPlan} style={{ marginTop: 12, backgroundColor: "#5cff89", borderRadius: 14, paddingVertical: 14, alignItems: "center" }}>
-        <Text style={{ color: "#07120b", fontSize: 14.5, fontWeight: "900" }}>📤 Export / Share Garden Plan</Text>
+      <Pressable onPress={exportPlan} style={{ marginTop: 12, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 14, alignItems: "center" }}>
+        <IconText label={t("gardenPlanExport.exportShareGardenPlan")} style={{
+  color: "#07120b",
+  fontSize: 14,
+  fontWeight: "900"
+}} />
       </Pressable>
+
+      {/* Printable plant labels / stakes */}
+      <PlantLabelsSection theme={theme} savedPlants={savedPlants} zone={zone} />
     </View>
   );
 })

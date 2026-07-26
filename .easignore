@@ -1,0 +1,26 @@
+# EAS Build upload filter. Mirrors the essentials from .gitignore (so heavy dirs
+# like node_modules never upload), then trims files that aren't needed to build
+# the app — keeping the archive well under EAS's 2 GB limit.
+
+# --- kept from .gitignore ---
+node_modules/
+.expo/
+.env
+.DS_Store
+*.log
+npm-debug.*
+web-build/
+
+# --- never needed in the build tarball ---
+.git/
+ios/
+android/
+
+# --- project files not required to build the app ---
+App.backup.js
+App.prerefactor.js
+i18n-content/
+docs/
+scripts/
+targets/
+supabase/

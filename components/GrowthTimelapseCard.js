@@ -1,7 +1,9 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { useTranslation, formatDate } from "../lib/i18n";
 
 export const GrowthTimelapseCard = memo(function GrowthTimelapseCard({ theme, journalEntries }) {
+  const { t } = useTranslation();
   // Group photos by plant, keep only plants with 2+ dated photos, oldest → newest.
   const groups = {};
   (journalEntries || []).forEach((e) => {
@@ -34,8 +36,8 @@ export const GrowthTimelapseCard = memo(function GrowthTimelapseCard({ theme, jo
 
   if (!playable.length) {
     return (
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Add 2 or more dated photos of the same plant (from its plant page) and you'll be able to play back its growth here.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
+        {t("growthTimelapse.add2OrMoreDated")}
       </Text>
     );
   }
@@ -49,8 +51,8 @@ export const GrowthTimelapseCard = memo(function GrowthTimelapseCard({ theme, jo
         {playable.map(([name, entries]) => {
           const active = selected === name;
           return (
-            <Pressable key={name} onPress={() => setSelected(name)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255,255,255,0.1)" }}>
-              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12.5, fontWeight: "900" }}>{name} · {entries.length}</Text>
+            <Pressable key={name} onPress={() => setSelected(name)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}>
+              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{name} · {entries.length}</Text>
             </Pressable>
           );
         })}
@@ -58,16 +60,20 @@ export const GrowthTimelapseCard = memo(function GrowthTimelapseCard({ theme, jo
 
       {/* FRAME */}
       {frame ? (
-        <View style={{ marginTop: 12, borderRadius: 18, overflow: "hidden", backgroundColor: "rgba(255,255,255,0.04)", borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
+        <View style={{ marginTop: 12, borderRadius: 16, overflow: "hidden", backgroundColor: "rgba(255, 255, 255, 0.04)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
           <Image source={{ uri: frame.imageUri }} style={{ width: "100%", height: 240 }} resizeMode="cover" />
           <View style={{ padding: 12 }}>
-            <Text style={{ color: theme.text, fontSize: 13.5, fontWeight: "800" }}>
-              {frame.growthStage || "Growing"} · {new Date(frame.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+            <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }}>
+              {frame.growthStage || "Growing"} · {formatDate(new Date(frame.createdAt), {
+  month: "short",
+  day: "numeric",
+  year: "numeric"
+})}
             </Text>
             {/* progress dots */}
             <View style={{ flexDirection: "row", gap: 4, marginTop: 10 }}>
               {frames.map((_, i) => (
-                <Pressable key={i} onPress={() => { setPlaying(false); setIndex(i); }} style={{ flex: 1, height: 5, borderRadius: 3, backgroundColor: i <= index ? "#5cff89" : "rgba(255,255,255,0.12)" }} />
+                <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.showFrame", { n: i + 1 })} key={i} onPress={() => { setPlaying(false); setIndex(i); }} style={{ flex: 1, height: 5, borderRadius: 4, backgroundColor: i <= index ? "#5cff89" : "rgba(255, 255, 255, 0.12)" }} />
               ))}
             </View>
           </View>
@@ -76,17 +82,17 @@ export const GrowthTimelapseCard = memo(function GrowthTimelapseCard({ theme, jo
 
       {/* CONTROLS */}
       <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
-        <Pressable onPress={() => { setPlaying(false); setIndex((i) => Math.max(0, i - 1)); }} style={{ backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" }}>
-          <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900" }}>‹</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.previousFrame")} onPress={() => { setPlaying(false); setIndex((i) => Math.max(0, i - 1)); }} style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.1)" }}>
+          <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>‹</Text>
         </Pressable>
         <Pressable
           onPress={() => { if (index >= frames.length - 1) setIndex(0); setPlaying((p) => !p); }}
           style={{ flex: 1, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 12, alignItems: "center" }}
         >
-          <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{playing ? "⏸ Pause" : "▶ Play growth"}</Text>
+          <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{playing ? t("growthTimelapse.pause") : t("growthTimelapse.playGrowth")}</Text>
         </Pressable>
-        <Pressable onPress={() => { setPlaying(false); setIndex((i) => Math.min(frames.length - 1, i + 1)); }} style={{ backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" }}>
-          <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900" }}>›</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.nextFrame")} onPress={() => { setPlaying(false); setIndex((i) => Math.min(frames.length - 1, i + 1)); }} style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.1)" }}>
+          <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>›</Text>
         </Pressable>
       </View>
     </View>

@@ -1,0 +1,58 @@
+// Maps each disease name (from data/diseaseData.js DISEASE_LIBRARY) to its bundled
+// image in assets/diseases/. All 48 images are present on disk and wired below.
+// Names without an image would fall back to the disease emoji (getDiseaseImage
+// returns null) — currently none.
+const diseaseImageMap = {
+  "Powdery mildew": require("../assets/diseases/powdery-mildew.png"),
+  "Downy mildew": require("../assets/diseases/downy-mildew.png"),
+  "Early blight": require("../assets/diseases/early-blight.png"),
+  "Late blight": require("../assets/diseases/late-blight.png"),
+  "Leaf spot": require("../assets/diseases/leaf-spot.png"),
+  "Fungal leaf spot": require("../assets/diseases/fungal-leaf-spot.png"),
+  "Leaf blight": require("../assets/diseases/leaf-blight.png"),
+  "Blight": require("../assets/diseases/blight.png"),
+  "Cane blight": require("../assets/diseases/cane-blight.png"),
+  "Botrytis": require("../assets/diseases/botrytis.png"),
+  "Botrytis fruit rot": require("../assets/diseases/botrytis-fruit-rot.png"),
+  "Gray mold": require("../assets/diseases/gray-mold.png"),
+  "Rust": require("../assets/diseases/rust.png"),
+  "Bean rust": require("../assets/diseases/bean-rust.png"),
+  "Mint rust": require("../assets/diseases/mint-rust.png"),
+  "Fig rust": require("../assets/diseases/fig-rust.png"),
+  "Cedar-apple rust": require("../assets/diseases/cedar-apple-rust.png"),
+  "Anthracnose": require("../assets/diseases/anthracnose.png"),
+  "Brown rot": require("../assets/diseases/brown-rot.png"),
+  "Peach leaf curl": require("../assets/diseases/peach-leaf-curl.png"),
+  "Black knot": require("../assets/diseases/black-knot.png"),
+  "Apple scab": require("../assets/diseases/apple-scab.png"),
+  "Scab": require("../assets/diseases/scab.png"),
+  "Scurf": require("../assets/diseases/scurf.png"),
+  "Mummy berry": require("../assets/diseases/mummy-berry.png"),
+  "Clubroot": require("../assets/diseases/clubroot.png"),
+  "Black rot": require("../assets/diseases/black-rot.png"),
+  "Bacterial wilt": require("../assets/diseases/bacterial-wilt.png"),
+  "Fire blight": require("../assets/diseases/fire-blight.png"),
+  "Mosaic virus": require("../assets/diseases/mosaic-virus.png"),
+  "Fig mosaic": require("../assets/diseases/fig-mosaic.png"),
+  "Blossom-end rot": require("../assets/diseases/blossom-end-rot.png"),
+  "Cavity spot": require("../assets/diseases/cavity-spot.png"),
+  "White rot": require("../assets/diseases/white-rot.png"),
+  "Rhizome rot": require("../assets/diseases/rhizome-rot.png"),
+  "Root rot": require("../assets/diseases/root-rot.png"),
+  "Fruit rot": require("../assets/diseases/fruit-rot.png"),
+  "Fruit souring": require("../assets/diseases/fruit-souring.png"),
+  "Fusarium wilt": require("../assets/diseases/fusarium-wilt.png"),
+  "Fusarium rot": require("../assets/diseases/fusarium-rot.png"),
+  "Panama disease": require("../assets/diseases/panama-disease.png"),
+  "Black sigatoka": require("../assets/diseases/black-sigatoka.png"),
+  "Corn smut": require("../assets/diseases/corn-smut.png"),
+  "Smut": require("../assets/diseases/smut.png"),
+  "Greasy spot": require("../assets/diseases/greasy-spot.png"),
+  "Sooty mold": require("../assets/diseases/sooty-mold.png"),
+  "Damping-off": require("../assets/diseases/damping-off.png"),
+  "Popcorn disease": require("../assets/diseases/popcorn-disease.png"),
+};
+
+export function getDiseaseImage(name) {
+  return diseaseImageMap[name] || null;
+}

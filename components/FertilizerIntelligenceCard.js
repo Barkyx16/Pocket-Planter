@@ -3,8 +3,11 @@ import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { getClimateBucket, getTodayKey } from "../core";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
 export const FertilizerIntelligenceCard = memo(function FertilizerIntelligenceCard({ theme, weather, zone, savedPlants, fertilizerTrackers, onOpenPlant }) {
+  const { t } = useTranslation();
   const currentMonth = new Date().getMonth() + 1;
   const today = getTodayKey();
 
@@ -172,7 +175,7 @@ const getPlantsDueForFertilizer = () => {
 return (
     <View>
       <Text style={[styles.fertilizerTitle, { color: theme.text }]}>
-        {tip.season} Feeding Guide
+        {tip.season} {t("fertilizerIntelligence.feedingGuide")}
       </Text>
       <Text style={[styles.fertilizerSubtext, { color: theme.secondaryText }]}>
         {tip.reason}
@@ -180,14 +183,14 @@ return (
 
       <View style={styles.fertilizerGrid}>
         {[
-          { icon: "🧪", label: "Fertilizer Type", value: tip.type, tint: "#8effab" },
-          { icon: "⏰", label: "Best Time", value: tip.bestTime, tint: "#6bc7ff" },
+          { icon: "🧪", label: t("fertilizerIntelligence.fertilizerType"), value: tip.type, tint: "#8effab" },
+          { icon: "⏰", label: t("fertilizerIntelligence.bestTime"), value: tip.bestTime, tint: "#6bc7ff" },
           { icon: "📅", label: "Frequency", value: tip.frequency, tint: "#ffd86b" },
-          { icon: "🛒", label: "What to Buy", value: tip.product, tint: "#ff9f43" },
+          { icon: "🛒", label: t("fertilizerIntelligence.whatToBuy"), value: tip.product, tint: "#ff9f43" },
         ].map((t) => (
           <View key={t.label} style={styles.fertilizerTile}>
-            <View style={{ width: 30, height: 30, borderRadius: 10, backgroundColor: `${t.tint}1f`, alignItems: "center", justifyContent: "center", marginBottom: 6, borderWidth: 1, borderColor: `${t.tint}33` }}>
-              <Text style={{ fontSize: 15 }}>{t.icon}</Text>
+            <View style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: `${t.tint}1f`, alignItems: "center", justifyContent: "center", marginBottom: 6, borderWidth: 1, borderColor: `${t.tint}33` }}>
+              <Text style={{ fontSize: 14 }}>{t.icon}</Text>
             </View>
             <Text style={[styles.fertilizerTileLabel, { color: t.tint }]}>{t.label}</Text>
             <Text style={styles.fertilizerTileValue}>{t.value}</Text>
@@ -197,8 +200,8 @@ return (
 
       {weatherWarning ? (
         <View style={[styles.fertilizerWeatherBox, {
-          backgroundColor: weatherWarning.icon === "✅" ? "rgba(92,255,137,0.10)" : "rgba(255,216,107,0.10)",
-          borderColor: weatherWarning.icon === "✅" ? "rgba(92,255,137,0.30)" : "rgba(255,216,107,0.30)",
+          backgroundColor: weatherWarning.icon === "✅" ? "rgba(92, 255, 137, 0.1)" : "rgba(255, 216, 107, 0.1)",
+          borderColor: weatherWarning.icon === "✅" ? "rgba(92, 255, 137, 0.3)" : "rgba(255, 216, 107, 0.3)",
         }]}>
           <Text style={styles.fertilizerWeatherIcon}>{weatherWarning.icon}</Text>
           <Text style={[styles.fertilizerWeatherText, { color: theme.secondaryText }]}>{weatherWarning.text}</Text>
@@ -206,13 +209,13 @@ return (
       ) : null}
 
       <View style={styles.fertilizerTipBox}>
-        <Text style={styles.fertilizerTipTitle}>💡 Pro Tip</Text>
+        <IconText label={t("fertilizerIntelligence.proTip")} style={styles.fertilizerTipTitle} />
         <Text style={[styles.fertilizerTipText, { color: theme.secondaryText }]}>{tip.tip}</Text>
       </View>
 
       {plantsDue.length > 0 ? (
         <View style={styles.fertilizerDueBox}>
-          <Text style={styles.fertilizerDueTitle}>🪴 Plants due for feeding</Text>
+          <IconText label={t("fertilizerIntelligence.plantsDueForFeeding")} style={styles.fertilizerDueTitle} />
           <View style={styles.fertilizerDueRow}>
             {plantsDue.map((plantName) => {
   const plant = produceData.find((item) => item.name === plantName);

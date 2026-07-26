@@ -1,9 +1,12 @@
 import { memo } from "react";
 import { useState } from "react";
 import { Alert, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { useTranslation, formatDate } from "../lib/i18n";
 import { styles } from "../styles";
+import { IconText } from "./IconText";
 
 export const JournalCard = memo(function JournalCard({ theme, journalEntries, onAddGeneralPhoto, onDeleteEntry, uploadingPhoto }) {
+  const { t, tn, growthStageLabel } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPlant, setFilterPlant] = useState("All");
   const [filterStage, setFilterStage] = useState("All");
@@ -27,7 +30,10 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
   const groupedEntries = filteredEntries.reduce((groups, entry) => {
     const date = new Date(entry.createdAt);
     const key = `${date.getFullYear()}-${date.getMonth()}`;
-    const label = date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    const label = formatDate(date, {
+  month: "long",
+  year: "numeric"
+});
     if (!groups[key]) groups[key] = { label, entries: [] };
     groups[key].entries.push(entry);
     return groups;
@@ -56,7 +62,9 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
       const ed = new Date(e.createdAt);
       return ed.getMonth() === d.getMonth() && ed.getFullYear() === d.getFullYear();
     }).length;
-    return { month: d.toLocaleDateString("en-US", { month: "short" }), count };
+    return { month: formatDate(d, {
+  month: "short"
+}), count };
   });
   const maxCount = Math.max(...growthChartData.map(d => d.count), 1);
 
@@ -64,16 +72,16 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
   const stageBreakdown = ["Seedling", "Leaf Growth", "Flowering", "Fruit Forming", "Harvest Ready"].map(stage => ({
     stage,
     count: journalEntries.filter(e => e.growthStage === stage).length,
-    color: { "Seedling": "#8effab", "Leaf Growth": "#5cff89", "Flowering": "#ffd86b", "Fruit Forming": "#ff9f43", "Harvest Ready": "#ff6b6b" }[stage],
+    color: { "Seedling": "#8effab", "Leaf Growth": "#5cff89", "Flowering": "#ffd86b", "Fruit Forming": "#ff9f43", "Harvest Ready": "#ff7b7b" }[stage],
   }));
 
   const journalAchievements = [
-    { icon: "🌱", title: "First Sprout", unlocked: journalEntries.length >= 1 },
-    { icon: "📸", title: "Photo Keeper", unlocked: journalEntries.length >= 3 },
-    { icon: "📖", title: "Garden Story", unlocked: journalEntries.length >= 5 },
-    { icon: "🍅", title: "Harvest Hero", unlocked: harvestEntries > 0 },
+    { icon: "🌱", title: t("journal.badgeFirstSprout"), unlocked: journalEntries.length >= 1 },
+    { icon: "📸", title: t("journal.badgePhotoKeeper"), unlocked: journalEntries.length >= 3 },
+    { icon: "📖", title: t("journal.badgeGardenStory"), unlocked: journalEntries.length >= 5 },
+    { icon: "🍅", title: t("journal.badgeHarvestHero"), unlocked: harvestEntries > 0 },
     { icon: "🌿", title: "Botanist", unlocked: plantsDocumented >= 5 },
-    { icon: "📅", title: "Monthly Grower", unlocked: thisMonthEntries >= 3 },
+    { icon: "📅", title: t("journal.badgeMonthlyGrower"), unlocked: thisMonthEntries >= 3 },
   ];
 
   const getGrowthProgress = (stage) => {
@@ -83,7 +91,7 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
   };
 
   const getStageColor = (stage) => {
-    const colors = { "Seedling": "#8effab", "Leaf Growth": "#5cff89", "Flowering": "#ffd86b", "Fruit Forming": "#ff9f43", "Harvest Ready": "#ff6b6b" };
+    const colors = { "Seedling": "#8effab", "Leaf Growth": "#5cff89", "Flowering": "#ffd86b", "Fruit Forming": "#ff9f43", "Harvest Ready": "#ff7b7b" };
     return colors[stage] || "#5cff89";
   };
 
@@ -125,11 +133,11 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
     try {
       const { Share } = require("react-native");
       await Share.share({
-        message: "Check out my garden progress on Pocket Planter! 🌱",
+        message: t("journal.shareText"),
         url: imageUri,
       });
     } catch (error) {
-      Alert.alert("Share failed", "Could not share this photo right now.");
+      Alert.alert(t("journal.shareFailed"), t("journal.shareFailedBody"));
     }
   };
 
@@ -145,22 +153,22 @@ return (
       {/* ── DASHBOARD STATS ── */}
       {totalPhotos > 0 ? (
         <View style={styles.journalDashGrid}>
-          <View style={[styles.journalDashTile, { borderColor: "rgba(92,255,137,0.25)" }]}>
+          <View style={[styles.journalDashTile, { borderColor: "rgba(92, 255, 137, 0.24)" }]}>
             <Text style={styles.journalDashTileIcon}>📸</Text>
             <Text style={styles.journalDashTileValue}>{totalPhotos}</Text>
-            <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>Total Photos</Text>
+            <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>{t("journal.totalPhotos")}</Text>
           </View>
-          <View style={[styles.journalDashTile, { borderColor: "rgba(255,216,107,0.25)" }]}>
+          <View style={[styles.journalDashTile, { borderColor: "rgba(255, 216, 107, 0.24)" }]}>
             <Text style={styles.journalDashTileIcon}>🌿</Text>
             <Text style={styles.journalDashTileValue}>{plantsDocumented}</Text>
-            <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>Plants Documented</Text>
+            <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>{t("journal.plantsDocumented")}</Text>
           </View>
-          <View style={[styles.journalDashTile, { borderColor: "rgba(107,199,255,0.25)" }]}>
+          <View style={[styles.journalDashTile, { borderColor: "rgba(107, 199, 255, 0.24)" }]}>
             <Text style={styles.journalDashTileIcon}>📅</Text>
             <Text style={styles.journalDashTileValue}>{thisMonthEntries}</Text>
-            <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>This Month</Text>
+            <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>{t("journal.thisMonth")}</Text>
           </View>
-          <View style={[styles.journalDashTile, { borderColor: "rgba(255,107,107,0.25)" }]}>
+          <View style={[styles.journalDashTile, { borderColor: "rgba(255, 107, 107, 0.24)" }]}>
             <Text style={styles.journalDashTileIcon}>🚜</Text>
             <Text style={styles.journalDashTileValue}>{harvestEntries}</Text>
             <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>Harvests</Text>
@@ -171,7 +179,7 @@ return (
       {/* ── GROWTH CHART ── */}
       {totalPhotos > 0 ? (
         <View style={styles.journalGrowthChartCard}>
-          <Text style={styles.journalGrowthChartTitle}>📈 Photo Activity — Last 6 Months</Text>
+          <Text style={styles.journalGrowthChartTitle}>{t("journal.photoActivity")}</Text>
           <View style={styles.journalGrowthChartBars}>
             {growthChartData.map((item, i) => (
               <View key={i} style={styles.journalGrowthChartBar}>
@@ -181,7 +189,7 @@ return (
                 <View style={styles.journalGrowthChartBarTrack}>
                   <View style={[styles.journalGrowthChartBarFill, {
                     height: `${(item.count / maxCount) * 100}%`,
-                    backgroundColor: i === 5 ? "#5cff89" : "rgba(92,255,137,0.35)",
+                    backgroundColor: i === 5 ? "#5cff89" : "rgba(92, 255, 137, 0.3)",
                   }]} />
                 </View>
                 <Text style={styles.journalGrowthChartMonth}>{item.month}</Text>
@@ -190,7 +198,7 @@ return (
           </View>
           {thisWeekEntries > 0 ? (
             <View style={styles.journalGrowthChartBadge}>
-              <Text style={styles.journalGrowthChartBadgeText}>🔥 {thisWeekEntries} photo{thisWeekEntries === 1 ? "" : "s"} this week — you're on a roll!</Text>
+              <Text style={styles.journalGrowthChartBadgeText}>{tn("journal.photosThisWeek", thisWeekEntries)}</Text>
             </View>
           ) : null}
         </View>
@@ -199,7 +207,7 @@ return (
       {/* ── STAGE BREAKDOWN ── */}
       {totalPhotos > 0 ? (
         <View style={styles.journalStageBreakdown}>
-          <Text style={styles.journalStageBreakdownTitle}>🌱 Growth Stage Breakdown</Text>
+          <Text style={styles.journalStageBreakdownTitle}>{t("journal.growthBreakdown")}</Text>
           <View style={styles.journalStageBreakdownTrack}>
             {stageBreakdown.filter(s => s.count > 0).map((s, i) => (
               <View key={i} style={[styles.journalStageBreakdownSegment, {
@@ -228,8 +236,8 @@ return (
           {journalAchievements.map((a) => (
             <View key={a.title} style={[styles.journalAchievementBadgeV2, {
               opacity: a.unlocked ? 1 : 0.3,
-              borderColor: a.unlocked ? "rgba(92,255,137,0.35)" : "rgba(255,255,255,0.08)",
-              backgroundColor: a.unlocked ? "rgba(92,255,137,0.10)" : "rgba(255,255,255,0.04)",
+              borderColor: a.unlocked ? "rgba(92, 255, 137, 0.3)" : "rgba(255, 255, 255, 0.08)",
+              backgroundColor: a.unlocked ? "rgba(92, 255, 137, 0.1)" : "rgba(255, 255, 255, 0.04)",
             }]}>
               <Text style={styles.journalAchievementIconV2}>{a.icon}</Text>
               <Text numberOfLines={1} style={styles.journalAchievementTextV2}>{a.title}</Text>
@@ -242,7 +250,7 @@ return (
       {/* ── TAB SWITCHER ── */}
       {totalPhotos > 0 ? (
         <View style={styles.journalTabSwitcher}>
-          {[{ id: "timeline", label: "📅 Timeline" }, { id: "plants", label: "🌿 By Plant" }].map(tab => (
+          {[{ id: "timeline", label: t("journal.timeline") }, { id: "plants", label: t("journal.byPlant") }].map(tab => (
             <Pressable
               key={tab.id}
               onPress={() => setActiveTab(tab.id)}
@@ -262,26 +270,26 @@ return (
           <View style={styles.journalEmptyIconRing}>
             <Text style={styles.journalEmptyStateEmoji}>📸</Text>
           </View>
-          <Text style={styles.journalEmptyStateTitle}>Start Your Garden Story</Text>
+          <Text style={styles.journalEmptyStateTitle}>{t("journal.emptyTitle")}</Text>
           <Text style={[styles.journalEmptyStateText, { color: theme.secondaryText }]}>
-            Snap a photo whenever something changes. In a few weeks you'll have a beautiful timeline of your garden growing from seed to harvest — with progress bars, streaks, and badges along the way.
+            {t("journal.snapAPhotoWheneverSomething")}
           </Text>
 
           <Pressable disabled={uploadingPhoto} style={styles.journalHeroButton} onPress={onAddGeneralPhoto}>
-            <Text style={styles.journalHeroButtonText}>{uploadingPhoto ? "Uploading…" : "📷  Add Your First Photo"}</Text>
+            <Text style={styles.journalHeroButtonText}>{uploadingPhoto ? t("journal.uploading") : t("journal.addFirstPhoto")}</Text>
           </Pressable>
-          <Text style={styles.journalEmptyHint}>Takes 5 seconds · no green thumb required</Text>
+          <Text style={styles.journalEmptyHint}>{t("journal.takesSeconds")}</Text>
 
           {/* ── MOMENTS TO CAPTURE ── */}
-          <Text style={styles.journalEmptySectionLabel}>✨ GREAT MOMENTS TO CAPTURE</Text>
+          <Text style={styles.journalEmptySectionLabel}>{t("journal.greatMoments")}</Text>
           <View style={styles.journalIdeaGrid}>
             {[
-              { icon: "🌱", label: "First sprout" },
-              { icon: "🌿", label: "New leaves" },
-              { icon: "💧", label: "Watering day" },
-              { icon: "🌸", label: "First flower" },
-              { icon: "🍅", label: "Fruit forming" },
-              { icon: "🎉", label: "Harvest day" },
+              { icon: "🌱", label: t("journal.momentSprout") },
+              { icon: "🌿", label: t("journal.momentLeaves") },
+              { icon: "💧", label: t("journal.momentWatering") },
+              { icon: "🌸", label: t("journal.momentFlower") },
+              { icon: "🍅", label: t("journal.momentFruit") },
+              { icon: "🎉", label: t("journal.momentHarvest") },
             ].map((idea) => (
               <Pressable key={idea.label} disabled={uploadingPhoto} onPress={onAddGeneralPhoto} style={styles.journalIdeaChip}>
                 <Text style={styles.journalIdeaChipIcon}>{idea.icon}</Text>
@@ -291,7 +299,7 @@ return (
           </View>
 
           {/* ── BADGES TO UNLOCK ── */}
-          <Text style={styles.journalEmptySectionLabel}>🏆 BADGES TO UNLOCK</Text>
+          <Text style={styles.journalEmptySectionLabel}>{t("journal.badgesToUnlock")}</Text>
           <View style={styles.journalUnlockGrid}>
             {journalAchievements.map((a) => (
               <View key={a.title} style={styles.journalUnlockChip}>
@@ -305,7 +313,7 @@ return (
         <>
           <Pressable disabled={uploadingPhoto} style={styles.journalAddPhotoButton} onPress={onAddGeneralPhoto}>
             <Text style={styles.journalAddPhotoButtonIcon}>📷</Text>
-            <Text style={styles.journalAddPhotoButtonText}>{uploadingPhoto ? "Uploading…" : "Add Photo"}</Text>
+            <Text style={styles.journalAddPhotoButtonText}>{uploadingPhoto ? t("journal.uploading") : t("journal.addPhoto")}</Text>
           </Pressable>
 
           {/* ── SEARCH ── */}
@@ -314,12 +322,12 @@ return (
             <TextInput
               value={searchQuery}
               onChangeText={setSearchQuery}
-              placeholder="Search by plant or caption..."
+              placeholder={t("journal.searchPlaceholder")}
               placeholderTextColor="#8fbf9d"
               style={styles.journalSearchInput}
             />
             {searchQuery ? (
-              <Pressable onPress={() => setSearchQuery("")}>
+              <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.clearSearch")} onPress={() => setSearchQuery("")}>
                 <Text style={styles.journalSearchClear}>✕</Text>
               </Pressable>
             ) : null}
@@ -331,7 +339,7 @@ return (
               <Pressable key={plant} onPress={() => setFilterPlant(plant)}
                 style={[styles.journalFilterPill, filterPlant === plant && styles.journalFilterPillActive]}>
                 <Text style={[styles.journalFilterPillText, filterPlant === plant && styles.journalFilterPillTextActive]}>
-                  {plant === "All" ? "🌿 All Plants" : plant}
+                  {plant === "All" ? t("journal.allPlants") : plant}
                 </Text>
               </Pressable>
             ))}
@@ -343,7 +351,7 @@ return (
               <Pressable key={stage} onPress={() => setFilterStage(stage)}
                 style={[styles.journalFilterPill, filterStage === stage && styles.journalFilterPillActive]}>
                 <Text style={[styles.journalFilterPillText, filterStage === stage && styles.journalFilterPillTextActive]}>
-                  {stage === "All" ? "📅 All Stages" : stage}
+                  {stage === "All" ? t("journal.allStages") : growthStageLabel(stage)}
                 </Text>
               </Pressable>
             ))}
@@ -354,7 +362,7 @@ return (
             <View style={styles.journalResultsRow}>
               <Text style={styles.journalResultsText}>{filteredEntries.length} {filteredEntries.length === 1 ? "entry" : "entries"} found</Text>
               <Pressable onPress={() => { setSearchQuery(""); setFilterPlant("All"); setFilterStage("All"); }}>
-                <Text style={styles.journalResultsClear}>Clear filters</Text>
+                <Text style={styles.journalResultsClear}>{t("journal.clearFilters")}</Text>
               </Pressable>
             </View>
           ) : null}
@@ -365,17 +373,17 @@ return (
               {filteredEntries.length === 0 ? (
                 <View style={styles.journalNoResults}>
                   <Text style={styles.journalNoResultsEmoji}>🔍</Text>
-                  <Text style={styles.journalNoResultsTitle}>No entries found</Text>
-                  <Text style={[styles.journalNoResultsText, { color: theme.secondaryText }]}>Try adjusting your search or filters to see your plants.</Text>
+                  <Text style={styles.journalNoResultsTitle}>{t("journal.noEntriesFound")}</Text>
+                  <Text style={[styles.journalNoResultsText, { color: theme.secondaryText }]}>{t("journal.tryAdjustingYourSearchOr")}</Text>
                   <Pressable onPress={() => { setSearchQuery(""); setFilterPlant("All"); setFilterStage("All"); }} style={styles.journalNoResultsBtn}>
-                    <Text style={styles.journalNoResultsBtnText}>Clear filters</Text>
+                    <Text style={styles.journalNoResultsBtnText}>{t("journal.clearFilters")}</Text>
                   </Pressable>
                 </View>
               ) : null}
-              {Array.from(new Set(filteredEntries.map(e => e.plantName || "Garden Update"))).map(plantName => {
-                const plantEntries = filteredEntries.filter(e => (e.plantName || "Garden Update") === plantName);
+              {Array.from(new Set(filteredEntries.map(e => e.plantName || t("journal.gardenUpdate")))).map(plantName => {
+                const plantEntries = filteredEntries.filter(e => (e.plantName || t("journal.gardenUpdate")) === plantName);
                 return (
-                  <View key={plantName} style={[styles.journalPlantGroup, { borderColor: "rgba(92,255,137,0.18)" }]}>
+                  <View key={plantName} style={[styles.journalPlantGroup, { borderColor: "rgba(92, 255, 137, 0.16)" }]}>
                     <View style={styles.journalPlantGroupHeader}>
                       <Text style={styles.journalPlantGroupName}>{plantName}</Text>
                       <View style={styles.journalPlantGroupBadge}>
@@ -389,13 +397,13 @@ return (
                           {entry.imageUri ? (
                             <Image source={{ uri: entry.imageUri }} style={styles.journalPlantThumbImage} resizeMode="cover" />
                           ) : (
-                            <View style={[styles.journalPlantThumbImage, { backgroundColor: "rgba(92,255,137,0.10)", alignItems: "center", justifyContent: "center" }]}>
+                            <View style={[styles.journalPlantThumbImage, { backgroundColor: "rgba(92, 255, 137, 0.1)", alignItems: "center", justifyContent: "center" }]}>
                               <Text style={{ fontSize: 24 }}>🌱</Text>
                             </View>
                           )}
                           <View style={[styles.journalPlantThumbStage, { backgroundColor: getStageColor(entry.growthStage) + "33" }]}>
                             <Text style={[styles.journalPlantThumbStageText, { color: getStageColor(entry.growthStage) }]}>
-                              {entry.growthStage?.split(" ")[0] || "Seedling"}
+                              {growthStageLabel(entry.growthStage || "Seedling").split(" ")[0]}
                             </Text>
                           </View>
                         </Pressable>
@@ -454,11 +462,11 @@ return (
 
                           {/* ACTION BUTTONS OVERLAY */}
                           <View style={styles.journalEntryActionRow}>
-                            <Pressable onPress={() => onDeleteEntry(entry.id)} style={styles.journalEntryActionBtn}>
+                            <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.deleteEntry")} onPress={() => onDeleteEntry(entry.id)} style={styles.journalEntryActionBtn}>
                               <Text style={styles.journalEntryActionBtnText}>✕</Text>
                             </Pressable>
                             {entry.imageUri ? (
-                              <Pressable onPress={() => sharePhoto(entry.imageUri)} style={[styles.journalEntryActionBtn, { backgroundColor: "rgba(92,255,137,0.85)" }]}>
+                              <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.sharePhoto")} onPress={() => sharePhoto(entry.imageUri)} style={[styles.journalEntryActionBtn, { backgroundColor: "rgba(92, 255, 137, 0.85)" }]}>
                                 <Text style={[styles.journalEntryActionBtnText, { color: "#07120b" }]}>⬆</Text>
                               </Pressable>
                             ) : null}
@@ -467,7 +475,7 @@ return (
                           {/* MOOD + WEATHER OVERLAY */}
                           <View style={styles.journalEntryOverlayRow}>
                             <View style={styles.journalMoodOverlay}>
-                              <Text style={styles.journalMoodOverlayText}>{entry.mood || "🌱 Growing"}</Text>
+                              <Text style={styles.journalMoodOverlayText}>{entry.mood || t("journal.growing")}</Text>
                             </View>
                             {entry.weather ? (
                               <View style={[styles.journalMoodOverlay, { right: 10, left: "auto" }]}>
@@ -483,23 +491,27 @@ return (
                             <View style={styles.journalEntryHeaderV2}>
                               <View style={{ flex: 1 }}>
                                 <Text numberOfLines={1} style={[styles.journalEntryTitleV2, { color: theme.text }]}>
-                                  {entry.plantName || "Garden Update"}
+                                  {entry.plantName || t("journal.gardenUpdate")}
                                 </Text>
                                 <Text style={[styles.journalEntryDateV2, { color: theme.secondaryText }]}>
-                                  {new Date(entry.createdAt).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
-                                  {" · Day "}{entry.daysSincePlanting || 1}
+                                  {formatDate(new Date(entry.createdAt), {
+  weekday: "short",
+  month: "short",
+  day: "numeric"
+})}
+                                  {t("journal.day")}{entry.daysSincePlanting || 1}
                                 </Text>
                               </View>
                               <View style={[styles.journalStageChip, { backgroundColor: stageColor + "22", borderColor: stageColor + "55" }]}>
                                 <Text style={[styles.journalStageChipText, { color: stageColor }]}>
-                                  {entry.growthStage || "Seedling"}
+                                  {growthStageLabel(entry.growthStage || "Seedling")}
                                 </Text>
                               </View>
                             </View>
 
                             {/* GROWTH PROGRESS BAR */}
                             <View style={styles.journalGrowthRow}>
-                              <Text style={[styles.journalGrowthLabel, { color: stageColor }]}>Growth Progress</Text>
+                              <Text style={[styles.journalGrowthLabel, { color: stageColor }]}>{t("journal.growthProgress")}</Text>
                               <Text style={[styles.journalDayBadge, { color: theme.secondaryText }]}>{Math.round(growthProgress * 100)}%</Text>
                             </View>
                             <View style={styles.journalProgressTrack}>
@@ -519,7 +531,7 @@ return (
                                     <TextInput
                                       value={captionDraft}
                                       onChangeText={setCaptionDraft}
-                                      placeholder="Write a caption..."
+                                      placeholder={t("journal.writeACaption")}
                                       placeholderTextColor="#8fbf9d"
                                       multiline
                                       style={styles.journalCaptionInput}
@@ -530,11 +542,11 @@ return (
                                       onPress={() => setShowCaptionSuggestions(showingSuggestions ? null : entry.id)}
                                       style={styles.journalSuggestButton}
                                     >
-                                      <Text style={styles.journalSuggestButtonText}>✨ Smart caption ideas</Text>
+                                      <IconText label={t("journal.smartCaptionIdeas")} style={styles.journalSuggestButtonText} />
                                     </Pressable>
                                     {showingSuggestions ? (
                                       <View style={styles.journalSuggestionsBox}>
-                                        <Text style={styles.journalSuggestionsTitle}>💡 Suggestions for {entry.growthStage || "Seedling"}</Text>
+                                        <Text style={styles.journalSuggestionsTitle}>💡 {t("journal.suggestionsFor", { stage: growthStageLabel(entry.growthStage || "Seedling") })}</Text>
                                         {suggestions.map((s, i) => (
                                           <Pressable key={i} onPress={() => { setCaptionDraft(s); setShowCaptionSuggestions(null); }}
                                             style={styles.journalSuggestionPill}>
@@ -545,7 +557,7 @@ return (
                                     ) : null}
                                     <View style={styles.journalCaptionButtonRow}>
                                       <Pressable onPress={() => saveCaption(entry.id)} style={styles.journalCaptionSaveBtn}>
-                                        <Text style={styles.journalCaptionSaveBtnText}>Save Caption</Text>
+                                        <Text style={styles.journalCaptionSaveBtnText}>{t("journal.saveCaption")}</Text>
                                       </Pressable>
                                       <Pressable onPress={() => setEditingCaption(null)} style={styles.journalCaptionCancelBtn}>
                                         <Text style={styles.journalCaptionCancelBtnText}>Cancel</Text>
@@ -556,12 +568,12 @@ return (
                                   <Pressable onPress={() => { setEditingCaption(entry.id); setCaptionDraft(caption || ""); }}
                                     style={styles.journalCaptionWrap}>
                                     <Text style={[styles.journalCaptionText, { color: caption ? theme.text : theme.secondaryText }]}>
-                                      {caption || "Tap to add a caption... ✏️"}
+                                      {caption || t("journal.tapToAddACaption")}
                                     </Text>
                                     {!caption ? (
                                       <Pressable onPress={() => { setEditingCaption(entry.id); setShowCaptionSuggestions(entry.id); setCaptionDraft(""); }}
                                         style={styles.journalSuggestButton}>
-                                        <Text style={styles.journalSuggestButtonText}>✨ Get smart caption ideas</Text>
+                                        <IconText label={t("journal.getSmartCaptionIdeas")} style={styles.journalSuggestButtonText} />
                                       </Pressable>
                                     ) : null}
                                   </Pressable>
@@ -570,10 +582,15 @@ return (
                                 {/* EXPANDED DETAILS */}
                                 <View style={styles.journalExpandedDetails}>
                                   <View style={styles.journalDetailChip}>
-                                    <Text style={styles.journalDetailChipText}>📅 {new Date(entry.createdAt).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</Text>
+                                    <Text style={styles.journalDetailChipText}>📅 {formatDate(new Date(entry.createdAt), {
+  weekday: "long",
+  month: "long",
+  day: "numeric",
+  year: "numeric"
+})}</Text>
                                   </View>
                                   <View style={styles.journalDetailChip}>
-                                    <Text style={styles.journalDetailChipText}>⏳ Day {entry.daysSincePlanting || 1} since planting</Text>
+                                    <Text style={styles.journalDetailChipText}>{t("journal.day2")} {entry.daysSincePlanting || 1} {t("journal.sincePlanting")}</Text>
                                   </View>
                                   {entry.mood ? (
                                     <View style={styles.journalDetailChip}>
@@ -581,18 +598,18 @@ return (
                                     </View>
                                   ) : null}
                                   <View style={[styles.journalDetailChip, { backgroundColor: stageColor + "18", borderColor: stageColor + "40" }]}>
-                                    <Text style={[styles.journalDetailChipText, { color: stageColor }]}>🌿 Stage: {entry.growthStage || "Seedling"}</Text>
+                                    <Text style={[styles.journalDetailChipText, { color: stageColor }]}>🌿 {t("journal.stageLabelText", { stage: growthStageLabel(entry.growthStage || "Seedling") })}</Text>
                                   </View>
                                 </View>
                               </>
                             ) : (
                               <Text style={[styles.journalCaptionPreview, { color: theme.secondaryText }]} numberOfLines={2}>
-                                {caption || "Tap to expand, add caption, or get smart suggestions ✨"}
+                                {caption || t("journal.tapToExpandAddCaption")}
                               </Text>
                             )}
 
                             <Text style={[styles.journalExpandHint, { color: stageColor }]}>
-                              {isExpanded ? "▲ Collapse" : "▼ Tap to expand"}
+                              {isExpanded ? t("journal.collapse") : t("journal.tapToExpand")}
                             </Text>
                           </View>
                         </Pressable>
@@ -605,10 +622,10 @@ return (
               {filteredEntries.length === 0 && journalEntries.length > 0 ? (
                 <View style={styles.journalNoResults}>
                   <Text style={styles.journalNoResultsEmoji}>🔍</Text>
-                  <Text style={styles.journalNoResultsTitle}>No entries found</Text>
-                  <Text style={[styles.journalNoResultsText, { color: theme.secondaryText }]}>Try adjusting your search or filters.</Text>
+                  <Text style={styles.journalNoResultsTitle}>{t("journal.noEntriesFound")}</Text>
+                  <Text style={[styles.journalNoResultsText, { color: theme.secondaryText }]}>{t("journal.tryAdjustingYourSearchOr2")}</Text>
                   <Pressable onPress={() => { setSearchQuery(""); setFilterPlant("All"); setFilterStage("All"); }} style={styles.journalNoResultsBtn}>
-                    <Text style={styles.journalNoResultsBtnText}>Clear filters</Text>
+                    <Text style={styles.journalNoResultsBtnText}>{t("journal.clearFilters")}</Text>
                   </Pressable>
                 </View>
               ) : null}

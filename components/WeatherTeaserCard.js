@@ -2,8 +2,11 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { formatTemp, getClimateBucket } from "../core";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
 export const WeatherTeaserCard = memo(function WeatherTeaserCard({ theme, weather, zone, onUnlock, unitSystem }) {
+  const { t } = useTranslation();
   const climate = getClimateBucket(zone);
   const currentMonth = new Date().getMonth() + 1;
 
@@ -31,10 +34,10 @@ export const WeatherTeaserCard = memo(function WeatherTeaserCard({ theme, weathe
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
 
       {/* HEADER */}
-      <Text style={styles.cardEyebrow}>🌤️ LIVE GARDEN WEATHER</Text>
-      <Text style={[styles.cardTitle, { color: theme.text }]}>Garden Weather</Text>
+      <IconText label={t("weatherTeaser.liveGardenWeather")} style={styles.cardEyebrow} />
+      <Text style={[styles.cardTitle, { color: theme.text }]}>{t("weatherTeaser.gardenWeather")}</Text>
       <Text style={[styles.cardText, { color: theme.secondaryText }]}>
-        Zone {zone || "—"} • Smart weather intelligence for your garden
+        Zone {zone || "—"} {t("weatherTeaser.smartWeatherIntelligenceForYour")}
       </Text>
 
       {/* TEASER WEATHER CARD */}
@@ -75,7 +78,7 @@ export const WeatherTeaserCard = memo(function WeatherTeaserCard({ theme, weathe
           </View>
         </View>
         <Text style={[styles.weatherTeaserBlurLabel, { color: theme.secondaryText }]}>
-          Unlock premium to see your personalized action plan
+          {t("weatherTeaser.unlockPremiumToSeeYour")}
         </Text>
       </View>
 
@@ -93,11 +96,11 @@ export const WeatherTeaserCard = memo(function WeatherTeaserCard({ theme, weathe
 
       {/* UNLOCK BUTTON */}
       <Pressable onPress={onUnlock} style={styles.weatherTeaserUnlockBtn}>
-        <Text style={styles.weatherTeaserUnlockBtnText}>👑 Unlock Premium Weather Intelligence</Text>
+        <IconText label={t("weatherTeaser.unlockPremiumWeatherIntelligence")} style={styles.weatherTeaserUnlockBtnText} />
       </Pressable>
 
      <Text style={[styles.weatherTeaserFooter, { color: theme.secondaryText }]}>
-        $2.99/month • Cancel anytime
+        {t("weatherTeaser.n299monthCancelAnytime")}
       </Text>
     </View>
   );

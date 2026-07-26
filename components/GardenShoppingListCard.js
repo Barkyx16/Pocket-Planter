@@ -2,6 +2,8 @@ import { memo, useState } from "react";
 import { Image, Linking, Pressable, Share, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { resolvePlantImageSource, tapHaptic } from "../core";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
 const imgFor = (name) => {
   const item = produceData.find((p) => p.name === name);
@@ -9,6 +11,7 @@ const imgFor = (name) => {
 };
 
 export const GardenShoppingListCard = memo(function GardenShoppingListCard({ theme, gardenAreas, zip }) {
+  const { t } = useTranslation();
   const plantNames = Array.from(new Set(
     (gardenAreas || []).flatMap((a) => Object.values(a.plots || {}).filter(Boolean))
   ));
@@ -34,38 +37,46 @@ export const GardenShoppingListCard = memo(function GardenShoppingListCard({ the
 
   return (
     <View>
-      <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "600", lineHeight: 19, marginTop: 2 }}>
-        {plantNames.length} plant{plantNames.length === 1 ? "" : "s"} planted across your garden — restock seeds or feed in a tap.
+      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "600", lineHeight: 19, marginTop: 2 }}>
+        {plantNames.length} plant{plantNames.length === 1 ? "" : "s"} {t("gardenShoppingList.plantedAcrossYourGardenRestock")}
       </Text>
 
       <View style={{ gap: 6, marginTop: 12 }}>
         {plantNames.slice(0, visible).map((name) => {
           const img = imgFor(name);
           return (
-          <View key={name} style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 12, paddingVertical: 7, paddingHorizontal: 10, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
+          <View key={name} style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 12, paddingVertical: 8, paddingHorizontal: 10, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
             {img ? (
               <View style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                 <Image source={img} style={{ width: 26, height: 26 }} resizeMode="contain" />
               </View>
             ) : (
-              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#5cff89" }} />
+              <View style={{ width: 6, height: 6, borderRadius: 4, backgroundColor: "#5cff89" }} />
             )}
-            <Text numberOfLines={1} style={{ flex: 1, color: theme.text, fontSize: 13.5, fontWeight: "800" }}>{name}</Text>
+            <Text numberOfLines={1} style={{ flex: 1, color: theme.text, fontSize: 14, fontWeight: "800" }}>{name}</Text>
             <Pressable
               onPress={() => Linking.openURL(`https://www.amazon.com/s?k=${encodeURIComponent(name + " seeds")}`)}
               accessibilityRole="button"
               accessibilityLabel={`Shop for ${name} seeds`}
-              style={{ backgroundColor: "rgba(92,255,137,0.10)", borderRadius: 9, paddingVertical: 6, paddingHorizontal: 9, borderWidth: 1, borderColor: "rgba(92,255,137,0.22)" }}
+              style={{ backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
             >
-              <Text style={{ color: "#8effab", fontSize: 11.5, fontWeight: "900" }}>🌱 Seeds</Text>
+              <IconText label={t("gardenShoppingList.seeds")} style={{
+  color: "#8effab",
+  fontSize: 12,
+  fontWeight: "900"
+}} />
             </Pressable>
             <Pressable
               onPress={() => Linking.openURL(`https://www.amazon.com/s?k=${encodeURIComponent(name + " fertilizer")}`)}
               accessibilityRole="button"
               accessibilityLabel={`Shop for ${name} fertilizer`}
-              style={{ backgroundColor: "rgba(255,216,107,0.10)", borderRadius: 9, paddingVertical: 6, paddingHorizontal: 9, borderWidth: 1, borderColor: "rgba(255,216,107,0.22)" }}
+              style={{ backgroundColor: "rgba(255, 216, 107, 0.1)", borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: "rgba(255, 216, 107, 0.2)" }}
             >
-              <Text style={{ color: "#ffd86b", fontSize: 11.5, fontWeight: "900" }}>🌾 Feed</Text>
+              <IconText label={t("gardenShoppingList.feed")} style={{
+  color: "#ffd86b",
+  fontSize: 12,
+  fontWeight: "900"
+}} />
             </Pressable>
           </View>
           );
@@ -75,18 +86,26 @@ export const GardenShoppingListCard = memo(function GardenShoppingListCard({ the
       {plantNames.length > visible ? (
         <Pressable
           onPress={() => setVisible((c) => c + 8)}
-          style={{ marginTop: 10, backgroundColor: "rgba(92,255,137,0.10)", borderRadius: 16, paddingVertical: 13, alignItems: "center", borderWidth: 1, borderColor: "rgba(92,255,137,0.24)" }}
+          style={{ marginTop: 10, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
         >
-          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>Show more plants ({plantNames.length - visible} more)</Text>
+          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("gardenShoppingList.showMorePlants")}{plantNames.length - visible} {t("gardenShoppingList.more")}</Text>
         </Pressable>
       ) : null}
 
-      <Text style={{ color: theme.secondaryText, fontSize: 11.5, fontWeight: "600", lineHeight: 17, marginTop: 10 }}>
-        🧺 Don't forget the basics: compost or potting mix, a balanced fertilizer, and mulch.
-      </Text>
+      <IconText label={t("gardenShoppingList.dontForgetTheBasicsCompost")} style={{
+  color: theme.secondaryText,
+  fontSize: 12,
+  fontWeight: "600",
+  lineHeight: 17,
+  marginTop: 10
+}} />
 
-      <Pressable onPress={shareList} accessibilityRole="button" style={{ marginTop: 12, backgroundColor: "#5cff89", borderRadius: 14, paddingVertical: 12, alignItems: "center" }}>
-        <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 13.5 }}>📤 Share / Copy List</Text>
+      <Pressable onPress={shareList} accessibilityRole="button" style={{ marginTop: 12, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 12, alignItems: "center" }}>
+        <IconText label={t("gardenShoppingList.shareCopyList")} style={{
+  color: "#07120b",
+  fontWeight: "900",
+  fontSize: 14
+}} />
       </Pressable>
     </View>
   );

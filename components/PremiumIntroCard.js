@@ -1,29 +1,32 @@
 import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
+import { IconText } from "./IconText";
+import { useTranslation } from "../lib/i18n";
 
 export const PremiumIntroCard = memo(function PremiumIntroCard({ onClose, onUnlock }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.premiumGlassCard}>
       <View style={styles.premiumGlowOrb} />
       <View style={styles.premiumGlowOrbTwo} />
       <View style={styles.premiumTopRow}>
-        <View style={styles.premiumBadge}><Text style={styles.premiumBadgeText}>👑 Pocket Planter Premium</Text></View>
+        <View style={styles.premiumBadge}><IconText label={t("premiumIntro.pocketPlanterPremium")} style={styles.premiumBadgeText} /></View>
         <View style={styles.premiumRibbon}><Text style={styles.premiumRibbonIcon}>👑</Text><Text style={styles.premiumRibbonText}>PREMIUM</Text></View>
       </View>
-      <Text style={styles.premiumHeadline}>Turn your backyard into a <Text style={styles.premiumHeadlineGreen}>thriving garden.</Text></Text>
-      <Text style={styles.premiumSubheadline}>Unlock companion planting intelligence, smart weather alerts, garden compatibility scoring, reminders, journal photos, and a beautiful garden map.</Text>
+      <Text style={styles.premiumHeadline}>{t("premiumIntro.turnYourBackyardIntoA")} <Text style={styles.premiumHeadlineGreen}>{t("premiumIntro.thrivingGarden")}</Text></Text>
+      <Text style={styles.premiumSubheadline}>{t("premiumIntro.unlockCompanionPlantingIntelligenceSmart")}</Text>
       <View style={styles.premiumFeatureGridNew}>
-        <Text style={styles.premiumFeatureNew}>🟢 Pair scores</Text>
-        <Text style={styles.premiumFeatureNew}>⚠ Avoid warnings</Text>
-        <Text style={styles.premiumFeatureNew}>🐛 Pest tips</Text>
-        <Text style={styles.premiumFeatureNew}>🗺️ Garden score</Text>
+        <IconText label={t("premiumIntro.pairScores")} style={styles.premiumFeatureNew} />
+        <IconText label={t("premiumIntro.avoidWarnings")} style={styles.premiumFeatureNew} />
+        <IconText label={t("premiumIntro.pestTips")} style={styles.premiumFeatureNew} />
+        <IconText label={t("premiumIntro.gardenScore")} style={styles.premiumFeatureNew} />
       </View>
       <View style={styles.premiumActionRowNew}>
-        <Pressable style={styles.premiumCtaButton} onPress={onUnlock}><Text style={styles.premiumCtaText}>Start Growing Smarter 🌱</Text></Pressable>
-        <Pressable style={styles.premiumLaterButton} onPress={onClose}><Text style={styles.premiumLaterText}>Maybe later</Text></Pressable>
+        <Pressable style={styles.premiumCtaButton} onPress={onUnlock}><Text style={styles.premiumCtaText}>{t("premiumIntro.startGrowingSmarter")}</Text></Pressable>
+        <Pressable style={styles.premiumLaterButton} onPress={onClose}><Text style={styles.premiumLaterText}>{t("premiumIntro.maybeLater")}</Text></Pressable>
       </View>
-    <Text style={styles.premiumPriceText}>🛡️ $2.99/month or $24.99/year • Cancel anytime</Text>
+    <IconText label={t("premiumIntro.n299monthOr2499yearCancelAnytime")} style={styles.premiumPriceText} />
     </View>
   );
 })

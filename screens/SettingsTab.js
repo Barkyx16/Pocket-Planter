@@ -1,5 +1,7 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Alert, Pressable, Switch, Text, View } from "react-native";
 import * as Notifications from "expo-notifications";
+import { LANGUAGES, t } from "../lib/i18n";
 import { MONTH_NAMES, formatReminderTime, formatTemp, getFrostSeasonMonths, getUpcomingFrost } from "../core";
 import { AccountCloudCard } from "../components/AccountCloudCard";
 import { CollapsibleCard } from "../components/CollapsibleCard";
@@ -11,21 +13,27 @@ import { ReminderControlCard } from "../components/ReminderControlCard";
 import { SettingsCard } from "../components/SettingsCard";
 import { ShareGardenCard } from "../components/ShareGardenCard";
 import { YearInReviewCard } from "../components/YearInReviewCard";
+import { IconText } from "../components/IconText";
 
-export function SettingsTab({ appearanceMode, setAppearanceMode, hapticsOn, setHapticsOn, exportFullBackup, restoreFromBackup, cancelReminder, careLog, dailyWateringOn, deleteJournalEntriesOlderThan, ensureNotificationPermission, frostAlertsOn, gardenAreas, gardenMap, gardenXP, harvestLog, journalEntries, monthlyPlantingOn, newEmail, plantOfDayOn, premiumUnlocked, reminderY, remindersOn, savedPlants, scheduleDailyReminder, setDailyWateringOn, setFrostAlertsOn, setMonthlyPlantingOn, setNewEmail, setPremiumUnlocked, setRemindersOn, setSubscriptionPlan, setUnitSystem, setWateringReminderTime, streakData, subscriptionPlan, theme, togglePlantOfDay, unitSystem, unlockPremium, user, wateringHistory, wateringReminderTime, weather, zone }) {
+export function SettingsTab({ language, setLanguage, lastSyncedAt, appearanceMode, setAppearanceMode, hapticsOn, setHapticsOn, exportFullBackup, restoreFromBackup, cancelReminder, careLog, dailyWateringOn, deleteJournalEntriesOlderThan, ensureNotificationPermission, frostAlertsOn, gardenAreas, gardenMap, gardenXP, harvestLog, journalEntries, monthlyPlantingOn, newEmail, plantOfDayOn, premiumUnlocked, reminderY, remindersOn, savedPlants, scheduleDailyReminder, setDailyWateringOn, setFrostAlertsOn, setMonthlyPlantingOn, setNewEmail, setPremiumUnlocked, setRemindersOn, setSubscriptionPlan, setUnitSystem, setWateringReminderTime, streakData, subscriptionPlan, theme, togglePlantOfDay, unitSystem, unlockPremium, user, wateringHistory, wateringReminderTime, weather, zone }) {
   return (
     <View>
       <View style={{ marginTop: 8, marginBottom: 16, paddingHorizontal: 4 }}>
-        <Text style={{ color: theme.text, fontSize: 30, fontWeight: "900" }}>⚙️ Settings</Text>
+        <IconText label={t("settings.settings")} style={{
+  color: theme.text,
+  fontSize: 30,
+  fontWeight: "900"
+}} />
         <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "700", marginTop: 4 }}>
-          Your account, reminders, and data.
+          {t("settings.yourAccountRemindersAndData")}
         </Text>
       </View>
 
-      <CollapsibleCard theme={theme} storageKey="account" title="☁️ Cloud Save Connected">
+      <CollapsibleCard theme={theme} storageKey="account" title={t("settings.cloudSave")}>
         <AccountCloudCard
           theme={theme}
           user={user}
+          lastSyncedAt={lastSyncedAt}
           newEmail={newEmail}
           setNewEmail={setNewEmail}
           subscriptionPlan={subscriptionPlan}
@@ -37,7 +45,7 @@ export function SettingsTab({ appearanceMode, setAppearanceMode, hapticsOn, setH
       </CollapsibleCard>
 
       <View onLayout={(event) => { if (reminderY) reminderY.current = event.nativeEvent.layout.y; }}>
-        <CollapsibleCard theme={theme} storageKey="reminders" title="Smart Reminders!">
+        <CollapsibleCard theme={theme} storageKey="reminders" title={t("settings.smartReminders")}>
           <ReminderControlCard
             theme={theme}
             remindersOn={remindersOn}
@@ -145,10 +153,10 @@ export function SettingsTab({ appearanceMode, setAppearanceMode, hapticsOn, setH
                   id: "daily-watering",
                   hour: wateringReminderTime.hour,
                   minute: wateringReminderTime.minute,
-                  title: rainLikely ? "🌧️ Rain May Water Today" : "💧 Daily Watering Check",
+                  title: rainLikely ? t("settings.rainMayWaterToday") : t("settings.dailyWateringCheck"),
                   body: rainLikely
-                    ? "Rain is likely today. Check the soil before watering your garden."
-                    : "Time to check your garden and water any plants that need moisture today.",
+                    ? t("settings.rainIsLikelyTodayCheck")
+                    : t("settings.timeToCheckYourGarden"),
                 });
                 if (ok) {
                   Alert.alert("Daily Watering Check On 💧", `Pocket Planter will remind you every morning at ${formatReminderTime(wateringReminderTime)} to check your garden.`);
@@ -160,35 +168,41 @@ export function SettingsTab({ appearanceMode, setAppearanceMode, hapticsOn, setH
             }}
           />
           <View style={{ marginTop: 22, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 18 }}>
-            <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 8 }}>🔔 MY GARDEN REMINDERS</Text>
+            <IconText label={t("settings.myGardenReminders")} style={{
+  color: "#8effab",
+  fontSize: 12,
+  fontWeight: "900",
+  letterSpacing: 0.8,
+  marginBottom: 8
+}} />
             <CustomTasksCard theme={theme} />
           </View>
         </CollapsibleCard>
       </View>
 
-      <CollapsibleCard theme={theme} storageKey="appearance" title="📳 Haptics" defaultOpen={false}>
+      <CollapsibleCard theme={theme} storageKey="appearance" title={t("settings.haptics")} defaultOpen={false}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 2 }}>
           <View style={{ flex: 1, paddingRight: 12 }}>
-            <Text style={{ color: theme.text, fontSize: 14.5, fontWeight: "900" }}>Haptic feedback</Text>
-            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>Vibration feedback on taps and actions.</Text>
+            <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{t("settings.hapticsLabel")}</Text>
+            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>{t("settings.hapticsBody")}</Text>
           </View>
           <Switch
             value={hapticsOn}
             onValueChange={setHapticsOn}
-            trackColor={{ false: "rgba(255,255,255,0.15)", true: "#5cff89" }}
+            trackColor={{ false: "rgba(255, 255, 255, 0.16)", true: "#5cff89" }}
             thumbColor="#ffffff"
           />
         </View>
       </CollapsibleCard>
 
-      <CollapsibleCard theme={theme} storageKey="units" title="📏 Units" defaultOpen={false}>
-        <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 2, marginBottom: 12 }}>
-          Choose how temperatures and rainfall are shown across the app.
+      <CollapsibleCard theme={theme} storageKey="units" title={t("settings.units")} defaultOpen={false}>
+        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2, marginBottom: 12 }}>
+          {t("settings.unitsBody")}
         </Text>
         <View style={{ flexDirection: "row", gap: 8 }}>
           {[
-            { id: "imperial", label: "°F · inches" },
-            { id: "metric", label: "°C · mm" },
+            { id: "imperial", label: t("settings.unitsImperial") },
+            { id: "metric", label: t("settings.unitsMetric") },
           ].map((opt) => {
             const active = unitSystem === opt.id;
             return (
@@ -197,7 +211,7 @@ export function SettingsTab({ appearanceMode, setAppearanceMode, hapticsOn, setH
                 onPress={() => setUnitSystem(opt.id)}
                 accessibilityRole="button"
                 accessibilityState={{ selected: active }}
-                style={{ flex: 1, alignItems: "center", paddingVertical: 13, borderRadius: 14, backgroundColor: active ? "#5cff89" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255,255,255,0.12)" }}
+                style={{ flex: 1, alignItems: "center", paddingVertical: 14, borderRadius: 12, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.12)" }}
               >
                 <Text style={{ color: active ? "#07120b" : theme.text, fontSize: 14, fontWeight: "900" }}>{opt.label}</Text>
               </Pressable>
@@ -207,7 +221,7 @@ export function SettingsTab({ appearanceMode, setAppearanceMode, hapticsOn, setH
       </CollapsibleCard>
 
       {((harvestLog || []).length + (journalEntries || []).length + Object.keys(wateringHistory || {}).length > 0 || savedPlants.length > 0) ? (
-        <CollapsibleCard theme={theme} storageKey="yearinreview" title="🌻 Year in Review">
+        <CollapsibleCard theme={theme} storageKey="yearinreview" title={t("settings.yearInReview")}>
           <YearInReviewCard
             theme={theme}
             savedPlants={savedPlants}
@@ -218,7 +232,7 @@ export function SettingsTab({ appearanceMode, setAppearanceMode, hapticsOn, setH
             gardenXP={gardenXP}
           />
           <View style={{ marginTop: 22, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 18 }}>
-            <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 8 }}>📤 SHARE YOUR GARDEN</Text>
+            <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 8 }}>{t("settings.shareGarden")}</Text>
             <ShareGardenCard
               theme={theme}
               gardenXP={gardenXP}
@@ -232,14 +246,20 @@ export function SettingsTab({ appearanceMode, setAppearanceMode, hapticsOn, setH
         </CollapsibleCard>
       ) : null}
 
-      <CollapsibleCard theme={theme} storageKey="dataexport" title="💾 Export & Backup" defaultOpen={false}>
+      <CollapsibleCard theme={theme} storageKey="dataexport" title={t("settings.exportBackup")} defaultOpen={false}>
         <BackupRestoreCard
           theme={theme}
           onExport={exportFullBackup}
           onRestore={restoreFromBackup}
         />
         <View style={{ marginTop: 20, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 18 }}>
-          <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 8 }}>📄 EXPORT AS CSV</Text>
+          <IconText label={t("settings.exportAsCsv")} style={{
+  color: "#8effab",
+  fontSize: 12,
+  fontWeight: "900",
+  letterSpacing: 0.8,
+  marginBottom: 8
+}} />
           <DataExportCard
             theme={theme}
             harvestLog={harvestLog}
@@ -248,7 +268,13 @@ export function SettingsTab({ appearanceMode, setAppearanceMode, hapticsOn, setH
           />
         </View>
         <View style={{ marginTop: 20, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 18 }}>
-          <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 8 }}>📸 PHOTO STORAGE</Text>
+          <IconText label={t("settings.photoStorage")} style={{
+  color: "#8effab",
+  fontSize: 12,
+  fontWeight: "900",
+  letterSpacing: 0.8,
+  marginBottom: 8
+}} />
           <PhotoStorageCard
             theme={theme}
             journalEntries={journalEntries}
@@ -258,7 +284,7 @@ export function SettingsTab({ appearanceMode, setAppearanceMode, hapticsOn, setH
       </CollapsibleCard>
 
       {premiumUnlocked ? (
-        <CollapsibleCard theme={theme} storageKey="premiumplan" title="👑 Premium & Billing" defaultOpen={false}>
+        <CollapsibleCard theme={theme} storageKey="premiumplan" title={t("settings.premiumBilling")} defaultOpen={false}>
           <SettingsCard
             theme={theme}
             premiumUnlocked={premiumUnlocked}
@@ -269,6 +295,44 @@ export function SettingsTab({ appearanceMode, setAppearanceMode, hapticsOn, setH
           />
         </CollapsibleCard>
       ) : null}
+
+      <CollapsibleCard theme={theme} storageKey="language" title={t("language.title")} defaultOpen={false}>
+        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2, marginBottom: 12 }}>
+          {t("language.body")}
+        </Text>
+        <View style={{ gap: 8 }}>
+          {LANGUAGES.map((item) => {
+            const active = item.code === language;
+            return (
+              <Pressable
+                key={item.code}
+                onPress={() => setLanguage(item.code)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: 12,
+                  paddingHorizontal: 14,
+                  borderRadius: 12,
+                  backgroundColor: active ? "rgba(92, 255, 137, 0.16)" : "rgba(255, 255, 255, 0.06)",
+                  borderWidth: 1,
+                  borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.12)",
+                }}
+              >
+                <Text style={{ fontSize: 20, marginRight: 12 }}>{item.flag}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }}>{item.nativeName}</Text>
+                  {item.nativeName !== item.name ? (
+                    <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>{item.name}</Text>
+                  ) : null}
+                </View>
+                {active ? <Ionicons name="checkmark-circle" size={20} color="#5cff89" /> : null}
+              </Pressable>
+            );
+          })}
+        </View>
+      </CollapsibleCard>
     </View>
   );
 }

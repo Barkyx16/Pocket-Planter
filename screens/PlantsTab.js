@@ -1,17 +1,44 @@
-import { useState } from "react";
-import { Alert, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, Image, InteractionManager, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { getDateKey, MONTH_NAMES, PLANT_TYPES, SCREEN_WIDTH, getHarvestCountdown, getMonthEmoji, getPlantDifficulty, getPlantSeasonLabel, getSearchSuggestions, normalizeType, plantsBuddyImage, resolvePlantImageSource, tapHaptic } from "../core";
+import { getMonthImage } from "../data/monthImageMap";
 import { CollapsibleCard } from "../components/CollapsibleCard";
 import { TabHero } from "../components/TabHero";
 import { GlowPlantCard } from "../components/GlowPlantCard";
 import { PersonalPlantingCalendar } from "../components/PersonalPlantingCalendar";
+import { t } from "../lib/i18n";
+import { IconText } from "../components/IconText";
 
-export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markPlantWatered, monthScrollDone, monthScrollRef, monthlyPicksY, monthlySuggestions, openPlantFromList, openPlantFromMonthly, plantSearch, plantDifficultyFilter, setPlantDifficultyFilter, plantNowOnly, setPlantNowOnly, plantSortMode, setPlantSortMode, plantsListY, plantsVisibleCount, recentPlants, savedPlants, scrollRef, selectedMonth, selectedType, setComparePlants, setPlantSearch, setPlantsVisibleCount, setSelectedMonth, setSelectedType, snoozePlantWatering, snoozedPlants, theme, toggleComparePlant, toggleFollowPlant, toggleSavedPlant, wateredPlants, wateringHistory, weather, zone }) {
+export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markPlantWatered, monthScrollDone, monthScrollRef, monthlyPicksY, monthlySuggestions, openPlantFromList, openPlantFromMonthly, plantSearch, plantDifficultyFilter, setPlantDifficultyFilter, plantNowOnly, setPlantNowOnly, plantSortMode, setPlantSortMode, plantAttrFilters, setPlantAttrFilters, addPlantToGarden, gardenPlantNames, plantsListY, plantsVisibleCount, recentPlants, savedPlants, scrollRef, selectedMonth, selectedType, setComparePlants, setPlantSearch, setPlantsVisibleCount, setSelectedMonth, setSelectedType, snoozePlantWatering, snoozedPlants, theme, toggleComparePlant, toggleFollowPlant, toggleSavedPlant, wateredPlants, wateringHistory, weather, zone }) {
   const [selectMode, setSelectMode] = useState(false);
   const [bulkSel, setBulkSel] = useState([]);
+  const [showAllMonthly, setShowAllMonthly] = useState(false);
+
+  // Progressive render. Each GlowPlantCard resolves an image and runs several
+  // per-plant computations on mount; mounting all ~20 at once competes with the
+  // tab cross-fade and makes this tab feel slower to open than the others. So we
+  // paint a small first batch immediately, then render the rest once the switch
+  // animation has settled. The tab remounts on every switch, so this runs each
+  // time the tab is opened.
+  const FIRST_PAINT = 6;
+  // Monthly picks can be long — show a short preview, then a "show more" toggle.
+  const MONTHLY_PREVIEW = 5;
+  const [renderCap, setRenderCap] = useState(FIRST_PAINT);
+  useEffect(() => {
+    if (renderCap >= plantsVisibleCount) return undefined;
+    const task = InteractionManager.runAfterInteractions(() => setRenderCap(Infinity));
+    return () => task.cancel();
+  }, [renderCap, plantsVisibleCount]);
+  const visibleCount = Math.min(plantsVisibleCount, renderCap);
   const toggleBulk = (name) => setBulkSel((cur) => cur.includes(name) ? cur.filter((n) => n !== name) : [...cur, name]);
+  const toggleAttr = (key) => { tapHaptic("light"); setPlantAttrFilters((cur) => cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key]); };
+  const ATTR_FILTERS = [
+    { key: "container", label: "🪴 Container-friendly" },
+    { key: "fullsun", label: "☀️ Full sun" },
+    { key: "perennial", label: "🔁 Perennial" },
+  ];
   const exitSelect = () => { setSelectMode(false); setBulkSel([]); };
   const bulkSave = () => {
     const toSave = bulkSel.filter((n) => !savedPlants.includes(n));
@@ -37,12 +64,12 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
       }}
     />
 <View onLayout={(event) => { monthlyPicksY.current = event.nativeEvent.layout.y; }}>
-      <CollapsibleCard theme={theme} storageKey="monthlypicks" title="📅 This Month's Picks!">
+      <CollapsibleCard theme={theme} storageKey="monthlypicks" title={t("plants.thisMonthsPicks")}>
       <View style={styles.primaryFeatureAccentBar} />
       <View style={styles.cardHeaderRow}>
         <View style={{ flex: 1 }} />
         <Pressable style={styles.smallJumpButton} onPress={() => { scrollRef.current?.scrollTo({ y: plantsListY.current, animated: true }); }}>
-          <Text style={styles.smallJumpButtonText}>All plants</Text>
+          <Text style={styles.smallJumpButtonText}>{t("plants.allPlants")}</Text>
         </Pressable>
       </View>
     <ScrollView ref={monthScrollRef} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
@@ -62,7 +89,11 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
               }}
               style={[styles.calendarMonthCard, active && styles.calendarMonthCardActive]}
             >
-              <Text style={styles.calendarMonthEmoji}>{getMonthEmoji(monthNumber)}</Text>
+              {getMonthImage(monthNumber) ? (
+                <Image source={getMonthImage(monthNumber)} style={{ width: 34, height: 34, borderRadius: 9, marginBottom: 2 }} resizeMode="cover" />
+              ) : (
+                <Text style={styles.calendarMonthEmoji}>{getMonthEmoji(monthNumber)}</Text>
+              )}
               <Text style={[styles.calendarMonthText, { color: active ? "#ffd86b" : "#d7ebdc" }]}>{month.slice(0, 3)}</Text>
             </Pressable>
           );
@@ -70,7 +101,7 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
       </ScrollView>
       {monthlySuggestions.length ? (
         <View style={styles.cleanPlantList}>
-          {monthlySuggestions.map((item) => {
+          {(showAllMonthly ? monthlySuggestions : monthlySuggestions.slice(0, MONTHLY_PREVIEW)).map((item) => {
             const imageSource = resolvePlantImageSource(item);
             return (
               <Pressable key={`monthly-${item.name}`} style={styles.cleanPlantRow} onPress={() => openPlantFromMonthly(item)}>
@@ -85,22 +116,36 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
               </Pressable>
             );
           })}
+          {monthlySuggestions.length > MONTHLY_PREVIEW ? (
+            <Pressable
+              onPress={() => { tapHaptic("light"); setShowAllMonthly((v) => !v); }}
+              accessibilityRole="button"
+              style={{ marginTop: 8, alignSelf: "center", flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 10, paddingHorizontal: 18, borderRadius: 999, backgroundColor: "rgba(92, 255, 137, 0.1)", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.28)" }}
+            >
+              <Text style={{ color: "#8effab", fontSize: 13, fontWeight: "900" }}>
+                {showAllMonthly
+                  ? t("plants.showLess")
+                  : `${t("plants.showMorePlants")}${monthlySuggestions.length - MONTHLY_PREVIEW} ${t("plants.more")}`}
+              </Text>
+              <Text style={{ color: "#8effab", fontSize: 13, fontWeight: "900" }}>{showAllMonthly ? "▲" : "▼"}</Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : (
         <View style={styles.emptyStateCard}>
           <Text style={styles.emptyStateIcon}>📅</Text>
-          <Text style={styles.emptyStateTitle}>Nothing ideal for {MONTH_NAMES[selectedMonth - 1]}</Text>
+          <Text style={styles.emptyStateTitle}>{t("plants.nothingIdealFor")} {MONTH_NAMES[selectedMonth - 1]}</Text>
           <Text style={styles.emptyStateText}>
             {zone
               ? `${MONTH_NAMES[selectedMonth - 1]} isn't a prime planting window for Zone ${zone}. Try another month above, or browse all plants to plan ahead.`
-              : "Set your zip code on the Weather tab to unlock plant recommendations matched to your growing zone."}
+              : t("plants.setYourZipCodeOn")}
           </Text>
 </View>
       )}
       </CollapsibleCard>
     </View>
 {savedPlants.length ? (
-    <CollapsibleCard theme={theme} storageKey="plantingcalendar" title="📅 Your Planting Calendar">
+    <CollapsibleCard theme={theme} storageKey="plantingcalendar" title={t("plants.yourPlantingCalendar")}>
     <PersonalPlantingCalendar
       theme={theme}
       savedPlants={savedPlants}
@@ -123,6 +168,7 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
             setPlantSearch("");
             setPlantDifficultyFilter("All");
             setPlantSortMode("smart");
+            setPlantAttrFilters([]);
           }}
         >
           <Text style={styles.smallJumpButtonText}>Reset</Text>
@@ -153,7 +199,13 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
       </ScrollView>
       {recentPlants.length > 0 ? (
         <View style={{ marginTop: 14 }}>
-          <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 8 }}>🕐 RECENTLY VIEWED</Text>
+          <IconText label={t("plants.recentlyViewed")} style={{
+  color: "#8effab",
+  fontSize: 12,
+  fontWeight: "900",
+  letterSpacing: 0.5,
+  marginBottom: 8
+}} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
             {recentPlants.map((name) => {
               const item = produceData.find((p) => p.name === name);
@@ -163,12 +215,12 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
                 <Pressable
                   key={`recent-${name}`}
                   onPress={() => openPlantFromList(item)}
-                  style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 999, paddingLeft: 6, paddingRight: 14, paddingVertical: 6, borderWidth: 1, borderColor: "rgba(142,255,171,0.16)" }}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 999, paddingLeft: 6, paddingRight: 14, paddingVertical: 6, borderWidth: 1, borderColor: "rgba(142, 255, 171, 0.16)" }}
                 >
                   <View style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                     {img ? <Image source={img} style={{ width: 24, height: 24 }} resizeMode="contain" /> : <Text style={{ fontSize: 16 }}>🌱</Text>}
                   </View>
-                  <Text style={{ color: "#ffffff", fontSize: 13, fontWeight: "800" }}>{name}</Text>
+                  <Text style={{ color: "#ffffff", fontSize: 12, fontWeight: "800" }}>{name}</Text>
                 </Pressable>
               );
             })}
@@ -181,12 +233,12 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
         <TextInput
           value={plantSearch}
           onChangeText={setPlantSearch}
-          placeholder="Search plants..."
+          placeholder={t("plants.searchPlants")}
           placeholderTextColor="#8fbf9d"
           style={styles.plantSearchInput}
         />
         {plantSearch ? (
-          <Pressable onPress={() => setPlantSearch("")}>
+          <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.clearSearch")} onPress={() => setPlantSearch("")}>
             <Text style={styles.plantSearchClear}>✕</Text>
           </Pressable>
         ) : null}
@@ -195,15 +247,15 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
       {zone ? (
         <Pressable
           onPress={() => { tapHaptic("light"); setPlantNowOnly((v) => !v); }}
-          style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 12, borderRadius: 999, paddingVertical: 10, backgroundColor: plantNowOnly ? "#5cff89" : "rgba(92,255,137,0.10)", borderWidth: 1, borderColor: plantNowOnly ? "#5cff89" : "rgba(92,255,137,0.28)" }}
+          style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 12, borderRadius: 999, paddingVertical: 10, backgroundColor: plantNowOnly ? "#5cff89" : "rgba(92, 255, 137, 0.1)", borderWidth: 1, borderColor: plantNowOnly ? "#5cff89" : "rgba(92, 255, 137, 0.3)" }}
         >
-          <Text style={{ color: plantNowOnly ? "#07120b" : "#8effab", fontSize: 13.5, fontWeight: "900" }}>
-            {plantNowOnly ? "🌱 Showing plantable now ✓" : `🌱 What can I grow now in Zone ${zone}?`}
+          <Text style={{ color: plantNowOnly ? "#07120b" : "#8effab", fontSize: 14, fontWeight: "900" }}>
+            {plantNowOnly ? t("plants.showingPlantableNow") : `🌱 What can I grow now in Zone ${zone}?`}
           </Text>
         </Pressable>
       ) : null}
-      {/* Difficulty filter */}
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+      {/* Difficulty filter — horizontal scroll keeps it to one clean row (no ragged wrap) */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12 }} contentContainerStyle={{ gap: 8, paddingRight: 4 }}>
         {["All", "Easy", "Medium", "Hard"].map((d) => {
           const active = plantDifficultyFilter === d;
           const icon = d === "Easy" ? "🟢" : d === "Medium" ? "🟡" : d === "Hard" ? "🔴" : "";
@@ -213,21 +265,39 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
               onPress={() => { tapHaptic("light"); setPlantDifficultyFilter(d); }}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
-              accessibilityLabel={d === "All" ? "Show all difficulties" : `Filter by ${d} difficulty`}
-              style={{ borderRadius: 999, paddingHorizontal: 13, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255,255,255,0.10)" }}
+              accessibilityLabel={d === "All" ? t("plants.showAllDifficulties") : `Filter by ${d} difficulty`}
+              style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}
             >
               <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{icon ? icon + " " : ""}{d}</Text>
             </Pressable>
           );
         })}
-      </View>
+      </ScrollView>
+      {/* Attribute filters (backed by authored plant details) */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }} contentContainerStyle={{ gap: 8, paddingRight: 4 }}>
+        {ATTR_FILTERS.map((a) => {
+          const active = plantAttrFilters.includes(a.key);
+          return (
+            <Pressable
+              key={a.key}
+              onPress={() => toggleAttr(a.key)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              accessibilityLabel={active ? `Remove ${a.label} filter` : `Filter by ${a.label}`}
+              style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}
+            >
+              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{a.label}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
       {/* Sort mode */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingTop: 10, paddingBottom: 2 }}>
         {[
-          { id: "smart", label: "✨ Smart" },
+          { id: "smart", label: t("plants.smart") },
           { id: "az", label: "A–Z" },
-          { id: "harvest", label: "⚡ Fastest harvest" },
-          { id: "difficulty", label: "🎯 Difficulty" },
+          { id: "harvest", label: t("plants.fastestHarvest") },
+          { id: "difficulty", label: t("plants.difficulty") },
         ].map((s) => {
           const active = plantSortMode === s.id;
           return (
@@ -237,7 +307,7 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
               accessibilityLabel={`Sort by ${s.label.replace(/^[^ ]+ /, "")}`}
-              style={{ borderRadius: 999, paddingHorizontal: 13, paddingVertical: 8, backgroundColor: active ? "rgba(255,216,107,0.18)" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#ffd86b" : "rgba(255,255,255,0.10)" }}
+              style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: active ? "rgba(255, 216, 107, 0.16)" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#ffd86b" : "rgba(255, 255, 255, 0.1)" }}
             >
               <Text style={{ color: active ? "#ffd86b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{s.label}</Text>
             </Pressable>
@@ -246,7 +316,7 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
       </ScrollView>
       {comparePlants.length === 2 ? (
         <View style={styles.compareCard}>
-          <Text style={styles.compareTitle}>⚔️ Plant Comparison</Text>
+          <IconText label={t("plants.plantComparison")} style={styles.compareTitle} />
           {(() => {
             const left = produceData.find((plant) => plant.name === comparePlants[0]);
             const right = produceData.find((plant) => plant.name === comparePlants[1]);
@@ -271,7 +341,7 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
                   </View>
                 ))}
                 <Pressable onPress={() => setComparePlants([])} style={styles.compareClearButton}>
-                  <Text style={styles.compareClearText}>Clear Comparison</Text>
+                  <Text style={styles.compareClearText}>{t("plants.clearComparison")}</Text>
                 </Pressable>
               </>
             );
@@ -280,7 +350,7 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
       ) : comparePlants.length === 1 ? (
         <View style={styles.compareHintCard}>
           <Text style={styles.compareHintText}>
-            {"⚔️ Select one more plant to compare with "}
+            {t("plants.selectOneMorePlantTo")}
             {comparePlants[0]}
             {"."}
           </Text>
@@ -288,21 +358,25 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
       ) : null}
 
       {selectMode ? (
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(92,255,137,0.10)", borderRadius: 16, padding: 10, borderWidth: 1, borderColor: "rgba(92,255,137,0.28)", marginBottom: 8 }}>
-          <Text style={{ color: "#8effab", fontSize: 13, fontWeight: "900", flex: 1, paddingLeft: 4 }}>{bulkSel.length} selected</Text>
-          <Pressable onPress={bulkSave} disabled={!bulkSel.length} style={{ backgroundColor: bulkSel.length ? "#5cff89" : "rgba(255,255,255,0.08)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9 }}>
-            <Text style={{ color: bulkSel.length ? "#07120b" : "#8fbf9d", fontSize: 12.5, fontWeight: "900" }}>Save {bulkSel.length || ""}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, padding: 10, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", marginBottom: 8 }}>
+          <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", flex: 1, paddingLeft: 4 }}>{bulkSel.length} selected</Text>
+          <Pressable onPress={bulkSave} disabled={!bulkSel.length} style={{ backgroundColor: bulkSel.length ? "#5cff89" : "rgba(255, 255, 255, 0.08)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 }}>
+            <Text style={{ color: bulkSel.length ? "#07120b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>Save {bulkSel.length || ""}</Text>
           </Pressable>
-          <Pressable onPress={bulkCompare} disabled={bulkSel.length !== 2} style={{ backgroundColor: bulkSel.length === 2 ? "rgba(255,216,107,0.18)" : "rgba(255,255,255,0.08)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9, borderWidth: 1, borderColor: bulkSel.length === 2 ? "#ffd86b" : "transparent" }}>
-            <Text style={{ color: bulkSel.length === 2 ? "#ffd86b" : "#8fbf9d", fontSize: 12.5, fontWeight: "900" }}>Compare</Text>
+          <Pressable onPress={bulkCompare} disabled={bulkSel.length !== 2} style={{ backgroundColor: bulkSel.length === 2 ? "rgba(255, 216, 107, 0.16)" : "rgba(255, 255, 255, 0.08)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: bulkSel.length === 2 ? "#ffd86b" : "transparent" }}>
+            <Text style={{ color: bulkSel.length === 2 ? "#ffd86b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>Compare</Text>
           </Pressable>
-          <Pressable onPress={exitSelect} style={{ paddingHorizontal: 6, paddingVertical: 9 }}>
-            <Text style={{ color: "#8fbf9d", fontSize: 12.5, fontWeight: "900" }}>Cancel</Text>
+          <Pressable onPress={exitSelect} style={{ paddingHorizontal: 6, paddingVertical: 10 }}>
+            <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "900" }}>Cancel</Text>
           </Pressable>
         </View>
       ) : filteredPlants.length > 0 ? (
-        <Pressable onPress={() => setSelectMode(true)} accessibilityRole="button" style={{ alignSelf: "flex-end", flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(92,255,137,0.20)" }}>
-          <Text style={{ color: "#8effab", fontSize: 12.5, fontWeight: "900" }}>☑️ Select multiple</Text>
+        <Pressable onPress={() => setSelectMode(true)} accessibilityRole="button" style={{ alignSelf: "flex-end", flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}>
+          <IconText label={t("plants.selectMultiple")} style={{
+  color: "#8effab",
+  fontSize: 12,
+  fontWeight: "900"
+}} />
         </Pressable>
       ) : null}
 
@@ -310,17 +384,17 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
        {filteredPlants.length === 0 ? (
           <View style={styles.emptyStateCard}>
             <Text style={styles.emptyStateIcon}>🔍</Text>
-            <Text style={styles.emptyStateTitle}>No plants found</Text>
+            <Text style={styles.emptyStateTitle}>{t("plants.noPlantsFound")}</Text>
             <Text style={styles.emptyStateText}>
               {plantSearch
                 ? `Nothing matches "${plantSearch}". Try a different name or clear your search.`
                 : selectedType !== "All"
                 ? `No ${selectedType.toLowerCase()} match right now. Try viewing all plants instead.`
-                : "No plants match the current filter."}
+                : t("plants.noPlantsMatchTheCurrent")}
             </Text>
             {plantSearch && getSearchSuggestions(plantSearch).length > 0 ? (
               <View style={{ marginTop: 16, width: "100%" }}>
-                <Text style={{ color: "#8effab", fontSize: 13, fontWeight: "900", marginBottom: 10, textAlign: "center" }}>Did you mean?</Text>
+                <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", marginBottom: 10, textAlign: "center" }}>{t("plants.didYouMean")}</Text>
                 <View style={{ gap: 8 }}>
                   {getSearchSuggestions(plantSearch).map((item) => {
                     const img = resolvePlantImageSource(item);
@@ -328,43 +402,43 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
                       <Pressable
                         key={`suggest-${item.name}`}
                         onPress={() => { setPlantSearch(""); setSelectedType("All"); openPlantFromList(item); }}
-                        style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(92,255,137,0.08)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(92,255,137,0.20)" }}
+                        style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(92, 255, 137, 0.08)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
                       >
                         <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                           {img ? <Image source={img} style={{ width: 32, height: 32 }} resizeMode="contain" /> : <Text style={{ fontSize: 20 }}>🌱</Text>}
                         </View>
-                        <Text style={{ color: "#ffffff", fontSize: 15, fontWeight: "900", flex: 1 }}>{item.name}</Text>
-                        <Text style={{ color: "#8effab", fontSize: 22, fontWeight: "900" }}>›</Text>
+                        <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "900", flex: 1 }}>{item.name}</Text>
+                        <Text style={{ color: "#8effab", fontSize: 20, fontWeight: "900" }}>›</Text>
                       </Pressable>
                     );
                   })}
                 </View>
               </View>
             ) : null}
-            {(plantSearch || selectedType !== "All") ? (
+            {(plantSearch || selectedType !== "All" || plantAttrFilters.length) ? (
               <Pressable
-                onPress={() => { setPlantSearch(""); setSelectedType("All"); }}
-                style={{ marginTop: 14, backgroundColor: "#5cff89", borderRadius: 16, paddingHorizontal: 18, paddingVertical: 11 }}
+                onPress={() => { setPlantSearch(""); setSelectedType("All"); setPlantAttrFilters([]); }}
+                style={{ marginTop: 14, backgroundColor: "#5cff89", borderRadius: 16, paddingHorizontal: 18, paddingVertical: 12 }}
               >
-                <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 13 }}>Show all plants</Text>
+                <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 12 }}>{t("plants.showAllPlants")}</Text>
               </Pressable>
             ) : null}
           </View>
         ) : null}
-               {filteredPlants.slice(0, plantsVisibleCount).map((item) => {
+               {filteredPlants.slice(0, visibleCount).map((item) => {
           const sel = bulkSel.includes(item.name);
           return (
             <View key={item.name} style={{ position: "relative" }}>
-              <GlowPlantCard plant={item} weather={weather} zone={zone} theme={theme} isSaved={savedPlants.includes(item.name)} isCompared={comparePlants.includes(item.name)} isFollowed={followedPlants.includes(item.name)} isSnoozed={snoozedPlants[item.name] === getDateKey(new Date(Date.now() + 86400000))} wateredDate={wateredPlants[item.name]} wateredPlants={wateredPlants} wateringHistory={wateringHistory} onOpen={() => selectMode ? toggleBulk(item.name) : openPlantFromList(item)} onSave={() => toggleSavedPlant(item.name)} onCompare={() => toggleComparePlant(item.name)} onFollow={() => toggleFollowPlant(item.name)} onWater={() => markPlantWatered(item.name)} onSnooze={() => snoozePlantWatering(item.name)} />
+              <GlowPlantCard plant={item} weather={weather} zone={zone} theme={theme} isSaved={savedPlants.includes(item.name)} isCompared={comparePlants.includes(item.name)} isFollowed={followedPlants.includes(item.name)} isInGarden={gardenPlantNames?.has(item.name)} isSnoozed={snoozedPlants[item.name] === getDateKey(new Date(Date.now() + 86400000))} wateredDate={wateredPlants[item.name]} wateredPlants={wateredPlants} wateringHistory={wateringHistory} onOpen={() => selectMode ? toggleBulk(item.name) : openPlantFromList(item)} onSave={() => toggleSavedPlant(item.name)} onCompare={() => toggleComparePlant(item.name)} onFollow={() => toggleFollowPlant(item.name)} onAddToGarden={() => addPlantToGarden(item.name)} onWater={() => markPlantWatered(item.name)} onSnooze={() => snoozePlantWatering(item.name)} />
               {selectMode ? (
                 <Pressable
                   onPress={() => toggleBulk(item.name)}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: sel }}
-                  style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderRadius: 24, borderWidth: sel ? 2.5 : 0, borderColor: "#5cff89", backgroundColor: sel ? "rgba(92,255,137,0.12)" : "rgba(4,20,12,0.15)", alignItems: "flex-end", padding: 12 }}
+                  style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderRadius: 24, borderWidth: sel ? 2.5 : 0, borderColor: "#5cff89", backgroundColor: sel ? "rgba(92, 255, 137, 0.12)" : "rgba(4, 20, 12, 0.16)", alignItems: "flex-end", padding: 12 }}
                 >
-                  <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: sel ? "#5cff89" : "rgba(4,20,12,0.7)", borderWidth: 2, borderColor: sel ? "#5cff89" : "rgba(255,255,255,0.6)", alignItems: "center", justifyContent: "center" }}>
-                    {sel ? <Text style={{ color: "#07120b", fontSize: 15, fontWeight: "900" }}>✓</Text> : null}
+                  <View style={{ width: 30, height: 30, borderRadius: 16, backgroundColor: sel ? "#5cff89" : "rgba(4, 20, 12, 0.6)", borderWidth: 2, borderColor: sel ? "#5cff89" : "rgba(255, 255, 255, 0.6)", alignItems: "center", justifyContent: "center" }}>
+                    {sel ? <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>✓</Text> : null}
                   </View>
                 </Pressable>
               ) : null}
@@ -374,10 +448,10 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
         {filteredPlants.length > plantsVisibleCount ? (
           <Pressable
             onPress={() => setPlantsVisibleCount((c) => c + 20)}
-            style={{ marginTop: 14, backgroundColor: "rgba(92,255,137,0.10)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92,255,137,0.24)" }}
+            style={{ marginTop: 14, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
           >
             <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>
-              Show more plants ({filteredPlants.length - plantsVisibleCount} more)
+              {t("plants.showMorePlants")}{filteredPlants.length - plantsVisibleCount} {t("plants.more")}
             </Text>
           </Pressable>
         ) : null}
