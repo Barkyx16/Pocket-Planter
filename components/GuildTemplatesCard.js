@@ -76,7 +76,7 @@ const GUILDS = [
 const findItem = (name) => produceData.find((p) => p.name.toLowerCase() === name.toLowerCase());
 const inCatalog = (name) => !!findItem(name);
 
-export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, savedPlants, onSavePlant, onOpenPlant }) {
+export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, savedPlants, onSavePlant, onSaveMany, onOpenPlant }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(null);
   const [visible, setVisible] = useState(4);
@@ -106,6 +106,16 @@ export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, save
               {open ? (
                 <View style={{ paddingHorizontal: 12, paddingBottom: 12 }}>
                   <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18, marginBottom: 10 }}>{guild.blurb}</Text>
+                  {onSaveMany && plants.some((p) => !owned.has(p.toLowerCase())) ? (
+                    <Pressable
+                      onPress={() => onSaveMany(plants)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Add all ${guild.name} plants to your plants`}
+                      style={{ marginBottom: 12, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 11, alignItems: "center" }}
+                    >
+                      <Text style={{ color: "#07120b", fontSize: 13, fontWeight: "900" }}>＋ Add all to my plants</Text>
+                    </Pressable>
+                  ) : null}
                   <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                     {plants.map((p) => {
                       const item = findItem(p);

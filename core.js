@@ -349,7 +349,7 @@ export const plantImages = {
   pansy: require("./assets/plants/pansy.png"),
   parlorpalm: require("./assets/plants/parlorpalm.png"),
   pecan: require("./assets/plants/pecan.png"),
-  peony: require("./assets/plants/peony.png"),
+  peony: require("./assets/plants/peonyy.png"),
   peppermint: require("./assets/plants/peppermint.png"),
   petunia: require("./assets/plants/petunia.png"),
   philodendron: require("./assets/plants/philodendron.png"),
@@ -368,7 +368,7 @@ export const plantImages = {
   ridgegourd: require("./assets/plants/ridgegourd.png"),
   romanesco: require("./assets/plants/romanesco.png"),
   romatomato: require("./assets/plants/romatomato.png"),
-  rose: require("./assets/plants/rose.png"),
+  rose: require("./assets/plants/rosee.png"),
   roseapple: require("./assets/plants/roseapple.png"),
   rye: require("./assets/plants/rye.png"),
   sanmarzanotomato: require("./assets/plants/sanmarzanotomato.png"),
@@ -1134,7 +1134,141 @@ export const COMPANION_PLANTING_DATA = {
   },
 };
 
+// ── Flower companion logic ───────────────────────────────────────────────────
+// Flowers aren't in COMPANION_PLANTING_DATA (that chart is for edibles). Instead
+// we derive "plant together / keep apart" from each flower's real growing needs:
+// two blooms that want the SAME light and water are easy neighbors, while opposite
+// extremes (full sun next to deep shade, or a drought-lover next to a thirsty one)
+// fight over the same bed. This makes the Flower Garden's combos, slot badges, and
+// "companions to add" work exactly like the veggie Garden — no per-flower charts.
+let _flowerAttrCache = null;
+function getFlowerAttrs() {
+  if (_flowerAttrCache) return _flowerAttrCache;
+  const map = {};
+  produceData.forEach((p) => {
+    if (!p?.name || normalizeType(p.type, p.name) !== "Flowers") return;
+    const det = PLANT_DETAILS[p.name] || {};
+    map[p.name] = { sun: det.sunlight || null, water: det.waterNeeds || null };
+  });
+  _flowerAttrCache = map;
+  return map;
+}
+
+export function isFlowerName(name) {
+  return !!getFlowerAttrs()[name];
+}
+
+// full <-> shade is the light extreme that can't share a bed; "partial" bridges both.
+function flowerLightConflict(a, b) {
+  return (a === "full" && b === "shade") || (a === "shade" && b === "full");
+}
+// low <-> high is the water extreme that can't share a bed; "medium" bridges both.
+function flowerWaterConflict(a, b) {
+  return (a === "low" && b === "high") || (a === "high" && b === "low");
+}
+
+// Curated flower pairings layered ON TOP of the light/water rules above. These are
+// classic, real-world combinations (and genuine cautions) that gardeners rely on —
+// a curated pair always wins over the computed default. Each entry is symmetric:
+// [flowerA, flowerB, "excellent" | "avoid", reason]. Names must match produceData.
+export const FLOWER_COMPANION_PAIRS = [
+  // ── Excellent — combinations gardeners actually plant together ──
+  ["Rose", "Peony", "excellent", "Roses and peonies are the classic cottage-border duo — same sun and soil, blooming in glorious succession."],
+  ["Rose", "Foxglove", "excellent", "Foxglove spires are the traditional underplanting for roses, drawing pollinators up through the canes."],
+  ["Rose", "Delphinium", "excellent", "Tall delphinium behind roses is a timeless English border, and their light and water needs match."],
+  ["Delphinium", "Foxglove", "excellent", "Two cottage spires that rise together for a layered vertical backdrop."],
+  ["Hollyhock", "Delphinium", "excellent", "Back-of-border giants that share full sun and add height without crowding each other."],
+  ["Coneflower", "Black-Eyed Susan", "excellent", "The signature prairie pair — tough full-sun natives that bloom for weeks and feed pollinators."],
+  ["Coneflower", "Bee Balm", "excellent", "A pollinator magnet combo; both sun-loving natives that draw bees, butterflies, and hummingbirds."],
+  ["Black-Eyed Susan", "Coreopsis", "excellent", "Golden meadow natives with identical needs — an easy, long-blooming drift."],
+  ["Yarrow", "Coneflower", "excellent", "Drought-tough natives that thrive on neglect and keep pollinators busy all summer."],
+  ["Zinnia", "Cosmos", "excellent", "The cutting-garden staple — heat-loving annuals that bloom nonstop for bouquets."],
+  ["Zinnia", "Marigold", "excellent", "Bright, easy annuals with the same needs; marigolds add pest resistance to the bed."],
+  ["Cosmos", "Sunflower", "excellent", "Airy cosmos softens tall sunflowers, and both are pollinator-friendly full-sun annuals."],
+  ["Sunflower", "Zinnia", "excellent", "A cheerful cutting-garden pair — sunflowers tower while zinnias fill in below."],
+  ["Marigold", "Nasturtium", "excellent", "Two workhorse companion flowers — together they lure aphids away and deter pests."],
+  ["Snapdragon", "Sweet Alyssum", "excellent", "Upright snapdragons with a frothy alyssum skirt — a bedding classic with matching needs."],
+  ["Petunia", "Sweet Alyssum", "excellent", "Alyssum spills around petunias and shares their sun and water — a container favorite."],
+  ["Pansy", "Viola", "excellent", "Cool-season cousins that thrive in the same conditions for spring and fall color."],
+  ["Hosta", "Astilbe", "excellent", "The shade-garden classic — both love moist, shady soil, pairing bold leaves with feathery plumes."],
+  ["Hosta", "Impatiens", "excellent", "Impatiens add color at the feet of hostas in the same shady, moist bed."],
+  ["Astilbe", "Bleeding Heart", "excellent", "Woodland shade lovers that enjoy the same cool, damp soil."],
+  ["Begonia", "Impatiens", "excellent", "Reliable shade bedding partners with identical light and water needs."],
+  ["Tulip", "Daffodil", "excellent", "Spring bulbs that naturalize side by side and bloom in the same window."],
+  ["Tulip", "Grape Hyacinth", "excellent", "Grape hyacinth is the traditional carpet beneath tulips for a layered spring display."],
+  ["Daffodil", "Hyacinth", "excellent", "Fragrant spring bulbs with the same planting depth and timing."],
+  ["Crocus", "Snowdrop", "excellent", "The earliest bulbs of the year — perfect naturalized together for late-winter color."],
+  ["Lily", "Phlox", "excellent", "Summer-border partners — phlox fills in around lily stems with matching sun and water."],
+  ["Dahlia", "Cosmos", "excellent", "Late-summer cutting-garden partners that bloom right up to frost."],
+  ["Sweet Pea", "Cornflower", "excellent", "A cottage cutting-garden pair — both cool-season annuals loved for bouquets."],
+  // ── Avoid — genuine cautions beyond a simple light/water mismatch ──
+  ["Bee Balm", "Phlox", "avoid", "Both are highly prone to powdery mildew; planting them together in still air lets it spread fast. Give each space and airflow instead."],
+  ["Hollyhock", "Lavatera", "avoid", "Both are mallows that share hollyhock rust — keep them apart so the fungus doesn't jump between them."],
+  ["Hollyhock", "Hibiscus", "avoid", "All mallows trade hollyhock rust readily, so separate beds keep the disease in check."],
+  ["Rose", "Morning Glory", "avoid", "Morning glory is a vigorous self-seeding vine that climbs and smothers rose canes while competing for water."],
+];
+
+let _flowerOverrideMaps = null;
+function getFlowerOverrideMaps() {
+  if (_flowerOverrideMaps) return _flowerOverrideMaps;
+  const excellent = {}, avoid = {};
+  const add = (map, x, y) => { (map[x] = map[x] || new Set()).add(y); };
+  FLOWER_COMPANION_PAIRS.forEach(([a, b, type]) => {
+    const map = type === "avoid" ? avoid : excellent;
+    add(map, a, b); add(map, b, a);
+  });
+  _flowerOverrideMaps = { excellent, avoid };
+  return _flowerOverrideMaps;
+}
+
+let _flowerReasonMap = null;
+function getFlowerPairReason(a, b) {
+  if (!_flowerReasonMap) {
+    _flowerReasonMap = {};
+    FLOWER_COMPANION_PAIRS.forEach(([x, y, , reason]) => {
+      if (reason) _flowerReasonMap[[x, y].map((s) => s.toLowerCase()).sort().join("|")] = reason;
+    });
+  }
+  return _flowerReasonMap[[String(a), String(b)].map((s) => s.toLowerCase()).sort().join("|")] || null;
+}
+
+let _flowerCompanionCache = null;
+function getFlowerCompanionInfo(name) {
+  if (!_flowerCompanionCache) _flowerCompanionCache = {};
+  if (_flowerCompanionCache[name]) return _flowerCompanionCache[name];
+  const attrs = getFlowerAttrs();
+  const self = attrs[name] || {};
+  const ov = getFlowerOverrideMaps();
+  const exOv = ov.excellent[name];
+  const avOv = ov.avoid[name];
+  const excellent = [], neutral = [], avoid = [];
+  Object.keys(attrs).forEach((other) => {
+    if (other === name) return;
+    const o = attrs[other];
+    // Curated pairings win over the computed light/water default.
+    if (avOv && avOv.has(other)) { avoid.push(other); return; }
+    if (exOv && exOv.has(other)) { excellent.push(other); return; }
+    if (flowerLightConflict(self.sun, o.sun) || flowerWaterConflict(self.water, o.water)) {
+      avoid.push(other);
+    } else if (self.sun && o.sun && self.sun === o.sun && self.water && o.water && self.water === o.water) {
+      excellent.push(other);
+    } else {
+      neutral.push(other);
+    }
+  });
+  // Surface curated companions first so "companions to add" leads with the classics.
+  if (exOv) excellent.sort((x, y) => (exOv.has(x) ? 0 : 1) - (exOv.has(y) ? 0 : 1));
+  const info = {
+    excellent, neutral, avoid,
+    pests: "Group blooms that share the same light and water needs; keep full-sun flowers away from shade-lovers and drought-tolerant flowers away from thirsty ones.",
+  };
+  _flowerCompanionCache[name] = info;
+  return info;
+}
+
 export function getCompanionInfo(plantName) {
+  // Flowers get their combos computed from light/water needs (see above).
+  if (isFlowerName(plantName)) return getFlowerCompanionInfo(plantName);
   const match = Object.keys(COMPANION_PLANTING_DATA).find((name) =>
     String(plantName || "").toLowerCase().includes(name.toLowerCase())
   );
@@ -1290,12 +1424,25 @@ export const PAIR_REASONS = {
   "thyme|tomato": "Thyme's scent deters worms and draws pollinators to tomatoes.",
 };
 
+const SUN_WORDS = { full: "full sun", partial: "part shade", shade: "shade" };
 export function getPairReason(a, b) {
   const key = [String(a || ""), String(b || "")]
     .map((s) => s.trim().toLowerCase())
     .sort()
     .join("|");
   if (PAIR_REASONS[key]) return PAIR_REASONS[key];
+  // Flower-to-flower pairs explain themselves through light and water needs.
+  if (isFlowerName(a) && isFlowerName(b)) {
+    // A curated pairing's own wording wins.
+    const curated = getFlowerPairReason(a, b);
+    if (curated) return curated;
+    const attrs = getFlowerAttrs();
+    const A = attrs[a], B = attrs[b];
+    if (flowerLightConflict(A.sun, B.sun)) return `${a} wants ${SUN_WORDS[A.sun] || A.sun} and ${b} wants ${SUN_WORDS[B.sun] || B.sun} — one will struggle in the same spot. Give them separate beds.`;
+    if (flowerWaterConflict(A.water, B.water)) return `${a} likes ${A.water} water while ${b} likes ${B.water} — hard to keep both happy in one bed.`;
+    if (A.sun && A.sun === B.sun && A.water && A.water === B.water) return `${a} and ${b} share the same light and water needs — easy neighbors in the same bed.`;
+    return `${a} and ${b} coexist fine in a mixed flower bed.`;
+  }
   const score = getCompatibilityScore(a, b);
   if (score.label === "Excellent Pair") return `${a} and ${b} grow well together and support each other in the same bed.`;
   if (score.label === "Avoid") return `${a} and ${b} compete for nutrients or attract the same pests — try separate beds.`;
@@ -2851,13 +2998,47 @@ export function estimateHarvestValue(harvestLog) {
   return { total: Math.round(total), byPlant, topPlant: top ? { name: top[0], value: Math.round(top[1]) } : null };
 }
 
+// The bed grid only renders canonical "slot-1".."slot-N" keys. Older builds (and a
+// quick-add slot bug) stored plants under bare numeric keys ("0","1"...), which
+// counted as planted but never showed in the bed — and sometimes stored the SAME
+// plant twice (once under a numeric key, once under a real slot), so a single plant
+// counted as 2. This heals both: it drops any orphan that just duplicates a plant
+// already in the bed (the double-count bug), and remaps the rest onto the first free
+// canonical slot so genuinely-hidden plants finally appear. Runs once on load.
+// (Legit double-planting is done through the grid picker, which writes canonical
+// slot keys, so those are left untouched.)
+export function normalizeAreaPlots(area) {
+  const size = Math.max(1, Math.min(12, Number(area?.size) || 12));
+  const plots = area?.plots || {};
+  const isCanonical = (k) => /^slot-([1-9]\d*)$/.test(k);
+  const canonical = {};
+  const orphans = [];
+  Object.entries(plots).forEach(([k, v]) => {
+    if (!v) return;
+    if (isCanonical(k)) canonical[k] = v;
+    else orphans.push(v);
+  });
+  if (!orphans.length) return plots; // already clean — leave it untouched
+  const out = { ...canonical };
+  const used = new Set(Object.keys(canonical));
+  const present = new Set(Object.values(canonical).map((n) => String(n).toLowerCase()));
+  orphans.forEach((name) => {
+    if (present.has(String(name).toLowerCase())) return; // duplicate of an existing plant → drop it
+    for (let i = 1; i <= size; i++) {
+      const id = `slot-${i}`;
+      if (!used.has(id)) { out[id] = name; used.add(id); present.add(String(name).toLowerCase()); break; }
+    }
+  });
+  return out;
+}
+
 export function migrateGardenToAreas(existingAreas, legacyGardenMap) {
-  // If areas already exist, use them as-is.
+  // If areas already exist, use them as-is (with slot keys normalized for display).
   if (Array.isArray(existingAreas) && existingAreas.length > 0) {
-    return existingAreas.map((area) => ({
-      ...area,
-      size: typeof area.size === "number" ? area.size : Object.keys(area.plots || {}).length || 12,
-    }));
+    return existingAreas.map((area) => {
+      const size = typeof area.size === "number" ? area.size : Object.keys(area.plots || {}).length || 12;
+      return { ...area, size, plots: normalizeAreaPlots({ ...area, size }) };
+    });
   }
   // Otherwise wrap any legacy flat gardenMap into one default area
   // so existing users don't lose their layout.
@@ -2869,7 +3050,7 @@ export function migrateGardenToAreas(existingAreas, legacyGardenMap) {
     {
       id: "area-default",
       name: "My Garden",
-      plots: { ...legacyPlots },
+      plots: normalizeAreaPlots({ plots: legacyPlots, size: 12 }),
       size: 12,
       kind: "home",
     },

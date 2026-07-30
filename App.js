@@ -232,6 +232,7 @@ import { HomeTab } from "./screens/HomeTab";
 import { JournalTab } from "./screens/JournalTab";
 import { FlowerTab } from "./screens/FlowerTab";
 import { PlantsTab } from "./screens/PlantsTab";
+import { GamesTab } from "./screens/GamesTab";
 import { PremiumTab } from "./screens/PremiumTab";
 import { ProfileTab } from "./screens/ProfileTab";
 import { SettingsTab } from "./screens/SettingsTab";
@@ -346,7 +347,7 @@ if (Pressable && Pressable.type && !Pressable.__ppPressPatched) {
 
 // Destinations that live behind the "More" tab rather than in the bar itself.
 // The tab bar highlights "More" whenever one of these is the active tab.
-const OVERFLOW_TAB_IDS = ["flowers", "journal", "profile", "settings", "premium"];
+const OVERFLOW_TAB_IDS = ["flowers", "games", "journal", "profile", "settings", "premium"];
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -478,6 +479,8 @@ useEffect(() => { vacationRef.current = vacation; }, [vacation]);
   const [zoneRetryToken, setZoneRetryToken] = useState(0);
   const countryResults = useMemo(() => searchCountries(countrySearch), [countrySearch]);
   const [premiumUnlocked, setPremiumUnlocked] = useState(false);
+  // Timestamp of the last free-plan upsell, so nudges stay frequency-capped.
+  const lastPremiumPromptRef = useRef(0);
   const [subscriptionPlan, setSubscriptionPlan] = useState("Free");
   const [showPremiumIntro, setShowPremiumIntro] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(true);
@@ -2706,6 +2709,7 @@ const { error: uploadError } =
         daysSincePlanting: 1,
       };
       setJournalEntries((current) => [entry, ...current]);
+      maybePromptPremium("Photo added to your journal. Upgrade to Premium to save unlimited plants and unlock every tab, calendar, and insight.");
       return;
     }
     const { data: publicUrlData } =
@@ -2731,6 +2735,7 @@ setJournalEntries((current) => [
   entry,
   ...current,
 ]);
+maybePromptPremium("Photo added to your journal. Upgrade to Premium to save unlimited plants and unlock every tab, calendar, and insight.");
 
 console.log(
   "Journal photo uploaded ✅"
@@ -3189,6 +3194,7 @@ async function claimDailyBonus() {
   setTimeout(() => {
     setShowDailyBonus(false);
   }, 1800);
+  maybePromptPremium("Bonus claimed! Upgrade to Premium to save unlimited plants and unlock every tab, calendar, and insight.");
 }
 
 function markPlantWatered(plantName) {
@@ -3238,6 +3244,7 @@ function markPlantWatered(plantName) {
       return next;
     });
     schedulePlantWaterReminder(plantName);
+    maybePromptPremium("Watering tracked. Upgrade to Premium to unlock unlimited plants, the garden dashboard, planting & frost calendars, and more.");
   }
 
   function waterAllPlants() {
@@ -3270,6 +3277,7 @@ function markPlantWatered(plantName) {
     setTimeout(() => {
       setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
     }, 2000);
+    maybePromptPremium("Watering tracked. Upgrade to Premium to unlock unlimited plants, the garden dashboard, planting & frost calendars, and more.");
   }
 
   function waterPlant(plantName) {
@@ -3290,6 +3298,7 @@ function markPlantWatered(plantName) {
     setTimeout(() => {
       setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
     }, 2000);
+    maybePromptPremium("Watering tracked. Upgrade to Premium to unlock unlimited plants, the garden dashboard, planting & frost calendars, and more.");
   }
 
 function logHarvest(plantName, amount, unit, note) {
@@ -3520,6 +3529,7 @@ function assignPlantToAreaSlot(areaId, slotId, plantName, opts = {}) {
         : area
     )
   );
+  maybePromptPremium("Nice — that plant's in your garden. Upgrade to Premium to save unlimited plants and unlock the garden dashboard, calendars, pest watch, and the Flowers & Home tab.");
   // Record this planting into rotation history (families only).
   try {
     const family = getPlantFamily(plantName);
@@ -3581,11 +3591,27 @@ function clearAreaSlot(areaId, slotId) {
 // One-tap "plant this in my garden" from a plant's detail screen. Drops the plant
 // into the first bed with a free slot, or points the user to set one up.
 function quickAddPlantToGarden(plantName) {
-  const capacityOf = (area) => typeof area.size === "number" ? area.size : Object.values(area.plots || {}).filter(Boolean).length;
+  // You can only plant what you've saved — save the plant first, then place it in a bed.
+  if (!savedPlants.includes(plantName)) {
+    Alert.alert(
+      "Save it first",
+      `Save ${plantName} to your plants, then you can add it to a garden bed.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Save plant", onPress: () => toggleSavedPlant(plantName) },
+      ]
+    );
+    return;
+  }
+  // Slot ids MUST match the grid in AreaPlannerMap ("slot-1".."slot-N"), and the
+  // capacity MUST match its areaSize (1..12, default 12). If these drift, a plant
+  // gets stored under a key the grid never renders — it counts as planted but the
+  // bed still shows Empty. (That was the "it says 1 planted but the bed is empty" bug.)
+  const capacityOf = (area) => Math.max(1, Math.min(12, Number(area.size) || 12));
   const freeSlot = (area) => {
     const used = new Set(Object.entries(area.plots || {}).filter(([, n]) => n).map(([sid]) => sid));
     const cap = capacityOf(area);
-    for (let i = 0; i < cap; i++) { if (!used.has(String(i))) return String(i); }
+    for (let i = 1; i <= cap; i++) { const id = `slot-${i}`; if (!used.has(id)) return id; }
     return null;
   };
   // jumpToTab already closes the plant detail and scrolls the Garden tab to the
@@ -4129,6 +4155,72 @@ useEffect(() => {
     AsyncStorage.setItem(STORAGE_KEYS.seenPremiumIntro, JSON.stringify(true));
   }
 
+  // ── Free-plan upsell ─────────────────────────────────────────────────────────
+  // Shows a Premium nudge on key engagement actions (watering, adding to garden,
+  // journal photos, daily bonus, quest completion). Frequency-capped so it fires
+  // at most once every few minutes — never stacking or spamming. Premium users
+  // never see it. The plant-save nudge fires on every save via its own path but
+  // shares this cooldown so the two never pile up.
+  function maybePromptPremium(message) {
+    if (premiumUnlocked) return;
+    const now = Date.now();
+    if (now - lastPremiumPromptRef.current < 3 * 60 * 1000) return;
+    lastPremiumPromptRef.current = now;
+    setTimeout(() => {
+      Alert.alert(
+        "Go unlimited with Premium",
+        message || "You're on the free plan. Upgrade to Premium to save unlimited plants, plus unlock the garden dashboard, planting, sowing & frost calendars, pest watch, plant picks, and the Flowers & Home tab.",
+        [
+          { text: t("common.maybeLater"), style: "cancel" },
+          { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") },
+        ]
+      );
+    }, 400);
+  }
+
+  // Immediate, uncapped prompt for when a free user taps a locked feature (a
+  // locked tab, etc.). Explains what's locked, then routes to the paywall.
+  function promptPremiumFeature(featureName) {
+    if (premiumUnlocked) { jumpToTab("premium"); return; }
+    Alert.alert(
+      featureName ? `${featureName} is a Premium feature` : "Premium feature",
+      "Upgrade to Premium to unlock this, plus unlimited saved plants, the garden dashboard, planting, sowing & frost calendars, pest watch, plant picks, and the Flowers & Home tab.",
+      [
+        { text: t("common.maybeLater"), style: "cancel" },
+        { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") },
+      ]
+    );
+  }
+
+  // Garden Games award bonus XP (per correct answer and on finishing a game). XP
+  // rolls into the same bonusXP bucket as the daily bonus and shows the floating
+  // "+XP" popup for instant feedback.
+  function awardGameXP(amount) {
+    const xp = Number(amount) || 0;
+    if (xp <= 0) return;
+    setBonusXP((prev) => prev + xp);
+    const popup = { id: `game-${Date.now()}-${Math.random()}`, amount: xp };
+    setXpPopups((popups) => [...popups, popup]);
+    setTimeout(() => setXpPopups((popups) => popups.filter((p) => p.id !== popup.id)), 1600);
+  }
+
+  // Wraps setCompletedQuestIds so finishing a quest fires the upsell. Completed
+  // quests are stored as date-keyed arrays ({ "2026-07-29": ["q1","q2"] }), so we
+  // compare the total number of quest ids, not the number of dates. Load/reset
+  // paths call setCompletedQuestIds directly and are unaffected.
+  function completeQuestWithUpsell(updater) {
+    const countIds = (obj) => Object.values(obj || {}).reduce(
+      (sum, v) => sum + (Array.isArray(v) ? v.length : v ? 1 : 0), 0
+    );
+    setCompletedQuestIds((prev) => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      if (countIds(next) > countIds(prev)) {
+        maybePromptPremium("Quest complete! Upgrade to Premium to save unlimited plants and unlock every tab, calendar, and insight.");
+      }
+      return next;
+    });
+  }
+
   // ── Plant actions ──────────────────────────────────────────────────────────
   function toggleSavedPlant(name) {
     setSavedPlants((current) => {
@@ -4160,8 +4252,53 @@ useEffect(() => {
       if (next.length === 5) {
         setTimeout(() => { maybeAskForReview(); }, 800);
       }
+      // Free plan: nudge Premium on every save. (The 6th+ save is blocked above
+      // with its own "saves locked" alert, so this only fires on saves 1–5.)
+      // On the very first save, wait for the full-screen celebration to clear
+      // (~3.2s) so we don't pop an alert over it.
+      if (!premiumUnlocked) {
+        // Share the cooldown so a capped action right after a save doesn't also pop.
+        lastPremiumPromptRef.current = Date.now();
+        const upsellDelay = current.length === 0 ? 3600 : 450;
+        setTimeout(() => {
+          Alert.alert(
+            "Go unlimited with Premium",
+            "You're on the free plan — up to 5 saved plants. Upgrade to Premium to save unlimited plants, plus unlock the garden dashboard, planting, sowing & frost calendars, pest watch, plant picks, and the Flowers & Home tab.",
+            [
+              { text: t("common.maybeLater"), style: "cancel" },
+              { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") },
+            ]
+          );
+        }, upsellDelay);
+      }
       return next;
     });
+  }
+  // Save a whole set of plants at once (e.g. a plant-combo template). Plants must be
+  // saved before they can be placed in a bed, so this is what makes a combo's plants
+  // show up as options in the garden map. Honors the free-tier 5-save cap and shows a
+  // single confirmation instead of one popup per plant.
+  function saveManyPlants(names) {
+    const toAdd = Array.from(new Set((names || []).filter((n) => produceData.some((p) => p.name === n) && !savedPlants.includes(n))));
+    if (!toAdd.length) { Alert.alert("Already saved", "All of these are already in your plants."); return; }
+    let added = toAdd;
+    let capped = false;
+    if (!premiumUnlocked) {
+      const room = Math.max(0, 5 - savedPlants.length);
+      if (toAdd.length > room) { added = toAdd.slice(0, room); capped = true; }
+    }
+    if (!added.length) {
+      Alert.alert(t("premium.savesLockedTitle"), t("premium.savesLockedBody"), [{ text: t("common.maybeLater"), style: "cancel" }, { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") }]);
+      return;
+    }
+    tapHaptic("light");
+    setSavedPlants((current) => Array.from(new Set([...current, ...added])).sort());
+    setPlantSaveDates((current) => { const next = { ...current }; added.forEach((n) => { if (!next[n]) next[n] = getTodayKey(); }); return next; });
+    if (capped) {
+      Alert.alert(`Saved ${added.length}`, `Added ${added.length} to your plants. Free plans stop at 5 saved plants — upgrade to Premium to save the rest of this combo.`, [{ text: t("common.maybeLater"), style: "cancel" }, { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") }]);
+    } else {
+      Alert.alert("Saved", `Added ${added.length} plant${added.length === 1 ? "" : "s"} to your plants. Tap a bed slot on the garden map to place them.`);
+    }
   }
   function toggleComparePlant(plantName) {
     setComparePlants((current) => {
@@ -5527,7 +5664,7 @@ function jumpToTab(tab) {
   record={record}
   savedPlants={savedPlants}
   scrollRef={scrollRef}
-  setCompletedQuestIds={setCompletedQuestIds}
+  setCompletedQuestIds={completeQuestWithUpsell}
   setFrostChecklist={setFrostChecklist}
   setFrostDatesHidden={setFrostDatesHidden}
   setFrostOverrides={setFrostOverrides}
@@ -5565,6 +5702,7 @@ function jumpToTab(tab) {
   unitSystem={unitSystem}
   onAutoOptimize={autoOptimizeGarden}
   onSavePlant={toggleSavedPlant}
+  onSaveMany={saveManyPlants}
   addGardenArea={addGardenArea}
   assignPlantToAreaSlot={assignPlantToAreaSlot}
   careLog={careLog}
@@ -5595,6 +5733,8 @@ function jumpToTab(tab) {
 {record && activeTab === "plants" ? (
   <PlantsTab
   comparePlants={comparePlants}
+  premiumUnlocked={premiumUnlocked}
+  onViewPremium={() => jumpToTab("premium")}
   filteredPlants={filteredPlants}
   followedPlants={followedPlants}
   markPlantWatered={markPlantWatered}
@@ -5680,6 +5820,9 @@ function jumpToTab(tab) {
   />
 ) : null}
 
+{activeTab === "games" ? (
+  <GamesTab theme={theme} onAwardXp={awardGameXP} />
+) : null}
 {activeTab === "journal" ? (
   <JournalTab
   achievementBadges={achievementBadges}
@@ -5720,7 +5863,7 @@ function jumpToTab(tab) {
   careLog={careLog}
   completedQuestIds={completedQuestIds}
   dailyQuests={dailyQuests}
-  setCompletedQuestIds={setCompletedQuestIds}
+  setCompletedQuestIds={completeQuestWithUpsell}
   setQuestXP={setQuestXP}
   setXpPopups={setXpPopups}
   dailyWateringOn={dailyWateringOn}
@@ -5884,7 +6027,8 @@ function jumpToTab(tab) {
       </View>
 
       {[
-        { id: "flowers", label: "Flowers & Home", icon: "flower", premium: false },
+        { id: "flowers", label: "Flowers & Home", icon: "flower", premium: true },
+        { id: "games", label: "Garden Games", icon: "game-controller", premium: true },
         { id: "journal", label: t("tabs.journal"), icon: "book", premium: true },
         { id: "profile", label: t("tabs.quests"), icon: "flash", premium: false },
         { id: "settings", label: t("tabs.settings"), icon: "settings", premium: false },
@@ -5901,7 +6045,8 @@ function jumpToTab(tab) {
             onPress={() => {
               tapHaptic();
               setShowMoreSheet(false);
-              jumpToTab(locked ? "premium" : item.id);
+              if (locked) { promptPremiumFeature(item.label); return; }
+              jumpToTab(item.id);
             }}
             style={{
               flexDirection: "row",
@@ -5944,7 +6089,7 @@ function jumpToTab(tab) {
         : activeTab === tab.id;
       const locked = tab.premium && !premiumUnlocked;
       return (
-        <Pressable key={tab.id} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={tab.label} onPress={() => { if (tab.id === "more") { tapHaptic(); setShowMoreSheet(true); return; } if (locked) { jumpToTab("premium"); return; } jumpToTab(tab.id); }} style={({ pressed }) => [styles.bottomTabButton, active && styles.bottomTabButtonActive, active && styles.bottomTabGlow, pressed && styles.bottomTabPressed]}>
+        <Pressable key={tab.id} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={tab.label} onPress={() => { if (tab.id === "more") { tapHaptic(); setShowMoreSheet(true); return; } if (locked) { tapHaptic(); promptPremiumFeature(tab.label); return; } jumpToTab(tab.id); }} style={({ pressed }) => [styles.bottomTabButton, active && styles.bottomTabButtonActive, active && styles.bottomTabGlow, pressed && styles.bottomTabPressed]}>
           <View style={[styles.bottomTabInner, active && styles.bottomTabInnerActive]}>
             <Ionicons name={tab.icon} size={18} color={active ? "#07120b" : "#d7ebdc"} />
             <Text

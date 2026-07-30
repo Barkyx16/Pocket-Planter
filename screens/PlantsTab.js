@@ -11,7 +11,7 @@ import { PersonalPlantingCalendar } from "../components/PersonalPlantingCalendar
 import { t } from "../lib/i18n";
 import { IconText } from "../components/IconText";
 
-export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markPlantWatered, monthScrollDone, monthScrollRef, monthlyPicksY, monthlySuggestions, openPlantFromList, openPlantFromMonthly, plantSearch, plantDifficultyFilter, setPlantDifficultyFilter, plantNowOnly, setPlantNowOnly, plantSortMode, setPlantSortMode, plantAttrFilters, setPlantAttrFilters, addPlantToGarden, gardenPlantNames, plantsListY, plantsVisibleCount, recentPlants, savedPlants, scrollRef, selectedMonth, selectedType, setComparePlants, setPlantSearch, setPlantsVisibleCount, setSelectedMonth, setSelectedType, snoozePlantWatering, snoozedPlants, theme, toggleComparePlant, toggleFollowPlant, toggleSavedPlant, wateredPlants, wateringHistory, weather, zone }) {
+export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filteredPlants, followedPlants, markPlantWatered, monthScrollDone, monthScrollRef, monthlyPicksY, monthlySuggestions, openPlantFromList, openPlantFromMonthly, plantSearch, plantDifficultyFilter, setPlantDifficultyFilter, plantNowOnly, setPlantNowOnly, plantSortMode, setPlantSortMode, plantAttrFilters, setPlantAttrFilters, addPlantToGarden, gardenPlantNames, plantsListY, plantsVisibleCount, recentPlants, savedPlants, scrollRef, selectedMonth, selectedType, setComparePlants, setPlantSearch, setPlantsVisibleCount, setSelectedMonth, setSelectedType, snoozePlantWatering, snoozedPlants, theme, toggleComparePlant, toggleFollowPlant, toggleSavedPlant, wateredPlants, wateringHistory, weather, zone }) {
   const [selectMode, setSelectMode] = useState(false);
   const [bulkSel, setBulkSel] = useState([]);
   const [showAllMonthly, setShowAllMonthly] = useState(false);
@@ -25,6 +25,8 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
   const FIRST_PAINT = 6;
   // Monthly picks can be long — show a short preview, then a "show more" toggle.
   const MONTHLY_PREVIEW = 5;
+  // Free tier sees only the first 5 plants in the full list; Premium sees them all.
+  const FREE_PLANT_LIMIT = 5;
   const [renderCap, setRenderCap] = useState(FIRST_PAINT);
   useEffect(() => {
     if (renderCap >= plantsVisibleCount) return undefined;
@@ -32,6 +34,8 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
     return () => task.cancel();
   }, [renderCap, plantsVisibleCount]);
   const visibleCount = Math.min(plantsVisibleCount, renderCap);
+  // The free version caps the plant list at 5 — the upgrade CTA takes over from there.
+  const listVisibleCount = premiumUnlocked ? visibleCount : Math.min(visibleCount, FREE_PLANT_LIMIT);
   const toggleBulk = (name) => setBulkSel((cur) => cur.includes(name) ? cur.filter((n) => n !== name) : [...cur, name]);
   const toggleAttr = (key) => { tapHaptic("light"); setPlantAttrFilters((cur) => cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key]); };
   const ATTR_FILTERS = [
@@ -144,7 +148,7 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
       )}
       </CollapsibleCard>
     </View>
-{savedPlants.length ? (
+{premiumUnlocked && savedPlants.length ? (
     <CollapsibleCard theme={theme} storageKey="plantingcalendar" title={t("plants.yourPlantingCalendar")}>
     <PersonalPlantingCalendar
       theme={theme}
@@ -425,7 +429,7 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
             ) : null}
           </View>
         ) : null}
-               {filteredPlants.slice(0, visibleCount).map((item) => {
+               {filteredPlants.slice(0, listVisibleCount).map((item) => {
           const sel = bulkSel.includes(item.name);
           return (
             <View key={item.name} style={{ position: "relative" }}>
@@ -445,7 +449,18 @@ export function PlantsTab({ comparePlants, filteredPlants, followedPlants, markP
             </View>
           );
         })}
-        {filteredPlants.length > plantsVisibleCount ? (
+        {!premiumUnlocked && filteredPlants.length > FREE_PLANT_LIMIT ? (
+          <Pressable
+            onPress={onViewPremium}
+            accessibilityRole="button"
+            accessibilityLabel="Unlock all plants with Premium"
+            style={{ marginTop: 14, backgroundColor: "rgba(255, 216, 107, 0.16)", borderRadius: 16, paddingVertical: 14, paddingHorizontal: 16, alignItems: "center", borderWidth: 1, borderColor: "#ffd86b" }}
+          >
+            <Text style={{ color: "#ffd86b", fontWeight: "900", fontSize: 14 }}>
+              🔒 Unlock all {filteredPlants.length} plants with Premium
+            </Text>
+          </Pressable>
+        ) : filteredPlants.length > plantsVisibleCount ? (
           <Pressable
             onPress={() => setPlantsVisibleCount((c) => c + 20)}
             style={{ marginTop: 14, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}

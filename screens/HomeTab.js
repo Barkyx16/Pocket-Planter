@@ -21,6 +21,7 @@ import { PestWatchCard } from "../components/PestWatchCard";
 import { PlantAnniversaryCard } from "../components/PlantAnniversaryCard";
 import { PlantTodayHero } from "../components/PlantTodayHero";
 import { PremiumIntroCard } from "../components/PremiumIntroCard";
+import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { RescueModeCard } from "../components/RescueModeCard";
 import { SavedPlantsCard } from "../components/SavedPlantsCard";
 import { SeasonTransitionCard } from "../components/SeasonTransitionCard";
@@ -248,6 +249,7 @@ export function HomeTab({ activationSteps, claimDailyBonus, combinedGardenMap, c
 />
 
 <CollapsibleCard theme={theme} storageKey="dashboard" title={t("home.gardenDashboard")} defaultOpen={true}>
+{premiumUnlocked ? (
 <GardenStatsDashboard
   theme={theme}
   unitSystem={unitSystem}
@@ -265,6 +267,14 @@ harvestTrackers={harvestTrackers}
   onNavigate={jumpToTab}
   onWaterAll={waterAllPlants}
 />
+) : (
+<PremiumLockedCard
+  theme={theme}
+  title="Garden dashboard locked"
+  body="Unlock Premium to track your garden stats, XP, streaks, and watering at a glance."
+  onUnlock={() => jumpToTab("premium")}
+/>
+)}
 </CollapsibleCard>
 
 <MyGardenTodayCard
@@ -286,6 +296,7 @@ zone={zone}
 />
 {((monthlySuggestions.length || compatiblePlants.length) && plantPickDismissedDate !== getTodayKey()) ? (
 <CollapsibleCard theme={theme} storageKey="plantpick" title={t("home.plantPick")}>
+{premiumUnlocked ? (
 <PlantTodayHero
   theme={theme}
   monthlySuggestions={monthlySuggestions}
@@ -300,6 +311,14 @@ zone={zone}
     openPlantFromList(plant);
   }}
 />
+) : (
+<PremiumLockedCard
+  theme={theme}
+  title="Plant pick locked"
+  body="Unlock Premium to get a daily plant pick matched to your zone and the weather."
+  onUnlock={() => jumpToTab("premium")}
+/>
+)}
 </CollapsibleCard>
 ) : null}
 
@@ -337,7 +356,16 @@ zone={zone}
 
 {zone && !isMonthlyChecklistComplete(zone, monthlyChecklist) ? (
 <CollapsibleCard theme={theme} storageKey="monthlychecklist" title={t("home.thisMonth")}>
+{premiumUnlocked ? (
 <MonthlyChecklistCard theme={theme} zone={zone} monthlyChecklist={monthlyChecklist} setMonthlyChecklist={setMonthlyChecklist} />
+) : (
+<PremiumLockedCard
+  theme={theme}
+  title="This month's tasks locked"
+  body="Unlock Premium to see the seasonal to-do list tailored to your zone each month."
+  onUnlock={() => jumpToTab("premium")}
+/>
+)}
 </CollapsibleCard>
 ) : null}
 <SeasonTransitionCard
@@ -357,6 +385,7 @@ zone={zone}
 
 {getActivePests(savedPlantObjs, new Date().getMonth() + 1, zone).length ? (
 <CollapsibleCard theme={theme} storageKey="pestwatch" title={t("home.pestWatch")}>
+{premiumUnlocked ? (
 <PestWatchCard
   theme={theme}
   savedPlantObjs={savedPlantObjs}
@@ -364,12 +393,27 @@ zone={zone}
   onOpenPlant={openPlantFromList}
   onOpenPest={openPest}
 />
+) : (
+<PremiumLockedCard
+  theme={theme}
+  title="Pest watch locked"
+  body="Unlock Premium to get early warnings for the pests most likely to hit your saved plants this month."
+  onUnlock={() => jumpToTab("premium")}
+/>
+)}
 </CollapsibleCard>
 ) : null}
 
 {((zone && savedPlants.length) || !zoneIsFrostFree(zone)) ? (
 <CollapsibleCard theme={theme} storageKey="plantingsowingfrost" title={t("home.plantingSowingFrost")} defaultOpen={false}>
-  {(zone && savedPlants.length) ? (
+  {!premiumUnlocked ? (
+    <PremiumLockedCard
+      theme={theme}
+      title="Planting, sowing & frost locked"
+      body="Unlock Premium for your planting & harvest calendar, succession sowing, and local frost dates."
+      onUnlock={() => jumpToTab("premium")}
+    />
+  ) : (zone && savedPlants.length) ? (
     <>
       <IconText label={t("home.plantingHarvestCalendar")} style={{
   color: "#5cff89",
@@ -384,7 +428,7 @@ zone={zone}
       </ToggleSection>
     </>
   ) : null}
-  {!zoneIsFrostFree(zone) ? (
+  {premiumUnlocked && !zoneIsFrostFree(zone) ? (
     frostDatesHidden ? (
       // When hidden, the unhide control lives right here — where the frost
       // section was — instead of jumping to the top of the page.

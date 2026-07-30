@@ -42,6 +42,10 @@ const [sortMode, setSortMode] = useState("recent");
     return null;
   }
 
+  // Free tier can only save 5 plants, and only ever sees the first 5 here —
+  // this also guards a downgraded account that still has more than 5 on file.
+  const visibleItems = premiumUnlocked ? savedItems : savedItems.slice(0, 5);
+
   const SORT_OPTIONS = [
     { id: "recent", label: "Recent" },
     { id: "water", label: "Needs water" },
@@ -86,7 +90,7 @@ const [sortMode, setSortMode] = useState("recent");
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.compactSavedPlantsScroll}
       >
-        {savedItems.map((item) => {
+        {visibleItems.map((item) => {
           const imageSource = resolvePlantImageSource(item);
           const health = getPlantHealthStatus({
             plantName: item.name,

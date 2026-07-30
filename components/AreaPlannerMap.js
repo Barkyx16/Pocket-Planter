@@ -6,11 +6,13 @@ import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { canPlantInArea, getAreaTag, getCompanionInfo, getCompatibilityScore, getPairReason, getTodayKey, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
+import { PlantPickerModal } from "./PlantPickerModal";
 import { useTranslation } from "../lib/i18n";
 
 export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas, savedPlants, wateredPlants, onAssignSlot, onClearSlot, onWaterArea, zone, weather, harvestTrackers, onOpenPlant, onPickPhoto, onDeleteArea, focusAreaId, focusNonce }) {
   const { t } = useTranslation();
   const [selectedAreaId, setSelectedAreaId] = useState(null);
+  const [pickerSlot, setPickerSlot] = useState(null); // { areaId, slotId } while the plant picker is open
 
   // When a conflict elsewhere asks us to focus a bed, open that bed's detail view.
   // Keyed on focusNonce so tapping the same conflict again re-opens it.
@@ -34,10 +36,13 @@ export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas,
 
   function maybeShowPerfectGarden(areaId, plantName) {
     if (seenPerfectRef.current.has(areaId)) return;
+    const area = gardenAreas.find((a) => a.id === areaId);
     const info = getCompanionInfo(plantName) || {};
     const companions = (info.excellent || []).filter((comp) =>
       comp.toLowerCase() !== plantName.toLowerCase() &&
-      produceData.some((pd) => pd.name.toLowerCase() === comp.toLowerCase())
+      produceData.some((pd) => pd.name.toLowerCase() === comp.toLowerCase()) &&
+      // In a flower bed, only suggest other flowers — never veggies/herbs.
+      canPlantInArea(comp, area)
     );
     if (!companions.length) return;
     seenPerfectRef.current.add(areaId);
@@ -73,6 +78,21 @@ export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas,
 
   function getPlantName(plant) { return typeof plant === "string" ? plant : plant?.name || ""; }
 
+  // Tapping a combo ("Rose + Marigold") asks which of the two plants to open.
+  function openPairPicker(nameA, nameB) {
+    const findPlant = (n) => produceData.find((pd) => pd.name.toLowerCase() === String(n || "").toLowerCase());
+    const a = findPlant(nameA);
+    const b = findPlant(nameB);
+    const buttons = [];
+    if (a) buttons.push({ text: nameA, onPress: () => onOpenPlant && onOpenPlant(a) });
+    if (b) buttons.push({ text: nameB, onPress: () => onOpenPlant && onOpenPlant(b) });
+    if (!buttons.length) return;
+    // Only one of the two is a real plant card — just open it, no need to ask.
+    if (buttons.length === 1) { buttons[0].onPress(); return; }
+    buttons.push({ text: "Cancel", style: "cancel" });
+    Alert.alert("View plant", "Which plant do you want to open?", buttons);
+  }
+
   function suggestCompanionsForPlant(areaId, plantName) {
     const area = gardenAreas.find((a) => a.id === areaId);
 const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).filter(Boolean);
@@ -101,15 +121,20 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
         flowerBed ? "No flowers saved yet" : "Nothing to plant here",
         flowerBed
           ? "This is a flower bed — save some flowers, then place them here."
-          : "Save a plant that suits this bed, then place it here. (Flowers only go in your Flower Bed or Home Garden.)"
+          : "Save a plant that suits this bed, then place it here. (Flowers can't go in a regular garden — plant those on the Flowers tab.)"
       );
       return;
     }
-    Alert.alert("Choose a plant", "Pick one for this plot.", [
-      ...valid.slice(0, 8).map((n) => ({ text: n, onPress: () => { onAssignSlot(areaId, slotId, n); maybeShowPerfectGarden(areaId, n); suggestCompanionsForPlant(areaId, n); } })),
-      { text: "Clear plot", style: "destructive", onPress: () => onClearSlot(areaId, slotId) },
-      { text: "Cancel", style: "cancel" },
-    ]);
+    // Open the searchable/filterable picker (scrolls, no cap, category filters).
+    setPickerSlot({ areaId, slotId });
+  }
+
+  function validPlantsForArea(area) {
+    return savedPlants
+      .filter(Boolean)
+      .map((p) => getPlantName(p))
+      .filter(Boolean)
+      .filter((n) => canPlantInArea(n, area));
   }
 
   if (!gardenAreas.length) {
@@ -170,15 +195,33 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
 
  return (
     <View style={{ gap: 20 }}>
+      {(() => {
+        const pArea = pickerSlot ? gardenAreas.find((a) => a.id === pickerSlot.areaId) : null;
+        return (
+          <PlantPickerModal
+            theme={theme}
+            visible={!!pickerSlot}
+            bedName={pArea?.name}
+            plants={pArea ? validPlantsForArea(pArea) : []}
+            currentPlant={pArea ? getPlantName(pArea.plots?.[pickerSlot.slotId]) : null}
+            onPick={(name) => { const s = pickerSlot; setPickerSlot(null); if (s) { onAssignSlot(s.areaId, s.slotId, name); maybeShowPerfectGarden(s.areaId, name); suggestCompanionsForPlant(s.areaId, name); } }}
+            onClear={() => { const s = pickerSlot; setPickerSlot(null); if (s) onClearSlot(s.areaId, s.slotId); }}
+            onClose={() => setPickerSlot(null)}
+          />
+        );
+      })()}
       <Modal visible={!!perfectGardenPlant} transparent animationType="fade" onRequestClose={() => setPerfectGardenPlant(null)}>
         <Pressable onPress={() => setPerfectGardenPlant(null)} style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.85)", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <Pressable onPress={() => {}} style={{ width: "100%", maxWidth: 420, backgroundColor: "#0e2414", borderRadius: 24, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", padding: 22 }}>
             {(() => {
               if (!perfectGardenPlant) return null;
+              const modalArea = gardenAreas.find((a) => a.id === selectedAreaId);
               const info = getCompanionInfo(perfectGardenPlant) || {};
               const companions = (info.excellent || []).filter((comp) =>
                 comp.toLowerCase() !== perfectGardenPlant.toLowerCase() &&
-                produceData.some((pd) => pd.name.toLowerCase() === comp.toLowerCase())
+                produceData.some((pd) => pd.name.toLowerCase() === comp.toLowerCase()) &&
+                // Flower beds only ever show other flowers as companions.
+                canPlantInArea(comp, modalArea)
               ).slice(0, 5);
               const tiles = [perfectGardenPlant, ...companions];
               return (
@@ -368,8 +411,11 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                       const imgA = plantA ? resolvePlantImageSource(plantA) : null;
                       const imgB = plantB ? resolvePlantImageSource(plantB) : null;
                       return (
-                        <View
+                        <Pressable
                           key={`${area.id}-pair-${a}-${b}`}
+                          onPress={() => openPairPicker(a, b)}
+                          accessibilityRole="button"
+                          accessibilityLabel={`View ${a} or ${b}`}
                           style={{
                             flexDirection: "row",
                             alignItems: "center",
@@ -398,7 +444,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                           <Text style={{ fontSize: 14, fontWeight: "900", color: isGood ? "#5cff89" : "#ff7b7b" }}>
                             {isGood ? "✓" : "⚠"}
                           </Text>
-                        </View>
+                        </Pressable>
                       );
                     })}
                   </View>
@@ -414,7 +460,9 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                   if (
                     !areaPlants.some((p) => p.toLowerCase() === comp.toLowerCase()) &&
                     produceData.some((pd) => pd.name.toLowerCase() === comp.toLowerCase()) &&
-                    !suggestions.some((s) => s.name.toLowerCase() === comp.toLowerCase())
+                    !suggestions.some((s) => s.name.toLowerCase() === comp.toLowerCase()) &&
+                    // A flower bed only recommends other flowers to add.
+                    canPlantInArea(comp, area)
                   ) {
                     suggestions.push({ name: comp, pairsWith: planted });
                   }
@@ -443,10 +491,9 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                       return (
                         <Pressable
                           key={`${area.id}-comp-${s.name}`}
-                          onPress={() => suggestedPlant && onOpenPlant && onOpenPlant(suggestedPlant)}
-                          disabled={!suggestedPlant}
+                          onPress={() => openPairPicker(s.pairsWith, s.name)}
                           accessibilityRole="button"
-                          accessibilityLabel={`View care guide for ${s.name}`}
+                          accessibilityLabel={`View ${s.pairsWith} or ${s.name}`}
                           style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
                         >
                           <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
