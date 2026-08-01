@@ -1,28 +1,32 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { resolvePlantImageSource } from "../core";
+import { getTodayKey, resolvePlantImageSource } from "../core";
 import { useTranslation } from "../lib/i18n";
 
-export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries, harvestLog, onOpenPlant }) {
+export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries, harvestLog, onOpenPlant, seen, onShown }) {
   const { t } = useTranslation();
   const now = new Date();
   now.setHours(12, 0, 0, 0);
 
-  // Match anything that happened ~1 month or ~1 year ago (within a 2-day window).
-  const WINDOW_DAYS = 2;
+  // A real "on this day" match: the SAME calendar day — the same month + day for
+  // year anniversaries, or the same day-of-month for month milestones. The old
+  // code used a 30-day approximation with a ±2-day window, so memories drifted off
+  // their real date and the card fired on far too many days.
   const isThrowback = (dateStr) => {
     const then = new Date(dateStr);
     if (Number.isNaN(then.getTime())) return null;
     then.setHours(12, 0, 0, 0);
-    const daysAgo = Math.round((now - then) / (1000 * 60 * 60 * 24));
-    if (daysAgo < 25) return null; // too recent to be a throwback
-    // 1 year
-    if (Math.abs(daysAgo - 365) <= WINDOW_DAYS) return { label: "1 year ago", years: 1 };
-    // whole months (30-day approximation)
-    const months = Math.round(daysAgo / 30);
-    if (months >= 1 && Math.abs(daysAgo - months * 30) <= WINDOW_DAYS) {
-      return { label: months === 1 ? "1 month ago" : `${months} months ago`, months };
+    if (then >= now) return null;
+    // Year anniversary — exact month + day, a year or more back.
+    if (then.getMonth() === now.getMonth() && then.getDate() === now.getDate()) {
+      const years = now.getFullYear() - then.getFullYear();
+      if (years >= 1) return { label: years === 1 ? "1 year ago" : `${years} years ago`, years };
+    }
+    // Month milestone — same day-of-month, at least a month back.
+    if (then.getDate() === now.getDate()) {
+      const months = (now.getFullYear() - then.getFullYear()) * 12 + (now.getMonth() - then.getMonth());
+      if (months >= 1) return { label: months === 1 ? "1 month ago" : `${months} months ago`, months };
     }
     return null;
   };
@@ -45,7 +49,25 @@ export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries
     (a, b) => new Date(b.entry.createdAt) - new Date(a.entry.createdAt)
   );
 
-  if (!memories.length) return null;
+  // Appear less and less: after each time it's shown, wait a growing number of days
+  // before it can show again (0 → 6 → 12 → 18 … capped at 30). Once shown on a given
+  // day it stays visible for that day so it never vanishes mid-scroll.
+  const todayKey = getTodayKey();
+  const shownCount = seen?.count || 0;
+  const lastShown = seen?.lastShownDate || null;
+  const alreadyShownToday = lastShown === todayKey;
+  let shouldShow = memories.length > 0;
+  if (shouldShow && lastShown && !alreadyShownToday) {
+    const cooldownDays = Math.min(30, shownCount * 6);
+    const daysSince = Math.round((new Date(`${todayKey}T12:00:00`) - new Date(`${lastShown}T12:00:00`)) / (1000 * 60 * 60 * 24));
+    if (daysSince < cooldownDays) shouldShow = false;
+  }
+
+  useEffect(() => {
+    if (shouldShow && !alreadyShownToday && onShown) onShown(todayKey);
+  }, [shouldShow, alreadyShownToday, onShown, todayKey]);
+
+  if (!shouldShow) return null;
 
   return (
     <View style={{ borderRadius: 24, padding: 18, marginBottom: 18, borderWidth: 1.5, backgroundColor: "rgba(216, 200, 255, 0.1)", borderColor: "#d8c8ff" }}>
@@ -68,7 +90,7 @@ export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries
             const plant = produceData.find((p) => p.name === m.entry.plantName);
             return (
               <Pressable
-                key={`otd-photo-${m.entry.id}`}
+                key={`otd-photo-${m.entry.id || m.entry.createdAt || i}`}
                 onPress={() => plant && onOpenPlant(plant)}
                 style={{ borderRadius: 16, overflow: "hidden", backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(216, 200, 255, 0.2)" }}
               >
@@ -89,7 +111,7 @@ export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries
           const img = plant ? resolvePlantImageSource(plant) : null;
           return (
             <Pressable
-              key={`otd-harvest-${m.entry.id}`}
+              key={`otd-harvest-${m.entry.id || m.entry.createdAt || i}`}
               onPress={() => plant && onOpenPlant(plant)}
               style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(216, 200, 255, 0.2)" }}
             >

@@ -101,6 +101,7 @@ import { getDateKey,
   buildCsv,
   calculateGardenHealth,
   canPlantInArea,
+  isFlowerBedPlant,
   collectModuleBackup,
   countInSeason,
   csvEscape,
@@ -215,6 +216,7 @@ import { getBadgeImage } from "./data/badgeImageMap";
 import { getBannerImage } from "./data/bannerImageMap";
 import { GlobalSearchModal } from "./components/GlobalSearchModal";
 import { GardenConflictModal } from "./components/GardenConflictModal";
+import { GardenPlacementModal } from "./components/GardenPlacementModal";
 import { getPestImage } from "./data/pestImageMap";
 import { getDiseaseImage } from "./data/diseaseImageMap";
 import { syncWidgets } from "./lib/widgets";
@@ -231,6 +233,7 @@ import { GardenTab } from "./screens/GardenTab";
 import { HomeTab } from "./screens/HomeTab";
 import { JournalTab } from "./screens/JournalTab";
 import { FlowerTab } from "./screens/FlowerTab";
+import { PestsTab } from "./screens/PestsTab";
 import { PlantsTab } from "./screens/PlantsTab";
 import { GamesTab } from "./screens/GamesTab";
 import { PremiumTab } from "./screens/PremiumTab";
@@ -347,7 +350,7 @@ if (Pressable && Pressable.type && !Pressable.__ppPressPatched) {
 
 // Destinations that live behind the "More" tab rather than in the bar itself.
 // The tab bar highlights "More" whenever one of these is the active tab.
-const OVERFLOW_TAB_IDS = ["flowers", "games", "journal", "profile", "settings", "premium"];
+const OVERFLOW_TAB_IDS = ["flowers", "games", "pests", "journal", "profile", "settings", "premium"];
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -450,6 +453,7 @@ function AppInner({ language, setLanguage }) {
   const [gardenMap, setGardenMap] = useState({});
   const [gardenAreas, setGardenAreas] = useState([]);
   const [gardenConflictPrompt, setGardenConflictPrompt] = useState(null); // { plantName, conflicts, cleanBeds, anyFreeBed } — drives GardenConflictModal
+  const [gardenPlacementPrompt, setGardenPlacementPrompt] = useState(null); // { plantName, flowerKind, beds } — drives GardenPlacementModal
   const [gardenFocusAreaId, setGardenFocusAreaId] = useState(null); // { areaId, n } — asks AreaPlannerMap to open a bed (n bumps each tap so re-taps re-open)
   const [harvestLogPlant, setHarvestLogPlant] = useState(null); // plant name being logged — drives the cross-platform harvest-log modal (Alert.prompt is iOS-only)
   const [harvestLogText, setHarvestLogText] = useState("");
@@ -3521,7 +3525,20 @@ function assignPlantToAreaSlot(areaId, slotId, plantName, opts = {}) {
   // companion auto-add). The picker UI already filters, so a user tap never lands
   // here illegally — programmatic callers just skip silently.
   const targetArea = (gardenAreas || []).find((a) => a.id === areaId);
-  if (targetArea && !canPlantInArea(plantName, targetArea)) return;
+  if (targetArea && !canPlantInArea(plantName, targetArea)) {
+    // Wrong bed type — tell the user why instead of silently doing nothing.
+    // Programmatic callers pass { silent: true } and just skip.
+    if (!opts.silent) {
+      const flowerBed = targetArea.kind === "flower";
+      Alert.alert(
+        "Can't plant here",
+        flowerBed
+          ? `The Flowers & Home garden is only for flowers and houseplants. ${plantName} is an edible — add it to a bed on the Garden tab.`
+          : `Garden beds are only for edible plants. ${plantName} is a flower or houseplant — add it in the Flowers & Home garden.`
+      );
+    }
+    return;
+  }
   setGardenAreas((current) =>
     current.map((area) =>
       area.id === areaId
@@ -3588,8 +3605,23 @@ function clearAreaSlot(areaId, slotId) {
   );
 }
 
-// One-tap "plant this in my garden" from a plant's detail screen. Drops the plant
-// into the first bed with a free slot, or points the user to set one up.
+// Slot ids MUST match the grid in AreaPlannerMap ("slot-1".."slot-N"), and the
+// capacity MUST match its areaSize (1..12, default 12). If these drift, a plant
+// gets stored under a key the grid never renders — it counts as planted but the
+// bed still shows Empty.
+function areaCapacityOf(area) { return Math.max(1, Math.min(12, Number(area?.size) || 12)); }
+function firstFreeSlot(area) {
+  const used = new Set(Object.entries(area?.plots || {}).filter(([, n]) => n).map(([sid]) => sid));
+  const cap = areaCapacityOf(area);
+  for (let i = 1; i <= cap; i++) { const id = `slot-${i}`; if (!used.has(id)) return id; }
+  return null;
+}
+
+// "Add to my garden" from a plant's detail screen. Rather than silently dropping
+// the plant into the first free bed, it opens a placement popup so the user picks
+// WHICH garden it goes in — and can spin up a brand-new bed right there if the
+// existing ones are full. Flowers & houseplants are routed to the Flowers & Home
+// garden; edibles to the Garden tab's beds; the two never mix.
 function quickAddPlantToGarden(plantName) {
   // You can only plant what you've saved — save the plant first, then place it in a bed.
   if (!savedPlants.includes(plantName)) {
@@ -3603,68 +3635,75 @@ function quickAddPlantToGarden(plantName) {
     );
     return;
   }
-  // Slot ids MUST match the grid in AreaPlannerMap ("slot-1".."slot-N"), and the
-  // capacity MUST match its areaSize (1..12, default 12). If these drift, a plant
-  // gets stored under a key the grid never renders — it counts as planted but the
-  // bed still shows Empty. (That was the "it says 1 planted but the bed is empty" bug.)
-  const capacityOf = (area) => Math.max(1, Math.min(12, Number(area.size) || 12));
-  const freeSlot = (area) => {
-    const used = new Set(Object.entries(area.plots || {}).filter(([, n]) => n).map(([sid]) => sid));
-    const cap = capacityOf(area);
-    for (let i = 1; i <= cap; i++) { const id = `slot-${i}`; if (!used.has(id)) return id; }
-    return null;
-  };
-  // jumpToTab already closes the plant detail and scrolls the Garden tab to the
-  // top (where the Garden Map card lives) — don't also call handleBackFromPlant,
-  // which would fight it by restoring the Plants-tab scroll position.
-  const openGarden = () => { jumpToTab("garden"); };
 
+  // Already planted somewhere? Point them to it instead of duplicating.
   const existing = (gardenAreas || []).find((a) => Object.values(a.plots || {}).includes(plantName));
   if (existing) {
-    Alert.alert("Already planted", `${plantName} is already in ${existing.name}. Rearrange it anytime in the Garden tab.`, [{ text: "OK" }, { text: t("garden.openGarden"), onPress: openGarden }]);
+    Alert.alert("Already planted", `${plantName} is already in ${existing.name}. Rearrange it anytime.`, [{ text: "OK" }, { text: t("garden.openGarden"), onPress: () => jumpToTab(existing.kind === "flower" ? "flowers" : "garden") }]);
     return;
   }
+
+  // Flowers & houseplants belong in the Flowers & Home garden; everything else in a garden bed.
+  const flowerKind = isFlowerBedPlant(plantName);
   const isAvoid = (a, b) => getCompatibilityScore(a, b)?.label === "Avoid";
   const bedEmoji = (a) => a.emoji || a.icon || null;
 
-  // Which already-planted plants would this new plant clash with? (Avoid pairs.)
-  const conflicts = [];
-  (gardenAreas || []).forEach((a) => {
-    Object.entries(a.plots || {}).forEach(([slotId, name]) => {
-      if (name && name !== plantName && canPlantInArea(plantName, a) && isAvoid(plantName, name)) {
-        conflicts.push({ areaId: a.id, areaName: a.name, areaEmoji: bedEmoji(a), slotId, plant: name });
-      }
-    });
-  });
+  // Beds of the RIGHT type that still have room — with any companion clashes flagged
+  // so the popup can warn without blocking.
+  const beds = (gardenAreas || [])
+    .filter((a) => (flowerKind ? a.kind === "flower" : a.kind !== "flower"))
+    .filter((a) => firstFreeSlot(a) !== null)
+    .map((a) => ({
+      areaId: a.id,
+      areaName: a.name,
+      areaEmoji: bedEmoji(a),
+      slot: firstFreeSlot(a),
+      clashes: Array.from(new Set(Object.values(a.plots || {}).filter((n) => n && isAvoid(plantName, n)))),
+    }));
 
-  // Beds with a free slot where this plant can legally go AND clashes with nothing.
-  const cleanBeds = (gardenAreas || [])
-    .filter((a) => canPlantInArea(plantName, a) && freeSlot(a) !== null)
-    .filter((a) => !Object.values(a.plots || {}).filter(Boolean).some((n) => isAvoid(plantName, n)))
-    .map((a) => ({ areaId: a.id, areaName: a.name, areaEmoji: bedEmoji(a), slot: freeSlot(a) }));
+  setGardenPlacementPrompt({ plantName, flowerKind, beds });
+}
 
-  // No clash anywhere → keep the original one-tap behavior: drop into the first
-  // legal free bed, or point the user to make one.
-  if (conflicts.length === 0) {
-    const target = (gardenAreas || []).find((a) => canPlantInArea(plantName, a) && freeSlot(a) !== null);
-    if (!target) {
-      Alert.alert(t("garden.noBedsTitle"), t("garden.noBedsBody"), [{ text: t("common.notNow"), style: "cancel" }, { text: t("garden.openGarden"), onPress: openGarden }]);
-      return;
-    }
-    const slot = freeSlot(target);
-    assignPlantToAreaSlot(target.id, slot, plantName);
-    successHaptic();
+// Place the plant into the bed the user chose in the placement popup. Not silent,
+// so a companion clash still surfaces the "kept in mind" heads-up.
+function placeFromPlacementPrompt(bed) {
+  const plantName = gardenPlacementPrompt?.plantName;
+  const flowerKind = gardenPlacementPrompt?.flowerKind;
+  setGardenPlacementPrompt(null);
+  if (!plantName || !bed) return;
+  assignPlantToAreaSlot(bed.areaId, bed.slot, plantName);
+  successHaptic();
+  // Confirm placement — unless there's a clash, in which case assignPlantToAreaSlot
+  // already fires its own heads-up and we don't want two stacked alerts.
+  if (!(bed.clashes && bed.clashes.length)) {
     setTimeout(() => {
-      Alert.alert(t("garden.addedTitle"), `${plantName} was placed in ${target.name}. Rearrange it anytime in the Garden tab.`, [{ text: "Done" }, { text: t("garden.openGarden"), onPress: openGarden }]);
-    }, 350);
-    return;
+      Alert.alert(t("garden.addedTitle"), `${plantName} was placed in ${bed.areaName}.`, [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab(flowerKind ? "flowers" : "garden") }]);
+    }, 250);
   }
+}
 
-  // Clash detected → let the user replace a clashing plant or place it elsewhere.
-  const firstFree = (gardenAreas || []).find((a) => canPlantInArea(plantName, a) && freeSlot(a) !== null);
-  const anyFreeBed = firstFree ? { areaId: firstFree.id, areaName: firstFree.name, slot: freeSlot(firstFree) } : null;
-  Vibration.vibrate([0, 40, 30, 40]);
-  setGardenConflictPrompt({ plantName, conflicts, cleanBeds, anyFreeBed });
+// "Make a new garden" from the placement popup — spins up a fresh bed of the right
+// type, drops the plant in slot 1, and points the user to the right tab.
+function createBedFromPlacementPrompt() {
+  const prompt = gardenPlacementPrompt;
+  setGardenPlacementPrompt(null);
+  if (!prompt) return;
+  const { plantName, flowerKind } = prompt;
+  const id = `area-${Date.now()}`;
+  setGardenAreas((current) => {
+    const sameKind = (current || []).filter((a) => (flowerKind ? a.kind === "flower" : a.kind !== "flower"));
+    const baseName = flowerKind ? "Flowers & Home" : "My Garden";
+    const areaName = sameKind.length ? `${baseName} ${sameKind.length + 1}` : baseName;
+    return [
+      ...current,
+      { id, name: areaName, plots: { "slot-1": plantName }, emoji: flowerKind ? "🌸" : "🏡", color: flowerKind ? "#ffb6c1" : "#8effab", size: 12, kind: flowerKind ? "flower" : "home" },
+    ];
+  });
+  successHaptic();
+  const tab = flowerKind ? "flowers" : "garden";
+  setTimeout(() => {
+    Alert.alert("New garden created", `${plantName} was planted in a new ${flowerKind ? "Flowers & Home" : "garden"} bed.`, [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab(tab) }]);
+  }, 300);
 }
 
 // Swap the new plant into a clashing plant's exact slot (removing the old plant).
@@ -3856,6 +3895,74 @@ function addGardenArea(name, size, kind) {
     ];
   });
   successHaptic();
+}
+
+// Picking a "setup" (a plant combo / guild) should do more than drop the plants
+// into the saved list — it should actually build the garden so the map, the
+// companion check, and conflict warnings all light up. This spawns a fresh,
+// pre-planted bed for the setup: flowers land in a flower bed (Flowers tab),
+// everything else in a garden bed (Garden tab). Without this, a setup's plants
+// were saved but never placed, so garden conflicts stayed invisible.
+function addSetupToGarden(setupName, plantNames) {
+  const clean = String(setupName || "").trim() || "New Setup";
+  const resolved = Array.from(new Set(plantNames || []))
+    .map((n) => produceData.find((p) => p.name.toLowerCase() === String(n).toLowerCase()))
+    .filter(Boolean);
+  if (!resolved.length) return;
+
+  // Save the setup's plants into the plant list, honoring the free-tier cap.
+  const already = new Set(savedPlants);
+  const toAdd = resolved.map((p) => p.name).filter((n) => !already.has(n));
+  let added = toAdd;
+  let capped = false;
+  if (!premiumUnlocked) {
+    const room = Math.max(0, 5 - savedPlants.length);
+    if (toAdd.length > room) { added = toAdd.slice(0, room); capped = true; }
+  }
+  if (added.length) {
+    setSavedPlants((current) => Array.from(new Set([...current, ...added])).sort());
+    setPlantSaveDates((current) => { const next = { ...current }; added.forEach((n) => { if (!next[n]) next[n] = getTodayKey(); }); return next; });
+  }
+
+  // Only place plants that are actually owned after the save (respects the cap).
+  const ownedNow = new Set([...savedPlants, ...added]);
+  const placeable = resolved.filter((p) => ownedNow.has(p.name));
+  // Flowers AND houseplants go in the Flowers & Home garden; everything else in a garden bed.
+  const flowers = placeable.filter((p) => isFlowerBedPlant(p.name)).map((p) => p.name);
+  const edibles = placeable.filter((p) => !isFlowerBedPlant(p.name)).map((p) => p.name);
+
+  const buildArea = (names, kind, idSuffix) => {
+    if (!names.length) return null;
+    const size = Math.max(1, Math.min(12, names.length));
+    const plots = {};
+    names.slice(0, 12).forEach((n, i) => { plots[`slot-${i + 1}`] = n; });
+    const isFlowerBed = kind === "flower";
+    return {
+      id: `area-${Date.now()}-${idSuffix}`,
+      name: isFlowerBed ? `${clean} 🌸` : clean,
+      plots,
+      emoji: isFlowerBed ? "🌸" : "🏡",
+      color: isFlowerBed ? "#ffb6c1" : "#8effab",
+      size,
+      kind: isFlowerBed ? "flower" : "home",
+    };
+  };
+
+  const newAreas = [buildArea(edibles, "home", "g"), buildArea(flowers, "flower", "f")].filter(Boolean);
+  if (!newAreas.length) {
+    Alert.alert(t("premium.savesLockedTitle"), t("premium.savesLockedBody"), [{ text: t("common.maybeLater"), style: "cancel" }, { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") }]);
+    return;
+  }
+  setGardenAreas((current) => [...current, ...newAreas]);
+  successHaptic();
+
+  const beds = [edibles.length ? "Garden" : null, flowers.length ? "Flowers" : null].filter(Boolean).join(" & ");
+  const capNote = capped ? " Free plans stop at 5 saved plants — upgrade to Premium to add the rest of this setup." : "";
+  Alert.alert(
+    `${clean} planted`,
+    `Added a pre-planted bed to your ${beds} tab. Open it to see the layout and any companion conflicts.${capNote}`,
+    [{ text: t("common.gotIt") }, { text: t("garden.openGarden"), onPress: () => jumpToTab(flowers.length && !edibles.length ? "flowers" : "garden") }]
+  );
 }
 
 async function pickAreaPhoto(areaId) {
@@ -5114,6 +5221,16 @@ function jumpToTab(tab) {
   </Pressable>
 </View>
 </ScrollView>
+
+{/* The placement popup must live in this view tree too — the plant detail is an
+    early return, so the copy in the main tree isn't mounted while it's open. */}
+<GardenPlacementModal
+  prompt={gardenPlacementPrompt}
+  theme={theme}
+  onPlaceIn={(bed) => placeFromPlacementPrompt(bed)}
+  onCreateNew={() => createBedFromPlacementPrompt()}
+  onClose={() => setGardenPlacementPrompt(null)}
+/>
 </SafeAreaView>
 );
 }
@@ -5257,6 +5374,14 @@ function jumpToTab(tab) {
       onPlaceIn={(bed) => placeGardenPlantInBed(bed, gardenConflictPrompt.plantName)}
       onAddAnyway={() => addGardenPlantAnyway(gardenConflictPrompt.anyFreeBed, gardenConflictPrompt.plantName)}
       onClose={() => setGardenConflictPrompt(null)}
+    />
+
+    <GardenPlacementModal
+      prompt={gardenPlacementPrompt}
+      theme={theme}
+      onPlaceIn={(bed) => placeFromPlacementPrompt(bed)}
+      onCreateNew={() => createBedFromPlacementPrompt()}
+      onClose={() => setGardenPlacementPrompt(null)}
     />
 
     <Modal visible={!!harvestLogPlant} animationType="fade" transparent onRequestClose={() => setHarvestLogPlant(null)}>
@@ -5703,6 +5828,7 @@ function jumpToTab(tab) {
   onAutoOptimize={autoOptimizeGarden}
   onSavePlant={toggleSavedPlant}
   onSaveMany={saveManyPlants}
+  onAddSetupToGarden={addSetupToGarden}
   addGardenArea={addGardenArea}
   assignPlantToAreaSlot={assignPlantToAreaSlot}
   careLog={careLog}
@@ -5822,6 +5948,17 @@ function jumpToTab(tab) {
 
 {activeTab === "games" ? (
   <GamesTab theme={theme} onAwardXp={awardGameXP} />
+) : null}
+{activeTab === "pests" ? (
+  <PestsTab
+    theme={theme}
+    savedPlantObjs={savedPlantObjs}
+    zone={zone}
+    premiumUnlocked={premiumUnlocked}
+    onOpenPlant={openPlantFromList}
+    onOpenPest={openPest}
+    jumpToTab={jumpToTab}
+  />
 ) : null}
 {activeTab === "journal" ? (
   <JournalTab
@@ -6029,6 +6166,7 @@ function jumpToTab(tab) {
       {[
         { id: "flowers", label: "Flowers & Home", icon: "flower", premium: true },
         { id: "games", label: "Garden Games", icon: "game-controller", premium: true },
+        { id: "pests", label: "Pest Watch", icon: "bug", premium: false },
         { id: "journal", label: t("tabs.journal"), icon: "book", premium: true },
         { id: "profile", label: t("tabs.quests"), icon: "flash", premium: false },
         { id: "settings", label: t("tabs.settings"), icon: "settings", premium: false },

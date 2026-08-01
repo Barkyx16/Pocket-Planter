@@ -5,6 +5,7 @@ import { styles } from "../styles";
 import { getDateKey, MONTH_NAMES, PLANT_TYPES, SCREEN_WIDTH, getHarvestCountdown, getMonthEmoji, getPlantDifficulty, getPlantSeasonLabel, getSearchSuggestions, normalizeType, plantsBuddyImage, resolvePlantImageSource, tapHaptic } from "../core";
 import { getMonthImage } from "../data/monthImageMap";
 import { CollapsibleCard } from "../components/CollapsibleCard";
+import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { TabHero } from "../components/TabHero";
 import { GlowPlantCard } from "../components/GlowPlantCard";
 import { PersonalPlantingCalendar } from "../components/PersonalPlantingCalendar";
@@ -25,8 +26,8 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
   const FIRST_PAINT = 6;
   // Monthly picks can be long — show a short preview, then a "show more" toggle.
   const MONTHLY_PREVIEW = 5;
-  // Free tier sees only the first 5 plants in the full list; Premium sees them all.
-  const FREE_PLANT_LIMIT = 5;
+  // Free tier sees only the first few plants in the full list; Premium sees them all.
+  const FREE_PLANT_LIMIT = 6;
   const [renderCap, setRenderCap] = useState(FIRST_PAINT);
   useEffect(() => {
     if (renderCap >= plantsVisibleCount) return undefined;
@@ -34,7 +35,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
     return () => task.cancel();
   }, [renderCap, plantsVisibleCount]);
   const visibleCount = Math.min(plantsVisibleCount, renderCap);
-  // The free version caps the plant list at 5 — the upgrade CTA takes over from there.
+  // The free version caps the plant list at FREE_PLANT_LIMIT — the upgrade CTA takes over from there.
   const listVisibleCount = premiumUnlocked ? visibleCount : Math.min(visibleCount, FREE_PLANT_LIMIT);
   const toggleBulk = (name) => setBulkSel((cur) => cur.includes(name) ? cur.filter((n) => n !== name) : [...cur, name]);
   const toggleAttr = (key) => { tapHaptic("light"); setPlantAttrFilters((cur) => cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key]); };
@@ -69,6 +70,15 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
     />
 <View onLayout={(event) => { monthlyPicksY.current = event.nativeEvent.layout.y; }}>
       <CollapsibleCard theme={theme} storageKey="monthlypicks" title={t("plants.thisMonthsPicks")}>
+      {!premiumUnlocked ? (
+      <PremiumLockedCard
+        theme={theme}
+        title="This month's picks locked"
+        body="Unlock Premium to see the best plants to start this month, matched to your zone and climate."
+        onUnlock={onViewPremium}
+      />
+      ) : (
+      <>
       <View style={styles.primaryFeatureAccentBar} />
       <View style={styles.cardHeaderRow}>
         <View style={{ flex: 1 }} />
@@ -145,6 +155,8 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
               : t("plants.setYourZipCodeOn")}
           </Text>
 </View>
+      )}
+      </>
       )}
       </CollapsibleCard>
     </View>

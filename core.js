@@ -865,20 +865,30 @@ export function isOrnamental(item) {
 // combos. Everything else in the Flowers category is decorative.
 export const COMPANION_FLOWERS = new Set(["Marigold", "Nasturtium", "Calendula", "Sunflower", "Borage"]);
 
-// Enforces the flower rule when placing a plant into a garden bed:
-//   • a flower bed (kind "flower") holds only flowers
-//   • a home garden (kind "home", and the default "My Garden") holds anything
-//   • every other bed rejects ornamental flowers, but still allows the
-//     companion flowers above
-export function canPlantInArea(plantName, area) {
+// A "flower-bed plant" is anything that belongs in the Flowers & Home garden
+// rather than an edible garden bed: ornamental flowers AND houseplants. Grouping
+// them lets the Flowers tab own everything decorative/indoor while the Garden tab
+// stays strictly edible.
+export function isFlowerBedPlant(plantName) {
   const name = typeof plantName === "string" ? plantName : plantName?.name;
   if (!name) return false;
   const item = produceData.find((p) => p.name === name);
-  const isFlower = normalizeType(item?.type, name) === "Flowers";
-  // Flowers live only in flower beds (on the Flowers tab); every garden bed (on
-  // the Garden tab) holds only non-flowers. The two are kept fully separate.
-  if (area?.kind === "flower") return isFlower;
-  return !isFlower;
+  const type = normalizeType(item?.type, name);
+  return type === "Flowers" || type === "Houseplants";
+}
+
+// Enforces the two-garden rule when placing a plant into a bed:
+//   • a flower bed (kind "flower", on the Flowers & Home tab) holds only
+//     flowers and houseplants
+//   • every garden bed (on the Garden tab) holds only edibles
+// The two are kept fully separate — a flower/houseplant can't go in a garden bed
+// and an edible can't go in the flower garden.
+export function canPlantInArea(plantName, area) {
+  const name = typeof plantName === "string" ? plantName : plantName?.name;
+  if (!name) return false;
+  const flowerBedPlant = isFlowerBedPlant(name);
+  if (area?.kind === "flower") return flowerBedPlant;
+  return !flowerBedPlant;
 }
 
 export function zoneMatch(zone, minZone, maxZone) {
@@ -3736,8 +3746,8 @@ export function getDailyQuests({ savedPlants, journalEntries, gardenMap, watered
     { id: "full_garden_plot", icon: "🌍", title: "Fill 6 garden plots", description: "Have at least 6 plants placed in your garden map.", difficulty: "Hard", progress: Math.min(gardenPlotCount, 6), goal: 6, completed: gardenPlotCount >= 6, reward: 50 },
 
     // BONUS SURPRISE — 50 XP
-    { id: "photo_and_water", icon: "🌟", title: "Photo + Water combo", description: "Add a journal photo AND water a plant today.", difficulty: "Bonus", progress: Math.min(todayPhotos >= 1 && wateredTodayCount >= 1 ? 1 : 0, 1), goal: 1, completed: todayPhotos >= 1 && wateredTodayCount >= 1, reward: 50 },
-    { id: "care_and_water", icon: "💪", title: "Full care day", description: "Log a care action AND water 3 plants today.", difficulty: "Bonus", progress: todayCareLog >= 1 && wateredTodayCount >= 3 ? 1 : 0, goal: 1, completed: todayCareLog >= 1 && wateredTodayCount >= 3, reward: 50 },
+    { id: "photo_and_water", icon: "🌟", title: "Water & document", description: "Water a plant and snap a progress photo — a good daily garden habit.", difficulty: "Bonus", progress: Math.min(todayPhotos >= 1 && wateredTodayCount >= 1 ? 1 : 0, 1), goal: 1, completed: todayPhotos >= 1 && wateredTodayCount >= 1, reward: 50 },
+    { id: "care_and_water", icon: "💪", title: "Full care day", description: "Water 3 plants and log a care action, like feeding or pruning.", difficulty: "Bonus", progress: todayCareLog >= 1 && wateredTodayCount >= 3 ? 1 : 0, goal: 1, completed: todayCareLog >= 1 && wateredTodayCount >= 3, reward: 50 },
 
     // ── MORE EASY ──
     { id: "fertilize_one", icon: "🌾", title: "Feed a plant", description: "Start a fertilizer tracker for any plant.", difficulty: "Easy", progress: Math.min(fertilizerCount, 1), goal: 1, completed: fertilizerCount >= 1, reward: 15 },
@@ -3757,9 +3767,9 @@ export function getDailyQuests({ savedPlants, journalEntries, gardenMap, watered
     { id: "fertilize_three", icon: "🌱", title: "Feed 3 plants", description: "Have fertilizer trackers on 3 plants.", difficulty: "Hard", progress: Math.min(fertilizerCount, 3), goal: 3, completed: fertilizerCount >= 3, reward: 50 },
 
     // ── MORE BONUS ──
-    { id: "triple_threat", icon: "🏆", title: "Triple threat", description: "Water a plant, add a photo, AND log care today.", difficulty: "Bonus", progress: (wateredTodayCount >= 1 && todayPhotos >= 1 && todayCareLog >= 1) ? 1 : 0, goal: 1, completed: wateredTodayCount >= 1 && todayPhotos >= 1 && todayCareLog >= 1, reward: 75 },
+    { id: "triple_threat", icon: "🏆", title: "Complete garden routine", description: "Water, photograph, and log a care action — a full round of garden care today.", difficulty: "Bonus", progress: (wateredTodayCount >= 1 && todayPhotos >= 1 && todayCareLog >= 1) ? 1 : 0, goal: 1, completed: wateredTodayCount >= 1 && todayPhotos >= 1 && todayCareLog >= 1, reward: 75 },
     { id: "streak_14", icon: "💫", title: "14-Day Streak!", description: "Use Pocket Planter 14 days in a row.", difficulty: "Bonus", progress: Math.min(streakCount, 14), goal: 14, completed: streakCount >= 14, reward: 75 },
-    { id: "harvest_and_care", icon: "🌾", title: "Harvest & feed", description: "Log a harvest AND a care action today.", difficulty: "Bonus", progress: (harvestLogToday >= 1 && todayCareLog >= 1) ? 1 : 0, goal: 1, completed: harvestLogToday >= 1 && todayCareLog >= 1, reward: 75 },
+    { id: "harvest_and_care", icon: "🌾", title: "Harvest day care", description: "Pick something and log a care action the same day to keep the bed productive.", difficulty: "Bonus", progress: (harvestLogToday >= 1 && todayCareLog >= 1) ? 1 : 0, goal: 1, completed: harvestLogToday >= 1 && todayCareLog >= 1, reward: 75 },
   ];
 
   // Pick 5 quests — always show 1 easy, 2 medium, 1 hard, 1 bonus

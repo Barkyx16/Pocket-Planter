@@ -31,7 +31,7 @@ import { SunlightMismatchCard } from "../components/SunlightMismatchCard";
 import { IconText } from "../components/IconText";
 import { t } from "../lib/i18n";
 
-export function GardenTab({ addGardenArea, assignPlantToAreaSlot, careLog, clearAreaSlot, deleteGardenArea, fertilizerTrackers, gardenAreas, gardenFocusAreaId, gardenY, harvestTrackers, onAutoOptimize, onFocusConflict, onSavePlant, onSaveMany, openPlantFromList, pickAreaPhoto, renameGardenArea, savedPlants, scheduleFertilizerReminder, setAreaStyle, setCareLog, showUndoToast, theme, unitSystem, waterArea, wateredPlants, weather, zip, zone }) {
+export function GardenTab({ addGardenArea, assignPlantToAreaSlot, careLog, clearAreaSlot, deleteGardenArea, fertilizerTrackers, gardenAreas, gardenFocusAreaId, gardenY, harvestTrackers, onAddSetupToGarden, onAutoOptimize, onFocusConflict, onSavePlant, onSaveMany, openPlantFromList, pickAreaPhoto, renameGardenArea, savedPlants, scheduleFertilizerReminder, setAreaStyle, setCareLog, showUndoToast, theme, unitSystem, waterArea, wateredPlants, weather, zip, zone }) {
   // The Garden tab is edibles-only — flower beds live on the Flowers tab.
   const edibleAreas = (gardenAreas || []).filter((a) => a.kind !== "flower");
   const plantedNames = Array.from(new Set(edibleAreas.flatMap((a) => Object.values(a.plots || {}).filter(Boolean))));
@@ -85,7 +85,7 @@ export function GardenTab({ addGardenArea, assignPlantToAreaSlot, careLog, clear
         <QuickAddCard theme={theme} savedPlants={savedPlants} onSavePlant={onSavePlant} onOpenPlant={openPlantFromList} />
       </ToggleSection>
       <ToggleSection label={t("garden.plantCombos")} closeLabel={t("garden.closePlantCombos")} marginTop={10}>
-        <GuildTemplatesCard theme={theme} savedPlants={savedPlants} onSavePlant={onSavePlant} onSaveMany={onSaveMany} onOpenPlant={openPlantFromList} />
+        <GuildTemplatesCard theme={theme} savedPlants={savedPlants} onSavePlant={onSavePlant} onSaveMany={onSaveMany} onAddSetup={onAddSetupToGarden} onOpenPlant={openPlantFromList} />
       </ToggleSection>
       {(getPowerPairs(edibleAreas).length || findGardenConflicts(edibleAreas).length) ? (
       <ToggleSection label={t("garden.companionCheck")} marginTop={10}>

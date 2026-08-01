@@ -1,11 +1,20 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { Text, View } from "react-native";
 import { getDaylightInfo } from "../core";
 import { useTranslation } from "../lib/i18n";
 
-export const DaylightCard = memo(function DaylightCard({ theme, zipCoords }) {
+export const DaylightCard = memo(function DaylightCard({ theme, zipCoords, onViewed }) {
   const { t } = useTranslation();
   const info = getDaylightInfo(zipCoords);
+
+  // The card only renders (inside its collapsible) once it's actually shown, so
+  // reaching here with real data means the user has seen today's daylight length.
+  // Tell the parent so it can hide the card until tomorrow.
+  const seen = !!info;
+  useEffect(() => {
+    if (seen && onViewed) onViewed();
+  }, [seen, onViewed]);
+
   if (!info) return null;
 
   const accent = info.longDay ? "#ffd86b" : info.shortDay ? "#6bc7ff" : "#8effab";

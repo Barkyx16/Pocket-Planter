@@ -1,7 +1,8 @@
+import { useEffect, useRef, useState } from "react";
 import { Alert, Pressable, Text, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { styles } from "../styles";
-import { SCREEN_WIDTH, WHATS_NEW_ITEMS, WHATS_NEW_VERSION, formatTemp, getActivePests, getRainSkipToday, getTodayKey, getUpcomingFrost, homeBuddyImage, isMonthlyChecklistComplete, zoneIsFrostFree } from "../core";
+import { SCREEN_WIDTH, WHATS_NEW_ITEMS, WHATS_NEW_VERSION, formatTemp, getRainSkipToday, getTodayKey, getUpcomingFrost, homeBuddyImage, isMonthlyChecklistComplete, zoneIsFrostFree } from "../core";
 import { t } from "../lib/i18n";
 import { CollapsibleCard } from "../components/CollapsibleCard";
 import { TabHero } from "../components/TabHero";
@@ -13,11 +14,11 @@ import { FrostChecklistCard } from "../components/FrostChecklistCard";
 import { FrostOverrideCard } from "../components/FrostOverrideCard";
 import { FrostWindowCard } from "../components/FrostWindowCard";
 import { GardenStatsDashboard } from "../components/GardenStatsDashboard";
+import { GardenStatsPreview } from "../components/GardenStatsPreview";
 import { HarvestReadyCard } from "../components/HarvestReadyCard";
 import { MonthlyChecklistCard } from "../components/MonthlyChecklistCard";
 import { MyGardenTodayCard } from "../components/MyGardenTodayCard";
 import { OnThisDayCard } from "../components/OnThisDayCard";
-import { PestWatchCard } from "../components/PestWatchCard";
 import { PlantAnniversaryCard } from "../components/PlantAnniversaryCard";
 import { PlantTodayHero } from "../components/PlantTodayHero";
 import { PremiumIntroCard } from "../components/PremiumIntroCard";
@@ -35,6 +36,51 @@ import { WateringStreakNudge } from "../components/WateringStreakNudge";
 import { IconText } from "../components/IconText";
 
 export function HomeTab({ activationSteps, claimDailyBonus, combinedGardenMap, compatiblePlants, completedQuestIds, dailyBonusClaimed, dailyBonusDate, dailyQuests, dismissGettingStarted, dismissPremiumIntro, fertilizerTrackers, frostChecklist, frostDatesHidden, frostOverrides, gardenXP, gettingStartedDismissed, harvestLog, harvestTrackers, homeBannerDismissedDate, journalEntries, jumpToTab, markPlantWatered, monthlyChecklist, monthlySuggestions, onOpenSearch, openPlantFromList, openPest, pickJournalPhoto, pinnedPlants, plantFolders, plantPickDismissedDate, plantSaveDates, premiumUnlocked, record, savedPlants, savedPlantObjs, scrollRef, setPlantPickDismissedDate, setCompletedQuestIds, setFrostChecklist, setFrostDatesHidden, setFrostOverrides, setHomeBannerDismissedDate, setMonthlyChecklist, setQuestXP, setShowWhatsNew, setSowLog, setXpPopups, setZip, showPremiumIntro, showWhatsNew, snoozedPlants, sowLog, streakData, streakFreeze, theme, togglePinnedPlant, unitSystem, uploadingPhoto, useStreakFreeze, waterAllPlants, waterPlant, wateredPlants, wateringAmounts, wateringHistory, wateringSectionY, weather, zipCoords, zone }) {
+  // Daylight card is a once-a-day glance: once the user has seen today's daylight
+  // length it hides until tomorrow. The show/hide decision is frozen at mount so
+  // marking it viewed this session doesn't make it vanish mid-read.
+  const [daylightViewedDate, setDaylightViewedDate] = useState(null);
+  const daylightViewedAtMount = useRef(null);
+  useEffect(() => {
+    let alive = true;
+    AsyncStorage.getItem("pp_daylightViewedDate").then((v) => {
+      if (!alive) return;
+      if (daylightViewedAtMount.current === null) daylightViewedAtMount.current = v === getTodayKey();
+      setDaylightViewedDate(v);
+    }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
+  const markDaylightViewed = () => {
+    const today = getTodayKey();
+    if (daylightViewedDate === today) return;
+    setDaylightViewedDate(today);
+    AsyncStorage.setItem("pp_daylightViewedDate", today).catch(() => {});
+  };
+  const showDaylight = !!zipCoords && daylightViewedAtMount.current !== true;
+
+  // "On this day" throwbacks appear less and less over time — track how many times
+  // it's been shown and the last day it appeared so the card can back off. Wait for
+  // the stored value to load before deciding, so the cooldown is respected.
+  const [onThisDaySeen, setOnThisDaySeen] = useState(null);
+  const [onThisDayLoaded, setOnThisDayLoaded] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    AsyncStorage.getItem("pp_onThisDaySeen").then((v) => {
+      if (!alive) return;
+      if (v) { try { setOnThisDaySeen(JSON.parse(v)); } catch (e) { /* ignore */ } }
+      setOnThisDayLoaded(true);
+    }).catch(() => { if (alive) setOnThisDayLoaded(true); });
+    return () => { alive = false; };
+  }, []);
+  const markOnThisDaySeen = (todayKey) => {
+    setOnThisDaySeen((prev) => {
+      if (prev?.lastShownDate === todayKey) return prev;
+      const next = { count: (prev?.count || 0) + 1, lastShownDate: todayKey };
+      AsyncStorage.setItem("pp_onThisDaySeen", JSON.stringify(next)).catch(() => {});
+      return next;
+    });
+  };
+
   return (
 <>
 {(() => {
@@ -188,12 +234,16 @@ export function HomeTab({ activationSteps, claimDailyBonus, combinedGardenMap, c
                 onOpenPlant={openPlantFromList}
               />
 
-<OnThisDayCard
+{onThisDayLoaded ? (
+              <OnThisDayCard
                 theme={theme}
                 journalEntries={journalEntries}
                 harvestLog={harvestLog}
                 onOpenPlant={openPlantFromList}
+                seen={onThisDaySeen}
+                onShown={markOnThisDaySeen}
               />
+              ) : null}
 
               <FrostChecklistCard
                 theme={theme}
@@ -268,10 +318,15 @@ harvestTrackers={harvestTrackers}
   onWaterAll={waterAllPlants}
 />
 ) : (
-<PremiumLockedCard
+<GardenStatsPreview
   theme={theme}
-  title="Garden dashboard locked"
-  body="Unlock Premium to track your garden stats, XP, streaks, and watering at a glance."
+  unitSystem={unitSystem}
+  savedPlants={savedPlants}
+  gardenXP={gardenXP}
+  streakData={streakData}
+  weather={weather}
+  zone={zone}
+  gardenMap={combinedGardenMap}
   onUnlock={() => jumpToTab("premium")}
 />
 )}
@@ -348,9 +403,9 @@ zone={zone}
   />
 )}
 
-{zipCoords ? (
-<CollapsibleCard theme={theme} storageKey="daylight" title={t("home.daylightToday")}>
-<DaylightCard theme={theme} zipCoords={zipCoords} />
+{showDaylight ? (
+<CollapsibleCard theme={theme} storageKey="daylight" title={t("home.daylightToday")} defaultOpen={true}>
+<DaylightCard theme={theme} zipCoords={zipCoords} onViewed={markDaylightViewed} />
 </CollapsibleCard>
 ) : null}
 
@@ -383,26 +438,6 @@ zone={zone}
   streakData={streakData}
 />
 
-{getActivePests(savedPlantObjs, new Date().getMonth() + 1, zone).length ? (
-<CollapsibleCard theme={theme} storageKey="pestwatch" title={t("home.pestWatch")}>
-{premiumUnlocked ? (
-<PestWatchCard
-  theme={theme}
-  savedPlantObjs={savedPlantObjs}
-  zone={zone}
-  onOpenPlant={openPlantFromList}
-  onOpenPest={openPest}
-/>
-) : (
-<PremiumLockedCard
-  theme={theme}
-  title="Pest watch locked"
-  body="Unlock Premium to get early warnings for the pests most likely to hit your saved plants this month."
-  onUnlock={() => jumpToTab("premium")}
-/>
-)}
-</CollapsibleCard>
-) : null}
 
 {((zone && savedPlants.length) || !zoneIsFrostFree(zone)) ? (
 <CollapsibleCard theme={theme} storageKey="plantingsowingfrost" title={t("home.plantingSowingFrost")} defaultOpen={false}>

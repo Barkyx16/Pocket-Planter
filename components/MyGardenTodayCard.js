@@ -77,11 +77,13 @@ export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weathe
 const totalTasks = 4;
   const progressPercent = savedPlants.length === 0 ? 0 : (completedCount / totalTasks) * 100;
 
-  const hasRealIssue =
-    (!allWatered && savedPlants.length > 0) ||
-    harvestsReady.length > 0 ||
-    fertDuePlants.length > 0;
-if (!hasRealIssue) return null;
+  // This card is the day's task list, so it should stay up until EVERY daily
+  // task is done — not just the watering/harvest/fertilizer "issues". It used to
+  // hide the moment those were cleared, which meant doing one thing (e.g.
+  // watering) made the whole card vanish while the photo task was still open.
+  // Now it only disappears once all counted tasks are complete.
+  if (savedPlants.length === 0) return null;
+  if (completedCount >= totalTasks) return null;
 
 return (
     <View style={[styles.myGardenTodayCard, { backgroundColor: theme.card, borderColor: theme.border }]}>

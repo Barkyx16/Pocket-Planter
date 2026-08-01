@@ -3,7 +3,7 @@
     "name": "Pocket Planter",
     "slug": "pocket-planter",
     "scheme": "pocketplanter",
-    "version": "1.0.12",
+    "version": "1.0.13",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "icon": "./assets/icon.png",
@@ -22,6 +22,18 @@
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification"
+        ],
+        "CFBundleLocalizations": [
+          "en",
+          "es",
+          "fr",
+          "de",
+          "it",
+          "pt-BR",
+          "zh-Hans",
+          "hi",
+          "ja",
+          "ko"
         ],
         "ITSAppUsesNonExemptEncryption": false,
         "NSPhotoLibraryUsageDescription": "Pocket Planter uses your photo library to let you add progress photos to your garden journal. For example, you can document how your tomato plant grows over time.",

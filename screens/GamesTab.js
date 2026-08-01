@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { getCompanionInfo, getCompatibilityScore, getPairReason, resolvePlantImageSource } from "../core";
+import { getCompanionInfo, getCompatibilityScore, getPairReason, getPlantDifficulty, resolvePlantImageSource } from "../core";
+import { PLANT_DETAILS } from "../data/plantDetails";
 import { styles } from "../styles";
 import { QuizGame } from "../components/QuizGame";
 
@@ -16,13 +17,23 @@ function shuffle(arr) {
 function sample(arr, n) { return shuffle(arr).slice(0, n); }
 const findPlant = (name) => produceData.find((p) => p.name.toLowerCase() === String(name || "").toLowerCase());
 
-// ── Game 1: Plant ID Challenge (guess the plant from its photo) ───────────────
-const IMAGE_POOL = produceData.filter((p) => p?.name && resolvePlantImageSource(p));
-function makePlantIdQuestion() {
-  const target = pick(IMAGE_POOL);
-  const distractors = sample(IMAGE_POOL.filter((p) => p.name !== target.name), 3);
-  const options = shuffle([target, ...distractors]).map((p) => ({ label: p.name, correct: p.name === target.name }));
-  return { prompt: "What plant is this?", image: resolvePlantImageSource(target), options };
+// ── Game 1: Sun or Shade? (how much light does this plant want) ───────────────
+// The plant photos have the plant's NAME printed on a sign in the image, so a
+// "guess the plant" game just gives the answer away. This asks about light needs
+// instead — the label on the sign doesn't help — while still showing the plant.
+const SUN_LABELS = { full: "Full sun", partial: "Partial sun", shade: "Shade" };
+const SUN_POOL = produceData.filter((p) => p?.name && resolvePlantImageSource(p) && SUN_LABELS[(PLANT_DETAILS[p.name] || {}).sunlight]);
+// Group by light need. Most plants want full sun, so picking a plant at random would
+// make "Full sun" the winning guess ~78% of the time. Instead we pick a light category
+// evenly first, then a plant in it — so the answer is spread across all three.
+const SUN_BY_CAT = { full: [], partial: [], shade: [] };
+SUN_POOL.forEach((p) => { SUN_BY_CAT[PLANT_DETAILS[p.name].sunlight].push(p); });
+const SUN_CATS = ["full", "partial", "shade"].filter((k) => SUN_BY_CAT[k].length);
+function makeSunQuestion() {
+  const answer = pick(SUN_CATS);
+  const target = pick(SUN_BY_CAT[answer]);
+  const options = ["full", "partial", "shade"].map((k) => ({ label: SUN_LABELS[k], correct: k === answer }));
+  return { prompt: `How much light does ${target.name} need?`, image: resolvePlantImageSource(target), options, reveal: `${target.name} grows best in ${SUN_LABELS[answer].toLowerCase()}.` };
 }
 
 // ── Game 2: Companion Match (pick the best companion) ─────────────────────────
@@ -47,9 +58,37 @@ function makeCompanionQuestion() {
   return { prompt: `Which is the best companion for ${target.name}?`, options, reveal: getPairReason(target.name, correct.name) };
 }
 
+// ── Game 3: Water Wise (how thirsty is this plant) ────────────────────────────
+// Same balanced approach as Sun or Shade — pick the water level evenly first, then a
+// plant, so no single answer is the safe guess. The name on the sign doesn't help.
+const WATER_LABELS = { low: "Low water", medium: "Medium water", high: "High water" };
+const WATER_BY_CAT = { low: [], medium: [], high: [] };
+produceData.forEach((p) => { if (!p?.name || !resolvePlantImageSource(p)) return; const w = (PLANT_DETAILS[p.name] || {}).waterNeeds; if (WATER_BY_CAT[w]) WATER_BY_CAT[w].push(p); });
+const WATER_CATS = ["low", "medium", "high"].filter((k) => WATER_BY_CAT[k].length);
+function makeWaterQuestion() {
+  const answer = pick(WATER_CATS);
+  const target = pick(WATER_BY_CAT[answer]);
+  const options = ["low", "medium", "high"].map((k) => ({ label: WATER_LABELS[k], correct: k === answer }));
+  return { prompt: `How thirsty is ${target.name}?`, image: resolvePlantImageSource(target), options, reveal: `${target.name} prefers ${answer} watering.` };
+}
+
+// ── Game 4: Green Thumb Test (how hard is this plant to grow) ──────────────────
+const DIFF_KEYS = ["Easy", "Medium", "Hard"];
+const DIFF_BY_CAT = { Easy: [], Medium: [], Hard: [] };
+produceData.forEach((p) => { if (!p?.name || !resolvePlantImageSource(p)) return; const label = getPlantDifficulty(p).label; if (DIFF_BY_CAT[label]) DIFF_BY_CAT[label].push(p); });
+const DIFF_CATS = DIFF_KEYS.filter((k) => DIFF_BY_CAT[k].length);
+function makeDifficultyQuestion() {
+  const answer = pick(DIFF_CATS);
+  const target = pick(DIFF_BY_CAT[answer]);
+  const options = DIFF_KEYS.map((k) => ({ label: k, correct: k === answer }));
+  return { prompt: `How hard is ${target.name} to grow?`, image: resolvePlantImageSource(target), options, reveal: `${target.name} is ${answer.toLowerCase()} to grow — ${getPlantDifficulty(target).text.toLowerCase()}.` };
+}
+
 const GAMES = [
-  { id: "plantid", emoji: "🔍", accent: "#8effab", title: "Plant ID Challenge", desc: "Guess the plant from its photo before you run out of guesses.", storageKey: "pp_game_plantid_best", timePerQuestion: 15, xpPerCorrect: 5, makeQuestion: makePlantIdQuestion },
-  { id: "companion", emoji: "🤝", accent: "#ffd86b", title: "Companion Match", desc: "Pick the plant that grows best alongside each one.", storageKey: "pp_game_companion_best", timePerQuestion: 0, xpPerCorrect: 8, makeQuestion: makeCompanionQuestion },
+  { id: "sunshade", emoji: "☀️", accent: "#ffd86b", title: "Sun or Shade?", desc: "Guess how much light each plant needs — full sun, partial, or shade.", storageKey: "pp_game_sunshade_best", timePerQuestion: 15, xpPerCorrect: 5, makeQuestion: makeSunQuestion },
+  { id: "companion", emoji: "🤝", accent: "#8effab", title: "Companion Match", desc: "Pick the plant that grows best alongside each one.", storageKey: "pp_game_companion_best", timePerQuestion: 0, xpPerCorrect: 8, makeQuestion: makeCompanionQuestion },
+  { id: "water", emoji: "💧", accent: "#6bc7ff", title: "Water Wise", desc: "Guess how thirsty each plant is — low, medium, or high water.", storageKey: "pp_game_water_best", timePerQuestion: 15, xpPerCorrect: 5, makeQuestion: makeWaterQuestion },
+  { id: "difficulty", emoji: "🧑‍🌾", accent: "#c98bff", title: "Green Thumb Test", desc: "How tricky is each plant to grow — easy, medium, or hard?", storageKey: "pp_game_difficulty_best", timePerQuestion: 15, xpPerCorrect: 6, makeQuestion: makeDifficultyQuestion },
 ];
 const TOTAL_ROUNDS = 10;
 

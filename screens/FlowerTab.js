@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { normalizeType } from "../core";
+import { isFlowerBedPlant } from "../core";
 import { styles } from "../styles";
 import { CollapsibleCard } from "../components/CollapsibleCard";
 import { SegmentedCard } from "../components/SegmentedCard";
@@ -22,8 +22,9 @@ export function FlowerTab({
 }) {
   const open = openPlantFromList;
   const flowerAreas = (gardenAreas || []).filter((a) => a.kind === "flower");
+  // The Flowers & Home garden holds both flowers and houseplants.
   const flowerSaved = produceData.filter(
-    (item) => savedPlants.includes(item.name) && normalizeType(item.type, item.name) === "Flowers"
+    (item) => savedPlants.includes(item.name) && isFlowerBedPlant(item.name)
   );
 
   return (
@@ -51,8 +52,8 @@ export function FlowerTab({
         ) : (
           <View style={styles.emptyStateCard}>
             <Text style={styles.emptyStateIcon}>🌸</Text>
-            <Text style={styles.emptyStateTitle}>Plan your flower beds</Text>
-            <Text style={styles.emptyStateText}>Save some flowers from the Plants tab, then add a flower bed above to arrange them.</Text>
+            <Text style={styles.emptyStateTitle}>Plan your flower & houseplant beds</Text>
+            <Text style={styles.emptyStateText}>Save some flowers or houseplants from the Plants tab, then add a bed above to arrange them.</Text>
           </View>
         )}
       </View>
