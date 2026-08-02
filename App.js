@@ -8,7 +8,6 @@ import {
   Alert,
   Animated,
   Appearance,
-  Dimensions,
   Vibration,
   Image,
   Keyboard,
@@ -18,11 +17,10 @@ import {
   Pressable,
   SafeAreaView,
   ScrollView,
- RefreshControl,
+  RefreshControl,
   Share,
   StatusBar,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   View,
@@ -30,15 +28,11 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import * as Location from "expo-location";
-import { LinearGradient } from "expo-linear-gradient";
-import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as SplashScreen from "expo-splash-screen";
-import * as StoreReview from "expo-store-review";
 import Purchases from 'react-native-purchases';
 import prismLogo from "./assets/prism-logo.png";
-import zipZoneData from "./data/zipZoneData";
 import themeTokens from "./theme";
 import { initReducedMotion, isReducedMotion, duration as motionDuration, DURATION, EASING } from "./lib/motion";
 import {
@@ -50,7 +44,6 @@ import {
   isSupportedLocale,
   setLocale,
   t,
-  formatDate,
 } from "./lib/i18n";
 import {
   COUNTRIES,
@@ -59,7 +52,6 @@ import {
   hasZipTable,
   isPostalComplete,
   normalizePostal,
-  postalLabelFor,
   postalPlaceholderFor,
   resolveZone,
   resolveZoneFromCoords,
@@ -68,148 +60,58 @@ import {
 } from "./lib/zoneResolver";
 import produceData from "./data/produceData";
 import { styles } from "./styles";
-import { getDateKey,
+import {
+  getDateKey,
   getPlantFamily,
   hasPremiumEntitlement,
-  COLD_THRESHOLD_F,
-  COMPANION_PLANTING_DATA,
-  FERTILIZER_DAYS,
-  FROST_TASKS,
-  FROST_THRESHOLD_F,
-  GARDEN_SLOTS,
-  HARVEST_SOON_DAYS,
-  HARVEST_UNIT_VALUE,
-  MONTH_LABELS,
-  MONTH_NAMES,
-  PAIR_REASONS,
-  PERENNIALS,
-  PEST_WATCH_DATA,
-  PLANT_TYPES,
   PROFILE_THEMES,
-  RAIN_SKIP_THRESHOLD,
   RARITY_STYLES,
-  RESCUE_THRESHOLD_DAYS,
   SCREEN_WIDTH,
-  SEASONAL_TASKS,
   STORAGE_KEYS,
-  WATERING_STREAK_GAP_DAYS,
-  WATER_UNITS,
-  WHATS_NEW_ITEMS,
   WHATS_NEW_VERSION,
-  applyGardenTemplate,
   applyModuleBackup,
-  buildCsv,
   calculateGardenHealth,
   canPlantInArea,
   isFlowerBedPlant,
   nextFreeSlotId,
   collectModuleBackup,
-  countInSeason,
-  csvEscape,
-  dayOfYear,
-  estimateHarvestValue,
-  findGardenConflicts,
-  formatRelativeDate,
-  formatReminderTime,
   formatTemp,
-  frostOverrideRef,
-  gardenBuddyImage,
   getAchievementBadges,
   buildWidgetSnapshot,
-  getActivePests,
-  getAreaTag,
   getBaseWaterInterval,
-  getClimateBucket,
-  getCompanionInfo,
   getCompatibilityScore,
   getCompatiblePlants,
-  getConsistencyBonus,
   getDailyQuests,
-  getDaylightHours,
-  getDaylightInfo,
-  getDaysSince,
-  getEstimatedLastFrost,
-  getFertilizerDays,
-  getFirstFrostDate,
-  getFirstPlantingMonth,
-  getFrameColor,
-  getFrostMaturityInfo,
-  getFrostSeasonMonths,
   getGardenXP,
-  getHarvestCountdown,
   getHarvestDays,
-  getLastFrostDate,
-  getLastWateredText,
-  getMonthEmoji,
   getNextWaterInfo,
-  getPairReason,
   getPlantDetails,
   getPlantDifficulty,
-  getPestForName,
-  getDiseaseForName,
-  getPlantHealth,
-  getPlantHealthStatus,
-  getPlantQuickFacts,
   getActivationSteps,
   getPlantSeasonLabel,
-  getPlantSpecificTip,
-  getPlantSunNeed,
-  getPlantingGuide,
-  getPlantingSteps,
-  getPlantingWindowText,
-  getPowerPairs,
   getProfileBanners,
   getRainSkipToday,
   getRarity,
-  getSearchSuggestions,
-  getSeasonForMonth,
-  getSeasonalIntelligenceLabel,
-  getSeedStartInfo,
-  getSeedStartWeeks,
-  getShouldGrowText,
   getSmartWeatherRecommendation,
-  getStreakDaysLeft,
-  getSuccessionInfo,
   getSuccessionInterval,
   getSuggestionsForMonth,
-  getSunMismatch,
   getTodayKey,
   getUpcomingFrost,
-  getWaterTriage,
-  getWateringCount,
   getWateringRhythm,
   getWateringStreak,
-  getWateringTip,
-  getWeatherIconFromDay,
-  getWhereToPlantText,
   getZipRecord,
-  harvestDays,
-  homeBuddyImage,
-  isOrnamental,
   isPerennial,
-  journalBuddyImage,
-  loadingScreenImage,
   matchesType,
   maybeAskForReview,
   migrateGardenToAreas,
   normalizeType,
-  parseFrostOverride,
-  parseHarvestQuantity,
-  plantImages,
-  plantsBuddyImage,
-  premiumBuddyImage,
-  profileBuddyImage,
   resolvePlantImageSource,
   setFrostOverrideRef,
   setHapticsEnabled,
   setHemisphereFromLatitude,
   successHaptic,
   tapHaptic,
-  toGallons,
-  weatherBuddyImage,
   welcomeBuddyImage,
-  zoneMatch,
-  zoneNumber
 } from "./core";
 import { BackgroundDecoration } from "./components/BackgroundDecoration";
 import { ConfettiBurst } from "./components/ConfettiBurst";
@@ -217,18 +119,12 @@ import { getBadgeImage } from "./data/badgeImageMap";
 import { getBannerImage } from "./data/bannerImageMap";
 import { GlobalSearchModal } from "./components/GlobalSearchModal";
 import { GardenPlacementModal } from "./components/GardenPlacementModal";
-import { getPestImage } from "./data/pestImageMap";
-import { getDiseaseImage } from "./data/diseaseImageMap";
 import { syncWidgets } from "./lib/widgets";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { OnboardingCard } from "./components/OnboardingCard";
 import { PestDetailScreen } from "./components/PestDetailScreen";
 import { DiseaseDetailScreen } from "./components/DiseaseDetailScreen";
-import { PlantGrowthTimeline } from "./components/PlantGrowthTimeline";
-import { PremiumLockedCard } from "./components/PremiumLockedCard";
-import { PremiumLockedSection } from "./components/PremiumLockedSection";
-import { WeatherParticles } from "./components/WeatherParticles";
 import { GardenTab } from "./screens/GardenTab";
 import { HomeTab } from "./screens/HomeTab";
 import { JournalTab } from "./screens/JournalTab";

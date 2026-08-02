@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { SCREEN_WIDTH, journalBuddyImage } from "../core";
-import { styles } from "../styles";
 import { AllNotesCard } from "../components/AllNotesCard";
 import { TabHero } from "../components/TabHero";
 import { CollapsibleCard } from "../components/CollapsibleCard";
