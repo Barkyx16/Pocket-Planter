@@ -5,6 +5,7 @@ import { styles } from "../styles";
 import { CollapsibleCard } from "../components/CollapsibleCard";
 import { SegmentedCard } from "../components/SegmentedCard";
 import { GardenAreaManager } from "../components/GardenAreaManager";
+import { GuildTemplatesCard } from "../components/GuildTemplatesCard";
 import { AreaPlannerMap } from "../components/AreaPlannerMap";
 import { PollinatorPlannerCard } from "../components/PollinatorPlannerCard";
 import { CutFlowerGuideCard } from "../components/CutFlowerGuideCard";
@@ -19,6 +20,7 @@ export function FlowerTab({
   theme, savedPlants, openPlantFromList,
   gardenAreas, addGardenArea, assignPlantToAreaSlot, clearAreaSlot, deleteGardenArea,
   waterArea, pickAreaPhoto, harvestTrackers, wateredPlants, weather, zone,
+  onSavePlant, onSaveMany, onAddSetupToGarden,
 }) {
   const open = openPlantFromList;
   const flowerAreas = (gardenAreas || []).filter((a) => a.kind === "flower");
@@ -57,6 +59,19 @@ export function FlowerTab({
           </View>
         )}
       </View>
+
+      {/* Flower & houseplant combos only — the edible combos live on the Garden tab. */}
+      <CollapsibleCard theme={theme} storageKey="flower_combos" title="💐 Flower & Houseplant Combos">
+        <GuildTemplatesCard
+          theme={theme}
+          mode="flower"
+          savedPlants={savedPlants}
+          onSavePlant={onSavePlant}
+          onSaveMany={onSaveMany}
+          onAddSetup={onAddSetupToGarden}
+          onOpenPlant={open}
+        />
+      </CollapsibleCard>
 
       <CollapsibleCard theme={theme} storageKey="flowers_blooms" title="🌸 Blooms & Flowers" defaultOpen={true}>
         <SegmentedCard

@@ -5916,6 +5916,9 @@ function jumpToTab(tab) {
     theme={theme}
     savedPlants={savedPlants}
     openPlantFromList={openPlantFromList}
+    onSavePlant={toggleSavedPlant}
+    onSaveMany={saveManyPlants}
+    onAddSetupToGarden={addSetupToGarden}
     gardenAreas={gardenAreas}
     addGardenArea={addGardenArea}
     assignPlantToAreaSlot={assignPlantToAreaSlot}

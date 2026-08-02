@@ -85,7 +85,7 @@ export function GardenTab({ addGardenArea, assignPlantToAreaSlot, careLog, clear
         <QuickAddCard theme={theme} savedPlants={savedPlants} onSavePlant={onSavePlant} onOpenPlant={openPlantFromList} />
       </ToggleSection>
       <ToggleSection label={t("garden.plantCombos")} closeLabel={t("garden.closePlantCombos")} marginTop={10}>
-        <GuildTemplatesCard theme={theme} savedPlants={savedPlants} onSavePlant={onSavePlant} onSaveMany={onSaveMany} onAddSetup={onAddSetupToGarden} onOpenPlant={openPlantFromList} />
+        <GuildTemplatesCard theme={theme} mode="garden" savedPlants={savedPlants} onSavePlant={onSavePlant} onSaveMany={onSaveMany} onAddSetup={onAddSetupToGarden} onOpenPlant={openPlantFromList} />
       </ToggleSection>
       {(getPowerPairs(edibleAreas).length || findGardenConflicts(edibleAreas).length) ? (
       <ToggleSection label={t("garden.companionCheck")} marginTop={10}>

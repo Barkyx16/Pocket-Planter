@@ -1,7 +1,7 @@
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { resolvePlantImageSource } from "../core";
+import { isFlowerBedPlant, resolvePlantImageSource } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 const GUILDS = [
@@ -76,11 +76,24 @@ const GUILDS = [
 const findItem = (name) => produceData.find((p) => p.name.toLowerCase() === name.toLowerCase());
 const inCatalog = (name) => !!findItem(name);
 
-export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, savedPlants, onSavePlant, onSaveMany, onAddSetup, onOpenPlant }) {
+export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, savedPlants, onSavePlant, onSaveMany, onAddSetup, onOpenPlant, mode = "garden" }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(null);
   const [visible, setVisible] = useState(4);
   const owned = new Set((savedPlants || []).map((n) => n.toLowerCase()));
+
+  // Combos are strictly separated by garden: the Flowers & Home tab only ever shows
+  // flower/houseplant combos, the Garden tab only edible ones. A mixed combo (say
+  // tomatoes + marigold) is trimmed to just the members that belong in THIS garden,
+  // and is dropped entirely if fewer than two survive — so you can never plant a
+  // flower into a garden bed (or a vegetable into a flower bed) via a combo.
+  const belongsHere = (name) => (mode === "flower" ? isFlowerBedPlant(name) : !isFlowerBedPlant(name));
+  const guilds = useMemo(
+    () => GUILDS
+      .map((g) => ({ ...g, plants: g.plants.filter(inCatalog).filter(belongsHere) }))
+      .filter((g) => g.plants.length >= 2),
+    [mode]
+  );
 
   return (
     <View>
@@ -89,9 +102,9 @@ export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, save
       </Text>
 
       <View style={{ gap: 8, marginTop: 14 }}>
-        {GUILDS.slice(0, visible).map((guild) => {
+        {guilds.slice(0, visible).map((guild) => {
           const open = expanded === guild.name;
-          const plants = guild.plants.filter(inCatalog);
+          const plants = guild.plants;
           const haveCount = plants.filter((p) => owned.has(p.toLowerCase())).length;
           return (
             <View key={guild.name} style={{ backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 12, borderWidth: 1, borderColor: open ? "rgba(92, 255, 137, 0.3)" : "rgba(255, 255, 255, 0.08)", overflow: "hidden" }}>
@@ -153,12 +166,12 @@ export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, save
         })}
       </View>
 
-      {GUILDS.length > visible ? (
+      {guilds.length > visible ? (
         <Pressable
           onPress={() => setVisible((c) => c + 4)}
           style={{ marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
         >
-          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("guildTemplates.showMoreCombos")}{GUILDS.length - visible} {t("guildTemplates.more")}</Text>
+          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("guildTemplates.showMoreCombos")}{guilds.length - visible} {t("guildTemplates.more")}</Text>
         </Pressable>
       ) : null}
     </View>

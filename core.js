@@ -884,10 +884,11 @@ export function isOrnamental(item) {
   return t === "Flowers" || t === "Houseplants";
 }
 
-// Classic companion flowers stay welcome in any bed — they're grown for pest
-// control and pollinators, not just looks, and they're members of the veggie
-// combos. Everything else in the Flowers category is decorative.
-export const COMPANION_FLOWERS = new Set(["Marigold", "Nasturtium", "Calendula", "Sunflower", "Borage"]);
+// NOTE: there used to be a COMPANION_FLOWERS exemption here that let marigold,
+// nasturtium, calendula, sunflower and borage sit in edible beds. The two gardens
+// are now strictly separated — every flower and houseplant belongs to the Flowers
+// & Home garden — so the exemption is gone. Combos containing those flowers are
+// trimmed per garden instead (see GuildTemplatesCard's `mode`).
 
 // A "flower-bed plant" is anything that belongs in the Flowers & Home garden
 // rather than an edible garden bed: ornamental flowers AND houseplants. Grouping
