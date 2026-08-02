@@ -695,6 +695,30 @@ export const GARDEN_SLOTS = Array.from({ length: 12 }, (_, index) => ({
   label: `Plot ${index + 1}`,
 }));
 
+// ── Canonical bed-slot helpers ───────────────────────────────────────────────
+// The bed grid (AreaPlannerMap) renders exactly `slot-1` … `slot-N`, where N is
+// the area's clamped size. EVERY writer must place plants using these helpers.
+// Code that invented its own scheme — notably the auto-optimiser, which used bare
+// numeric keys ("0", "1", …) — stored plants under keys the grid never renders, so
+// they counted as planted (health, conflicts, counts) but were INVISIBLE in the
+// bed until a reload healed them via normalizeAreaPlots. Keep this the only source
+// of truth so the two can never drift again.
+export function areaCapacity(area) {
+  return Math.max(1, Math.min(12, Number(area?.size) || 12));
+}
+
+export function nextFreeSlotId(area) {
+  const cap = areaCapacity(area);
+  const used = new Set(
+    Object.entries(area?.plots || {}).filter(([, n]) => n).map(([sid]) => sid)
+  );
+  for (let i = 1; i <= cap; i++) {
+    const id = `slot-${i}`;
+    if (!used.has(id)) return id;
+  }
+  return null;
+}
+
 // ── Self-persisting feature modules ──────────────────────────────────────────
 // Several cards (seed inventory, custom tasks, rainfall, toolkit, and the newer
 // compost / rain-barrel / germination / chore trackers) keep their own
@@ -1472,21 +1496,10 @@ export function findGardenConflicts(gardenAreas) {
     );
   };
 
-  // Helper: an area has a free slot if its plot count is below its capacity.
-  // Capacity: use area.size if present, else fall back to current filled count + 1
-  // (i.e. we only treat an area as "has room" if it declares a size with space left).
-  const freeSlotId = (area) => {
-    const filled = Object.entries(area.plots || {}).filter(([, n]) => n);
-    const capacity = typeof area.size === "number" ? area.size : filled.length; // no declared size => treat as full
-    if (filled.length >= capacity) return null;
-    // Find the first slot index (0..capacity-1) not already used.
-    const used = new Set(filled.map(([sid]) => sid));
-    for (let i = 0; i < capacity; i++) {
-      const key = String(i);
-      if (!used.has(key)) return key;
-    }
-    return null;
-  };
+  // Use the canonical slot helper — this used to return bare numeric keys
+  // ("0", "1", …), so a relocation suggestion moved the plant into a slot the bed
+  // grid never renders and it vanished from view.
+  const freeSlotId = (area) => nextFreeSlotId(area);
 
   const conflicts = [];
   const seenPairs = new Set();

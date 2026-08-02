@@ -102,6 +102,7 @@ import { getDateKey,
   calculateGardenHealth,
   canPlantInArea,
   isFlowerBedPlant,
+  nextFreeSlotId,
   collectModuleBackup,
   countInSeason,
   csvEscape,
@@ -3605,17 +3606,9 @@ function clearAreaSlot(areaId, slotId) {
   );
 }
 
-// Slot ids MUST match the grid in AreaPlannerMap ("slot-1".."slot-N"), and the
-// capacity MUST match its areaSize (1..12, default 12). If these drift, a plant
-// gets stored under a key the grid never renders — it counts as planted but the
-// bed still shows Empty.
-function areaCapacityOf(area) { return Math.max(1, Math.min(12, Number(area?.size) || 12)); }
-function firstFreeSlot(area) {
-  const used = new Set(Object.entries(area?.plots || {}).filter(([, n]) => n).map(([sid]) => sid));
-  const cap = areaCapacityOf(area);
-  for (let i = 1; i <= cap; i++) { const id = `slot-${i}`; if (!used.has(id)) return id; }
-  return null;
-}
+// Slot ids MUST match the grid in AreaPlannerMap ("slot-1".."slot-N"). Both come
+// from the shared helpers in core.js so the two can never drift apart.
+const firstFreeSlot = (area) => nextFreeSlotId(area);
 
 // "Add to my garden" from a plant's detail screen. Rather than silently dropping
 // the plant into the first free bed, it opens a placement popup so the user picks
@@ -3771,16 +3764,10 @@ function autoOptimizeGarden() {
   // Work on a deep copy so real state only changes if the user confirms.
   const areas = (gardenAreas || []).map((a) => ({ ...a, plots: { ...a.plots } }));
 
-  const capacityOf = (area) =>
-    typeof area.size === "number" ? area.size : Object.values(area.plots).filter(Boolean).length;
-  const freeSlot = (area) => {
-    const filled = Object.entries(area.plots).filter(([, n]) => n);
-    const cap = capacityOf(area);
-    if (filled.length >= cap) return null;
-    const used = new Set(filled.map(([sid]) => sid));
-    for (let i = 0; i < cap; i += 1) if (!used.has(String(i))) return String(i);
-    return null;
-  };
+  // Canonical slot ids only. This used to hand back bare numeric keys ("0", "1", …),
+  // so every plant the optimiser moved landed in a slot the bed grid never renders —
+  // it still counted as planted, but you couldn't see it until the app reloaded.
+  const freeSlot = (area) => nextFreeSlotId(area);
   const firstConflict = (area) => {
     const entries = Object.entries(area.plots).filter(([, n]) => n);
     for (let i = 0; i < entries.length; i += 1)
@@ -4415,7 +4402,17 @@ useEffect(() => {
     });
   }
   function toggleFollowPlant(name) {
+    // This was the one mutating action with no feedback at all — the icon changed
+    // but nothing told you what following actually does. Confirm it, and offer undo.
+    const wasFollowing = followedPlants.includes(name);
     setFollowedPlants((current) => current.includes(name) ? current.filter((item) => item !== name) : [...current, name].sort());
+    tapHaptic("light");
+    showUndoToast(
+      wasFollowing ? `Unfollowed ${name}` : `Following ${name} — you'll see its seasonal tips`,
+      () => setFollowedPlants((current) =>
+        wasFollowing ? [...current, name].sort() : current.filter((item) => item !== name)
+      )
+    );
   }
 
   // ── Level-up / XP / Achievement effects ───────────────────────────────────

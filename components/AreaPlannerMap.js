@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Alert, Image, Modal, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { canPlantInArea, getAreaTag, getCompanionInfo, getCompatibilityScore, getPairReason, getTodayKey, resolvePlantImageSource } from "../core";
+import { areaCapacity, canPlantInArea, getAreaTag, getCompanionInfo, getCompatibilityScore, getPairReason, getTodayKey, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
 import { PlantPickerModal } from "./PlantPickerModal";
 import { useTranslation } from "../lib/i18n";
@@ -60,7 +60,7 @@ export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas,
       !existing.includes(comp.toLowerCase()) &&
       produceData.some((pd) => pd.name.toLowerCase() === comp.toLowerCase())
     );
-    const areaSize = Math.max(1, Math.min(12, Number(area.size) || 12));
+    const areaSize = areaCapacity(area);
     const emptySlots = [];
     for (let i = 1; i <= areaSize; i++) {
       const slotId = `slot-${i}`;
@@ -272,7 +272,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
         </Pressable>
       </View>
       {gardenAreas.filter((area) => area.id === selectedAreaId).map((area) => {
-        const areaSize = Math.max(1, Math.min(12, Number(area.size) || 12));
+        const areaSize = areaCapacity(area);
         const PLOTS_PER_AREA = Array.from({ length: areaSize }, (_, i) => `slot-${i + 1}`);
         const areaPlants = Object.values(area.plots || {}).map((p) => getPlantName(p)).filter(Boolean);
         return (
