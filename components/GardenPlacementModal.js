@@ -1,19 +1,24 @@
+import { useEffect, useState } from "react";
 import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import produceData from "../data/produceData";
 import { resolvePlantImageSource, tapHaptic } from "../core";
 
 // Shown when the user adds a plant to their garden. Lets them choose WHICH bed it
-// goes in, swap out a plant it would clash with, or spin up a brand-new bed. Only
-// beds of the correct type are offered — flowers & houseplants go in the Flowers &
-// Home garden, edibles in garden beds — so a plant can never land in the wrong one.
+// goes in, swap out a plant already in there, or spin up a brand-new bed. Only beds
+// of the correct type are offered — flowers & houseplants go in the Flowers & Home
+// garden, edibles in garden beds — so a plant can never land in the wrong one.
+//
+// A FULL bed is still offered: you can substitute any plant in it for this one.
+// Plants that would clash are surfaced first as the recommended swap.
 //
 // prompt shape:
 //   { plantName, flowerKind: bool, beds: [{
 //       areaId, areaName, areaEmoji,
-//       slot,                       // first free slot id, or null when the bed is full
-//       clashes: [name],            // distinct names this plant would clash with
-//       conflicts: [{ slotId, plant }],
+//       slot,                                    // first free slot id, or null if full
+//       occupants: [{ slotId, plant, clashes }], // everything currently planted
+//       conflicts: [{ slotId, plant, clashes }], // the subset that would clash
+//       clashes: [name],
 //     }] }
 function Thumb({ name, size = 48 }) {
   const item = produceData.find((p) => p.name === name);
@@ -31,10 +36,40 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
   const flowerKind = !!prompt?.flowerKind;
   const beds = prompt?.beds || [];
 
+  // Which full bed has its "swap any plant" list open. Reset per plant so the sheet
+  // never reopens with a stale bed expanded.
+  const [expandedBed, setExpandedBed] = useState(null);
+  useEffect(() => { setExpandedBed(null); }, [plantName]);
+
   const gardenLabel = flowerKind ? "Flowers & Home garden" : "garden";
   const typeNote = flowerKind
     ? "🌸 Flowers & houseplants live in your Flowers & Home garden."
     : "🌿 Edible plants live in your garden beds.";
+
+  // One row = "put plantName into this occupied slot, replacing what's there".
+  const SwapRow = ({ bed, occ }) => (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Replace ${occ.plant} in ${bed.areaName} with ${plantName}`}
+      onPress={() => { tapHaptic(); onReplace(bed, occ); }}
+      style={{
+        flexDirection: "row", alignItems: "center", gap: 10,
+        marginTop: 6, marginLeft: 16, padding: 10, borderRadius: 14,
+        backgroundColor: occ.clashes ? "rgba(255, 123, 123, 0.08)" : "rgba(255, 255, 255, 0.05)",
+        borderWidth: 1,
+        borderColor: occ.clashes ? "rgba(255, 123, 123, 0.28)" : "rgba(255, 255, 255, 0.12)",
+      }}
+    >
+      <Thumb name={occ.plant} size={34} />
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }} numberOfLines={1}>Replace {occ.plant}</Text>
+        <Text style={{ color: occ.clashes ? "#ff9f9f" : theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 1 }} numberOfLines={1}>
+          {occ.clashes ? `⚠ Clashes with ${plantName}` : `Swaps it out for ${plantName}`}
+        </Text>
+      </View>
+      <Ionicons name="swap-horizontal" size={18} color={occ.clashes ? "#ff9f9f" : theme.secondaryText} />
+    </Pressable>
+  );
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -60,8 +95,11 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
                 </Text>
                 {beds.map((b) => {
                   const conflicts = b.conflicts || [];
+                  const occupants = b.occupants || [];
+                  const others = occupants.filter((o) => !o.clashes);
                   const clashList = (b.clashes || []).slice(0, 2).join(", ") + ((b.clashes || []).length > 2 ? "…" : "");
                   const hasRoom = !!b.slot;
+                  const open = expandedBed === b.areaId;
                   return (
                     <View key={`bed-${b.areaId}`} style={{ marginHorizontal: 20, marginBottom: 10 }}>
                       {hasRoom ? (
@@ -85,37 +123,44 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
                           <Text style={{ fontSize: 24 }}>{b.areaEmoji || (flowerKind ? "🌸" : "🪴")}</Text>
                           <View style={{ flex: 1, minWidth: 0 }}>
                             <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900" }} numberOfLines={1}>{b.areaName}</Text>
-                            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>Full — swap a plant below to make room</Text>
+                            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>
+                              Full ({occupants.length} plant{occupants.length === 1 ? "" : "s"}) — swap one out below
+                            </Text>
                           </View>
+                          <Ionicons name="lock-closed" size={18} color={theme.secondaryText} />
                         </View>
                       )}
 
-                      {/* Swap out something this plant would clash with. */}
+                      {/* Clashing plants are the recommended swap — always visible. */}
                       {conflicts.map((c) => (
-                        <Pressable
-                          key={`swap-${b.areaId}-${c.slotId}`}
-                          accessibilityRole="button"
-                          accessibilityLabel={`Replace ${c.plant} in ${b.areaName} with ${plantName}`}
-                          onPress={() => { tapHaptic(); onReplace(b, c); }}
-                          style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 6, marginLeft: 16, padding: 10, borderRadius: 14, backgroundColor: "rgba(255, 123, 123, 0.08)", borderWidth: 1, borderColor: "rgba(255, 123, 123, 0.28)" }}
-                        >
-                          <Thumb name={c.plant} size={34} />
-                          <View style={{ flex: 1, minWidth: 0 }}>
-                            <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }} numberOfLines={1}>Replace {c.plant}</Text>
-                            <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 1 }} numberOfLines={1}>
-                              Swaps it out for {plantName}
-                            </Text>
-                          </View>
-                          <Ionicons name="swap-horizontal" size={18} color="#ff9f9f" />
-                        </Pressable>
+                        <SwapRow key={`swap-${b.areaId}-${c.slotId}`} bed={b} occ={c} />
                       ))}
+
+                      {/* On a full bed you can substitute ANY plant, not just a clash. */}
+                      {!hasRoom && others.length ? (
+                        open ? (
+                          others.map((o) => <SwapRow key={`swap-${b.areaId}-${o.slotId}`} bed={b} occ={o} />)
+                        ) : (
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={`Show all plants in ${b.areaName} you could swap out`}
+                            onPress={() => { tapHaptic(); setExpandedBed(b.areaId); }}
+                            style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 6, marginLeft: 16, paddingVertical: 10, borderRadius: 14, backgroundColor: "rgba(92, 255, 137, 0.08)", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
+                          >
+                            <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900" }}>
+                              Swap out {conflicts.length ? "another" : "a"} plant ({others.length})
+                            </Text>
+                            <Ionicons name="chevron-down" size={14} color="#8effab" />
+                          </Pressable>
+                        )
+                      ) : null}
                     </View>
                   );
                 })}
               </>
             ) : (
               <View style={{ marginHorizontal: 20, marginTop: 14, marginBottom: 4, padding: 16, borderRadius: 16, backgroundColor: "rgba(255, 255, 255, 0.05)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.1)" }}>
-                <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }}>No {gardenLabel} beds with room yet</Text>
+                <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }}>No {gardenLabel} beds yet</Text>
                 <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4, lineHeight: 18 }}>
                   Create a new bed below and {plantName} will be planted in it.
                 </Text>

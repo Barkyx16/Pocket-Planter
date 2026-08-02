@@ -3639,25 +3639,27 @@ function quickAddPlantToGarden(plantName) {
   const isAvoid = (a, b) => getCompatibilityScore(a, b)?.label === "Avoid";
   const bedEmoji = (a) => a.emoji || a.icon || null;
 
-  // Beds of the RIGHT type that the user could actually use: either they have a free
-  // slot, or they hold a plant this one clashes with that could be swapped out. A bed
-  // that's full but full of clashes is still a useful target — you can replace one.
+  // Every bed of the RIGHT type is offered — none are filtered out. A bed with room
+  // takes the plant directly; a FULL bed can still take it by swapping out any plant
+  // already in there. (Full beds used to be dropped from the list entirely, so once
+  // your beds filled up the only option left was "create a new bed".)
   const beds = (gardenAreas || [])
     .filter((a) => (flowerKind ? a.kind === "flower" : a.kind !== "flower"))
     .map((a) => {
-      const conflicts = Object.entries(a.plots || {})
-        .filter(([, n]) => n && isAvoid(plantName, n))
-        .map(([slotId, n]) => ({ slotId, plant: n }));
+      const occupants = Object.entries(a.plots || {})
+        .filter(([, n]) => n)
+        .map(([slotId, n]) => ({ slotId, plant: n, clashes: isAvoid(plantName, n) }));
+      const conflicts = occupants.filter((o) => o.clashes);
       return {
         areaId: a.id,
         areaName: a.name,
         areaEmoji: bedEmoji(a),
         slot: firstFreeSlot(a), // null when the bed is full
+        occupants,
         conflicts,
         clashes: Array.from(new Set(conflicts.map((c) => c.plant))),
       };
-    })
-    .filter((b) => b.slot !== null || b.conflicts.length > 0);
+    });
 
   setGardenPlacementPrompt({ plantName, flowerKind, beds });
 }
