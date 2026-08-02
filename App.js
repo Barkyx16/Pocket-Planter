@@ -351,6 +351,12 @@ if (Pressable && Pressable.type && !Pressable.__ppPressPatched) {
 
 // Destinations that live behind the "More" tab rather than in the bar itself.
 // The tab bar highlights "More" whenever one of these is the active tab.
+// Tabs that require Premium. This is the ONE list that decides paid access —
+// the tab bar, the More sheet, jumpToTab() and the render guard all read it, so a
+// new premium tab can't be half-protected.
+const PREMIUM_TAB_IDS = new Set(["garden", "weather", "games", "journal"]);
+const PREMIUM_TAB_LABELS = { garden: "Garden", weather: "Weather", games: "Garden Games", journal: "Journal" };
+
 const OVERFLOW_TAB_IDS = ["flowers", "games", "pests", "journal", "profile", "settings", "premium"];
 
 Notifications.setNotificationHandler({
@@ -4281,6 +4287,14 @@ useEffect(() => {
     );
   }
 
+  // Safety net: if premium access ends while the user is sitting on a paid tab
+  // (subscription lapses, restore fails, sign-out), bounce them home rather than
+  // leaving paid content on screen. Navigation is already gated in jumpToTab —
+  // this covers state changing underneath an open tab.
+  useEffect(() => {
+    if (!premiumUnlocked && PREMIUM_TAB_IDS.has(activeTab)) setActiveTab("home");
+  }, [premiumUnlocked, activeTab]);
+
   // Garden Games award bonus XP (per correct answer and on finishing a game). XP
   // rolls into the same bonusXP bucket as the daily bonus and shows the floating
   // "+XP" popup for instant feedback.
@@ -4566,6 +4580,13 @@ const glowOpacity =
   });
 
 function jumpToTab(tab) {
+  // Every in-app navigation funnels through here — notification taps, card
+  // "open garden" buttons, deep links — and none of them used to check premium,
+  // so a free user could land on a paid tab. Enforce it once, here.
+  if (PREMIUM_TAB_IDS.has(tab) && !premiumUnlocked) {
+    promptPremiumFeature(PREMIUM_TAB_LABELS[tab] || tab);
+    return;
+  }
   const out = motionDuration("fast");
   const swap = () => {
     setActiveTab(tab);
@@ -4591,6 +4612,8 @@ function jumpToTab(tab) {
   }).start(swap);
 }
   function jumpToSmartReminders() {
+    // Route through jumpToTab so this respects the premium gate like everything else.
+    if (PREMIUM_TAB_IDS.has("garden") && !premiumUnlocked) { promptPremiumFeature(PREMIUM_TAB_LABELS.garden); return; }
     setActiveTab("garden");
     setSelectedPlant(null);
     setTimeout(() => { scrollRef.current?.scrollTo({ y: 0, animated: false }); }, 100);
@@ -5262,7 +5285,7 @@ function jumpToTab(tab) {
   zone={zone}
 />
           ) : null}
-          {record && activeTab === "garden" ? (
+          {record && activeTab === "garden" && premiumUnlocked ? (
   <GardenTab
   unitSystem={unitSystem}
   onAutoOptimize={autoOptimizeGarden}
@@ -5345,7 +5368,7 @@ function jumpToTab(tab) {
   zone={zone}
 />
 ) : null}
-{activeTab === "weather" ? (
+{activeTab === "weather" && premiumUnlocked ? (
   <WeatherTab
   frostAlertsOn={frostAlertsOn}
   gardenMap={gardenMap}
@@ -5402,7 +5425,7 @@ function jumpToTab(tab) {
   />
 ) : null}
 
-{activeTab === "games" ? (
+{activeTab === "games" && premiumUnlocked ? (
   <GamesTab theme={theme} onAwardXp={awardGameXP} />
 ) : null}
 {activeTab === "pests" ? (
@@ -5416,7 +5439,7 @@ function jumpToTab(tab) {
     jumpToTab={jumpToTab}
   />
 ) : null}
-{activeTab === "journal" ? (
+{activeTab === "journal" && premiumUnlocked ? (
   <JournalTab
   achievementBadges={achievementBadges}
   badgeEarnedDates={badgeEarnedDates}
@@ -5628,7 +5651,7 @@ function jumpToTab(tab) {
         { id: "settings", label: t("tabs.settings"), icon: "settings", premium: false },
         { id: "premium", label: t("tabs.premium"), icon: "star", premium: false },
       ].filter((item) => !(item.id === "premium" && premiumUnlocked)).map((item) => {
-        const locked = item.premium && !premiumUnlocked;
+        const locked = PREMIUM_TAB_IDS.has(item.id) && !premiumUnlocked;
         const selected = activeTab === item.id;
         return (
           <Pressable
@@ -5681,7 +5704,7 @@ function jumpToTab(tab) {
       const active = tab.id === "more"
         ? OVERFLOW_TAB_IDS.includes(activeTab)
         : activeTab === tab.id;
-      const locked = tab.premium && !premiumUnlocked;
+      const locked = PREMIUM_TAB_IDS.has(tab.id) && !premiumUnlocked;
       return (
         <Pressable key={tab.id} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={tab.label} onPress={() => { if (tab.id === "more") { tapHaptic(); setShowMoreSheet(true); return; } if (locked) { tapHaptic(); promptPremiumFeature(tab.label); return; } jumpToTab(tab.id); }} style={({ pressed }) => [styles.bottomTabButton, active && styles.bottomTabButtonActive, active && styles.bottomTabGlow, pressed && styles.bottomTabPressed]}>
           <View style={[styles.bottomTabInner, active && styles.bottomTabInnerActive]}>
