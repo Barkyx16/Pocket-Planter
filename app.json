@@ -3,7 +3,7 @@
     "name": "Pocket Planter",
     "slug": "pocket-planter",
     "scheme": "pocketplanter",
-    "version": "1.0.13",
+    "version": "1.0.14",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "icon": "./assets/icon.png",
