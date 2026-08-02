@@ -29,8 +29,18 @@ create policy "read own entitlement"
 -- uses the service-role key, which bypasses RLS.
 revoke insert, update, delete on public.premium_entitlements from anon, authenticated;
 
--- The client must never be able to set this again.
-revoke update (premium_unlocked) on public.profiles from anon, authenticated;
+-- The client must never be able to set this again. Guarded: the column may not
+-- exist on every environment, and a bare REVOKE would abort the whole script.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'profiles'
+      and column_name = 'premium_unlocked'
+  ) then
+    execute 'revoke update (premium_unlocked) on public.profiles from anon, authenticated';
+  end if;
+end $$;
 
 comment on table public.premium_entitlements is
   'Written only by the revenuecat-webhook edge function. Clients read their own row.';
