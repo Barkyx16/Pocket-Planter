@@ -719,6 +719,9 @@ useEffect(() => {
 
 const clearLocalAccountData = async () => {
   setPremiumUnlocked(false);
+  // Detach the RevenueCat identity so the next account on this device doesn't
+  // inherit the previous user's entitlement.
+  if (!__DEV__) Purchases.logOut().catch(() => {});
   setSubscriptionPlan("Free");
   setLastSyncedAt(null);
   AsyncStorage.removeItem("pp_lastSyncedAt").catch(() => {});
@@ -830,7 +833,10 @@ const saveProfileToSupabase = async () => {
       profile_theme: selectedProfileTheme,
 
       subscription_plan: subscriptionPlan,
-      premium_unlocked: premiumUnlocked,
+      // premium_unlocked is deliberately NOT written here. Entitlement is decided
+      // server-side by the revenuecat-webhook function and stored in
+      // premium_entitlements, which the client cannot write. Sending it from here
+      // is what let a patched client grant itself Premium permanently.
       daily_bonus_date: dailyBonusDate,
 
       reminders_on: remindersOn,
@@ -979,7 +985,9 @@ if (data?.profile_photo)
 if (data?.subscription_plan)
   setSubscriptionPlan(data.subscription_plan);
 
-  setPremiumUnlocked(data?.premium_unlocked === true);
+  // Entitlement comes from the server-owned premium_entitlements table (below),
+  // not from this client-writable profile column.
+  await refreshEntitlement();
    
   if (data?.daily_bonus_date) {
   setDailyBonusDate(data.daily_bonus_date);
@@ -4220,10 +4228,17 @@ useEffect(() => {
       try {
         if (__DEV__) { console.log("RevenueCat skipped in Expo Go/dev mode."); return; }
         Purchases.configure({ apiKey: Platform.OS === "ios" ? "appl_VbBnWNAWlOPeunWblgSNQbUXFjR" : "YOUR_REAL_REVENUECAT_ANDROID_KEY" });
+        // Tell RevenueCat WHICH account this is, so its webhook can map an event
+        // to a Supabase user. Without this, purchases land under an anonymous
+        // $RCAnonymousID that the server can't attribute to anyone.
         try {
-          const customerInfo = await Purchases.getCustomerInfo();
-          const hasPro = hasPremiumEntitlement(customerInfo);
-          setPremiumUnlocked(hasPro);
+          if (user?.id) await Purchases.logIn(user.id);
+        } catch (idError) {
+          console.log("RevenueCat identify skipped:", idError?.message);
+        }
+        try {
+          // Server first; the device receipt is only the fallback.
+          await refreshEntitlement();
         } catch (reconcileError) {
           console.log("Entitlement reconcile skipped:", reconcileError);
         }
@@ -4232,11 +4247,58 @@ useEffect(() => {
       }
     }
     configureRevenueCat();
-  }, []);
+  }, [user?.id]);
 
   // ── Premium ────────────────────────────────────────────────────────────────
+
+  // Ask the SERVER whether this account has Premium. premium_entitlements is
+  // written only by the RevenueCat webhook (service role) and is read-only to the
+  // client, so a patched app can no longer grant itself access that sticks.
+  //
+  // Fallbacks matter here: a real subscriber must never get locked out because a
+  // webhook is slow or the phone is offline. So when there's no server row yet, or
+  // the fetch fails, we fall back to the store's own signed receipt via RevenueCat.
+  async function refreshEntitlement(currentUser) {
+    const u = currentUser || user;
+    if (!u?.id) return;
+    try {
+      const { data, error } = await supabase
+        .from("premium_entitlements")
+        .select("is_active, expires_at")
+        .eq("user_id", u.id)
+        .maybeSingle();
+      if (error) throw error;
+      if (data) {
+        const notExpired = !data.expires_at || new Date(data.expires_at).getTime() > Date.now();
+        setPremiumUnlocked(data.is_active === true && notExpired);
+        return;
+      }
+      // No server row yet (e.g. the purchase just happened and the webhook hasn't
+      // landed). Trust the device receipt for now; the webhook reconciles shortly.
+      await reconcileFromStore();
+    } catch (e) {
+      console.log("Entitlement check fell back to store receipt:", e?.message);
+      await reconcileFromStore();
+    }
+  }
+
+  // The store's own receipt, via RevenueCat. Signed by Apple/Google, so it's a
+  // sound fallback — just not something the server should take the app's word on.
+  async function reconcileFromStore() {
+    try {
+      if (__DEV__) return;
+      const customerInfo = await Purchases.getCustomerInfo();
+      setPremiumUnlocked(hasPremiumEntitlement(customerInfo));
+    } catch (e) {
+      console.log("Store entitlement check skipped:", e?.message);
+    }
+  }
+
   async function unlockPremium(plan) {
+    // Optimistic so the paywall clears instantly; the webhook is the real record,
+    // so re-check the server once it's had a moment to land.
     setPremiumUnlocked(true);
+    setTimeout(() => { refreshEntitlement(); }, 4000);
     setSubscriptionPlan(plan);
     setShowPremiumIntro(false);
     // The Premium tab is hidden for premium members, so move them to Settings
