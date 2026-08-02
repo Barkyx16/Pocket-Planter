@@ -3239,12 +3239,12 @@ export const WATERING_STREAK_GAP_DAYS = 4;
 export const WHATS_NEW_VERSION = "1.0.14";
 
 export const WHATS_NEW_ITEMS = [
-  "🌸 173 flowers & houseplants — browse them free",
-  "🌱 Plant a whole combo in one tap, bed and all",
-  "🪴 Pick which bed a plant goes in, or swap one out",
-  "🐛 Pest Watch now has its own tab",
-  "✅ Your daily plan stays put until every task is done",
-  "🔧 Fixed plants that were planted but never showed up",
+  "173 flowers and houseplants, with a garden of their own",
+  "Plant a whole companion combo in one tap, bed and all",
+  "Pick which bed a plant goes in, or swap one out",
+  "Pest Watch now has its own tab",
+  "Your daily plan stays put until every task is done",
+  "Fixed plants that were planted but never showed up",
 ];
 
 export function getWateringStreak(plantName, wateringHistory) {
