@@ -3232,13 +3232,19 @@ export function getSearchSuggestions(query, limit = 3) {
 
 export const WATERING_STREAK_GAP_DAYS = 4;
 
-export const WHATS_NEW_VERSION = "update-1";
+// Bump this whenever WHATS_NEW_ITEMS changes — it's compared against the stored
+// `pp_whatsNewSeen` value, so the card only re-appears when the version differs.
+// It had been stuck on "update-1" while the items went stale, which meant nobody
+// was ever shown the notes again.
+export const WHATS_NEW_VERSION = "1.0.14";
 
 export const WHATS_NEW_ITEMS = [
-  "🔥 Streak celebrations when you hit milestones",
-  "💧 Smarter watering reminders and weekly stats",
-  "📅 New 'Today' filter in your care log",
-  "✨ Smoother animations and polish throughout",
+  "🌸 173 flowers & houseplants — browse them free",
+  "🌱 Plant a whole combo in one tap, bed and all",
+  "🪴 Pick which bed a plant goes in, or swap one out",
+  "🐛 Pest Watch now has its own tab",
+  "✅ Your daily plan stays put until every task is done",
+  "🔧 Fixed plants that were planted but never showed up",
 ];
 
 export function getWateringStreak(plantName, wateringHistory) {
