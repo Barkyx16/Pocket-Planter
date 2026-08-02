@@ -6,6 +6,7 @@ import { styles } from "../styles";
 import { CollapsibleCard } from "../components/CollapsibleCard";
 import { SegmentedCard } from "../components/SegmentedCard";
 import { GardenAreaManager } from "../components/GardenAreaManager";
+import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { GuildTemplatesCard } from "../components/GuildTemplatesCard";
 import { GlowPlantCard } from "../components/GlowPlantCard";
 import { AreaPlannerMap } from "../components/AreaPlannerMap";
@@ -131,6 +132,7 @@ export function FlowerTab({
 
       {/* Flower & houseplant combos only — the edible combos live on the Garden tab. */}
       <CollapsibleCard theme={theme} storageKey="flower_combos" title="💐 Flower & Houseplant Combos">
+      {premiumUnlocked ? (
         <GuildTemplatesCard
           theme={theme}
           mode="flower"
@@ -140,9 +142,18 @@ export function FlowerTab({
           onAddSetup={onAddSetupToGarden}
           onOpenPlant={open}
         />
+      ) : (
+        <PremiumLockedCard
+          theme={theme}
+          title="Flower combos locked"
+          body="Unlock Premium for proven flower and houseplant combos you can plant as a ready-made bed."
+          onUnlock={onViewPremium}
+        />
+      )}
       </CollapsibleCard>
 
       <CollapsibleCard theme={theme} storageKey="flowers_blooms" title="🌸 Blooms & Flowers">
+      {premiumUnlocked ? (
         <SegmentedCard
           theme={theme}
           accent="#ffb6c1"
@@ -156,9 +167,18 @@ export function FlowerTab({
             ) },
           ]}
         />
+      ) : (
+        <PremiumLockedCard
+          theme={theme}
+          title="Blooms & bouquets locked"
+          body="Unlock Premium for pollinator planning, cut-flower guides, and vase tracking."
+          onUnlock={onViewPremium}
+        />
+      )}
       </CollapsibleCard>
 
       <CollapsibleCard theme={theme} storageKey="flowers_tools" title="🪴 Home & Care Tools">
+      {premiumUnlocked ? (
         <SegmentedCard
           theme={theme}
           accent="#ffb6c1"
@@ -170,6 +190,14 @@ export function FlowerTab({
             { id: "propagate", label: "🌱 Propagate", node: <PropagationTrackerCard theme={theme} /> },
           ]}
         />
+      ) : (
+        <PremiumLockedCard
+          theme={theme}
+          title="Home & care tools locked"
+          body="Unlock Premium for houseplant care schedules, rooms, pet-safe checks, and propagation tracking."
+          onUnlock={onViewPremium}
+        />
+      )}
       </CollapsibleCard>
     </View>
   );

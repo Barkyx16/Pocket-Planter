@@ -5620,7 +5620,7 @@ function jumpToTab(tab) {
       </View>
 
       {[
-        { id: "flowers", label: "Flowers & Home", icon: "flower", premium: true },
+        { id: "flowers", label: "Flowers & Home", icon: "flower", premium: false },
         { id: "games", label: "Garden Games", icon: "game-controller", premium: true },
         { id: "pests", label: "Pest Watch", icon: "bug", premium: false },
         { id: "journal", label: t("tabs.journal"), icon: "book", premium: true },
