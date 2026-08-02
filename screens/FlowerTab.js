@@ -1,11 +1,13 @@
-import { Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { isFlowerBedPlant } from "../core";
+import { getDateKey, isFlowerBedPlant } from "../core";
 import { styles } from "../styles";
 import { CollapsibleCard } from "../components/CollapsibleCard";
 import { SegmentedCard } from "../components/SegmentedCard";
 import { GardenAreaManager } from "../components/GardenAreaManager";
 import { GuildTemplatesCard } from "../components/GuildTemplatesCard";
+import { GlowPlantCard } from "../components/GlowPlantCard";
 import { AreaPlannerMap } from "../components/AreaPlannerMap";
 import { PollinatorPlannerCard } from "../components/PollinatorPlannerCard";
 import { CutFlowerGuideCard } from "../components/CutFlowerGuideCard";
@@ -21,7 +23,20 @@ export function FlowerTab({
   gardenAreas, addGardenArea, assignPlantToAreaSlot, clearAreaSlot, deleteGardenArea,
   waterArea, pickAreaPhoto, harvestTrackers, wateredPlants, weather, zone,
   onSavePlant, onSaveMany, onAddSetupToGarden,
+  premiumUnlocked, onViewPremium, toggleSavedPlant, toggleComparePlant, comparePlants = [],
+  toggleFollowPlant, followedPlants = [], markPlantWatered, addPlantToGarden,
+  snoozePlantWatering, snoozedPlants = {}, gardenPlantNames, wateringHistory,
 }) {
+  // Browse every flower & houseplant, same as the Plants tab lists every edible.
+  // Free users get a taste and then hit the upgrade wall.
+  const FREE_FLOWER_LIMIT = 6;
+  const [flowerVisible, setFlowerVisible] = useState(20);
+  const flowerCatalog = produceData
+    .filter((item) => isFlowerBedPlant(item.name))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const flowerShown = premiumUnlocked
+    ? flowerCatalog.slice(0, flowerVisible)
+    : flowerCatalog.slice(0, FREE_FLOWER_LIMIT);
   const open = openPlantFromList;
   const flowerAreas = (gardenAreas || []).filter((a) => a.kind === "flower");
   // The Flowers & Home garden holds both flowers and houseplants.
@@ -31,6 +46,60 @@ export function FlowerTab({
 
   return (
     <View>
+      {/* Every flower & houseplant in the catalog — the Flowers-tab twin of the
+          Plants tab list, free-capped the same way. Open by default; the rest of
+          the tab's sections stay collapsed so this is what you land on. */}
+      <CollapsibleCard theme={theme} storageKey="flower_catalog" title="🌸 All Flowers & Houseplants" defaultOpen={true}>
+        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginBottom: 12 }}>
+          {flowerCatalog.length} flowers and houseplants to browse, save, and plant.
+        </Text>
+        {flowerShown.map((item) => (
+          <GlowPlantCard
+            key={`flower-${item.name}`}
+            plant={item}
+            weather={weather}
+            zone={zone}
+            theme={theme}
+            isSaved={savedPlants.includes(item.name)}
+            isCompared={comparePlants.includes(item.name)}
+            isFollowed={followedPlants.includes(item.name)}
+            isInGarden={gardenPlantNames?.has(item.name)}
+            isSnoozed={snoozedPlants[item.name] === getDateKey(new Date(Date.now() + 86400000))}
+            wateredDate={wateredPlants[item.name]}
+            wateredPlants={wateredPlants}
+            wateringHistory={wateringHistory}
+            onOpen={() => open(item)}
+            onSave={() => toggleSavedPlant && toggleSavedPlant(item.name)}
+            onCompare={() => toggleComparePlant && toggleComparePlant(item.name)}
+            onFollow={() => toggleFollowPlant && toggleFollowPlant(item.name)}
+            onAddToGarden={addPlantToGarden ? () => addPlantToGarden(item.name) : undefined}
+            onWater={() => markPlantWatered && markPlantWatered(item.name)}
+            onSnooze={snoozePlantWatering ? () => snoozePlantWatering(item.name) : undefined}
+          />
+        ))}
+        {!premiumUnlocked && flowerCatalog.length > FREE_FLOWER_LIMIT ? (
+          <Pressable
+            onPress={onViewPremium}
+            accessibilityRole="button"
+            accessibilityLabel="Unlock all flowers and houseplants with Premium"
+            style={{ marginTop: 14, backgroundColor: "rgba(255, 216, 107, 0.16)", borderRadius: 16, paddingVertical: 14, paddingHorizontal: 16, alignItems: "center", borderWidth: 1, borderColor: "#ffd86b" }}
+          >
+            <Text style={{ color: "#ffd86b", fontWeight: "900", fontSize: 14 }}>
+              🔒 Unlock all {flowerCatalog.length} flowers & houseplants with Premium
+            </Text>
+          </Pressable>
+        ) : premiumUnlocked && flowerCatalog.length > flowerVisible ? (
+          <Pressable
+            onPress={() => setFlowerVisible((c) => c + 20)}
+            style={{ marginTop: 14, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
+          >
+            <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>
+              Show more — {flowerCatalog.length - flowerVisible} more
+            </Text>
+          </Pressable>
+        ) : null}
+      </CollapsibleCard>
+
       {/* The flower planner — works like the Garden tab's map, but flowers only. */}
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
         <Text style={[styles.cardTitle, { color: theme.text }]}>🌸 Flower Garden</Text>
@@ -73,7 +142,7 @@ export function FlowerTab({
         />
       </CollapsibleCard>
 
-      <CollapsibleCard theme={theme} storageKey="flowers_blooms" title="🌸 Blooms & Flowers" defaultOpen={true}>
+      <CollapsibleCard theme={theme} storageKey="flowers_blooms" title="🌸 Blooms & Flowers">
         <SegmentedCard
           theme={theme}
           accent="#ffb6c1"

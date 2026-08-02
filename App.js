@@ -5375,6 +5375,19 @@ function jumpToTab(tab) {
     onSavePlant={toggleSavedPlant}
     onSaveMany={saveManyPlants}
     onAddSetupToGarden={addSetupToGarden}
+    premiumUnlocked={premiumUnlocked}
+    onViewPremium={() => jumpToTab("premium")}
+    toggleSavedPlant={toggleSavedPlant}
+    toggleComparePlant={toggleComparePlant}
+    comparePlants={comparePlants}
+    toggleFollowPlant={toggleFollowPlant}
+    followedPlants={followedPlants}
+    markPlantWatered={markPlantWatered}
+    addPlantToGarden={quickAddPlantToGarden}
+    snoozePlantWatering={snoozePlantWatering}
+    snoozedPlants={snoozedPlants}
+    gardenPlantNames={gardenPlantNames}
+    wateringHistory={wateringHistory}
     gardenAreas={gardenAreas}
     addGardenArea={addGardenArea}
     assignPlantToAreaSlot={assignPlantToAreaSlot}
