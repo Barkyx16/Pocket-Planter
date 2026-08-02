@@ -77,7 +77,7 @@ export const OnboardingCard = memo(function OnboardingCard({ onFinish, isDark = 
       <StatusBar barStyle="light-content" />
       <BackgroundDecoration isDark={isDark} />
       <View style={styles.onboardingOverlay}>
-      <View style={[styles.onboardingCard, { padding: 16, maxHeight: "92%" }]}>
+      <View style={[styles.onboardingCard, { padding: 16, maxHeight: "88%" }]}>
         <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
           {/* HERO — matches the Premium screen */}
           <View style={styles.premiumHeroSection}>
