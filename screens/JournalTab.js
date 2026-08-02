@@ -30,7 +30,7 @@ export function JournalTab({ achievementBadges, badgeEarnedDates, careLog, delet
       source={journalBuddyImage}
       style={{
         width: "100%",
-        height: SCREEN_WIDTH * 1.35,
+        height: SCREEN_WIDTH * 0.6,
         borderRadius: 24,
         marginBottom: 18,
       }}

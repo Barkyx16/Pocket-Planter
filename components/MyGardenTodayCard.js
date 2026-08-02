@@ -2,18 +2,23 @@ import { memo } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { formatTemp, getClimateBucket, getFertilizerDays, getTodayKey, resolvePlantImageSource } from "../core";
+import { formatTemp, getClimateBucket, getDateKey, getFertilizerDays, getSeedStartInfo, getTodayKey, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
-export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weather, monthlySuggestions, savedPlants, wateredPlants, onOpenPlant, onAddPhoto, uploadingPhoto, harvestTrackers, fertilizerTrackers, journalEntries, zone, gardenMap, onNavigate, unitSystem }) {
+export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weather, monthlySuggestions, savedPlants, wateredPlants, onOpenPlant, onAddPhoto, uploadingPhoto, harvestTrackers, fertilizerTrackers, journalEntries, zone, gardenMap, onNavigate, unitSystem, snoozedPlants, compatiblePlants }) {
   const { t } = useTranslation();
   const today = getTodayKey();
   const currentHour = new Date().getHours();
   const currentMonth = new Date().getMonth() + 1;
 
+  // Snoozing a plant should quiet it here too. This card used to ignore snoozes
+  // entirely, so a plant you'd deliberately put off kept showing up as "needs water".
+  const tomorrowKey = getDateKey(new Date(Date.now() + 86400000));
   const wateredToday = savedPlants.filter(p => wateredPlants?.[p] === today);
-  const unwateredPlants = savedPlants.filter(p => wateredPlants?.[p] !== today);
+  const unwateredPlants = savedPlants.filter(
+    p => wateredPlants?.[p] !== today && snoozedPlants?.[p] !== tomorrowKey
+  );
   const needsWaterCount = unwateredPlants.length;
   const allWatered = needsWaterCount === 0 && savedPlants.length > 0;
 
@@ -26,6 +31,10 @@ export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weathe
     if (!t) return false;
     return Math.floor((new Date() - new Date(t.lastFertilized)) / (1000 * 60 * 60 * 24)) >= getFertilizerDays(p);
   });
+
+  // Seeds it's time to start indoors for this zone (from the old game-plan card).
+  const seedsToStart = (compatiblePlants || [])
+    .filter((item) => getSeedStartInfo(item, zone)?.status === "start-now");
 
   const todayPhotos = journalEntries.filter(e => e.createdAt?.startsWith(today)).length;
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
@@ -250,6 +259,27 @@ return (
                 {t("myGardenToday.tapToGoToGarden")}
               </Text>
             </View>
+          </Pressable>
+        ) : null}
+
+        {/* SEEDS TO START INDOORS — seasonal, not a counted daily task */}
+        {seedsToStart.length > 0 ? (
+          <Pressable
+            onPress={() => onOpenPlant && onOpenPlant(seedsToStart[0])}
+            style={[styles.myGardenTaskRowV2, { backgroundColor: "rgba(142, 255, 171, 0.08)", borderColor: "rgba(142, 255, 171, 0.2)" }]}
+          >
+            <View style={[styles.myGardenTaskIconWrap, { backgroundColor: "rgba(142, 255, 171, 0.16)" }]}>
+              <Text style={styles.myGardenTaskIcon}>🌱</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.myGardenTaskTitle, { color: "#8effab" }]}>
+                Start {seedsToStart.length} seed{seedsToStart.length === 1 ? "" : "s"} indoors
+              </Text>
+              <Text style={[styles.myGardenTaskText, { color: theme.secondaryText }]}>
+                {seedsToStart.slice(0, 3).map((e) => e.name).join(", ")} — it's the right window for your zone.
+              </Text>
+            </View>
+            <Text style={styles.myGardenTaskArrow}>›</Text>
           </Pressable>
         ) : null}
 

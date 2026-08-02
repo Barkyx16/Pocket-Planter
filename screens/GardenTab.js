@@ -43,7 +43,7 @@ export function GardenTab({ addGardenArea, assignPlantToAreaSlot, careLog, clear
   source={gardenBuddyImage}
   style={{
     width: "100%",
-    height: SCREEN_WIDTH * 1.35,
+    height: SCREEN_WIDTH * 0.6,
     borderRadius: 24,
     marginBottom: 18,
   }}

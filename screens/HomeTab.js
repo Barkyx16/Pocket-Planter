@@ -29,7 +29,6 @@ import { SeasonTransitionCard } from "../components/SeasonTransitionCard";
 import { PlantingCalendarCard } from "../components/PlantingCalendarCard";
 import { SeedStartingCard } from "../components/SeedStartingCard";
 import { SuccessionSowingCard } from "../components/SuccessionSowingCard";
-import { TodaysGamePlanCard } from "../components/TodaysGamePlanCard";
 import { ToggleSection } from "../components/ToggleSection";
 import { WaterTriageCard } from "../components/WaterTriageCard";
 import { WateringStreakNudge } from "../components/WateringStreakNudge";
@@ -192,7 +191,7 @@ export function HomeTab({ activationSteps, claimDailyBonus, combinedGardenMap, c
       source={homeBuddyImage}
       style={{
         width: "100%",
-        height: SCREEN_WIDTH * 1.35,
+        height: SCREEN_WIDTH * 0.6,
         borderRadius: 24,
         marginBottom: 18,
       }}
@@ -210,22 +209,6 @@ export function HomeTab({ activationSteps, claimDailyBonus, combinedGardenMap, c
     </Pressable>
 
             {/* Growing zone card moved to the bottom of the page */}
-            {savedPlants.length > 0 ? (
-                <TodaysGamePlanCard
-                  theme={theme}
-                  unitSystem={unitSystem}
-                  savedPlants={savedPlants}
-                  wateredPlants={wateredPlants}
-                  wateringHistory={wateringHistory}
-                  harvestTrackers={harvestTrackers}
-                  weather={weather}
-                  zone={zone}
-                  compatiblePlants={compatiblePlants}
-                  snoozedPlants={snoozedPlants}
-                  onOpenPlant={openPlantFromList}
-                  onScrollToWatering={() => scrollRef.current?.scrollTo({ y: Math.max(0, wateringSectionY.current - 20), animated: true })}
-                />
-              ) : null}
 
               <PlantAnniversaryCard
                 theme={theme}
@@ -345,6 +328,8 @@ harvestTrackers={harvestTrackers}
   harvestTrackers={harvestTrackers}
   fertilizerTrackers={fertilizerTrackers}
   journalEntries={journalEntries}
+  snoozedPlants={snoozedPlants}
+  compatiblePlants={compatiblePlants}
 zone={zone}
   gardenMap={combinedGardenMap}
   onNavigate={jumpToTab}

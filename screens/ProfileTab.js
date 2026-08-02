@@ -29,7 +29,7 @@ export function ProfileTab({ achievementBadges, badgeEarnedDates, bannerEarnedDa
       source={profileBuddyImage}
       style={{
         width: "100%",
-        height: SCREEN_WIDTH * 1.35,
+        height: SCREEN_WIDTH * 0.6,
         borderRadius: 24,
         marginBottom: 18,
       }}
