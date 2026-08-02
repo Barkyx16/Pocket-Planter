@@ -216,7 +216,6 @@ import { ConfettiBurst } from "./components/ConfettiBurst";
 import { getBadgeImage } from "./data/badgeImageMap";
 import { getBannerImage } from "./data/bannerImageMap";
 import { GlobalSearchModal } from "./components/GlobalSearchModal";
-import { GardenConflictModal } from "./components/GardenConflictModal";
 import { GardenPlacementModal } from "./components/GardenPlacementModal";
 import { getPestImage } from "./data/pestImageMap";
 import { getDiseaseImage } from "./data/diseaseImageMap";
@@ -453,7 +452,6 @@ function AppInner({ language, setLanguage }) {
   const [harvestTrackers, setHarvestTrackers] = useState({});
   const [gardenMap, setGardenMap] = useState({});
   const [gardenAreas, setGardenAreas] = useState([]);
-  const [gardenConflictPrompt, setGardenConflictPrompt] = useState(null); // { plantName, conflicts, cleanBeds, anyFreeBed } — drives GardenConflictModal
   const [gardenPlacementPrompt, setGardenPlacementPrompt] = useState(null); // { plantName, flowerKind, beds } — drives GardenPlacementModal
   const [gardenFocusAreaId, setGardenFocusAreaId] = useState(null); // { areaId, n } — asks AreaPlannerMap to open a bed (n bumps each tap so re-taps re-open)
   const [harvestLogPlant, setHarvestLogPlant] = useState(null); // plant name being logged — drives the cross-platform harvest-log modal (Alert.prompt is iOS-only)
@@ -3641,18 +3639,25 @@ function quickAddPlantToGarden(plantName) {
   const isAvoid = (a, b) => getCompatibilityScore(a, b)?.label === "Avoid";
   const bedEmoji = (a) => a.emoji || a.icon || null;
 
-  // Beds of the RIGHT type that still have room — with any companion clashes flagged
-  // so the popup can warn without blocking.
+  // Beds of the RIGHT type that the user could actually use: either they have a free
+  // slot, or they hold a plant this one clashes with that could be swapped out. A bed
+  // that's full but full of clashes is still a useful target — you can replace one.
   const beds = (gardenAreas || [])
     .filter((a) => (flowerKind ? a.kind === "flower" : a.kind !== "flower"))
-    .filter((a) => firstFreeSlot(a) !== null)
-    .map((a) => ({
-      areaId: a.id,
-      areaName: a.name,
-      areaEmoji: bedEmoji(a),
-      slot: firstFreeSlot(a),
-      clashes: Array.from(new Set(Object.values(a.plots || {}).filter((n) => n && isAvoid(plantName, n)))),
-    }));
+    .map((a) => {
+      const conflicts = Object.entries(a.plots || {})
+        .filter(([, n]) => n && isAvoid(plantName, n))
+        .map(([slotId, n]) => ({ slotId, plant: n }));
+      return {
+        areaId: a.id,
+        areaName: a.name,
+        areaEmoji: bedEmoji(a),
+        slot: firstFreeSlot(a), // null when the bed is full
+        conflicts,
+        clashes: Array.from(new Set(conflicts.map((c) => c.plant))),
+      };
+    })
+    .filter((b) => b.slot !== null || b.conflicts.length > 0);
 
   setGardenPlacementPrompt({ plantName, flowerKind, beds });
 }
@@ -3673,6 +3678,20 @@ function placeFromPlacementPrompt(bed) {
       Alert.alert(t("garden.addedTitle"), `${plantName} was placed in ${bed.areaName}.`, [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab(flowerKind ? "flowers" : "garden") }]);
     }, 250);
   }
+}
+
+// Swap the new plant into a clashing plant's exact slot, removing the old one.
+// Silent, because the whole point is that the user already resolved the clash.
+function replaceFromPlacementPrompt(bed, conflict) {
+  const plantName = gardenPlacementPrompt?.plantName;
+  const flowerKind = gardenPlacementPrompt?.flowerKind;
+  setGardenPlacementPrompt(null);
+  if (!plantName || !bed || !conflict) return;
+  assignPlantToAreaSlot(bed.areaId, conflict.slotId, plantName, { silent: true });
+  successHaptic();
+  setTimeout(() => {
+    Alert.alert("Swapped", `${plantName} replaced ${conflict.plant} in ${bed.areaName}.`, [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab(flowerKind ? "flowers" : "garden") }]);
+  }, 250);
 }
 
 // "Make a new garden" from the placement popup — spins up a fresh bed of the right
@@ -3697,33 +3716,6 @@ function createBedFromPlacementPrompt() {
   setTimeout(() => {
     Alert.alert("New garden created", `${plantName} was planted in a new ${flowerKind ? "Flowers & Home" : "garden"} bed.`, [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab(tab) }]);
   }, 300);
-}
-
-// Swap the new plant into a clashing plant's exact slot (removing the old plant).
-function replaceGardenPlant(conflict, newPlant) {
-  assignPlantToAreaSlot(conflict.areaId, conflict.slotId, newPlant, { silent: true });
-  setGardenConflictPrompt(null);
-  successHaptic();
-  setTimeout(() => {
-    Alert.alert("Swapped", `${newPlant} replaced ${conflict.plant} in ${conflict.areaName}.`, [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab("garden") }]);
-  }, 250);
-}
-
-// Drop the new plant into a specific bed that has room and no clash.
-function placeGardenPlantInBed(bed, newPlant) {
-  assignPlantToAreaSlot(bed.areaId, bed.slot, newPlant, { silent: true });
-  setGardenConflictPrompt(null);
-  successHaptic();
-  setTimeout(() => {
-    Alert.alert(t("garden.addedTitle"), `${newPlant} was placed in ${bed.areaName}.`, [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab("garden") }]);
-  }, 250);
-}
-
-// Add despite the clash — into the first free bed (fires the standard warning).
-function addGardenPlantAnyway(bed, newPlant) {
-  setGardenConflictPrompt(null);
-  assignPlantToAreaSlot(bed.areaId, bed.slot, newPlant); // not silent — keeps the "kept in mind" heads-up
-  successHaptic();
 }
 
 // From the Companion Check: tapping a conflict scrolls up to the Garden Map,
@@ -5225,6 +5217,7 @@ function jumpToTab(tab) {
   prompt={gardenPlacementPrompt}
   theme={theme}
   onPlaceIn={(bed) => placeFromPlacementPrompt(bed)}
+  onReplace={(bed, conflict) => replaceFromPlacementPrompt(bed, conflict)}
   onCreateNew={() => createBedFromPlacementPrompt()}
   onClose={() => setGardenPlacementPrompt(null)}
 />
@@ -5364,19 +5357,11 @@ function jumpToTab(tab) {
       onJumpToTab={(tab) => jumpToTab(tab)}
     />
 
-    <GardenConflictModal
-      prompt={gardenConflictPrompt}
-      theme={theme}
-      onReplace={(conflict) => replaceGardenPlant(conflict, gardenConflictPrompt.plantName)}
-      onPlaceIn={(bed) => placeGardenPlantInBed(bed, gardenConflictPrompt.plantName)}
-      onAddAnyway={() => addGardenPlantAnyway(gardenConflictPrompt.anyFreeBed, gardenConflictPrompt.plantName)}
-      onClose={() => setGardenConflictPrompt(null)}
-    />
-
     <GardenPlacementModal
       prompt={gardenPlacementPrompt}
       theme={theme}
       onPlaceIn={(bed) => placeFromPlacementPrompt(bed)}
+      onReplace={(bed, conflict) => replaceFromPlacementPrompt(bed, conflict)}
       onCreateNew={() => createBedFromPlacementPrompt()}
       onClose={() => setGardenPlacementPrompt(null)}
     />

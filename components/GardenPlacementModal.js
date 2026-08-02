@@ -2,15 +2,19 @@ import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import produceData from "../data/produceData";
 import { resolvePlantImageSource, tapHaptic } from "../core";
-import { styles } from "../styles";
 
 // Shown when the user adds a plant to their garden. Lets them choose WHICH bed it
-// goes in, or spin up a brand-new one if the existing beds are full. Only beds of
-// the correct type are offered — flowers & houseplants go in the Flowers & Home
-// garden, edibles in garden beds — so a plant can never land in the wrong garden.
+// goes in, swap out a plant it would clash with, or spin up a brand-new bed. Only
+// beds of the correct type are offered — flowers & houseplants go in the Flowers &
+// Home garden, edibles in garden beds — so a plant can never land in the wrong one.
 //
 // prompt shape:
-//   { plantName, flowerKind: bool, beds: [{ areaId, areaName, areaEmoji, slot, clashes: [names] }] }
+//   { plantName, flowerKind: bool, beds: [{
+//       areaId, areaName, areaEmoji,
+//       slot,                       // first free slot id, or null when the bed is full
+//       clashes: [name],            // distinct names this plant would clash with
+//       conflicts: [{ slotId, plant }],
+//     }] }
 function Thumb({ name, size = 48 }) {
   const item = produceData.find((p) => p.name === name);
   const src = item ? resolvePlantImageSource(item) : null;
@@ -21,7 +25,7 @@ function Thumb({ name, size = 48 }) {
   );
 }
 
-export function GardenPlacementModal({ prompt, theme, onPlaceIn, onCreateNew, onClose }) {
+export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCreateNew, onClose }) {
   const visible = !!prompt;
   const plantName = prompt?.plantName || "";
   const flowerKind = !!prompt?.flowerKind;
@@ -55,25 +59,57 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onCreateNew, on
                   🪴 PICK A BED
                 </Text>
                 {beds.map((b) => {
-                  const clash = (b.clashes || []).length;
+                  const conflicts = b.conflicts || [];
                   const clashList = (b.clashes || []).slice(0, 2).join(", ") + ((b.clashes || []).length > 2 ? "…" : "");
+                  const hasRoom = !!b.slot;
                   return (
-                    <Pressable
-                      key={`place-${b.areaId}`}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Add ${plantName} to ${b.areaName}`}
-                      onPress={() => { tapHaptic(); onPlaceIn(b); }}
-                      style={{ flexDirection: "row", alignItems: "center", gap: 12, marginHorizontal: 20, marginBottom: 8, padding: 14, borderRadius: 16, backgroundColor: clash ? "rgba(255, 216, 107, 0.08)" : "rgba(92, 255, 137, 0.08)", borderWidth: 1, borderColor: clash ? "rgba(255, 216, 107, 0.3)" : "rgba(92, 255, 137, 0.24)" }}
-                    >
-                      <Text style={{ fontSize: 24 }}>{b.areaEmoji || (flowerKind ? "🌸" : "🪴")}</Text>
-                      <View style={{ flex: 1, minWidth: 0 }}>
-                        <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900" }} numberOfLines={1}>{b.areaName}</Text>
-                        <Text style={{ color: clash ? "#ffd86b" : theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }} numberOfLines={1}>
-                          {clash ? `⚠ May clash with ${clashList}` : "Has room — no conflicts"}
-                        </Text>
-                      </View>
-                      <Ionicons name="add-circle" size={24} color={clash ? "#ffd86b" : "#5cff89"} />
-                    </Pressable>
+                    <View key={`bed-${b.areaId}`} style={{ marginHorizontal: 20, marginBottom: 10 }}>
+                      {hasRoom ? (
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Add ${plantName} to ${b.areaName}`}
+                          onPress={() => { tapHaptic(); onPlaceIn(b); }}
+                          style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 16, backgroundColor: conflicts.length ? "rgba(255, 216, 107, 0.08)" : "rgba(92, 255, 137, 0.08)", borderWidth: 1, borderColor: conflicts.length ? "rgba(255, 216, 107, 0.3)" : "rgba(92, 255, 137, 0.24)" }}
+                        >
+                          <Text style={{ fontSize: 24 }}>{b.areaEmoji || (flowerKind ? "🌸" : "🪴")}</Text>
+                          <View style={{ flex: 1, minWidth: 0 }}>
+                            <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900" }} numberOfLines={1}>{b.areaName}</Text>
+                            <Text style={{ color: conflicts.length ? "#ffd86b" : theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }} numberOfLines={1}>
+                              {conflicts.length ? `⚠ May clash with ${clashList}` : "Has room — no conflicts"}
+                            </Text>
+                          </View>
+                          <Ionicons name="add-circle" size={24} color={conflicts.length ? "#ffd86b" : "#5cff89"} />
+                        </Pressable>
+                      ) : (
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 16, backgroundColor: "rgba(255, 255, 255, 0.04)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.1)" }}>
+                          <Text style={{ fontSize: 24 }}>{b.areaEmoji || (flowerKind ? "🌸" : "🪴")}</Text>
+                          <View style={{ flex: 1, minWidth: 0 }}>
+                            <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900" }} numberOfLines={1}>{b.areaName}</Text>
+                            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>Full — swap a plant below to make room</Text>
+                          </View>
+                        </View>
+                      )}
+
+                      {/* Swap out something this plant would clash with. */}
+                      {conflicts.map((c) => (
+                        <Pressable
+                          key={`swap-${b.areaId}-${c.slotId}`}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Replace ${c.plant} in ${b.areaName} with ${plantName}`}
+                          onPress={() => { tapHaptic(); onReplace(b, c); }}
+                          style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 6, marginLeft: 16, padding: 10, borderRadius: 14, backgroundColor: "rgba(255, 123, 123, 0.08)", borderWidth: 1, borderColor: "rgba(255, 123, 123, 0.28)" }}
+                        >
+                          <Thumb name={c.plant} size={34} />
+                          <View style={{ flex: 1, minWidth: 0 }}>
+                            <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }} numberOfLines={1}>Replace {c.plant}</Text>
+                            <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 1 }} numberOfLines={1}>
+                              Swaps it out for {plantName}
+                            </Text>
+                          </View>
+                          <Ionicons name="swap-horizontal" size={18} color="#ff9f9f" />
+                        </Pressable>
+                      ))}
+                    </View>
                   );
                 })}
               </>
