@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, SafeAreaView, ScrollView, StatusBar, Text, View } from "react-native";
 import { styles } from "../styles";
 import { BackgroundDecoration } from "./BackgroundDecoration";
 import { PREMIUM_FEATURES } from "../core";
@@ -70,8 +70,13 @@ export const OnboardingCard = memo(function OnboardingCard({ onFinish, isDark = 
   const isLast = slide === slides.length - 1;
 
   return (
-    <View style={styles.onboardingOverlay}>
+    // Wrapped like every other screen in the app: a SafeAreaView over the shared
+    // leafy wallpaper. Onboarding used to return a bare View, so it sat under the
+    // status bar / notch and never matched the rest of the app.
+    <SafeAreaView style={styles.safe}>
+      <StatusBar barStyle="light-content" />
       <BackgroundDecoration isDark={isDark} />
+      <View style={styles.onboardingOverlay}>
       <View style={[styles.onboardingCard, { padding: 16, maxHeight: "92%" }]}>
         <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
           {/* HERO — matches the Premium screen */}
@@ -139,6 +144,7 @@ export const OnboardingCard = memo(function OnboardingCard({ onFinish, isDark = 
           </Pressable>
         ) : null}
       </View>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 })
