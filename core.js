@@ -4108,6 +4108,62 @@ export function levelForXP(xp) {
   return Math.floor((value - joinXP) / LEVEL_LINEAR_STEP) + LEVEL_LINEAR_FROM;
 }
 
+// What opening the app today does to the daily streak.
+//
+// Pure, and separate from the component, because the interesting cases are the
+// ones that are awkward to reach by hand: a clock that moved backwards, a gap
+// covered by a freeze, a gap just wide enough to offer recovery. The caller owns
+// the celebration, the haptics and the recovery prompt; this only decides.
+//
+// Returns { streak, milestone, offerRecovery }, where `milestone` is the count
+// worth celebrating (or null) and `offerRecovery` is the streak that was just
+// lost and could still be bought back with a freeze (or null).
+export const STREAK_MILESTONES = [7, 14, 30, 60, 100];
+
+export function nextStreakState(current, today, freezeLastUsed = null) {
+  const idle = { milestone: null, offerRecovery: null };
+  if (!current?.lastOpened) return { streak: { count: 1, lastOpened: today }, ...idle };
+  if (current.lastOpened === today) return { streak: current, ...idle };
+
+  const currentDate = new Date(today);
+  const diff = (currentDate - new Date(current.lastOpened)) / 86400000;
+
+  // The clock can move backwards: a flight west, a manual time change, a device
+  // correcting a drifted clock. `diff` goes negative, and negative is also less
+  // than 1.5, so the day was counted a second time — and because `lastOpened`
+  // moved back with it, returning to the real date paid out again. Hold until
+  // the day is genuinely ahead, and leave `lastOpened` at the later date so the
+  // return trip lands on the same-day check above.
+  if (diff < 0.5) return { streak: current, ...idle };
+
+  if (diff <= 1.5) {
+    const count = (current.count || 0) + 1;
+    return {
+      streak: { count, lastOpened: today },
+      milestone: STREAK_MILESTONES.includes(count) ? count : null,
+      offerRecovery: null,
+    };
+  }
+
+  // Gap too large — the streak would reset. A freeze used inside the missed
+  // window protects it instead.
+  if (diff <= 2.5 && freezeLastUsed) {
+    const daysSinceFreeze = (currentDate - new Date(freezeLastUsed)) / 86400000;
+    if (daysSinceFreeze <= 2) {
+      return { streak: { count: current.count || 1, lastOpened: today }, milestone: null, offerRecovery: null, saved: true };
+    }
+  }
+
+  // Missed roughly one day with a streak worth saving: reset, but let the caller
+  // offer to buy it back.
+  const lost = current.count || 0;
+  return {
+    streak: { count: 1, lastOpened: today },
+    milestone: null,
+    offerRecovery: diff > 1.5 && diff <= 2.5 && lost >= 2 ? lost : null,
+  };
+}
+
 export function getConsistencyBonus(streakCount) {
   const c = streakCount || 0;
   // Rewards sustained streaks with escalating one-time bonus XP tiers.

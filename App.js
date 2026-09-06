@@ -88,6 +88,7 @@ import {
   getHarvestDays,
   getNextWaterInfo,
   getPlantDetails,
+  nextStreakState,
   resolveCompanionName,
   getPlantDifficulty,
   getActivationSteps,
@@ -2633,53 +2634,30 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
     // pushed, so a repeated run of the updater cannot queue it twice.
     let celebrate = null;
     setStreakData((current) => {
-      if (!current?.lastOpened) return { count: 1, lastOpened: today };
-      if (current.lastOpened === today) return current;
-      const previousDate = new Date(current.lastOpened);
-      const currentDate = new Date(today);
-      const diff = (currentDate - previousDate) / (1000 * 60 * 60 * 24);
-      // The clock can move backwards: a flight west, a manual time change, a
-      // device correcting a drifted clock. `diff` goes negative, and negative
-      // satisfies `diff <= 1.5`, so the day was counted a second time — and
-      // because `lastOpened` moved back with it, returning to the real date paid
-      // out again. Hold the streak until the day is genuinely ahead of the last
-      // one recorded, and leave `lastOpened` at the later date so the return
-      // trip lands on the same-day check above.
-      if (diff < 0.5) return current;
-      if (diff <= 1.5) {
-        const newCount = (current.count || 0) + 1;
-        const milestones = [7, 14, 30, 60, 100];
-        if (milestones.includes(newCount)) {
-          celebrate = () => {
-            Vibration.vibrate([0, 80, 60, 120]);
-            successHaptic();
-            setShowStreakCelebration(newCount);
-            setTimeout(() => setShowStreakCelebration(null), 3000);
-          };
-        }
-       return { count: newCount, lastOpened: today };
+      // The decision lives in core (nextStreakState) so the awkward cases — a
+      // clock that moved backwards, a gap covered by a freeze — are testable
+      // without a device. Everything that buzzes or prompts stays here.
+      const outcome = nextStreakState(current, today, streakFreeze.lastUsed);
+      if (outcome.milestone) {
+        const reached = outcome.milestone;
+        celebrate = () => {
+          Vibration.vibrate([0, 80, 60, 120]);
+          successHaptic();
+          setShowStreakCelebration(reached);
+          setTimeout(() => setShowStreakCelebration(null), 3000);
+        };
+      } else if (outcome.saved) {
+        celebrate = () => {
+          const popup = { id: Date.now().toString(), amount: t("streak.savedTitle") };
+          setXpPopups((popups) => [...popups, popup]);
+          setTimeout(() => setXpPopups((popups) => popups.filter((p) => p.id !== popup.id)), 2500);
+        };
       }
-      // Gap too large — streak would reset. Check for an active freeze.
-      if (diff <= 2.5 && streakFreeze.lastUsed) {
-        const freezeDate = new Date(streakFreeze.lastUsed);
-        const daysSinceFreeze = (currentDate - freezeDate) / (1000 * 60 * 60 * 24);
-        // Freeze was used within the missed window — protect the streak.
-        if (daysSinceFreeze <= 2) {
-          celebrate = () => {
-            const popup = { id: Date.now().toString(), amount: t("streak.savedTitle") };
-            setXpPopups((popups) => [...popups, popup]);
-            setTimeout(() => setXpPopups((popups) => popups.filter((p) => p.id !== popup.id)), 2500);
-          };
-          return { count: current.count || 1, lastOpened: today };
-        }
-      }
-      // Missed roughly one day with a streak worth saving — reset now, but offer
-      // to restore it with a freeze (handled by the effect below).
-      if (diff > 1.5 && diff <= 2.5 && (current.count || 0) >= 2) {
-        const prev = current.count || 0;
+      if (outcome.offerRecovery) {
+        const prev = outcome.offerRecovery;
         setTimeout(() => setStreakRecoveryOffer({ prevCount: prev }), 0);
       }
-      return { count: 1, lastOpened: today };
+      return outcome.streak;
     });
     if (celebrate) celebrate();
   }
