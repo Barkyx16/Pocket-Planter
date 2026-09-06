@@ -2735,12 +2735,42 @@ export function getShouldGrowText(item, zone, weather) {
 }
 
 export function getWhereToPlantText(item) {
-  const type = normalizeType(item.type, item.name);
-  if (type === "Herbs") return "Herbs usually grow best in containers, raised beds, or sunny windows with strong drainage.";
-  if (type === "Tree Fruits") return "Tree fruits need full sun, room to spread, and long-term outdoor space.";
-  if (type === "Tropical Fruits") return "Tropical fruits prefer warmer climates, high sun exposure, and protection from frost.";
-  if (type === "Berries") return "Berries usually like sun, good airflow, mulch, and consistent moisture.";
-  return "Plant in a sunny outdoor location with loose soil and consistent airflow.";
+  // This used to answer from the plant's type alone, which gave 387 of the 612
+  // plants the same sentence — and told 109 of them to find a sunny spot while
+  // the sun badge a few lines up on the same screen said "Partial shade OK".
+  // The authored data has had the answer all along: sunlight, spacing, whether
+  // it takes a container, whether it is going to be there for years.
+  const type = normalizeType(item?.type, item?.name);
+  const authored = getPlantDetails(item) || {};
+  // Read through getPlantSunNeed rather than the raw field, so this and the sun
+  // badge can never disagree.
+  const sun = getPlantSunNeed(item);
+  const spacing = typeof authored.spacingInches === "number" ? authored.spacingInches : null;
+
+  const light =
+    sun.need === "shade" ? "Keep it out of direct midday sun"
+      : sun.need === "partial" ? "Morning sun with shade through the hottest part of the day suits it best"
+        : "Give it the sunniest spot you have";
+
+  let place;
+  if (type === "Tree Fruits" || type === "Tropical Fruits") {
+    const feet = spacing ? `${Math.round(spacing / 12)} ft` : "plenty of";
+    place = `, and ${feet} of clear ground to spread into. It will be there for years, so settle the position before you dig`;
+    if (type === "Tropical Fruits") place += ", somewhere you can shelter it from frost";
+  } else if (authored.containerFriendly === true) {
+    place = spacing && spacing <= 12
+      ? `. It is happy in a pot or a bed — set plants about ${spacing} inches apart`
+      : `. A large container suits it if you are short of open ground${spacing ? `, and allow about ${spacing} inches between plants` : ""}`;
+  } else {
+    place = spacing
+      ? `. Give it open ground rather than a pot, with about ${spacing} inches between plants`
+      : ". Give it open ground rather than a pot";
+  }
+
+  const soil = authored.perennial === true
+    ? ". Work compost in before planting, since you will not get another easy chance."
+    : ". Loose soil and steady airflow do the rest.";
+  return `${light}${place}${soil}`;
 }
 
 export function getPlantSpecificTip(item, zone, weather) {

@@ -179,3 +179,38 @@ describe("getShouldGrowText", () => {
     }
   });
 });
+
+describe("getWhereToPlantText", () => {
+  const plantOf = (n) => items.find((i) => i.name === n);
+  it("never contradicts the sun badge shown beside it", () => {
+    // 109 partial/shade plants were told to find the sunniest spot they had.
+    const wrong = items.filter((i) => {
+      const need = core.getPlantSunNeed(i).need;
+      return (need === "partial" || need === "shade") && /sunniest spot/.test(core.getWhereToPlantText(i));
+    });
+    eq(wrong.map((i) => i.name), []);
+  });
+  it("uses the authored spacing rather than a generic sentence", () => {
+    ok(/8 inches/.test(core.getWhereToPlantText(plantOf("Lettuce"))), "lettuce spacing");
+    ok(/24 inches/.test(core.getWhereToPlantText(plantOf("Tomato"))), "tomato spacing");
+  });
+  it("treats a tree as a long-term planting, in feet", () => {
+    const apple = core.getWhereToPlantText(plantOf("Apple"));
+    ok(/ft of clear ground/.test(apple), apple);
+    ok(/years/.test(apple), "a tree should be described as a long commitment");
+  });
+  it("warns tropical fruit about frost", () => {
+    ok(/frost/i.test(core.getWhereToPlantText(plantOf("Mango"))));
+  });
+  it("says whether a pot will do", () => {
+    ok(/pot|container/i.test(core.getWhereToPlantText(plantOf("Basil"))), "basil takes a container");
+    ok(/open ground rather than a pot/.test(core.getWhereToPlantText(plantOf("Corn"))), "corn does not");
+  });
+  it("produces a clean sentence for every plant", () => {
+    const bad = items.filter((i) => {
+      const t = core.getWhereToPlantText(i);
+      return !t.endsWith(".") || /\.\.|\s\.|,\s*\.| {2,}|undefined|NaN|null/.test(t) || t.length < 40;
+    });
+    eq(bad.map((i) => i.name), []);
+  });
+});
