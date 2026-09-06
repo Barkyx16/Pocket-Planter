@@ -871,15 +871,29 @@ export function localPlantMonths(item) {
 // compounds ("Blood Orange", "Sour Cherry", "Water Spinach", "Holy Basil") and
 // drops the accidents; a plant with no genuine match falls back to the default
 // rather than to another plant's data.
+// One compiled pattern per key. This is called from the harvest valuation, the
+// care windows and the seed-start rules, all of which walk a list of keys for
+// every plant they look at, so building the same handful of regexes thousands of
+// times was most of what those loops were doing.
+const _plantKeyPatterns = new Map();
+function plantKeyPattern(k) {
+  let re = _plantKeyPatterns.get(k);
+  if (!re) {
+    const escaped = k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    re = new RegExp(`(^|[^a-z])${escaped}(e?s)?($|[^a-z])`, "i");
+    _plantKeyPatterns.set(k, re);
+  }
+  return re;
+}
+
 export function plantNameMatchesKey(name, key) {
   const k = String(key || "").trim().toLowerCase();
   if (!k) return false;
-  const escaped = k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   // The catalog names a few crops in the plural ("Grapes") while the keys are
   // singular, so a bare whole-word test dropped them: Grapes lost its pruning
   // window entirely. A trailing plural is still the same word, and allowing one
   // changes nothing else across the catalog.
-  return new RegExp(`(^|[^a-z])${escaped}(e?s)?($|[^a-z])`, "i").test(String(name || "").toLowerCase());
+  return plantKeyPattern(k).test(String(name || "").toLowerCase());
 }
 
 // Look up a curated care window (pruning, bloom) for a plant name.
@@ -1734,14 +1748,51 @@ export function getCompatibilityScore(plantName, comparePlant) {
 export function calculateGardenHealth(gardenMap) {
   const plants = Object.values(gardenMap || {}).filter(Boolean);
   if (!plants.length) return { score: 0, label: "No plants yet" };
+  // Every plot used to be compared against every other plot, so a 240-plot
+  // garden asked for ~57,000 compatibility lookups on each of the three screens
+  // that show the score — around 55ms of work, none of it memoised.
+  //
+  // The pairs repeat, though: what a plot contributes depends only on its plant
+  // name. Counting the names and weighting each distinct pair by how many of
+  // each are planted gives exactly the same score — duplicates still amplify it
+  // the way they always did, which is why this counts rather than de-duplicates
+  // — while comparing each pair of names once instead of once per plot pair.
+  // Two changes, both of which keep the number identical.
+  //
+  // The pairs repeat: what a plot contributes depends only on its plant name, so
+  // counting the names and weighting each pair by how many of each are planted
+  // gives the same total. Duplicates still amplify the score exactly as before,
+  // which is why this counts rather than de-duplicates.
+  //
+  // And the comparison runs the other way round. A pair only scores when the
+  // first plant's chart names the second, and a chart lists a handful of
+  // companions — so instead of asking about every other plant in the garden,
+  // walk the chart and look up whether those few are planted. Turns roughly
+  // 57,000 lookups on a 240-plot garden into a couple of thousand.
+  const counts = new Map();
+  plants.forEach((name) => counts.set(name, (counts.get(name) || 0) + 1));
+  const planted = new Map();
+  counts.forEach((_, name) => planted.set(String(name).toLowerCase(), name));
+
   let score = 100;
-  plants.forEach((plant) => {
-    plants.forEach((compare) => {
-      if (plant === compare) return;
-      const compatibility = getCompatibilityScore(plant, compare);
-      if (compatibility.label === "Avoid") score -= 8;
-      if (compatibility.label === "Excellent Pair") score += 3;
-    });
+  counts.forEach((plantCount, plant) => {
+    const info = getCompanionInfo(plant) || {};
+    // getCompatibilityScore answers "Excellent" before it answers "Avoid", and
+    // scores a given companion once however many times the chart names it.
+    const scored = new Set();
+    const apply = (list, delta) => {
+      (list || []).forEach((entry) => {
+        const canonical = resolveCompanionName(entry) || String(entry || "");
+        const key = canonical.toLowerCase();
+        if (scored.has(key)) return;
+        const match = planted.get(key);
+        if (!match || match === plant) return;
+        scored.add(key);
+        score += delta * plantCount * counts.get(match);
+      });
+    };
+    apply(info.excellent, 3);
+    apply(info.avoid, -8);
   });
   score = Math.max(35, Math.min(100, score));
   let label = "Healthy";

@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { Pressable, Share, Text, View } from "react-native";
 import { styles } from "../styles";
 import { calculateGardenHealth, formatTemp, getConsistencyBonus, getTodayKey, getTotalWaterings, isFertilizerDue, isHarvestReady, tapHaptic } from "../core";
@@ -66,7 +66,7 @@ return isFertilizerDue(plantName, tracker);
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   }).length;
 
-  const gardenHealth = calculateGardenHealth(gardenMap);
+  const gardenHealth = useMemo(() => calculateGardenHealth(gardenMap), [gardenMap]);
   const xpToNext = gardenXP.nextLevelXP - gardenXP.currentLevelXP;
   const levelProgress = gardenXP.progress || 0;
 

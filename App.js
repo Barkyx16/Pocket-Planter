@@ -2636,6 +2636,14 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
       const previousDate = new Date(current.lastOpened);
       const currentDate = new Date(today);
       const diff = (currentDate - previousDate) / (1000 * 60 * 60 * 24);
+      // The clock can move backwards: a flight west, a manual time change, a
+      // device correcting a drifted clock. `diff` goes negative, and negative
+      // satisfies `diff <= 1.5`, so the day was counted a second time — and
+      // because `lastOpened` moved back with it, returning to the real date paid
+      // out again. Hold the streak until the day is genuinely ahead of the last
+      // one recorded, and leave `lastOpened` at the later date so the return
+      // trip lands on the same-day check above.
+      if (diff < 0.5) return current;
       if (diff <= 1.5) {
         const newCount = (current.count || 0) + 1;
         const milestones = [7, 14, 30, 60, 100];

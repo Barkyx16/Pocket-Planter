@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { BlurView } from "expo-blur";
 import { styles } from "../styles";
@@ -41,7 +41,7 @@ export const GardenStatsPreview = memo(function GardenStatsPreview({
     return "#ff7b7b";
   };
 
-  const gardenHealth = calculateGardenHealth(gardenMap);
+  const gardenHealth = useMemo(() => calculateGardenHealth(gardenMap), [gardenMap]);
   const streakCount = streakData?.count || 0;
   const level = gardenXP?.level ?? 1;
   const levelTitle = gardenXP?.title ?? "Seedling";
