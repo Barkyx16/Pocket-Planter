@@ -124,3 +124,58 @@ describe("getUpcomingFrost", () => {
     eq(core.getUpcomingFrost({ forecast: [day("a", null), day("b", undefined)] }), null);
   });
 });
+
+describe("getShouldGrowText", () => {
+  const plantOf = (n) => items.find((i) => i.name === n);
+  const tip = (n, zone) => core.getShouldGrowText(plantOf(n), zone);
+  // The generic fallbacks are recognisable by their closing advice; anything else
+  // is one of the hand-written tips.
+  const GENERIC = /Prepare your soil with compost|It's forgiving, grows quickly|requires more attention but is absolutely worth/;
+  const tailored = (n, zone) => !GENERIC.test(tip(n, zone));
+
+  it("has advice for temperate gardeners, who are the largest group", () => {
+    // Zones 6-8 had no hand-written tip at all: 454 plants got the generic line.
+    for (const n of ["Tomato", "Bell Pepper", "Garlic", "Kale", "Potato", "Strawberry", "Apple"]) {
+      ok(tailored(n, "7a"), `${n} has no tailored moderate-zone tip`);
+    }
+  });
+  it("gives temperate advice that is actually about the temperate season", () => {
+    ok(/last frost/i.test(tip("Tomato", "7a")));
+    ok(/autumn/i.test(tip("Garlic", "7a")), "garlic is an autumn planting");
+    ok(/winter chill|chill it needs/i.test(tip("Apple", "7a")), "pome fruit needs the winter");
+  });
+  it("still has advice for hot and cold zones", () => {
+    ok(tailored("Tomato", "10a"));
+    ok(tailored("Kale", "4a"));
+  });
+  it("never gives an ornamental a harvest to look forward to", () => {
+    // Sweet Pea is a flower, and the pea tip promised it a productive harvest.
+    ok(!tailored("Sweet Pea", "4a"), "Sweet Pea got an edible crop's tip");
+    ok(!tailored("Sweet Pea", "7a"));
+    ok(!/harvest/i.test(tip("Sweet Pea", "4a")), "ornamental told to expect a harvest");
+  });
+  it("does not mistake a plant for the crop it is named after", () => {
+    // Each of these matches a crop key as a whole word but is a different plant.
+    const wrong = [
+      ["Sweet Potato", "7a", /seed potatoes/i],
+      ["Malabar Spinach", "7a", /bolt/i],
+      ["New Zealand Spinach", "4a", /first crops you can plant/i],
+      ["Garlic Chives", "7a", /cloves/i],
+      ["Black-Eyed Pea", "7a", /stop cropping once the summer heat/i],
+      ["Black-Eyed Pea", "4a", /before summer heat arrives/i],
+    ];
+    for (const [n, zone, pattern] of wrong) {
+      if (!plantOf(n)) continue;
+      ok(!pattern.test(tip(n, zone)), `${n} in ${zone} got advice for another crop`);
+    }
+  });
+  it("gives sweet potato its own warm-season advice", () => {
+    ok(/slips/i.test(tip("Sweet Potato", "7a")), "sweet potato should be planted as slips");
+  });
+  it("always says something", () => {
+    for (const it2 of items) {
+      const t = core.getShouldGrowText(it2, "7a");
+      ok(typeof t === "string" && t.length > 40, `${it2.name}: ${t}`);
+    }
+  });
+});
