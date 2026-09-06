@@ -48,6 +48,7 @@ import {
 } from "./lib/i18n";
 import {
   COUNTRIES,
+  findCountry,
   DEFAULT_COUNTRY,
   getCountry,
   hasZipTable,
@@ -945,8 +946,8 @@ if (data?.module_data && typeof data.module_data === "object")
 // Country and latitude come first: the zip_code below is meaningless without
 // knowing which country's format it is, and the hemisphere has to be applied
 // before the seasonal helpers run in the next render pass.
-if (data?.country && COUNTRIES.some((c) => c.code === data.country))
-  setCountry(data.country);
+const cloudCountry = findCountry(data?.country);
+if (cloudCountry) setCountry(cloudCountry.code);
 
 if (typeof data?.latitude === "number" && !Number.isNaN(data.latitude)) {
   setLatitude(data.latitude);
@@ -2251,7 +2252,8 @@ useEffect(() => {
 useEffect(() => {
   hydrate(STORAGE_KEYS.country, (val) => {
     if (cloudProfileLoadedRef.current) return; // cloud value is newer
-    if (val && COUNTRIES.some((c) => c.code === val)) setCountry(val);
+    const storedCountry = findCountry(val);
+    if (storedCountry) setCountry(storedCountry.code);
   });
 }, []);
 useEffect(() => {
@@ -4159,10 +4161,11 @@ async function detectLocationAndZone() {
 
     // Adopt the detected country first so the postal code is interpreted with
     // the right format.
-    const detectedCountry = place?.isoCountryCode;
-    const supported = detectedCountry && COUNTRIES.some((c) => c.code === detectedCountry);
-    if (supported) setCountry(detectedCountry);
-    const activeCountry = supported ? detectedCountry : country;
+    // Matched case-insensitively: the reverse geocoder does not promise the case
+    // of isoCountryCode, and an exact test silently declined to adopt it.
+    const detected = findCountry(place?.isoCountryCode);
+    if (detected) setCountry(detected.code);
+    const activeCountry = detected ? detected.code : country;
 
     const postalCode = place?.postalCode;
     if (postalCode) {
