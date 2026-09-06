@@ -290,11 +290,32 @@ const TABS = [
   { id: "more", labelKey: "tabs.more", icon: "ellipsis-horizontal" },
 ];
 
+// Nothing may be written to storage until the initial load has finished.
+//
+// Every persist effect below is keyed on one piece of state and therefore runs
+// once on mount, with that state still at its initial `[]` / `{}` / `0`. Those
+// writes landed while `loadStoredData` was still awaiting its multiGet, so for
+// the first slice of every cold start the store held empty values on top of a
+// real garden. Normally the load resolved a moment later and wrote the true
+// values back and nobody noticed — but a process that died inside that window
+// (a launch crash, a force-quit, the OS reclaiming memory on a cold start) made
+// the empties permanent. Saved plants, journal, beds, watering history, harvest
+// log: all of it, gone, with no way back short of a backup file.
+//
+// The flag is set in the loader's `finally`, so a load that throws still
+// re-enables writing rather than leaving the app silently unable to save, and a
+// watchdog releases it if the load never settles at all.
+let storageHydrated = false;
+function markStorageHydrated() { storageHydrated = true; }
+
 // Fire-and-forget write for cached UI state. Returns the promise so a caller
 // that does care can still await it, but swallows the rejection by default so a
 // failed cache write can't raise an unhandled rejection. Do NOT use this for
 // writes whose failure the user needs to know about.
-const persist = (key, value) => AsyncStorage.setItem(key, value).catch(() => {});
+const persist = (key, value) => {
+  if (!storageHydrated) return Promise.resolve();
+  return AsyncStorage.setItem(key, value).catch(() => {});
+};
 
 // Read side of the same deal. Every hydration read below was a bare
 // .then() with no rejection handler, so a read failure became an unhandled
@@ -1874,10 +1895,19 @@ if (map[STORAGE_KEYS.harvestTrackers])
       } catch (error) {
         console.log("Storage load error", error);
       } finally {
-        // loading is now controlled by auth session check
+        // Loading state itself is controlled by the auth session check. This
+        // only opens the write gate: from here the persist effects below are
+        // working with hydrated state, so they can safely overwrite the store.
+        // It runs even when the load threw — a half-read store is still better
+        // than an app that can never save again.
+        markStorageHydrated();
       }
     }
-    loadStoredData();
+    // If the read never settles at all, release the gate anyway rather than
+    // leave the gardener tapping around in an app that silently saves nothing.
+    const watchdog = setTimeout(markStorageHydrated, 8000);
+    loadStoredData().finally(() => clearTimeout(watchdog));
+    return () => clearTimeout(watchdog);
   }, []);
 
   // ── Persist to storage ─────────────────────────────────────────────────────

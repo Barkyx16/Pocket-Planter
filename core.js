@@ -4705,8 +4705,12 @@ export const RESCUE_THRESHOLD_DAYS = 7;
 
 export function csvEscape(value) {
   const s = String(value == null ? "" : value);
-  // Wrap in quotes and escape internal quotes if it contains a comma, quote, or newline.
-  if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  // Wrap in quotes and escape internal quotes if it contains a comma, quote, or
+  // any line break. A lone \r was missed here: "\r\n" is caught by the \n, but a
+  // bare carriage return — pasted text, an older keyboard — sailed through
+  // unquoted, and every CR-aware reader (Excel included) treats it as the end of
+  // a row, so one journal note silently split into two short, misaligned rows.
+  if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
   return s;
 }
 
