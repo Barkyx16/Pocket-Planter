@@ -63,7 +63,8 @@
       ],
       "expo-font",
       "expo-secure-store",
-      "expo-localization"
+      "expo-localization",
+      "./plugins/withAsyncStorageSize"
     ],
     "extra": {
       "eas": {
