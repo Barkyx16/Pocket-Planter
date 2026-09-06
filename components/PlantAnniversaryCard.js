@@ -1,19 +1,17 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { resolvePlantImageSource } from "../core";
+import { getDaysSince, resolvePlantImageSource } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const PlantAnniversaryCard = memo(function PlantAnniversaryCard({ theme, plantSaveDates, savedPlants, onOpenPlant }) {
   const { t } = useTranslation();
-  const now = new Date();
   const milestones = (savedPlants || [])
     .map((name) => {
       const saved = plantSaveDates?.[name];
       if (!saved) return null;
-      const savedDate = new Date(`${saved}T12:00:00`);
-      if (Number.isNaN(savedDate.getTime())) return null;
-      const days = Math.floor((now - savedDate) / (1000 * 60 * 60 * 24));
+      const days = getDaysSince(saved);
+      if (days == null) return null;
       if (days < 30) return null;
       // Determine the most recent monthly/yearly milestone reached
       let label = null;

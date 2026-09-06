@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { tapHaptic } from "../core";
 import { useTranslation } from "../lib/i18n";
+import { touchSlop } from "../lib/a11y";
 
 const STORAGE_KEY = "pp_gardenExpenses";
 const CATS = [
@@ -87,7 +88,7 @@ export const BudgetTrackerCard = memo(function BudgetTrackerCard({ theme }) {
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.color }} />
                 <Text style={{ flex: 1, color: theme.text, fontSize: 12, fontWeight: "700" }} numberOfLines={1}>{e.label || c.label.replace(/^\S+\s/, "")}</Text>
                 <Text style={{ color: theme.text, fontSize: 12, fontWeight: "900" }}>${e.amount.toFixed(2)}</Text>
-                <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.removeItem")} onPress={() => remove(e.id)} hitSlop={8}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
+                <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.removeItem")} onPress={() => remove(e.id)} hitSlop={touchSlop(14)}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
               </View>
             );
           })}

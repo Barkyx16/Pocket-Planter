@@ -1,5 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal, Pressable, Text, View } from "react-native";
 import { formatDate, useTranslation } from "../lib/i18n";
 
@@ -31,6 +31,18 @@ export function DatePickerModal({ visible, initialDate, title, confirmLabel, onC
   const [viewYear, setViewYear] = useState(base.getFullYear());
   const [viewMonth, setViewMonth] = useState(base.getMonth());
   const [selected, setSelected] = useState(startOfDay(base));
+  // The modal stays mounted and is toggled with `visible`, so this state
+  // otherwise survives between openings: browse to another month, cancel, reopen,
+  // and the grid was still on that month with the old day selected — and a
+  // changed initialDate never took effect. Re-seed each time it opens, the way
+  // GardenPlacementModal resets its own state per plant.
+  const baseTime = base.getTime();
+  useEffect(() => {
+    if (!visible) return;
+    setViewYear(base.getFullYear());
+    setViewMonth(base.getMonth());
+    setSelected(startOfDay(base));
+  }, [visible, baseTime]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const today = startOfDay(new Date());
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();

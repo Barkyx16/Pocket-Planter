@@ -94,6 +94,8 @@ const STUBS = {
   "expo-image-picker": {}, "expo-image-manipulator": {}, "expo-splash-screen": { preventAutoHideAsync() {}, hideAsync() {} },
   "expo-calendar": {}, "expo-file-system": {}, "expo-sharing": {}, "expo-clipboard": {},
   "expo-local-authentication": {}, "expo-application": {}, "expo-device": {},
+  // Native-only submodule; node cannot resolve it. Stubbed like its siblings.
+  "expo-secure-store": { getItemAsync: async () => null, setItemAsync: async () => {}, deleteItemAsync: async () => {} },
   "react-native-purchases": { __esModule: true, default: {} },
   "react-native-svg": new Proxy({}, { get: () => host("svg") }),
   "@expo/vector-icons/Ionicons": { __esModule: true, default: host("i") },
@@ -103,6 +105,11 @@ const STUBS = {
   // Ships untranspiled RN source (Flow syntax) — node cannot parse it.
   "react-native-url-polyfill/auto": {},
   "react-native-url-polyfill": {},
+  // Resolve to expo-modules-core/src/index.ts, which node's type-stripping
+  // refuses to touch inside node_modules. Nothing in the render path needs the
+  // real implementation.
+  "expo-modules-core": {},
+  "expo-camera": new Proxy({}, { get: () => host("camera") }),
   "@expo-google-fonts/inter": new Proxy({ useFonts: () => [true, null] }, { get: (t, k) => (k in t ? t[k] : k) }),
 };
 
@@ -119,7 +126,16 @@ Module._load = function (request, ...rest) {
 };
 const origJs = require.extensions[".js"];
 require.extensions[".js"] = function (mod, filename) {
-  if (!filename.startsWith(ROOT) || filename.includes("node_modules")) return origJs(mod, filename);
+  if (!filename.startsWith(ROOT) || filename.includes("node_modules")) {
+    // Some RN packages ship untranspiled JSX in their published .js
+    // (react-native-qrcode-svg, react-native-view-shot). Let node try first so
+    // the common case stays cheap, and only fall through to a babel pass when
+    // it throws on syntax it cannot parse. A SyntaxError is raised at compile
+    // time, before any of the module body runs, so re-compiling can't
+    // double-execute side effects.
+    try { return origJs(mod, filename); }
+    catch (e) { if (!(e instanceof SyntaxError)) throw e; }
+  }
   const out = babel.transformSync(fs.readFileSync(filename, "utf8"), {
     filename,
     // babel-preset-expo isn't installed standalone; @babel/preset-react plus the

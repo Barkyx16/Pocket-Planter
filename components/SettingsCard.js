@@ -10,7 +10,13 @@ import { IconText } from "./IconText";
 
 export const SettingsCard = memo(function SettingsCard({ theme, premiumUnlocked, setPremiumUnlocked, subscriptionPlan, setSubscriptionPlan, onUnlockPremium }) {
   const { t } = useTranslation();
- const [selectedPlan, setSelectedPlan] = useState(subscriptionPlan || "Yearly");
+ // Only a purchasable plan may be preselected. subscriptionPlan starts as "Free",
+ // and the `|| "Yearly"` guard only caught null — so an untouched paywall bought
+ // the yearly package (the ternary's fallback) while recording the plan as
+ // "Free" and announcing "Pocket Planter Free activated successfully."
+ const [selectedPlan, setSelectedPlan] = useState(
+   subscriptionPlan === "Monthly" || subscriptionPlan === "Yearly" ? subscriptionPlan : "Yearly"
+ );
   const [restoring, setRestoring] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
 

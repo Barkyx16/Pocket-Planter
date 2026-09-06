@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Pressable, Share, Text, View } from "react-native";
 import { styles } from "../styles";
-import { calculateGardenHealth, formatTemp, getConsistencyBonus, getFertilizerDays, getTodayKey, tapHaptic } from "../core";
+import { calculateGardenHealth, formatTemp, getConsistencyBonus, getTodayKey, getTotalWaterings, isFertilizerDue, isHarvestReady, tapHaptic } from "../core";
 import { AnimatedBar } from "./AnimatedBar";
 import { IconText } from "./IconText";
 import { formatDate, useTranslation } from "../lib/i18n";
@@ -44,21 +44,17 @@ export const GardenStatsDashboard = memo(function GardenStatsDashboard({
   // Only count plants that are still saved — otherwise stale entries for unsaved
   // plants can push the count above the total (e.g. "16/11").
   const wateredTodayCount = (savedPlants || []).filter((name) => wateredPlants?.[name] === today).length;
-  const totalWatered = Object.values(wateredPlants || {}).filter(Boolean).length;
+  const totalWatered = getTotalWaterings(wateringHistory);
   const plantsNeedingWater = savedPlants.length - wateredTodayCount;
 
-  const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => {
-    const daysLeft = Math.max(0, tracker.days - Math.floor((new Date() - new Date(tracker.startedAt)) / (1000 * 60 * 60 * 24)));
-    return daysLeft === 0;
-  }).length;
+  const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).length;
 
   const harvestsTracking = Object.keys(harvestTrackers || {}).length;
 
   const fertDue = savedPlants.filter(plantName => {
     const tracker = fertilizerTrackers?.[plantName];
     if (!tracker) return false;
-const daysSince = Math.floor((new Date() - new Date(tracker.lastFertilized)) / (1000 * 60 * 60 * 24));
-    return daysSince >= getFertilizerDays(plantName);
+return isFertilizerDue(plantName, tracker);
   }).length;
 
   // Distinct specific plants photographed (the generic "Garden" bucket doesn't count as a plant).

@@ -1,7 +1,6 @@
 import { Dimensions, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
-import * as StoreReview from "expo-store-review";
 import produceData from "./data/produceData";
 import zipZoneData from "./data/zipZoneData";
 import { PLANT_DETAILS } from "./data/plantDetails";
@@ -739,12 +738,17 @@ export const MODULE_STORAGE_KEYS = [
   "pp_soilTests",
   "pp_toolMaint",
   "pp_growLights",
-  "pp_gardenSites",
   "pp_pruningDone",
   "pp_propagation",
   "pp_plantRooms",
   "pp_houseplantCare",
   "pp_vases",
+  // Cards that persist their own data but were never listed here, so a backup,
+  // a restore, and the cloud sync all silently dropped them.
+  "pp_gardenExpenses",
+  "pp_wishlist",
+  "pp_sunlightByArea",
+  "pp_claimedChallenges",
 ];
 
 // Reads every module key and returns a { key: rawJsonString } map for the
@@ -842,14 +846,73 @@ export function flipMonth(month) {
 // getFrostMaturityInfo already handle a date that has passed.
 export function flipDate(date) {
   if (!(date instanceof Date) || !isSouthernHemisphere()) return date;
-  return new Date(date.getFullYear(), (date.getMonth() + 6) % 12, date.getDate());
+  const month = (date.getMonth() + 6) % 12;
+  // Same trap as parseFrostOverride: the month six ahead can be shorter than
+  // this one, and the overflow rolls silently — Aug 31 came back as Mar 3.
+  const lastDay = new Date(date.getFullYear(), month + 1, 0).getDate();
+  return new Date(date.getFullYear(), month, Math.min(date.getDate(), lastDay));
 }
 
 // The planting window for an item, expressed in the user's local calendar.
 export function localPlantMonths(item) {
   if (!Array.isArray(item?.plantMonths)) return [];
-  if (!isSouthernHemisphere()) return item.plantMonths;
+  // Always ascending. The southern branch already sorted; the northern one handed
+  // back the authored order, and one entry is authored out of order ([9,10,3]).
+  // Callers that scan for "the next window" with .find() then picked whichever
+  // qualifying month came first in the array — September instead of March.
+  if (!isSouthernHemisphere()) return [...item.plantMonths].sort((a, b) => a - b);
   return item.plantMonths.map(flipMonth).sort((a, b) => a - b);
+}
+
+// Does `key` name this plant? A bare substring test matched inside other words:
+// a Pear was valued as a Pea, Horseradish as a Radish, Peppermint as a Pepper,
+// and Spearmint, String of Pearls and Pineapple all inherited pruning and bloom
+// windows meant for pear and apple trees. Requiring a whole word keeps the real
+// compounds ("Blood Orange", "Sour Cherry", "Water Spinach", "Holy Basil") and
+// drops the accidents; a plant with no genuine match falls back to the default
+// rather than to another plant's data.
+export function plantNameMatchesKey(name, key) {
+  const k = String(key || "").trim().toLowerCase();
+  if (!k) return false;
+  const escaped = k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // The catalog names a few crops in the plural ("Grapes") while the keys are
+  // singular, so a bare whole-word test dropped them: Grapes lost its pruning
+  // window entirely. A trailing plural is still the same word, and allowing one
+  // changes nothing else across the catalog.
+  return new RegExp(`(^|[^a-z])${escaped}(e?s)?($|[^a-z])`, "i").test(String(name || "").toLowerCase());
+}
+
+// Look up a curated care window (pruning, bloom) for a plant name.
+//
+// Whole-word matching is right for crop families — Kiwano really is a melon and
+// Ramps really is a leek, so `getPlantFamily` wants the whole name — but care
+// windows are advice, and advice inherited from a look-alike is worse than none.
+// Two things go wrong with the raw name:
+//
+//   1. The parenthetical gloss names a different plant. "Bael (Wood Apple)" is
+//      not an apple, "Jamun (Java Plum)" and "Jocote (Spanish Plum)" are not
+//      Prunus plums, "Tamarillo (Tree Tomato)" is a tree rather than a cordon
+//      tomato, "Portulaca (Moss Rose)" is a succulent, "Samphire (Sea Bean)" is
+//      not a legume. Only the primary name decides.
+//   2. The primary name itself borrows another plant's word. Grape Hyacinth is a
+//      bulb and Sea Grape a coastal tree, yet both were told to "prune hard while
+//      dormant — grapes fruit on new wood"; Prickly Pear was given pear-tree
+//      dormant pruning. Those are named here rather than guessed at.
+const CARE_WINDOW_LOOKALIKES = {
+  grape: ["grape hyacinth", "sea grape"],
+  pear: ["prickly pear"],
+};
+
+export function careWindowKey(name, keys) {
+  const primary = String(name || "").toLowerCase().replace(/\s*\([^)]*\)/g, " ").trim();
+  if (!primary) return null;
+  return (
+    (keys || []).find((key) => {
+      if (!plantNameMatchesKey(primary, key)) return false;
+      const lookalikes = CARE_WINDOW_LOOKALIKES[String(key).toLowerCase()];
+      return !lookalikes || !lookalikes.some((l) => primary.includes(l));
+    }) || null
+  );
 }
 
 export function normalizeType(type, name = "") {
@@ -916,10 +979,27 @@ export function canPlantInArea(plantName, area) {
   return !flowerBedPlant;
 }
 
+// Half-zone precision, which `zoneNumber` deliberately drops. Every USDA zone
+// splits into an "a" half and a "b" half 5°F apart, and rounding them together
+// let a plant rated 8b — a Lemon, an Orange, a Satsuma — read as hardy in 8a,
+// five degrees colder than it survives. Sixteen tender citrus and tropical trees
+// were offered that way across roughly 6,800 US ZIPs.
+//
+// A bare number carries no half, so it takes the widest reading of its own zone:
+// `minZone: 4` starts at 4a and `maxZone: 11` runs through 11b, exactly as they
+// did before. Only the explicit "a"/"b" bounds get tighter.
+function zoneEdge(value, edge) {
+  const whole = zoneNumber(value);
+  if (whole === null) return null;
+  const half = /b\s*$/i.test(String(value)) ? 0.5 : /a\s*$/i.test(String(value)) ? 0 : null;
+  if (half !== null) return whole + half;
+  return edge === "max" ? whole + 0.5 : whole;
+}
+
 export function zoneMatch(zone, minZone, maxZone) {
-  const current = zoneNumber(zone);
-  const min = zoneNumber(minZone);
-  const max = zoneNumber(maxZone);
+  const current = zoneEdge(zone, "min");
+  const min = zoneEdge(minZone, "min");
+  const max = zoneEdge(maxZone, "max");
   if (current === null || min === null || max === null) return false;
   return current >= min && current <= max;
 }
@@ -1301,12 +1381,57 @@ function getFlowerCompanionInfo(name) {
   return info;
 }
 
+// The curated companion charts name a few plants generically ("Bean", "Squash")
+// or in the singular ("Chive"), while the catalog carries specific varieties.
+// Every consumer has to resolve those the same way: App.js aliased them but the
+// garden planner compared raw names, so Corn never offered beans or squash in a
+// bed even when the gardener had them saved — the Three Sisters, silently lost.
+export const COMPANION_NAME_ALIASES = {
+  bean: "Green Bean",
+  beans: "Green Bean",
+  squash: "Zucchini",
+  melon: "Watermelon",
+  grape: "Grapes",
+  chive: "Chives",
+};
+
+// The catalog name a companion refers to, or null when the app has no such plant
+// (the charts mention "Tansy" and "Grass", which are advice rather than entries).
+export function resolveCompanionName(name) {
+  const raw = String(name || "").trim().toLowerCase();
+  if (!raw) return null;
+  const aliased = String(COMPANION_NAME_ALIASES[raw] || name).toLowerCase();
+  const hit = produceData.find((p) => String(p.name).toLowerCase() === aliased);
+  return hit ? hit.name : null;
+}
+
+// Compound names whose base word whole-word matching cannot see, but which do
+// want the base plant's companions. Everything not listed here falls through to
+// the generic advice rather than borrowing a stranger's chart.
+const COMPANION_ALIASES = {
+  broccolini: "Broccoli",
+  soybean: "Bean",
+  chickpea: "Pea",
+  cowpea: "Pea",
+  peppermint: "Mint",
+  spearmint: "Mint",
+  crabapple: "Apple",
+};
+
 export function getCompanionInfo(plantName) {
   // Flowers get their combos computed from light/water needs (see above).
   if (isFlowerName(plantName)) return getFlowerCompanionInfo(plantName);
-  const match = Object.keys(COMPANION_PLANTING_DATA).find((name) =>
-    String(plantName || "").toLowerCase().includes(name.toLowerCase())
-  );
+  // This used to be a bare substring test against keys in declaration order, so
+  // "Pea" (declared before "Peach") claimed Peach, Pear, Peanut, Peace Lily,
+  // Prickly Pear and String of Pearls; "Corn" claimed Acorn Squash and Popcorn;
+  // "Apple" claimed Pineapple. Twenty plants were handed another plant's
+  // companions and pest notes. Whole words only, and the most specific key wins
+  // so declaration order stops mattering.
+  const name = String(plantName || "");
+  const alias = COMPANION_ALIASES[name.toLowerCase()];
+  const match = alias || Object.keys(COMPANION_PLANTING_DATA)
+    .filter((key) => plantNameMatchesKey(name, key))
+    .sort((a, b) => b.length - a.length)[0];
   return COMPANION_PLANTING_DATA[match] || {
     excellent: ["Basil", "Marigold", "Nasturtium"],
     neutral: ["Lettuce", "Spinach"],
@@ -1614,8 +1739,11 @@ export function getPlantSeasonLabel(item, zone, monthOverride = null) {
   const plantMonths = localPlantMonths(item);
   if (!plantMonths.length) return "Zone fit";
   if (plantMonths.includes(currentMonth)) return "Plant now";
-  const firstMonth = getFirstPlantingMonth(item);
-  if (firstMonth && firstMonth > currentMonth) return `Starts in ${MONTH_NAMES[firstMonth - 1]}`;
+  // The next window to open, not the earliest of the year: a plant sown in both
+  // spring and fall read "Out of season" all summer because this took month 3
+  // and compared it against the current month.
+  const nextMonth = [...plantMonths].sort((a, b) => a - b).find((m) => m > currentMonth);
+  if (nextMonth) return `Starts in ${MONTH_NAMES[nextMonth - 1]}`;
   return "Out of season";
 }
 
@@ -1853,7 +1981,6 @@ export const harvestDays = {
   "Yam": 180,
     Basil: 60,
     Beet: 55,
-    Bok_Choy: 45,
     Broccoli: 80,
     Cabbage: 90,
     Carrot: 70,
@@ -1863,15 +1990,12 @@ export const harvestDays = {
     Eggplant: 80,
     Fennel: 90,
     Garlic: 240,
-    Green_Bean: 55,
     Kale: 60,
-    Leek: 120,
     Lettuce: 45,
     Parsley: 75,
     Pea: 65,
     Pepper: 80,
     Potato: 100,
-    Pumpkin: 110,
     Radish: 30,
     Rosemary: 90,
     Spinach: 45,
@@ -1879,18 +2003,8 @@ export const harvestDays = {
     Tomato: 75,
     Arugula: 40,
     Asparagus: 730,
-    Bell_Pepper: 75,
-    Black_Bean: 95,
     Bok_Choy: 50,
-    Brussels_Sprouts: 100,
-    Butternut_Squash: 110,
-    Acorn_Squash: 95,
-    Yellow_Squash: 55,
     Zucchini: 55,
-    Spaghetti_Squash: 100,
-    Cilantro: 50,
-    Collard_Greens: 65,
-    Mustard_Greens: 45,
     Celery: 120,
     Chard: 55,
     Swiss_Chard: 55,
@@ -1898,32 +2012,25 @@ export const harvestDays = {
     Dill: 60,
     Edamame: 90,
     Endive: 90,
-    Fava_Bean: 85,
     Habanero: 100,
     Jalapeno: 75,
     Serrano: 80,
     Poblano: 75,
     Cayenne: 80,
-    Banana_Pepper: 70,
     Kohlrabi: 55,
     Leek: 120,
     Lentil: 100,
-    Lima_Bean: 75,
-    Napa_Cabbage: 70,
     Okra: 55,
     Onion: 100,
     Oregano: 80,
     Parsnip: 120,
-    Pinto_Bean: 95,
     Radicchio: 65,
     Romaine: 70,
     Rutabaga: 90,
     Sage: 75,
     Scallion: 60,
     Shallot: 100,
-    Snap_Pea: 60,
     Sorrel: 60,
-    Sweet_Potato: 100,
     Thyme: 80,
     Tomatillo: 75,
     Turnip: 50,
@@ -2035,6 +2142,28 @@ export function getHarvestDays(item) {
   return harvestDays[key] || harvestDays[item?.name] || 75;
 }
 
+// Whole calendar days left on a harvest tracker, clamped at 0 once the window is
+// reached. Every caller used to divide a raw millisecond gap inline, which counts
+// from the clock time the tracker was started — so the number ticked over mid-
+// afternoon instead of at midnight and read a day high until it did.
+export function getHarvestDaysLeft(tracker) {
+  if (!tracker || typeof tracker.days !== "number" || !tracker.startedAt) return null;
+  const started = new Date(tracker.startedAt);
+  if (Number.isNaN(started.getTime())) return null;
+  started.setHours(12, 0, 0, 0);
+  const now = new Date();
+  now.setHours(12, 0, 0, 0);
+  const elapsed = Math.round((now - started) / 86400000);
+  return Math.max(0, tracker.days - elapsed);
+}
+
+// Ready includes overdue: a tracker whose day came and went while the app was
+// closed is still a harvest waiting to be picked.
+export function isHarvestReady(tracker) {
+  const left = getHarvestDaysLeft(tracker);
+  return left !== null && left <= 0;
+}
+
 export const FERTILIZER_DAYS = {
   Tomato: 14, Pepper: 14, Bell_Pepper: 14, Corn: 14, Cabbage: 14,
   Broccoli: 14, Cauliflower: 14, Eggplant: 14, Pumpkin: 14,
@@ -2056,11 +2185,30 @@ export function getFertilizerDays(plantName) {
   return FERTILIZER_DAYS[key] || FERTILIZER_DAYS[plantName] || 21;
 }
 
+// Whole calendar days since a plant was last fed. `lastFertilized` is a full
+// timestamp, and every caller used to divide the raw millisecond gap — so a feed
+// logged at 6pm only counted as another day gone at 6pm, and "due" flipped over
+// mid-evening instead of at midnight.
+export function getFertilizerDaysSince(tracker) {
+  if (!tracker?.lastFertilized) return null;
+  const then = new Date(tracker.lastFertilized);
+  if (Number.isNaN(then.getTime())) return null;
+  then.setHours(12, 0, 0, 0);
+  const now = new Date();
+  now.setHours(12, 0, 0, 0);
+  return Math.round((now - then) / 86400000);
+}
+
+export function isFertilizerDue(plantName, tracker) {
+  const since = getFertilizerDaysSince(tracker);
+  return since === null || since >= getFertilizerDays(plantName);
+}
+
 export function getPlantDifficulty(item) {
   const type = normalizeType(item.type, item.name);
   const name = String(item.name || "").toLowerCase();
-  if (type === "Herbs" || ["lettuce","radish","spinach","kale","green bean"].some((w) => name.includes(w))) return { label: "Easy", icon: "🟢", text: "Beginner friendly" };
-  if (type === "Tree Fruits" || type === "Tropical Fruits" || ["garlic","pumpkin","watermelon","pomegranate","avocado"].some((w) => name.includes(w))) return { label: "Hard", icon: "🔴", text: "Needs more care" };
+  if (type === "Herbs" || ["lettuce","radish","spinach","kale","green bean"].some((w) => plantNameMatchesKey(name, w))) return { label: "Easy", icon: "🟢", text: "Beginner friendly" };
+  if (type === "Tree Fruits" || type === "Tropical Fruits" || ["garlic","pumpkin","watermelon","pomegranate","avocado"].some((w) => plantNameMatchesKey(name, w))) return { label: "Hard", icon: "🔴", text: "Needs more care" };
   return { label: "Medium", icon: "🟡", text: "Moderate care" };
 }
 
@@ -2077,7 +2225,7 @@ export function getPlantSunNeed(item) {
   }
 
   // Leafy greens and some herbs tolerate — and in summer heat prefer — some shade.
-  if (["lettuce", "spinach", "kale", "arugula", "chard", "cilantro", "parsley", "mint"].some((w) => name.includes(w))) {
+  if (["lettuce", "spinach", "kale", "arugula", "chard", "cilantro", "parsley", "mint"].some((w) => plantNameMatchesKey(name, w))) {
     return { need: "partial", label: "Partial shade OK", toleratesShade: true };
   }
   if (type === "Herbs") {
@@ -2205,9 +2353,7 @@ export function buildWidgetSnapshot({
   // Plants whose harvest tracker has reached (or passed) its window.
   const harvestNames = [];
   Object.entries(harvestTrackers || {}).forEach(([name, tracker]) => {
-    if (!tracker || typeof tracker.days !== "number" || !tracker.startedAt) return;
-    const elapsed = Math.floor((Date.now() - new Date(tracker.startedAt).getTime()) / 86400000);
-    if (tracker.days - elapsed <= 0) harvestNames.push(name);
+    if (isHarvestReady(tracker)) harvestNames.push(name);
   });
 
   const frost = getUpcomingFrost(weather);
@@ -2254,12 +2400,19 @@ export function setFrostOverrideRef(obj) {
 
 export function parseFrostOverride(mmdd) {
   if (!mmdd || typeof mmdd !== "string") return null;
-  const m = mmdd.match(/^(\d{1,2})-(\d{1,2})$/);
+  const m = mmdd.trim().match(/^(\d{1,2})-(\d{1,2})$/);
   if (!m) return null;
   const month = parseInt(m[1], 10) - 1;
   const day = parseInt(m[2], 10);
   if (month < 0 || month > 11 || day < 1 || day > 31) return null;
-  return new Date(new Date().getFullYear(), month, day);
+  // The day has to exist in that month. `new Date(y, 1, 31)` does not fail, it
+  // rolls forward — a typed "2-31" became a March frost date, and every seed
+  // start and maturity window measured from it moved with it. Clamping to the
+  // end of the month keeps the month the gardener actually chose, and also
+  // handles "2-29" in a non-leap year.
+  const year = new Date().getFullYear();
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  return new Date(year, month, Math.min(day, lastDay));
 }
 
 export function getLastFrostDate(zone) {
@@ -2338,10 +2491,12 @@ export function getFrostMaturityInfo(item, zone) {
 export function getSeedStartWeeks(item) {
   const name = String(item?.name || "").toLowerCase();
   const type = normalizeType(item.type, item.name);
-  if (["tomato", "pepper", "eggplant"].some((w) => name.includes(w))) return 8;
-  if (["celery"].some((w) => name.includes(w))) return 10;
-  if (["broccoli", "cabbage", "cauliflower", "kale"].some((w) => name.includes(w))) return 6;
-  if (["basil", "parsley", "thyme", "rosemary", "cilantro"].some((w) => name.includes(w))) return 6;
+  if (["tomato", "pepper", "eggplant"].some((w) => plantNameMatchesKey(name, w))) return 8;
+  if (["celery"].some((w) => plantNameMatchesKey(name, w))) return 10;
+  // "broccolini" is listed alongside "broccoli" because whole-word matching does
+  // not see a base word inside a compound, and it is started indoors the same way.
+  if (["broccoli", "broccolini", "cabbage", "cauliflower", "kale"].some((w) => plantNameMatchesKey(name, w))) return 6;
+  if (["basil", "parsley", "thyme", "rosemary", "cilantro"].some((w) => plantNameMatchesKey(name, w))) return 6;
   if (type === "Tree Fruits" || type === "Tropical Fruits") return null; // buy transplants
   return null; // most veg/berries direct-sow
 }
@@ -2349,12 +2504,23 @@ export function getSeedStartWeeks(item) {
 export function getSeedStartInfo(item, zone) {
   const weeks = getSeedStartWeeks(item);
   if (!weeks || !zone) return null;
-  const lastFrost = getLastFrostDate(zone);
-  const startBy = new Date(lastFrost);
-  startBy.setDate(startBy.getDate() - weeks * 7);
   const now = new Date(); now.setHours(12, 0, 0, 0);
-  const startClone = new Date(startBy); startClone.setHours(12, 0, 0, 0);
-  const daysUntilStart = Math.round((startClone - now) / (1000 * 60 * 60 * 24));
+  const startFor = (frost) => {
+    const d = new Date(frost);
+    d.setDate(d.getDate() - weeks * 7);
+    d.setHours(12, 0, 0, 0);
+    return d;
+  };
+  // The frost estimate is pinned to the current calendar year, so from spring
+  // onwards this window is behind us and the card used to vanish for the rest of
+  // the year. Once it is more than two weeks gone, count towards next year's.
+  let lastFrost = getLastFrostDate(zone);
+  if (Math.round((startFor(lastFrost) - now) / 86400000) < -14) {
+    lastFrost = new Date(lastFrost);
+    lastFrost.setFullYear(lastFrost.getFullYear() + 1);
+  }
+  const startBy = startFor(lastFrost);
+  const daysUntilStart = Math.round((startBy - now) / 86400000);
   const fmt = (d) => formatDate(d, {
   month: "short",
   day: "numeric"
@@ -2403,10 +2569,10 @@ export function getShouldGrowText(item, zone, weather) {
   }
 
   if (weather?.maxTempF >= 98) {
-    if (name.includes("lettuce") || name.includes("spinach") || name.includes("pea") || name.includes("radish")) {
+    if (plantNameMatchesKey(name, "lettuce") || plantNameMatchesKey(name, "spinach") || plantNameMatchesKey(name, "pea") || plantNameMatchesKey(name, "radish")) {
       return `${item.name} prefers cooler temperatures and will struggle in the current heat. Wait for temperatures to drop below 80°F or plant in a shaded spot with morning sun only.`;
     }
-    if (name.includes("tomato") || name.includes("pepper") || name.includes("eggplant") || name.includes("watermelon")) {
+    if (plantNameMatchesKey(name, "tomato") || plantNameMatchesKey(name, "pepper") || plantNameMatchesKey(name, "eggplant") || plantNameMatchesKey(name, "watermelon")) {
       return `${item.name} loves heat and is a strong performer in your zone. Plant early morning, water deeply, and mulch heavily to protect roots during peak afternoon heat.`;
     }
     return `${item.name} can handle warm conditions but the current heat is high. Water deeply in the morning, add mulch, and avoid transplanting during the hottest part of the day.`;
@@ -2414,22 +2580,22 @@ export function getShouldGrowText(item, zone, weather) {
 
   // Zone and season specific
   if (climate === "hot") {
-    if (name.includes("tomato")) return "Tomatoes thrive in hot zones but need consistent deep watering and mulching to survive summer heat. Choose heat-tolerant varieties like Solar Fire or Heatmaster for best results in warm climates.";
-    if (name.includes("pepper")) return "Peppers are one of the best vegetables for hot zones — they love the heat and produce abundantly in warm climates. Water consistently and expect a long productive season.";
-    if (name.includes("basil")) return "Basil thrives in hot sunny conditions making it perfect for your zone. Plant after last frost in full sun and pinch flowers regularly to keep leaves flavorful all season.";
-    if (name.includes("watermelon")) return "Watermelon is an excellent choice for hot zones — the heat accelerates growth and sweetness. Give plants plenty of space, deep water weekly, and expect a rewarding harvest.";
-    if (name.includes("okra")) return "Okra is one of the best vegetables for hot climates and practically thrives on neglect in warm zones. Plant in full sun and harvest every 2 days during peak season.";
-    if (name.includes("eggplant")) return "Eggplant loves heat and performs exceptionally well in warm zones. Keep soil consistently moist and expect a long productive growing season.";
-    if (name.includes("sweet potato") || name.includes("sweetpotato")) return "Sweet potatoes are perfectly suited for hot zones — they love the heat and produce abundantly in long warm seasons. Plant slips after last frost and give vines room to spread.";
+    if (plantNameMatchesKey(name, "tomato")) return "Tomatoes thrive in hot zones but need consistent deep watering and mulching to survive summer heat. Choose heat-tolerant varieties like Solar Fire or Heatmaster for best results in warm climates.";
+    if (plantNameMatchesKey(name, "pepper")) return "Peppers are one of the best vegetables for hot zones — they love the heat and produce abundantly in warm climates. Water consistently and expect a long productive season.";
+    if (plantNameMatchesKey(name, "basil")) return "Basil thrives in hot sunny conditions making it perfect for your zone. Plant after last frost in full sun and pinch flowers regularly to keep leaves flavorful all season.";
+    if (plantNameMatchesKey(name, "watermelon")) return "Watermelon is an excellent choice for hot zones — the heat accelerates growth and sweetness. Give plants plenty of space, deep water weekly, and expect a rewarding harvest.";
+    if (plantNameMatchesKey(name, "okra")) return "Okra is one of the best vegetables for hot climates and practically thrives on neglect in warm zones. Plant in full sun and harvest every 2 days during peak season.";
+    if (plantNameMatchesKey(name, "eggplant")) return "Eggplant loves heat and performs exceptionally well in warm zones. Keep soil consistently moist and expect a long productive growing season.";
+    if (plantNameMatchesKey(name, "sweet potato") || plantNameMatchesKey(name, "sweetpotato")) return "Sweet potatoes are perfectly suited for hot zones — they love the heat and produce abundantly in long warm seasons. Plant slips after last frost and give vines room to spread.";
   }
 
   if (climate === "cold") {
-    if (name.includes("kale")) return "Kale is one of the best cold zone vegetables — it actually improves in flavor after frost. Plant in late summer for a fall and early winter harvest that gets sweeter with every cold snap.";
-    if (name.includes("spinach")) return "Spinach thrives in cold zones and is one of the first crops you can plant in spring. It tolerates light frost and produces tender leaves in cool weather.";
-    if (name.includes("pea")) return "Peas are perfect for cold zones — they prefer cool weather and can be planted as soon as soil can be worked in spring. Expect a productive harvest before summer heat arrives.";
-    if (name.includes("potato")) return "Potatoes are well suited for cold zones with long cool growing seasons. Plant certified seed potatoes in early spring and expect a generous harvest by late summer.";
-    if (name.includes("carrot")) return "Carrots thrive in cool climates and develop excellent sweetness after light frost exposure. Plant in deep, loose, rock-free soil for straight, full-sized roots.";
-    if (name.includes("broccoli")) return "Broccoli is ideal for cold zones — it prefers cool temperatures and produces best in spring or fall. Start indoors early and transplant when weather cools for a premium harvest.";
+    if (plantNameMatchesKey(name, "kale")) return "Kale is one of the best cold zone vegetables — it actually improves in flavor after frost. Plant in late summer for a fall and early winter harvest that gets sweeter with every cold snap.";
+    if (plantNameMatchesKey(name, "spinach")) return "Spinach thrives in cold zones and is one of the first crops you can plant in spring. It tolerates light frost and produces tender leaves in cool weather.";
+    if (plantNameMatchesKey(name, "pea")) return "Peas are perfect for cold zones — they prefer cool weather and can be planted as soon as soil can be worked in spring. Expect a productive harvest before summer heat arrives.";
+    if (plantNameMatchesKey(name, "potato")) return "Potatoes are well suited for cold zones with long cool growing seasons. Plant certified seed potatoes in early spring and expect a generous harvest by late summer.";
+    if (plantNameMatchesKey(name, "carrot")) return "Carrots thrive in cool climates and develop excellent sweetness after light frost exposure. Plant in deep, loose, rock-free soil for straight, full-sized roots.";
+    if (plantNameMatchesKey(name, "broccoli")) return "Broccoli is ideal for cold zones — it prefers cool temperatures and produces best in spring or fall. Start indoors early and transplant when weather cools for a premium harvest.";
   }
 
   // Difficulty based responses
@@ -2465,7 +2631,7 @@ export function getPlantingSteps(item) {
   const name = String(item?.name || "").toLowerCase();
 
   // VEGETABLES
-  if (name.includes("tomato")) return [
+  if (plantNameMatchesKey(name, "tomato")) return [
     "Choose a sunny spot with at least 8 hours of direct sunlight daily.",
     "Dig a deep hole and bury the stem up to the lowest set of leaves — tomatoes root along buried stems.",
     "Space plants 24–36 inches apart to allow airflow and prevent disease.",
@@ -2474,7 +2640,7 @@ export function getPlantingSteps(item) {
     "Install a cage or stake at planting time before roots establish.",
     "Feed with a balanced fertilizer every 2 weeks once flowers appear.",
   ];
-  if (name.includes("pepper")) return [
+  if (plantNameMatchesKey(name, "pepper")) return [
     "Start seeds indoors 8–10 weeks before last frost or buy transplants.",
     "Choose a warm, sunny location with well-draining soil.",
     "Plant 18–24 inches apart after all frost risk has passed.",
@@ -2483,7 +2649,7 @@ export function getPlantingSteps(item) {
     "Feed with a low-nitrogen fertilizer once flowering begins.",
     "Harvest regularly to encourage more fruit production throughout the season.",
   ];
-  if (name.includes("cucumber")) return [
+  if (plantNameMatchesKey(name, "cucumber")) return [
     "Wait until soil temperature reaches at least 60°F before planting.",
     "Sow seeds 1 inch deep directly in the garden or start indoors 3 weeks early.",
     "Plant in hills of 2–3 seeds or space transplants 12 inches apart.",
@@ -2492,7 +2658,7 @@ export function getPlantingSteps(item) {
     "Mulch heavily to keep soil cool and moist during hot weather.",
     "Harvest when cucumbers reach full size but before they yellow — pick often to keep plants producing.",
   ];
-  if (name.includes("zucchini") || name.includes("squash")) return [
+  if (plantNameMatchesKey(name, "zucchini") || plantNameMatchesKey(name, "squash")) return [
     "Direct sow seeds 1 inch deep after last frost when soil is warm.",
     "Plant in groups of 2–3 seeds and thin to the strongest plant.",
     "Space plants 3–4 feet apart — zucchini gets large quickly.",
@@ -2501,7 +2667,7 @@ export function getPlantingSteps(item) {
     "Harvest zucchini when 6–8 inches long for best flavor and texture.",
     "Check plants daily during peak season — zucchini grows extremely fast.",
   ];
-  if (name.includes("carrot")) return [
+  if (plantNameMatchesKey(name, "carrot")) return [
     "Loosen soil at least 12 inches deep and remove all rocks and debris.",
     "Sow seeds directly — carrots do not transplant well.",
     "Sprinkle seeds thinly in rows 12 inches apart and cover with just 1/4 inch of soil.",
@@ -2510,7 +2676,7 @@ export function getPlantingSteps(item) {
     "Avoid heavy nitrogen fertilizer — it causes forked roots.",
     "Harvest when tops reach full color — gently loosen soil with a fork before pulling.",
   ];
-  if (name.includes("lettuce")) return [
+  if (plantNameMatchesKey(name, "lettuce")) return [
     "Choose a spot with morning sun and afternoon shade in warm climates.",
     "Sow seeds 1/8 inch deep directly in loose, fertile soil.",
     "Keep rows 12 inches apart and thin seedlings to 6 inches once established.",
@@ -2519,7 +2685,7 @@ export function getPlantingSteps(item) {
     "Replant every 2–3 weeks for a continuous harvest throughout the season.",
     "Bolt prevention: harvest before temperatures consistently exceed 80°F.",
   ];
-  if (name.includes("spinach")) return [
+  if (plantNameMatchesKey(name, "spinach")) return [
     "Plant in early spring or fall — spinach struggles in summer heat.",
     "Sow seeds 1/2 inch deep in rows 12 inches apart.",
     "Thin seedlings to 6 inches apart when they reach 2 inches tall.",
@@ -2528,7 +2694,7 @@ export function getPlantingSteps(item) {
     "Harvest outer leaves when they reach 3–4 inches or cut the whole plant.",
     "Plant a new batch every 2 weeks for continuous harvest before summer.",
   ];
-  if (name.includes("kale")) return [
+  if (plantNameMatchesKey(name, "kale")) return [
     "Start seeds indoors 6 weeks before last frost or direct sow in late summer for fall harvest.",
     "Plant in full sun to partial shade in rich, well-draining soil.",
     "Space transplants 18–24 inches apart for large healthy plants.",
@@ -2537,7 +2703,7 @@ export function getPlantingSteps(item) {
     "Harvest outer leaves first, leaving the center to keep growing.",
     "Flavor improves after a light frost — fall kale is often sweeter than spring kale.",
   ];
-  if (name.includes("broccoli")) return [
+  if (plantNameMatchesKey(name, "broccoli")) return [
     "Start seeds indoors 6–8 weeks before last frost.",
     "Transplant outdoors 2–3 weeks before last frost — broccoli tolerates light frost.",
     "Space plants 18 inches apart in rows 24 inches wide.",
@@ -2546,7 +2712,7 @@ export function getPlantingSteps(item) {
     "Harvest the main head before flowers open — cut at an angle to allow side shoots to form.",
     "Continue harvesting side shoots for weeks after the main head is cut.",
   ];
-  if (name.includes("cabbage")) return [
+  if (plantNameMatchesKey(name, "cabbage")) return [
     "Start seeds indoors 6–8 weeks before last frost.",
     "Harden off transplants for one week before moving outside.",
     "Space plants 12–24 inches apart depending on desired head size.",
@@ -2555,7 +2721,7 @@ export function getPlantingSteps(item) {
     "Watch for cabbage worms and treat with Bt spray if needed.",
     "Harvest when heads feel solid and firm when squeezed.",
   ];
-  if (name.includes("potato")) return [
+  if (plantNameMatchesKey(name, "potato")) return [
     "Cut seed potatoes into chunks with at least 2 eyes each and let them cure for 24 hours.",
     "Dig trenches 4 inches deep and 12 inches apart.",
     "Place seed potato chunks cut side down, 12 inches apart in the trench.",
@@ -2564,7 +2730,7 @@ export function getPlantingSteps(item) {
     "Stop watering when foliage begins to yellow and die back.",
     "Harvest 2–3 weeks after foliage dies — dig carefully to avoid damaging tubers.",
   ];
-  if (name.includes("onion")) return [
+  if (plantNameMatchesKey(name, "onion")) return [
     "Plant sets or transplants in early spring as soon as soil can be worked.",
     "Choose a sunny spot with loose, well-draining soil.",
     "Plant sets 1 inch deep and 4–6 inches apart in rows 12 inches apart.",
@@ -2573,7 +2739,7 @@ export function getPlantingSteps(item) {
     "Push over any remaining tops to redirect energy to the bulb.",
     "Harvest when tops are fully brown and dry — cure in a warm dry place for 2–4 weeks before storing.",
   ];
-  if (name.includes("garlic")) return [
+  if (plantNameMatchesKey(name, "garlic")) return [
     "Plant individual cloves in fall, 4–6 weeks before ground freezes.",
     "Choose the largest cloves from the bulb for the best yield.",
     "Plant cloves pointed end up, 2 inches deep and 6 inches apart.",
@@ -2582,7 +2748,7 @@ export function getPlantingSteps(item) {
     "Snap off scapes (curly shoots) in early summer to redirect energy to the bulb.",
     "Harvest when lower leaves turn brown but upper leaves are still green — usually June or July.",
   ];
-  if (name.includes("corn")) return [
+  if (plantNameMatchesKey(name, "corn")) return [
     "Wait until soil reaches 60°F before planting — corn needs warm soil to germinate.",
     "Plant in blocks of at least 4 rows rather than single rows for good pollination.",
     "Sow seeds 1 inch deep, 9–12 inches apart in rows 30–36 inches apart.",
@@ -2591,7 +2757,7 @@ export function getPlantingSteps(item) {
     "Silk turns brown and dries out when ears are ready — check by peeling back husk.",
     "Harvest immediately when ready — sugar converts to starch quickly after picking.",
   ];
-  if (name.includes("bean") || name.includes("greenbean")) return [
+  if (plantNameMatchesKey(name, "bean") || plantNameMatchesKey(name, "greenbean")) return [
     "Direct sow after last frost when soil reaches 60°F.",
     "Plant seeds 1–2 inches deep, 3 inches apart in rows 18 inches apart.",
     "For pole beans install support before planting — plants grow 6–8 feet tall.",
@@ -2600,7 +2766,7 @@ export function getPlantingSteps(item) {
     "Begin harvesting when pods are firm and snap cleanly — don't let pods mature on plant.",
     "Pick every 2–3 days to keep plants producing throughout the season.",
   ];
-  if (name.includes("pea")) return [
+  if (plantNameMatchesKey(name, "pea")) return [
     "Plant in early spring as soon as soil can be worked — peas prefer cool weather.",
     "Sow seeds 1 inch deep, 2 inches apart in rows 18 inches apart.",
     "Install a trellis or netting before planting for climbing varieties.",
@@ -2609,7 +2775,7 @@ export function getPlantingSteps(item) {
     "Harvest when pods are plump and bright green — taste one to check sweetness.",
     "Pick regularly to keep plants producing — leaving pods on the vine stops new growth.",
   ];
-  if (name.includes("radish")) return [
+  if (plantNameMatchesKey(name, "radish")) return [
     "Sow seeds directly in spring or fall — radishes bolt quickly in summer heat.",
     "Plant 1/2 inch deep, 1 inch apart in rows 6 inches apart.",
     "Thin to 2 inches apart once seedlings emerge.",
@@ -2618,7 +2784,7 @@ export function getPlantingSteps(item) {
     "Harvest promptly when mature — leaving them in ground makes them woody and hot.",
     "Succession plant every 2 weeks for continuous harvest throughout cool season.",
   ];
-  if (name.includes("beet")) return [
+  if (plantNameMatchesKey(name, "beet")) return [
     "Sow seeds directly in early spring or late summer for fall harvest.",
     "Plant 1/2 inch deep, 3 inches apart in rows 12 inches apart.",
     "Soak seeds in water for 24 hours before planting to improve germination.",
@@ -2627,7 +2793,7 @@ export function getPlantingSteps(item) {
     "Harvest when roots reach 1.5–3 inches in diameter for best flavor.",
     "Don't forget the greens — beet tops are edible and highly nutritious.",
   ];
-  if (name.includes("eggplant")) return [
+  if (plantNameMatchesKey(name, "eggplant")) return [
     "Start seeds indoors 8–10 weeks before last frost — eggplant needs a long warm season.",
     "Transplant outdoors only when night temperatures stay above 55°F consistently.",
     "Space plants 18–24 inches apart in full sun.",
@@ -2636,7 +2802,7 @@ export function getPlantingSteps(item) {
     "Feed with a balanced fertilizer every 3 weeks once flowering begins.",
     "Harvest when skin is glossy and bright — dull skin means the fruit is overripe.",
   ];
-  if (name.includes("celery")) return [
+  if (plantNameMatchesKey(name, "celery")) return [
     "Start seeds indoors 10–12 weeks before last frost — celery has a very long growing season.",
     "Transplant when seedlings are 3–4 inches tall and frost risk has passed.",
     "Space plants 12 inches apart in rich, moisture-retentive soil.",
@@ -2645,7 +2811,7 @@ export function getPlantingSteps(item) {
     "Blanch stalks by wrapping with newspaper 2 weeks before harvest for milder flavor.",
     "Harvest by cutting the whole plant at soil level when stalks reach full size.",
   ];
-  if (name.includes("pumpkin")) return [
+  if (plantNameMatchesKey(name, "pumpkin")) return [
     "Sow seeds directly after last frost when soil is warm.",
     "Plant 3–5 seeds per hill, 1 inch deep, in hills spaced 6 feet apart.",
     "Thin to 2–3 plants per hill once seedlings emerge.",
@@ -2654,7 +2820,7 @@ export function getPlantingSteps(item) {
     "Pinch off excess small pumpkins to direct energy into 1–2 large fruits.",
     "Harvest when skin is hard, color is fully developed, and stem begins to dry.",
   ];
-  if (name.includes("watermelon")) return [
+  if (plantNameMatchesKey(name, "watermelon")) return [
     "Start seeds indoors 2–3 weeks before last frost or direct sow when soil reaches 70°F.",
     "Plant in hills 6 feet apart — watermelons need a lot of space to spread.",
     "Water deeply but infrequently — deep roots prefer long dry periods between waterings.",
@@ -2663,7 +2829,7 @@ export function getPlantingSteps(item) {
     "Tap the melon — a hollow thump means it's ripe.",
     "Check the tendril closest to the fruit — when it dries and browns the melon is ready.",
   ];
-  if (name.includes("okra")) return [
+  if (plantNameMatchesKey(name, "okra")) return [
     "Soak seeds overnight in water to improve germination.",
     "Direct sow after last frost when soil reaches 65°F.",
     "Plant 1 inch deep, 12 inches apart in rows 3 feet apart.",
@@ -2674,7 +2840,7 @@ export function getPlantingSteps(item) {
   ];
 
   // HERBS
-  if (name.includes("basil")) return [
+  if (plantNameMatchesKey(name, "basil")) return [
     "Start seeds indoors 6 weeks before last frost or direct sow after frost.",
     "Plant in a warm, sunny location with at least 6 hours of direct sun.",
     "Space plants 12–18 inches apart in well-draining fertile soil.",
@@ -2683,7 +2849,7 @@ export function getPlantingSteps(item) {
     "Harvest by pinching stems just above a leaf node to encourage bushy growth.",
     "Bring containers indoors before first frost to extend the season.",
   ];
-  if (name.includes("mint")) return [
+  if (plantNameMatchesKey(name, "mint")) return [
     "Plant in a container — mint spreads aggressively and will take over a garden bed.",
     "Choose a spot with partial shade to full sun.",
     "Plant in moist, rich soil and water regularly.",
@@ -2692,7 +2858,7 @@ export function getPlantingSteps(item) {
     "Harvest stems regularly — the more you pick the bushier it grows.",
     "Bring containers indoors before frost for year-round fresh mint.",
   ];
-  if (name.includes("rosemary")) return [
+  if (plantNameMatchesKey(name, "rosemary")) return [
     "Plant in full sun with excellent drainage — rosemary hates wet feet.",
     "Space plants 2–3 feet apart in sandy or loamy soil.",
     "Water deeply but infrequently — rosemary is drought tolerant once established.",
@@ -2701,7 +2867,7 @@ export function getPlantingSteps(item) {
     "Harvest by snipping young stem tips — never cut back more than one third at a time.",
     "In cold zones grow in containers and bring indoors for winter.",
   ];
-  if (name.includes("thyme")) return [
+  if (plantNameMatchesKey(name, "thyme")) return [
     "Plant in full sun with very well-draining soil — thyme tolerates drought well.",
     "Space plants 12 inches apart.",
     "Water sparingly once established — overwatering is the most common mistake.",
@@ -2710,7 +2876,7 @@ export function getPlantingSteps(item) {
     "Divide plants every 2–3 years to keep them vigorous.",
     "Thyme is cold hardy in most zones and can overwinter outdoors.",
   ];
-  if (name.includes("cilantro")) return [
+  if (plantNameMatchesKey(name, "cilantro")) return [
     "Direct sow seeds in cool weather — cilantro bolts quickly in heat.",
     "Plant 1/4 inch deep in rows 12 inches apart.",
     "Succession sow every 3 weeks for continuous harvest.",
@@ -2719,7 +2885,7 @@ export function getPlantingSteps(item) {
     "Let some plants bolt and go to seed — coriander seeds are also edible.",
     "Plant in fall in warm climates for the best cool-season harvest.",
   ];
-  if (name.includes("parsley")) return [
+  if (plantNameMatchesKey(name, "parsley")) return [
     "Soak seeds in water for 24 hours before planting to speed germination.",
     "Sow 1/4 inch deep in rich, moist soil in full sun to partial shade.",
     "Thin seedlings to 8 inches apart — parsley needs room to develop.",
@@ -2728,7 +2894,7 @@ export function getPlantingSteps(item) {
     "Harvest outer stems first, cutting at the base of the stem.",
     "Parsley is biennial — it will overwinter and flower in its second year.",
   ];
-  if (name.includes("fennel")) return [
+  if (plantNameMatchesKey(name, "fennel")) return [
     "Direct sow in a dedicated spot away from other vegetables.",
     "Plant in full sun in well-draining soil.",
     "Sow seeds 1/4 inch deep, 12 inches apart.",
@@ -2739,7 +2905,7 @@ export function getPlantingSteps(item) {
   ];
 
   // BERRIES
-  if (name.includes("strawberry")) return [
+  if (plantNameMatchesKey(name, "strawberry")) return [
     "Plant in early spring in full sun with well-draining, slightly acidic soil.",
     "Set crowns at soil level — planting too deep causes rot, too shallow causes drying.",
     "Space plants 12–18 inches apart in rows 24 inches apart.",
@@ -2748,7 +2914,7 @@ export function getPlantingSteps(item) {
     "Feed with a high-potassium fertilizer in spring and after harvest.",
     "Replace plants every 3 years as productivity declines with age.",
   ];
-  if (name.includes("blueberry")) return [
+  if (plantNameMatchesKey(name, "blueberry")) return [
     "Choose a spot with full sun and very acidic soil (pH 4.5–5.5).",
     "Amend soil with sulfur or peat moss to lower pH if needed.",
     "Plant at least 2 different varieties for cross-pollination and higher yield.",
@@ -2757,7 +2923,7 @@ export function getPlantingSteps(item) {
     "Water consistently — blueberries have shallow roots that dry out quickly.",
     "Do not expect a full harvest for 3 years — patience pays off with long-lived productive bushes.",
   ];
-  if (name.includes("raspberry")) return [
+  if (plantNameMatchesKey(name, "raspberry")) return [
     "Plant bare root canes in early spring in full sun.",
     "Space canes 2 feet apart in rows 8 feet apart.",
     "Install a trellis or post-and-wire support system before planting.",
@@ -2768,7 +2934,7 @@ export function getPlantingSteps(item) {
   ];
 
   // TREE FRUITS
-  if (name.includes("apple")) return [
+  if (plantNameMatchesKey(name, "apple")) return [
     "Choose a sunny location with good air circulation to prevent disease.",
     "Plant bare root trees in early spring before buds break.",
     "Dig a hole twice as wide as the root ball and just as deep.",
@@ -2777,7 +2943,7 @@ export function getPlantingSteps(item) {
     "Stake young trees for the first 2 years for stability.",
     "Prune annually in late winter to maintain an open canopy and good airflow.",
   ];
-  if (name.includes("peach")) return [
+  if (plantNameMatchesKey(name, "peach")) return [
     "Plant in full sun with well-draining soil in spring.",
     "Dig a hole wide enough to spread roots without bending.",
     "Keep the bud union 2 inches above soil level.",
@@ -2786,7 +2952,7 @@ export function getPlantingSteps(item) {
     "Prune to an open vase shape annually in late winter.",
     "Apply dormant oil spray in late winter to control overwintering pests.",
   ];
-  if (name.includes("lemon") || name.includes("lime") || name.includes("orange") || name.includes("grapefruit") || name.includes("mandarin")) return [
+  if (plantNameMatchesKey(name, "lemon") || plantNameMatchesKey(name, "lime") || plantNameMatchesKey(name, "orange") || plantNameMatchesKey(name, "grapefruit") || plantNameMatchesKey(name, "mandarin")) return [
     "Plant in the warmest, sunniest spot in your garden or in a large container.",
     "Use well-draining citrus mix soil and ensure excellent drainage.",
     "Plant with the bud union above soil line.",
@@ -2795,7 +2961,7 @@ export function getPlantingSteps(item) {
     "Protect from frost — cover or bring containers indoors when temps drop below 32°F.",
     "Prune only to remove dead wood and crossing branches — citrus needs minimal pruning.",
   ];
-  if (name.includes("avocado")) return [
+  if (plantNameMatchesKey(name, "avocado")) return [
     "Plant in full sun in a warm frost-free location.",
     "Use fast-draining soil — avocados are extremely sensitive to root rot.",
     "Dig a hole as deep as the root ball and 3 times as wide.",
@@ -2804,7 +2970,7 @@ export function getPlantingSteps(item) {
     "Fertilize with a nitrogen-rich fertilizer 4 times per year.",
     "Mulch around the base but keep mulch away from the trunk to prevent rot.",
   ];
-  if (name.includes("fig")) return [
+  if (plantNameMatchesKey(name, "fig")) return [
     "Plant in full sun against a south-facing wall in cooler climates for extra warmth.",
     "Dig a hole twice the width of the root ball.",
     "Figs tolerate poor soil but need excellent drainage.",
@@ -2813,7 +2979,7 @@ export function getPlantingSteps(item) {
     "In cold zones wrap trunk with burlap in winter or grow in containers.",
     "Harvest when fruit softens and hangs downward — figs do not ripen off the tree.",
   ];
-  if (name.includes("pomegranate")) return [
+  if (plantNameMatchesKey(name, "pomegranate")) return [
     "Plant in full sun in well-draining soil — pomegranates tolerate drought and heat.",
     "Space plants 15–20 feet apart or prune as a shrub.",
     "Water regularly for the first 2 years while roots establish.",
@@ -2862,7 +3028,7 @@ export function getPlantingSteps(item) {
 export function getRarity(item) {
   const type = normalizeType(item.type, item.name);
   const spread = Math.abs(zoneNumber(item.maxZone) - zoneNumber(item.minZone));
-  if (item.name.includes("Pomegranate") || item.name.includes("Avocado") || item.name.includes("Fig") || item.name.includes("Orange") || item.name.includes("Lemon")) return "Legendary";
+  if (["Pomegranate", "Avocado", "Fig", "Orange", "Lemon"].some((w) => plantNameMatchesKey(item.name, w))) return "Legendary";
   if (type === "Tree Fruits" || type === "Tropical Fruits") return "Epic";
   if (type === "Berries" || spread <= 4) return "Rare";
   return "Common";
@@ -2903,6 +3069,14 @@ export function getDateKey(date) {
 }
 export function getTodayKey() {
   return getDateKey(new Date());
+}
+
+// True when a stored value refers to the same calendar day as `key`. Stored
+// dates are a mix of day keys and full ISO timestamps depending on when and
+// where they were written, so compare only the date part.
+export function isSameDayKey(value, key) {
+  if (!value || !key) return false;
+  return String(value).slice(0, 10) === String(key).slice(0, 10);
 }
 
 // ── Premium feature manifest ────────────────────────────────────────────────
@@ -3010,9 +3184,7 @@ export function estimateHarvestValue(harvestLog) {
   let total = 0;
   const byPlant = {};
   (harvestLog || []).forEach((h) => {
-    const key = Object.keys(HARVEST_UNIT_VALUE).find((k) =>
-      String(h.plantName || "").toLowerCase().includes(k.toLowerCase())
-    );
+    const key = Object.keys(HARVEST_UNIT_VALUE).find((k) => plantNameMatchesKey(h.plantName, k));
     const unitVal = key ? HARVEST_UNIT_VALUE[key] : 2;
     const value = unitVal * parseHarvestQuantity(h.amount);
     total += value;
@@ -3105,19 +3277,6 @@ export function formatLength(inches, units) {
   return `${Number.isInteger(n) ? n : n.toFixed(1)}"`;
 }
 
-export async function maybeAskForReview() {
-  try {
-    const alreadyAsked = await AsyncStorage.getItem("pp_reviewRequested");
-    if (alreadyAsked) return;
-    const available = await StoreReview.isAvailableAsync();
-    if (!available) return;
-    await AsyncStorage.setItem("pp_reviewRequested", "true");
-    await StoreReview.requestReview();
-  } catch (error) {
-    console.log("Review request skipped:", error);
-  }
-}
-
 export function getDaysSince(dateString) {
   if (!dateString) return null;
   const slice = String(dateString).slice(0, 10);
@@ -3125,7 +3284,9 @@ export function getDaysSince(dateString) {
   if (Number.isNaN(then.getTime())) return null;
   const now = new Date();
   now.setHours(12, 0, 0, 0);
-  const diff = Math.floor((now - then) / (1000 * 60 * 60 * 24));
+  // Both ends sit at local midday, so the gap is whole days — except across a
+  // clock change, where flooring 23 hours would lose a day.
+  const diff = Math.round((now - then) / (1000 * 60 * 60 * 24));
   return Number.isNaN(diff) ? null : diff;
 }
 
@@ -3148,10 +3309,21 @@ export function getWateringCount(plantName, wateringHistory) {
   return Array.isArray(history) ? history.length : 0;
 }
 
+// Every watering ever logged. The badges and banners used to count the keys of
+// `wateredPlants`, which holds one entry per plant regardless of how often it is
+// watered — so "water plants 100 times" could never pass the size of the plant
+// list, and was unreachable on the free tier's five-plant cap.
+export function getTotalWaterings(wateringHistory) {
+  return Object.values(wateringHistory || {}).reduce(
+    (sum, dates) => sum + (Array.isArray(dates) ? dates.length : 0),
+    0
+  );
+}
+
 export function getBaseWaterInterval(item) {
   const type = normalizeType(item?.type, item?.name);
   const name = String(item?.name || "").toLowerCase();
-  if (["lettuce", "spinach", "celery", "cucumber"].some((w) => name.includes(w))) return 2;
+  if (["lettuce", "spinach", "celery", "cucumber"].some((w) => plantNameMatchesKey(name, w))) return 2;
   if (type === "Herbs") return 2;
   if (type === "Tree Fruits" || type === "Tropical Fruits") return 5;
   if (type === "Berries") return 3;
@@ -3290,17 +3462,16 @@ export function getAchievementBadges({
   harvestTrackers,
   fertilizerTrackers,
   harvestLog,
+  wateringHistory,
 }) {
   const today = getTodayKey();
   const wateredTodayCount = Object.values(wateredPlants || {}).filter((value) => value === today).length;
-  const totalWateredCount = Object.values(wateredPlants || {}).filter(Boolean).length;
+  const totalWateredCount = getTotalWaterings(wateringHistory);
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
   const streakCount = streakData?.count || 0;
   const careLogCount = (careLog || []).length;
   const harvestCount = Array.isArray(harvestLog) ? harvestLog.length : 0;
-  const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, t]) => {
-    return Math.max(0, t.days - Math.floor((new Date() - new Date(t.startedAt)) / (1000 * 60 * 60 * 24))) === 0;
-  }).length;
+  const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).length;
 
 const allUnlocked =
   savedPlants.length >= 50 &&
@@ -3689,9 +3860,9 @@ export const PROFILE_THEMES = [
   { id: "tropical", name: "Tropical Jungle", emoji: "🌴", color: "#8effab", bg: "rgba(142,255,171,0.18)", border: "#8effab", accent: "#8effab" },
 ];
 
-export function getProfileBanners({ gardenXP, savedPlants, journalEntries, gardenMap, wateredPlants, streakData, harvestTrackers, careLog, comparePlants, premiumUnlocked }) {
+export function getProfileBanners({ gardenXP, savedPlants, journalEntries, gardenMap, wateredPlants, streakData, harvestTrackers, careLog, comparePlants, premiumUnlocked, wateringHistory }) {
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
-  const totalWatered = Object.values(wateredPlants || {}).filter(Boolean).length;
+  const totalWatered = getTotalWaterings(wateringHistory);
   const streakCount = streakData?.count || 0;
   const harvestCount = Object.keys(harvestTrackers || {}).length;
   const careLogCount = (careLog || []).length;
@@ -3730,12 +3901,13 @@ export function getDailyQuests({ savedPlants, journalEntries, gardenMap, watered
   const dayOfWeek = new Date().getDay();
   const wateredTodayCount = Object.values(wateredPlants || {}).filter((value) => value === today).length;
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
-  const todayPhotos = journalEntries.filter(e => e.createdAt?.startsWith(today)).length;
+  // createdAt is a UTC timestamp and `today` is a local day key, so a prefix
+  // match dropped every photo taken after UTC midnight — the whole evening, for
+  // anyone west of Greenwich. Convert the instant to the device's own day first.
+  const todayPhotos = journalEntries.filter((e) => e.createdAt && getDateKey(new Date(e.createdAt)) === today).length;
   const todayCareLog = (careLog || []).filter(e => e.date === today).length;
   const streakCount = streakData?.count || 0;
-  const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, t]) => {
-    return Math.max(0, t.days - Math.floor((new Date() - new Date(t.startedAt)) / (1000 * 60 * 60 * 24))) === 0;
-  }).length;
+  const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).length;
   const fertilizerCount = Object.keys(fertilizerTrackers || {}).length;
   const harvestLogToday = (harvestLog || []).filter((h) => h.date === today || (h.createdAt || "").startsWith(today)).length;
   const compareCount = (comparePlants || []).length;
@@ -4115,6 +4287,87 @@ export function getSeasonForMonth(month) {
   return { key: "winter", label: "Winter", months: local([12, 1, 2]) };
 }
 
+// ── Astronomical seasons ─────────────────────────────────────────────────────
+// Seasons turn on the equinoxes and solstices, not on the first of the month:
+// fall opens around Sept 22, not Sept 1. Announcing a season three weeks early
+// is exactly the kind of thing a gardener notices, so the turning instants come
+// from the mean equinox/solstice terms in Meeus, Astronomical Algorithms ch. 27,
+// which land inside an hour of the true instant for any year this app will see.
+// Each entry is [northern season it opens, ...polynomial terms in Y].
+const SEASON_EVENT_TERMS = [
+  ["spring", 2451623.80984, 365242.37404, 0.05169, -0.00411, -0.00057],
+  ["summer", 2451716.56767, 365241.62603, 0.00325, 0.00888, -0.00030],
+  ["fall", 2451810.21715, 365242.01767, -0.11575, 0.00337, 0.00078],
+  ["winter", 2451900.05952, 365242.74049, -0.06223, -0.00823, 0.00032],
+];
+
+// The same instant opens the opposite season below the equator.
+const OPPOSITE_SEASON = { spring: "fall", summer: "winter", fall: "spring", winter: "summer" };
+
+export const SEASON_LABELS = { spring: "Spring", summer: "Summer", fall: "Fall", winter: "Winter" };
+export const SEASON_EMOJI = { spring: "🌱", summer: "☀️", fall: "🍂", winter: "❄️" };
+
+// Local midday on the calendar day the event falls on, so day counts against a
+// midday "now" can never be knocked off by a timezone offset or a DST jump.
+function seasonEventDate(terms, year) {
+  const y = (year - 2000) / 1000;
+  const jde = terms[1] + terms[2] * y + terms[3] * y ** 2 + terms[4] * y ** 3 + terms[5] * y ** 4;
+  // JD 2440587.5 is the Unix epoch; the result is UTC to within a minute.
+  const instant = new Date((jde - 2440587.5) * 86400000);
+  return new Date(instant.getFullYear(), instant.getMonth(), instant.getDate(), 12, 0, 0, 0);
+}
+
+// Every season start bounding `year`, ascending. The previous December solstice
+// leads and the next March equinox closes, so any date inside `year` sits within
+// one of the spans and always has a following boundary to count towards.
+export function getSeasonBoundaries(year) {
+  const southern = isSouthernHemisphere();
+  const at = (terms, forYear) => ({
+    key: southern ? OPPOSITE_SEASON[terms[0]] : terms[0],
+    date: seasonEventDate(terms, forYear),
+  });
+  return [
+    at(SEASON_EVENT_TERMS[3], year - 1),
+    ...SEASON_EVENT_TERMS.map((terms) => at(terms, year)),
+    at(SEASON_EVENT_TERMS[0], year + 1),
+  ];
+}
+
+// The season a date actually falls in, with the exact span it runs for. `months`
+// stays alongside for callers that still bucket by calendar month.
+export function getSeasonForDate(input = new Date()) {
+  const now = new Date(input instanceof Date ? input.getTime() : Date.now());
+  now.setHours(12, 0, 0, 0);
+  const bounds = getSeasonBoundaries(now.getFullYear());
+  let i = 0;
+  while (i + 2 < bounds.length && now >= bounds[i + 1].date) i += 1;
+  const current = bounds[i];
+  const next = bounds[i + 1];
+  return {
+    key: current.key,
+    label: SEASON_LABELS[current.key],
+    months: getSeasonForMonth(current.date.getMonth() + 1).months,
+    start: current.date,
+    end: next.date,
+    nextKey: next.key,
+  };
+}
+
+// The next season and how many whole days out it is.
+export function getNextSeasonStart(input = new Date()) {
+  const now = new Date(input instanceof Date ? input.getTime() : Date.now());
+  now.setHours(12, 0, 0, 0);
+  const season = getSeasonForDate(now);
+  return {
+    key: season.nextKey,
+    label: SEASON_LABELS[season.nextKey],
+    emoji: SEASON_EMOJI[season.nextKey],
+    date: season.end,
+    month: season.end.getMonth() + 1,
+    daysUntil: Math.round((season.end - now) / 86400000),
+  };
+}
+
 export function countInSeason(items, dateField, year, seasonMonths) {
   return (items || []).filter((it) => {
     const d = new Date(it?.[dateField]);
@@ -4307,12 +4560,15 @@ export const SEASONAL_TASKS = {
   },
 };
 
-export function getWaterTriage(savedPlants, wateringHistory, wateringAmounts) {
+export function getWaterTriage(savedPlants, wateringHistory, wateredPlants, weather) {
   const rows = (savedPlants || [])
     .map((name) => {
       const item = produceData.find((p) => p.name === name);
       if (!item) return null;
-      const info = getNextWaterInfo(name, item, wateringHistory);
+      // Passing the watered map and the forecast through keeps the queue in step
+      // with the rest of the app: without them it never saw rain or heat, and it
+      // lost any plant whose only record was the watered-today marker.
+      const info = getNextWaterInfo(name, item, wateringHistory, wateredPlants, weather);
       if (!info) return null;
       const d = typeof info.daysUntil === "number" ? info.daysUntil : null;
       if (d === null) return null;
@@ -4348,7 +4604,7 @@ export function getSuccessionInterval(plantName) {
     { match: ["kale"], days: 21 },
   ];
   const n = String(plantName || "").toLowerCase();
-  const hit = SUCCESSION_INTERVALS.find((row) => row.match.some((w) => n.includes(w)));
+  const hit = SUCCESSION_INTERVALS.find((row) => row.match.some((w) => plantNameMatchesKey(n, w)));
   return hit ? hit.days : null;
 }
 
@@ -4452,19 +4708,19 @@ export function getPlantingGuide(item) {
 
   // Name-based overrides for common specifics
   let guide = { ...(GUIDES[type] || GUIDES["Vegetables"]) };
-  if (["carrot", "radish", "beet", "turnip"].some((w) => name.includes(w))) {
+  if (["carrot", "radish", "beet", "turnip"].some((w) => plantNameMatchesKey(name, w))) {
     guide = { depth: '1/4"–1/2"', spacing: '2"–4"', sun: "Full sun", germ: "5–10 days" };
-  } else if (["tomato", "pepper", "eggplant"].some((w) => name.includes(w))) {
+  } else if (["tomato", "pepper", "eggplant"].some((w) => plantNameMatchesKey(name, w))) {
     guide = { depth: '1/4"', spacing: '18"–24"', sun: "Full sun (6–8 hrs)", germ: "6–14 days" };
-  } else if (["lettuce", "spinach", "kale", "arugula"].some((w) => name.includes(w))) {
+  } else if (["lettuce", "spinach", "kale", "arugula"].some((w) => plantNameMatchesKey(name, w))) {
     guide = { depth: '1/4"', spacing: '6"–12"', sun: "Full to partial sun", germ: "5–10 days" };
-  } else if (["squash", "zucchini", "cucumber", "pumpkin", "melon"].some((w) => name.includes(w))) {
+  } else if (["squash", "zucchini", "cucumber", "pumpkin", "melon"].some((w) => plantNameMatchesKey(name, w))) {
     guide = { depth: '1"', spacing: '24"–36"', sun: "Full sun", germ: "7–10 days" };
-  } else if (["bean", "pea"].some((w) => name.includes(w))) {
+  } else if (["bean", "pea"].some((w) => plantNameMatchesKey(name, w))) {
     guide = { depth: '1"–1.5"', spacing: '3"–6"', sun: "Full sun", germ: "7–14 days" };
-  } else if (["corn"].some((w) => name.includes(w))) {
+  } else if (["corn"].some((w) => plantNameMatchesKey(name, w))) {
     guide = { depth: '1"–2"', spacing: '8"–12"', sun: "Full sun", germ: "7–10 days" };
-  } else if (["onion", "garlic"].some((w) => name.includes(w))) {
+  } else if (["onion", "garlic"].some((w) => plantNameMatchesKey(name, w))) {
     guide = { depth: '1"–2"', spacing: '4"–6"', sun: "Full sun", germ: "7–14 days" };
   }
   return guide;
@@ -4472,12 +4728,15 @@ export function getPlantingGuide(item) {
 
 export function getPlantFamily(plantName) {
   const n = String(plantName || "").toLowerCase();
-  if (["tomato", "pepper", "eggplant", "potato"].some((w) => n.includes(w))) return "Nightshade";
-  if (["cabbage", "broccoli", "cauliflower", "kale", "bok"].some((w) => n.includes(w))) return "Brassica";
-  if (["bean", "pea"].some((w) => n.includes(w))) return "Legume";
-  if (["onion", "garlic", "leek"].some((w) => n.includes(w))) return "Allium";
-  if (["cucumber", "squash", "zucchini", "pumpkin", "melon", "watermelon"].some((w) => n.includes(w))) return "Cucurbit";
-  if (["carrot", "beet", "radish", "turnip", "parsnip"].some((w) => n.includes(w))) return "Root";
+  if (["tomato", "pepper", "eggplant", "potato"].some((w) => plantNameMatchesKey(n, w))) return "Nightshade";
+  if (["cabbage", "broccoli", "broccolini", "cauliflower", "kale", "bok"].some((w) => plantNameMatchesKey(n, w))) return "Brassica";
+  // "chickpea"/"cowpea"/"soybean" are single words, so the whole-word rule can't
+  // see the legume inside them — they are named explicitly rather than letting a
+  // bare "pea" fragment sweep in Peach, Pear and Peace Lily too.
+  if (["bean", "pea", "chickpea", "cowpea", "soybean", "edamame", "lentil"].some((w) => plantNameMatchesKey(n, w))) return "Legume";
+  if (["onion", "garlic", "leek"].some((w) => plantNameMatchesKey(n, w))) return "Allium";
+  if (["cucumber", "squash", "zucchini", "pumpkin", "melon", "watermelon"].some((w) => plantNameMatchesKey(n, w))) return "Cucurbit";
+  if (["carrot", "beet", "radish", "turnip", "parsnip"].some((w) => plantNameMatchesKey(n, w))) return "Root";
   return null; // herbs, fruit, etc. — not rotation-sensitive
 }
 
@@ -4499,7 +4758,11 @@ const UNIVERSAL_MONTHLY_TASKS = [
 ];
 export function getMonthlyChecklistTasks(zone) {
   const bucket = getClimateBucket(zone);
-  const monthIndex = new Date().getMonth();
+  // SEASONAL_TASKS is authored against the northern calendar, like every other
+  // month table in this file, so translate the local month back to the reference
+  // one first. Without this an Australian gardener got "plan the garden & order
+  // seeds" in the middle of their summer harvest, every month of the year.
+  const monthIndex = flipMonth(new Date().getMonth() + 1) - 1;
   const seasonal = (SEASONAL_TASKS[bucket] && SEASONAL_TASKS[bucket][monthIndex]) || [];
   return [...seasonal, ...UNIVERSAL_MONTHLY_TASKS];
 }

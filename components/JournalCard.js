@@ -1,12 +1,12 @@
 import { memo } from "react";
 import { useState } from "react";
 import { Alert, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { useTranslation, formatDate } from "../lib/i18n";
+import { formatDate, useTranslation } from "../lib/i18n";
 import { styles } from "../styles";
 import { IconText } from "./IconText";
 
 export const JournalCard = memo(function JournalCard({ theme, journalEntries, onAddGeneralPhoto, onDeleteEntry, uploadingPhoto }) {
-  const { t, tn, growthStageLabel } = useTranslation();
+  const { t, tn, growthStageLabel, moodLabel } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPlant, setFilterPlant] = useState("All");
   const [filterStage, setFilterStage] = useState("All");
@@ -56,8 +56,11 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
 
   // Growth chart data — entries per month
   const growthChartData = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date();
-    d.setMonth(d.getMonth() - (5 - i));
+    // Anchor to the 1st: stepping back from the 31st with setMonth overflows a
+    // short month into the next one, so on the 31st the chart skipped April and
+    // June entirely and counted May and July twice.
+    const ref = new Date();
+    const d = new Date(ref.getFullYear(), ref.getMonth() - (5 - i), 1);
     const count = journalEntries.filter(e => {
       const ed = new Date(e.createdAt);
       return ed.getMonth() === d.getMonth() && ed.getFullYear() === d.getFullYear();
@@ -475,7 +478,7 @@ return (
                           {/* MOOD + WEATHER OVERLAY */}
                           <View style={styles.journalEntryOverlayRow}>
                             <View style={styles.journalMoodOverlay}>
-                              <Text style={styles.journalMoodOverlayText}>{entry.mood || t("journal.growing")}</Text>
+                              <Text style={styles.journalMoodOverlayText}>{entry.mood ? moodLabel(entry.mood) : t("journal.growing")}</Text>
                             </View>
                             {entry.weather ? (
                               <View style={[styles.journalMoodOverlay, { right: 10, left: "auto" }]}>
@@ -594,7 +597,7 @@ return (
                                   </View>
                                   {entry.mood ? (
                                     <View style={styles.journalDetailChip}>
-                                      <Text style={styles.journalDetailChipText}>{entry.mood}</Text>
+                                      <Text style={styles.journalDetailChipText}>{moodLabel(entry.mood)}</Text>
                                     </View>
                                   ) : null}
                                   <View style={[styles.journalDetailChip, { backgroundColor: stageColor + "18", borderColor: stageColor + "40" }]}>

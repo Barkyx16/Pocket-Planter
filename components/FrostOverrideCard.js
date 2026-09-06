@@ -2,7 +2,7 @@ import { memo } from "react";
 import { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { styles } from "../styles";
-import { getFirstFrostDate, getLastFrostDate } from "../core";
+import { getFirstFrostDate, getLastFrostDate, parseFrostOverride } from "../core";
 import { IconText } from "./IconText";
 import { formatDate, useTranslation } from "../lib/i18n";
 
@@ -23,21 +23,16 @@ export const FrostOverrideCard = memo(function FrostOverrideCard({ theme, zone, 
   month: "short",
   day: "numeric"
 }) : "—");
-  const valid = (v) => v === "" || /^\d{1,2}-\d{1,2}$/.test(v);
+  // Shape alone used to be the whole test, so "13-45" saved happily and then
+  // parsed to nothing everywhere else — the card claimed a custom frost date
+  // while every calculation quietly used the zone estimate. Ask the same parser
+  // the rest of the app uses, so what saves is what takes effect.
+  const valid = (v) => (v || "").trim() === "" || parseFrostOverride(v) !== null;
   const bothValid = valid(lastFrost) && valid(firstFrost);
 
-  // Turn a typed MM-DD into a Date this year, if it's a real date.
-  const parseMMDD = (v) => {
-    const m = /^(\d{1,2})-(\d{1,2})$/.exec((v || "").trim());
-    if (!m) return null;
-    const mo = parseInt(m[1], 10), day = parseInt(m[2], 10);
-    if (mo < 1 || mo > 12 || day < 1 || day > 31) return null;
-    return new Date(new Date().getFullYear(), mo - 1, day);
-  };
-
   // Live-preview the timeline from whatever's typed, falling back to zone estimates.
-  const effLast = parseMMDD(lastFrost) || estLast;
-  const effFirst = parseMMDD(firstFrost) || estFirst;
+  const effLast = parseFrostOverride(lastFrost) || estLast;
+  const effFirst = parseFrostOverride(firstFrost) || estFirst;
   const msDay = 86400000;
   let frostFreeDays = Math.round((effFirst - effLast) / msDay);
   if (frostFreeDays < 0) frostFreeDays += 365;

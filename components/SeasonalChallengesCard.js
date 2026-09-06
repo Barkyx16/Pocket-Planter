@@ -1,17 +1,22 @@
 import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, Vibration, View } from "react-native";
-import { getSeasonForMonth, successHaptic } from "../core";
+import { getSeasonForDate, successHaptic } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 const STORAGE_KEY = "pp_claimedChallenges";
 
-// Is a YYYY-MM-DD-ish date string within the current season's months?
-const inSeason = (dateVal, months) => {
-  const d = new Date(`${String(dateVal).slice(0, 10)}T12:00:00`);
-  if (Number.isNaN(d.getTime())) return false;
-  const now = new Date();
-  return months.includes(d.getMonth() + 1) && d.getFullYear() === now.getFullYear();
+// Is a YYYY-MM-DD-ish date string inside the season's actual span? The span runs
+// solstice to equinox, so winter progress carries across the new year instead of
+// resetting on Jan 1.
+const inSeason = (dateVal, season) => {
+  // Parse the whole value rather than slicing its first ten characters: journal
+  // entries carry a UTC timestamp, and the sliced date is the next day for
+  // anything logged in the evening.
+  const raw = new Date(dateVal);
+  if (Number.isNaN(raw.getTime())) return false;
+  const d = new Date(raw.getFullYear(), raw.getMonth(), raw.getDate(), 12, 0, 0, 0);
+  return d >= season.start && d < season.end;
 };
 
 export const SeasonalChallengesCard = memo(function SeasonalChallengesCard({ theme, wateringHistory, journalEntries, harvestLog, careLog, streakData, onReward }) {
@@ -19,9 +24,8 @@ export const SeasonalChallengesCard = memo(function SeasonalChallengesCard({ the
   const [claimed, setClaimed] = useState({});
   const [loaded, setLoaded] = useState(false);
 
-  const month = new Date().getMonth() + 1;
-  const season = getSeasonForMonth(month);
-  const seasonKey = `${new Date().getFullYear()}-${season.key}`;
+  const season = getSeasonForDate();
+  const seasonKey = `${season.start.getFullYear()}-${season.key}`;
 
   useEffect(() => {
     let alive = true;
@@ -33,10 +37,10 @@ export const SeasonalChallengesCard = memo(function SeasonalChallengesCard({ the
   }, []);
 
   // Progress counts for the current season, from existing activity.
-  const waterings = Object.values(wateringHistory || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.filter((d) => inSeason(d, season.months)).length : 0), 0);
-  const photos = (journalEntries || []).filter((e) => inSeason(e.createdAt, season.months)).length;
-  const harvests = (harvestLog || []).filter((e) => inSeason(e.date || e.createdAt, season.months)).length;
-  const careActions = (careLog || []).filter((e) => inSeason(e.date || e.createdAt, season.months)).length;
+  const waterings = Object.values(wateringHistory || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.filter((d) => inSeason(d, season)).length : 0), 0);
+  const photos = (journalEntries || []).filter((e) => inSeason(e.createdAt, season)).length;
+  const harvests = (harvestLog || []).filter((e) => inSeason(e.date || e.createdAt, season)).length;
+  const careActions = (careLog || []).filter((e) => inSeason(e.date || e.createdAt, season)).length;
 
   const challenges = [
     { id: "water", icon: "💧", title: `Water 15 times this ${season.label.toLowerCase()}`, progress: waterings, goal: 15, reward: 50, color: "#6bc7ff" },

@@ -1,15 +1,16 @@
 import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { getTodayKey, tapHaptic } from "../core";
+import { getDaysSince, getTodayKey, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
+import { touchSlop } from "../lib/a11y";
 
 export const VASE_STORAGE_KEY = "pp_vases";
 const LIFE_OPTS = [5, 7, 10, 14];
 
-function daysSince(dateKey) {
-  return Math.floor((Date.now() - new Date(dateKey + "T12:00:00").getTime()) / 86400000);
-}
+// Midday-to-midday via core, rather than measuring from the current clock time —
+// that read a day low every morning.
+const daysSince = (dateKey) => getDaysSince(dateKey) ?? 0;
 
 export const VaseTrackerSection = memo(function VaseTrackerSection({ theme }) {
   const [vases, setVases] = useState([]); // { id, name, date, days }
@@ -72,7 +73,7 @@ export const VaseTrackerSection = memo(function VaseTrackerSection({ theme }) {
                   <Text style={{ fontSize: 15 }}>🏺</Text>
                   <Text style={{ flex: 1, color: theme.text, fontSize: 13, fontWeight: "800" }} numberOfLines={1}>{v.name}</Text>
                   <Text style={{ color, fontSize: 12, fontWeight: "900" }}>{left <= 0 ? "past its best" : `${left} day${left === 1 ? "" : "s"} left`}</Text>
-                  <Pressable onPress={() => remove(v.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel="Remove vase"><Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>✕</Text></Pressable>
+                  <Pressable onPress={() => remove(v.id)} hitSlop={touchSlop(13)} accessibilityRole="button" accessibilityLabel="Remove vase"><Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>✕</Text></Pressable>
                 </View>
                 <View style={{ height: 5, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden", marginTop: 8 }}>
                   <View style={{ height: 5, borderRadius: 3, width: `${pct}%`, backgroundColor: color }} />

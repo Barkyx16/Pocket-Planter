@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LayoutAnimation, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
-import { formatTemp, getTodayKey, tapHaptic } from "../core";
+import { formatTemp, getTodayKey, isHarvestReady, tapHaptic } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
@@ -33,9 +33,7 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
   };
 
   const unwateredCount = savedPlants?.filter(p => wateredPlants?.[p] !== today).length || 0;
-  const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, t]) => {
-    return Math.max(0, t.days - Math.floor((new Date() - new Date(t.startedAt)) / (1000 * 60 * 60 * 24))) === 0;
-  }).length;
+  const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).length;
 
   const getConditionDetails = () => {
     if (!weather) return { icon: "🌤️", label: "Loading", color: "#8effab", urgency: null };

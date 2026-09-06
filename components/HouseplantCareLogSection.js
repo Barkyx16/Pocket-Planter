@@ -2,16 +2,15 @@ import { memo, useEffect, useMemo, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { getTodayKey, normalizeType, resolvePlantImageSource, tapHaptic } from "../core";
+import { getDaysSince, getTodayKey, normalizeType, resolvePlantImageSource, tapHaptic } from "../core";
 import { HOUSEPLANT_CARE, HOUSEPLANT_CARE_DEFAULT } from "../data/flowerHomeData";
 import { SkeletonSection } from "./Skeleton";
 
 export const HOUSEPLANT_CARELOG_STORAGE_KEY = "pp_houseplantCare";
 
-function daysSince(dateKey) {
-  if (!dateKey) return null;
-  return Math.floor((Date.now() - new Date(dateKey + "T12:00:00").getTime()) / 86400000);
-}
+// Midday-to-midday via core: measuring from the current clock time reported a
+// day less than had actually passed, all morning.
+const daysSince = (dateKey) => getDaysSince(dateKey);
 
 export const HouseplantCareLogSection = memo(function HouseplantCareLogSection({ theme, savedPlants, onOpenPlant }) {
   const [log, setLog] = useState({}); // { name: { watered: dateKey, repot: dateKey } }

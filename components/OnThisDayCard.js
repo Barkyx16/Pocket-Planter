@@ -5,7 +5,7 @@ import { getTodayKey, resolvePlantImageSource } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries, harvestLog, onOpenPlant, seen, onShown }) {
-  const { t } = useTranslation();
+  const { t, growthStageLabel } = useTranslation();
   const now = new Date();
   now.setHours(12, 0, 0, 0);
 
@@ -101,7 +101,7 @@ export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries
                 <View style={{ padding: 12 }}>
                   <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{m.entry.plantName || "Garden"}</Text>
                   {m.entry.growthStage ? (
-                    <Text style={{ color: "#d8c8ff", fontSize: 12, fontWeight: "800", marginTop: 2 }}>{m.entry.growthStage}</Text>
+                    <Text style={{ color: "#d8c8ff", fontSize: 12, fontWeight: "800", marginTop: 2 }}>{growthStageLabel(m.entry.growthStage)}</Text>
                   ) : null}
                 </View>
               </Pressable>

@@ -4,6 +4,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import produceData from "../data/produceData";
 import { tapHaptic } from "../core";
 import { useTranslation } from "../lib/i18n";
+import { touchSlop } from "../lib/a11y";
 
 const STORAGE_KEY = "pp_wishlist";
 
@@ -85,7 +86,7 @@ export const WishlistCard = memo(function WishlistCard({ theme, savedPlants, onO
                   <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }} numberOfLines={1}>{item.name}{known ? " ›" : ""}</Text>
                 </Pressable>
                 {alreadyGrowing ? <Text style={{ color: "#8effab", fontSize: 10, fontWeight: "900" }}>{t("wishlist.growing")}</Text> : null}
-                <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.removeItem")} onPress={() => remove(item.id)} hitSlop={8}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
+                <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.removeItem")} onPress={() => remove(item.id)} hitSlop={touchSlop(14)}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
               </View>
             );
           })}

@@ -4,6 +4,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { getTodayKey, tapHaptic } from "../core";
 import { formatDate } from "../lib/i18n";
 import { SkeletonSection } from "./Skeleton";
+import { touchSlop } from "../lib/a11y";
 
 export const SOIL_TEMP_STORAGE_KEY = "pp_soilTempLog";
 
@@ -136,7 +137,7 @@ export const SoilTempSection = memo(function SoilTempSection({ theme }) {
               <Text style={{ flex: 1, color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>
                 {formatDate(new Date(r.date + "T12:00:00"), { month: "short", day: "numeric" })}
               </Text>
-              <Pressable onPress={() => remove(r.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel="Remove reading">
+              <Pressable onPress={() => remove(r.id)} hitSlop={touchSlop(14)} accessibilityRole="button" accessibilityLabel="Remove reading">
                 <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text>
               </Pressable>
             </View>

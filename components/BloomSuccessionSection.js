@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { flipMonth, resolvePlantImageSource } from "../core";
+import { careWindowKey, flipMonth, resolvePlantImageSource } from "../core";
 
 const findItem = (name) => produceData.find((p) => p.name.toLowerCase() === String(name).toLowerCase());
 
@@ -24,6 +24,9 @@ const BLOOM_WINDOWS = {
   "crocus (spring)": [2, 3],
   strawberry: [4, 5, 6],
   apple: [4, 5],
+  // Listed separately because whole-word matching does not find "apple" inside
+  // "Crabapple"; it blossoms with the orchard apples.
+  crabapple: [4, 5],
   pear: [4, 5],
   cherry: [3, 4],
   peach: [3, 4],
@@ -48,9 +51,8 @@ const BLOOM_WINDOWS = {
 const MONTH_LETTERS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
 const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-const lc = (s) => String(s || "").toLowerCase();
 function bloomFor(name) {
-  const key = Object.keys(BLOOM_WINDOWS).find((k) => lc(name).includes(k));
+  const key = careWindowKey(name, Object.keys(BLOOM_WINDOWS));
   return key ? BLOOM_WINDOWS[key] : null;
 }
 

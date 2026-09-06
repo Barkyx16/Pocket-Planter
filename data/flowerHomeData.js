@@ -83,7 +83,7 @@ export const FLOWER_COLORS = {
   Columbine: ["purple", "blue", "red", "pink", "yellow", "white"],
   "Bleeding Heart": ["pink", "white", "red"],
   Astilbe: ["pink", "red", "purple", "white"],
-  "Grape Hyacinth (Muscari)": ["blue", "purple", "white"],
+  "Grape Hyacinth": ["blue", "purple", "white"],
   Snowdrop: ["white"],
   Bluebell: ["blue", "purple", "white"],
   "Portulaca (Moss Rose)": ["pink", "orange", "red", "yellow", "white", "purple"],
@@ -125,7 +125,6 @@ export const DEADHEAD_TIPS = {
   "Black-Eyed Susan": "Deadhead through summer; leave the last seed heads for goldfinches.",
   "Sweet Pea": "Pick flowers constantly — one seed pod tells the plant to stop.",
   Dianthus: "Shear the whole plant back by a third after the first flush.",
-  Salvia: "Cut flowered stems back to encourage a second bloom.",
   Yarrow: "Cut spent corymbs to the foliage for a rebloom.",
   Coreopsis: "Shear over the whole plant when bloom fades to refresh it.",
   Pansy: "Pinch spent flowers and it will bloom for months in cool weather.",
@@ -142,7 +141,6 @@ export const DEADHEAD_TIPS = {
   "Sweet William": "Deadhead to extend bloom on this short-lived perennial.",
   Columbine: "Cut it back after flowering; leave a few pods to self-sow.",
   Bougainvillea: "Trim lightly after each bloom cycle to shape it and encourage more.",
-  Snapdragon: "Cut the whole spent spike to force new side spikes.",
 };
 export const DEADHEAD_DEFAULT = "Remove spent blooms regularly to redirect energy into new flowers.";
 
@@ -230,6 +228,24 @@ export const PET_TOXIC = {
   "Umbrella Plant (Schefflera)": ["toxic", "Calcium oxalates — oral irritation and vomiting."],
   "Panda Plant": ["mild", "A mildly toxic succulent."],
   "String of Bananas": ["toxic", "Like string of pearls — stomach upset and drooling."],
+  // ── ornamentals the list had missed ──
+  Cyclamen: ["toxic", "The tubers are the worst part — vomiting, and heart rhythm effects in quantity."],
+  Lupine: ["toxic", "Alkaloids in the seeds and pods — vomiting and wobbliness."],
+  "Grape Hyacinth": ["mild", "Bulbs cause drooling and stomach upset. Unrelated to true grapes."],
+  // ── edible crops ──
+  // This card walks every saved plant, not just the flowers and houseplants, so
+  // the food crops that are genuinely dangerous belong here too. Without them a
+  // keeper growing onions or garlic saw "unknown" beside a real risk.
+  Onion: ["toxic", "Damages red blood cells, cooked or raw — cats are especially sensitive."],
+  Garlic: ["toxic", "More potent than onion — damages red blood cells; cats are most at risk."],
+  Chives: ["toxic", "An allium — damages red blood cells the way onion and garlic do."],
+  Leek: ["toxic", "An allium — damages red blood cells; keep it away from cats and dogs."],
+  Shallot: ["toxic", "An allium — damages red blood cells like onion and garlic."],
+  Macadamia: ["toxic", "Specifically bad for dogs — weakness, tremors and fever."],
+  Rhubarb: ["toxic", "The leaves are high in oxalic acid and can damage the kidneys."],
+  Avocado: ["mild", "Persin upsets the stomach, and the pit is a choking and blockage risk."],
+  Tomato: ["mild", "Leaves, stems and unripe green fruit contain solanine. Ripe fruit is fine."],
+  Potato: ["mild", "Green skin, sprouts and foliage contain solanine. Cooked tubers are fine."],
 };
 export const PET_SAFE = new Set([
   "Spider Plant", "Boston Fern", "Maidenhair Fern", "Bird's Nest Fern", "Parlor Palm", "Areca Palm", "Kentia Palm",

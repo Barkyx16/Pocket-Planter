@@ -15,7 +15,7 @@ import { ShareGardenCard } from "../components/ShareGardenCard";
 import { YearInReviewCard } from "../components/YearInReviewCard";
 import { IconText } from "../components/IconText";
 
-export function SettingsTab({ language, setLanguage, lastSyncedAt, appearanceMode, setAppearanceMode, hapticsOn, setHapticsOn, exportFullBackup, restoreFromBackup, cancelReminder, careLog, dailyWateringOn, deleteJournalEntriesOlderThan, ensureNotificationPermission, frostAlertsOn, gardenAreas, gardenMap, gardenXP, harvestLog, journalEntries, monthlyPlantingOn, newEmail, plantOfDayOn, premiumUnlocked, reminderY, remindersOn, savedPlants, scheduleDailyReminder, setDailyWateringOn, setFrostAlertsOn, setMonthlyPlantingOn, setNewEmail, setPremiumUnlocked, setRemindersOn, setSubscriptionPlan, setUnitSystem, setWateringReminderTime, streakData, subscriptionPlan, theme, togglePlantOfDay, unitSystem, unlockPremium, user, wateringHistory, wateringReminderTime, weather, zone }) {
+export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn, toggleWeeklyRecap, appearanceMode, setAppearanceMode, hapticsOn, setHapticsOn, exportFullBackup, restoreFromBackup, cancelReminder, careLog, dailyWateringOn, deleteJournalEntriesOlderThan, ensureNotificationPermission, frostAlertsOn, gardenAreas, gardenMap, gardenXP, harvestLog, journalEntries, monthlyPlantingOn, newEmail, plantOfDayOn, premiumUnlocked, reminderY, remindersOn, savedPlants, scheduleDailyReminder, setDailyWateringOn, setFrostAlertsOn, setMonthlyPlantingOn, setNewEmail, setPremiumUnlocked, setRemindersOn, setSubscriptionPlan, setUnitSystem, setWateringReminderTime, streakData, subscriptionPlan, theme, togglePlantOfDay, unitSystem, unlockPremium, user, wateringHistory, wateringReminderTime, weather, zone }) {
   return (
     <View>
       <View style={{ marginTop: 8, marginBottom: 16, paddingHorizontal: 4 }}>
@@ -56,6 +56,8 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, appearanceMod
             onChangeWateringTime={(t) => setWateringReminderTime(t)}
             plantOfDayOn={plantOfDayOn}
             onTogglePlantOfDay={togglePlantOfDay}
+            weeklyRecapOn={weeklyRecapOn}
+            onToggleWeeklyRecap={toggleWeeklyRecap}
             onToggleReminders={(value) => {
               setRemindersOn(value);
               Alert.alert(

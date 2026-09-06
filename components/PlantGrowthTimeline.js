@@ -6,7 +6,7 @@ import { IconText } from "./IconText";
 import { formatDate, useTranslation } from "../lib/i18n";
 
 export const PlantGrowthTimeline = memo(function PlantGrowthTimeline({ theme, plant, journalEntries, premiumUnlocked, onAddPhoto, onUnlock }) {
-  const { t } = useTranslation();
+  const { t, growthStageLabel, moodLabel } = useTranslation();
   const STAGE_COLORS = {
     "Seedling": "#8effab",
     "Leaf Growth": "#5cff89",
@@ -22,10 +22,14 @@ export const PlantGrowthTimeline = memo(function PlantGrowthTimeline({ theme, pl
 
   const dayNumber = (entry) => {
     if (!entries.length) return 1;
+    // Compare calendar days: dividing the raw gap meant an evening photo and the
+    // next morning's photo both landed on "Day 1".
     const base = new Date(entries[0].createdAt);
     const then = new Date(entry.createdAt);
-    const diff = Math.floor((then - base) / (1000 * 60 * 60 * 24));
-    return Number.isNaN(diff) ? 1 : diff + 1;
+    if (Number.isNaN(base.getTime()) || Number.isNaN(then.getTime())) return 1;
+    base.setHours(12, 0, 0, 0);
+    then.setHours(12, 0, 0, 0);
+    return Math.round((then - base) / 86400000) + 1;
   };
 
   const first = entries[0];
@@ -77,7 +81,7 @@ export const PlantGrowthTimeline = memo(function PlantGrowthTimeline({ theme, pl
                     </View>
                   </View>
                   <Text style={{ color: stageColor(e.growthStage), fontSize: 12, fontWeight: "900", marginTop: 6 }}>
-                    {e.growthStage || "Seedling"}
+                    {growthStageLabel(e.growthStage || "Seedling")}
                   </Text>
                   <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 2 }}>
                     Day {dayNumber(e)} · {formatDate(new Date(e.createdAt), {
@@ -121,7 +125,7 @@ export const PlantGrowthTimeline = memo(function PlantGrowthTimeline({ theme, pl
                       </Text>
                     </View>
                     {e.mood ? (
-                      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 8 }}>{e.mood}</Text>
+                      <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 8 }}>{moodLabel(e.mood)}</Text>
                     ) : null}
                   </View>
                 </View>

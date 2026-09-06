@@ -1,18 +1,16 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { HARVEST_SOON_DAYS, resolvePlantImageSource } from "../core";
+import { HARVEST_SOON_DAYS, getHarvestDaysLeft, resolvePlantImageSource } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const HarvestReadyCard = memo(function HarvestReadyCard({ theme, harvestTrackers, onOpenPlant }) {
   const { t } = useTranslation();
   const entries = Object.entries(harvestTrackers || {})
     .map(([name, tracker]) => {
-      const daysPassed = Math.floor((new Date() - new Date(tracker.startedAt)) / (1000 * 60 * 60 * 24));
-      const daysLeft = Math.max(0, (tracker.days || 0) - daysPassed);
-      return { name, daysLeft };
+      return { name, daysLeft: getHarvestDaysLeft(tracker) };
     })
-    .filter((e) => e.daysLeft <= HARVEST_SOON_DAYS)
+    .filter((e) => e.daysLeft !== null && e.daysLeft <= HARVEST_SOON_DAYS)
     .sort((a, b) => a.daysLeft - b.daysLeft);
 
   if (!entries.length) return null;

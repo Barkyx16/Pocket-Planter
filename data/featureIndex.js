@@ -25,7 +25,6 @@ export const FEATURE_INDEX = [
   { name: "Companion Pair Checker", emoji: "🤝", tab: "garden", where: "Garden ▸ Tools ▸ Pairs", keywords: "companion planting pair friend foe neighbour check" },
   { name: "Moon Planting Calendar", emoji: "🌙", tab: "garden", where: "Garden ▸ Tools ▸ Moon", keywords: "moon lunar phase planting biodynamic" },
   { name: "Bloom Succession Planner", emoji: "🌸", tab: "garden", where: "Garden ▸ Tools ▸ Pollinators", keywords: "bloom flower pollinator succession gap nectar" },
-  { name: "Garden Sites / Locations", emoji: "🏡", tab: "garden", where: "Garden ▸ Garden Map", keywords: "site location allotment home multiple plot" },
   { name: "Bed Planner", emoji: "🗺️", tab: "garden", where: "Garden ▸ Tools ▸ Bed", keywords: "bed planner spacing square foot layout" },
   { name: "Tool Maintenance Log", emoji: "🔧", tab: "garden", where: "Garden ▸ Tools ▸ Care", keywords: "tool maintenance sharpen clean oil blade" },
   // Chores & reminders

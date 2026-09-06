@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
-import { getTodayKey, tapHaptic } from "../core";
+import { getDaysSince, getTodayKey, tapHaptic } from "../core";
 import { formatDate } from "../lib/i18n";
 import { SkeletonSection } from "./Skeleton";
 
@@ -18,11 +18,9 @@ const MAINT_ITEMS = [
   { id: "hose", label: "Drain & store hose", icon: "💧", days: 365 },
 ];
 
-function daysSince(dateKey) {
-  if (!dateKey) return null;
-  const then = new Date(dateKey + "T12:00:00").getTime();
-  return Math.floor((Date.now() - then) / 86400000);
-}
+// core's getDaysSince compares midday to midday; measuring from the current
+// clock time instead made every count a day low until noon.
+const daysSince = (dateKey) => getDaysSince(dateKey);
 
 export const ToolMaintenanceSection = memo(function ToolMaintenanceSection({ theme, embedded }) {
   const [log, setLog] = useState({}); // { itemId: lastDoneDateKey }

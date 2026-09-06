@@ -5,9 +5,9 @@ import { getWaterTriage, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
-export const WaterTriageCard = memo(function WaterTriageCard({ theme, savedPlants, wateringHistory, wateringAmounts, onWater, onOpenPlant }) {
+export const WaterTriageCard = memo(function WaterTriageCard({ theme, savedPlants, wateringHistory, wateredPlants, weather, onWater, onOpenPlant }) {
   const { t } = useTranslation();
-  const rows = getWaterTriage(savedPlants, wateringHistory, wateringAmounts);
+  const rows = getWaterTriage(savedPlants, wateringHistory, wateredPlants, weather);
   if (!rows.length) return null;
 
   const BUCKET = {

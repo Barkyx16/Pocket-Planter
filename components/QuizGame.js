@@ -11,7 +11,10 @@ import { successHaptic, tapHaptic } from "../core";
 export function QuizGame({ theme, onExit, title, emoji, accent = "#5cff89", totalRounds = 10, timePerQuestion = 0, xpPerCorrect = 0, onAwardXp, storageKey, makeQuestion }) {
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [question, setQuestion] = useState(() => makeQuestion());
+  // Optional-call rather than makeQuestion(): a game entry that forgets to wire
+  // its factory used to throw inside useState's initialiser, which crashes at
+  // mount before any boundary below this can render a fallback.
+  const [question, setQuestion] = useState(() => makeQuestion?.() ?? null);
   const [picked, setPicked] = useState(null); // index of the chosen option
   const [timeLeft, setTimeLeft] = useState(timePerQuestion);
   const [finished, setFinished] = useState(false);
@@ -57,14 +60,14 @@ export function QuizGame({ theme, onExit, title, emoji, accent = "#5cff89", tota
       return;
     }
     setRound(nextRound);
-    setQuestion(makeQuestion());
+    setQuestion(makeQuestion?.() ?? null);
     setPicked(null);
     setTimeLeft(timePerQuestion);
   }
 
   function restart() {
     setRound(0); setScore(0); setPicked(null); setTimeLeft(timePerQuestion);
-    setEarned(0); setQuestion(makeQuestion()); setFinished(false);
+    setEarned(0); setQuestion(makeQuestion?.() ?? null); setFinished(false);
   }
 
   if (finished) {
@@ -81,6 +84,21 @@ export function QuizGame({ theme, onExit, title, emoji, accent = "#5cff89", tota
           <Text style={{ color: "#07120b", fontSize: 15, fontWeight: "900" }}>Play again</Text>
         </Pressable>
         <Pressable onPress={onExit} style={{ marginTop: 12, paddingVertical: 12, paddingHorizontal: 40 }}>
+          <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "800" }}>Back to games</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  // Everything below dereferences question.prompt / .options / .image, so a null
+  // question has to stop here. Give the user a way out rather than a blank card
+  // they have to kill the app to escape.
+  if (!question) {
+    return (
+      <View style={{ alignItems: "center", paddingVertical: 30 }}>
+        <Text style={{ fontSize: 40 }}>🌧️</Text>
+        <Text style={{ color: theme.text, fontSize: 16, fontWeight: "900", marginTop: 10, textAlign: "center" }}>This game couldn't start</Text>
+        <Pressable onPress={onExit} style={{ marginTop: 18, paddingVertical: 12, paddingHorizontal: 40 }}>
           <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "800" }}>Back to games</Text>
         </Pressable>
       </View>

@@ -14,17 +14,18 @@ export const MonthlyChecklistCard = memo(function MonthlyChecklistCard({ theme, 
   // Key by year+month so each month starts fresh and old checks don't bleed over.
   const monthKey = getMonthKey();
   const checked = (monthlyChecklist && monthlyChecklist[monthKey]) || {};
-  const toggle = (i) => {
+  // Key a tick by the task itself, not its position. The seasonal half of the
+  // list depends on the growing zone and the hemisphere, so an index carried a
+  // tick over to whatever task happened to land in that slot when either changed.
+  const toggle = (task) => {
     setMonthlyChecklist((current) => {
       const month = { ...((current && current[monthKey]) || {}) };
-      month[i] = !month[i];
+      month[task] = !month[task];
       return { ...(current || {}), [monthKey]: month };
     });
   };
-
   if (!zone || !tasks.length) return null;
-
-  const doneCount = tasks.filter((_, i) => checked[i]).length;
+  const doneCount = tasks.filter((task) => checked[task]).length;
   const remaining = tasks.length - doneCount;
 
   return (
@@ -39,11 +40,11 @@ export const MonthlyChecklistCard = memo(function MonthlyChecklistCard({ theme, 
 
       <View style={{ gap: 8, marginTop: 14 }}>
         {tasks.map((task, i) => {
-          const isDone = !!checked[i];
+          const isDone = !!checked[task];
           return (
             <Pressable
               key={`task-${i}`}
-              onPress={() => toggle(i)}
+              onPress={() => toggle(task)}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: isDone }}
               style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: isDone ? "rgba(142, 239, 171, 0.1)" : "rgba(255, 255, 255, 0.06)", borderRadius: 12, padding: 14, borderWidth: 1, borderColor: isDone ? "rgba(142, 239, 171, 0.3)" : "rgba(255, 255, 255, 0.1)" }}

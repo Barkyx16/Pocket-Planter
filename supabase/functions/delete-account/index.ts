@@ -33,6 +33,36 @@ Deno.serve(async (req) => {
       });
     }
     const userId = userData.user.id;
+    // Journal photos live at journal-photos/<user id>/<timestamp>.<ext> and are
+    // served from public URLs. Deleting the profile row and the auth user left
+    // every one of them in the bucket, still reachable, after the account that
+    // owned them was gone. Storage trouble is logged but never blocks the
+    // deletion — a half-deleted account is worse than an orphaned file.
+    try {
+      for (;;) {
+        const { data: files, error: listError } = await adminClient.storage
+          .from("journal-photos")
+          .list(userId, { limit: 100 });
+        if (listError) {
+          console.error("photo cleanup list failed", listError.message);
+          break;
+        }
+        if (!files || files.length === 0) break;
+        const paths = files.map((f: { name: string }) => `${userId}/${f.name}`);
+        const { error: removeError } = await adminClient.storage
+          .from("journal-photos")
+          .remove(paths);
+        if (removeError) {
+          console.error("photo cleanup remove failed", removeError.message);
+          break;
+        }
+        // Removed files drop out of the listing, so the next page is page one.
+        if (files.length < 100) break;
+      }
+    } catch (storageErr) {
+      console.error("photo cleanup skipped", String(storageErr));
+    }
+
     // Delete the user's profile row first
     await adminClient.from("profiles").delete().eq("id", userId);
     // Then delete the auth user

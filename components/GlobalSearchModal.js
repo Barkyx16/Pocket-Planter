@@ -6,6 +6,7 @@ import { getPestImage } from "../data/pestImageMap";
 import { FEATURE_INDEX, searchFeatures } from "../data/featureIndex";
 import { useTranslation, formatDate } from "../lib/i18n";
 import { IconText } from "./IconText";
+import { touchSlop } from "../lib/a11y";
 
 export const GlobalSearchModal = memo(function GlobalSearchModal({ visible, onClose, theme, savedPlants, journalEntries, onOpenPlant, onOpenPest, onGoToJournal, onJumpToTab }) {
   const { t } = useTranslation();
@@ -69,9 +70,9 @@ export const GlobalSearchModal = memo(function GlobalSearchModal({ visible, onCl
               placeholderTextColor="#8fbf9d"
               style={{ flex: 1, color: "#ffffff", fontSize: 14, fontWeight: "700", paddingVertical: 14 }}
             />
-            {q ? <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.clearSearch")} onPress={() => setQ("")} hitSlop={8}><Text style={{ color: "#8fbf9d", fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable> : null}
+            {q ? <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.clearSearch")} onPress={() => setQ("")} hitSlop={touchSlop(14)}><Text style={{ color: "#8fbf9d", fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable> : null}
           </View>
-          <Pressable onPress={close} accessibilityRole="button" hitSlop={8}>
+          <Pressable onPress={close} accessibilityRole="button" hitSlop={touchSlop(14)}>
             <Text style={{ color: "#8effab", fontSize: 14, fontWeight: "900" }}>Done</Text>
           </Pressable>
         </View>

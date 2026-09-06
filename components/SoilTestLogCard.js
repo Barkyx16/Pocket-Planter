@@ -4,6 +4,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { getTodayKey, tapHaptic } from "../core";
 import { useTranslation, formatDate } from "../lib/i18n";
 import { SoilTempSection } from "./SoilTempSection";
+import { touchSlop } from "../lib/a11y";
 
 const STORAGE_KEY = "pp_soilTests";
 
@@ -92,16 +93,19 @@ export const SoilTestLogCard = memo(function SoilTestLogCard({ theme }) {
       {/* HISTORY */}
       {tests.length > 1 ? (
         <View style={{ gap: 6, marginTop: 12 }}>
-          {tests.slice(1, 6).map((t) => (
-            <View key={t.id} style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 8, paddingVertical: 8, paddingHorizontal: 10 }}>
-              <Text style={{ color: theme.text, fontSize: 12, fontWeight: "900", width: 54 }}>pH {t.ph}</Text>
+          {/* `entry`, not `t` — naming it `t` shadowed the translation function and
+              the accessibility label below called it, so this row threw as soon as
+              a second test existed. */}
+          {tests.slice(1, 6).map((entry) => (
+            <View key={entry.id} style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 8, paddingVertical: 8, paddingHorizontal: 10 }}>
+              <Text style={{ color: theme.text, fontSize: 12, fontWeight: "900", width: 54 }}>pH {entry.ph}</Text>
               <Text style={{ flex: 1, color: theme.secondaryText, fontSize: 12, fontWeight: "700" }} numberOfLines={1}>
-                {formatDate(new Date(t.date + "T12:00:00"), {
+                {formatDate(new Date(entry.date + "T12:00:00"), {
   month: "short",
   day: "numeric"
-})}{t.note ? ` · ${t.note}` : ""}
+})}{entry.note ? ` · ${entry.note}` : ""}
               </Text>
-              <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.removeItem")} onPress={() => removeTest(t.id)} hitSlop={8}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.removeItem")} onPress={() => removeTest(entry.id)} hitSlop={touchSlop(14)}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
             </View>
           ))}
         </View>

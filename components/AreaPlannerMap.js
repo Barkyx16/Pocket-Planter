@@ -4,10 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import { Alert, Image, Modal, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { areaCapacity, canPlantInArea, getAreaTag, getCompanionInfo, getCompatibilityScore, getPairReason, getTodayKey, resolvePlantImageSource } from "../core";
+import { areaCapacity, canPlantInArea, getAreaTag, getCompanionInfo, getCompatibilityScore, getPairReason, getTodayKey, resolveCompanionName, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
 import { PlantPickerModal } from "./PlantPickerModal";
 import { useTranslation } from "../lib/i18n";
+
+// The companion charts name some plants generically ("Bean", "Squash") or in the
+// singular ("Chive"). Resolve them to catalog names once, up front, so ownership
+// checks, bed rules and the assignment below all work on a real plant — this
+// screen used to compare the raw chart name and silently drop every one of them.
+const catalogCompanions = (info) =>
+  Array.from(new Set(((info && info.excellent) || []).map(resolveCompanionName).filter(Boolean)));
 
 export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas, savedPlants, wateredPlants, onAssignSlot, onClearSlot, onWaterArea, zone, weather, harvestTrackers, onOpenPlant, onPickPhoto, onDeleteArea, focusAreaId, focusNonce }) {
   const { t } = useTranslation();
@@ -38,9 +45,12 @@ export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas,
     if (seenPerfectRef.current.has(areaId)) return;
     const area = gardenAreas.find((a) => a.id === areaId);
     const info = getCompanionInfo(plantName) || {};
-    const companions = (info.excellent || []).filter((comp) =>
+    // Same ownership rule as the placement below, so the prompt is never offered
+    // for companions that could not actually be planted.
+    const owned = new Set(savedPlants.filter(Boolean).map((p) => getPlantName(p).toLowerCase()).filter(Boolean));
+    const companions = catalogCompanions(info).filter((comp) =>
       comp.toLowerCase() !== plantName.toLowerCase() &&
-      produceData.some((pd) => pd.name.toLowerCase() === comp.toLowerCase()) &&
+      owned.has(comp.toLowerCase()) &&
       // In a flower bed, only suggest other flowers — never veggies/herbs.
       canPlantInArea(comp, area)
     );
@@ -55,10 +65,15 @@ export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas,
     if (!area) { setPerfectGardenPlant(null); return; }
     const info = getCompanionInfo(plantName) || {};
     const existing = Object.values(area.plots || {}).map((p) => getPlantName(p).toLowerCase()).filter(Boolean);
-    const companions = (info.excellent || []).filter((comp) =>
+    // Only plants the gardener actually owns. Every other path saves a plant
+    // before placing it; this one wrote straight into the bed, so the slots
+    // filled with plants that were missing from the plant list — invisible to
+    // watering, harvest and care tracking, and free of the free-tier cap.
+    const owned = new Set(savedPlants.filter(Boolean).map((p) => getPlantName(p).toLowerCase()).filter(Boolean));
+    const companions = catalogCompanions(info).filter((comp) =>
       comp.toLowerCase() !== plantName.toLowerCase() &&
       !existing.includes(comp.toLowerCase()) &&
-      produceData.some((pd) => pd.name.toLowerCase() === comp.toLowerCase())
+      owned.has(comp.toLowerCase())
     );
     const areaSize = areaCapacity(area);
     const emptySlots = [];
@@ -89,7 +104,7 @@ export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas,
     if (!buttons.length) return;
     // Only one of the two is a real plant card — just open it, no need to ask.
     if (buttons.length === 1) { buttons[0].onPress(); return; }
-    buttons.push({ text: "Cancel", style: "cancel" });
+    buttons.push({ text: t("common.cancel"), style: "cancel" });
     Alert.alert("View plant", "Which plant do you want to open?", buttons);
   }
 
@@ -99,10 +114,9 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
     // Only greet the FIRST plant in a bed — stay quiet for every plant after.
     if (bedPlants.length > 1) return;
     const info = getCompanionInfo(plantName) || {};
-    const suggestions = (info.excellent || []).filter((comp) =>
+    const suggestions = catalogCompanions(info).filter((comp) =>
       comp.toLowerCase() !== plantName.toLowerCase() &&
-      !bedPlants.some((p) => p.toLowerCase() === comp.toLowerCase()) &&
-      produceData.some((pd) => pd.name.toLowerCase() === comp.toLowerCase())
+      !bedPlants.some((p) => p.toLowerCase() === comp.toLowerCase())
     );
     if (!suggestions.length) return;
     const list = suggestions.slice(0, 4).join(", ");
@@ -217,9 +231,8 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
               if (!perfectGardenPlant) return null;
               const modalArea = gardenAreas.find((a) => a.id === selectedAreaId);
               const info = getCompanionInfo(perfectGardenPlant) || {};
-              const companions = (info.excellent || []).filter((comp) =>
+              const companions = catalogCompanions(info).filter((comp) =>
                 comp.toLowerCase() !== perfectGardenPlant.toLowerCase() &&
-                produceData.some((pd) => pd.name.toLowerCase() === comp.toLowerCase()) &&
                 // Flower beds only ever show other flowers as companions.
                 canPlantInArea(comp, modalArea)
               ).slice(0, 5);
@@ -405,7 +418,10 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                   </Text>
                   <View style={{ gap: 8 }}>
                     {top.map(({ a, b, score }) => {
-                      const isGood = score.label === t("areaPlannerMap.excellentPair");
+                      // getCompatibilityScore returns fixed English labels, so
+                      // comparing against the translated string made every pair
+                      // read as a conflict in all nine non-English locales.
+                      const isGood = score.label === "Excellent Pair";
                       const plantA = produceData.find((pd) => pd.name.toLowerCase() === a.toLowerCase());
                       const plantB = produceData.find((pd) => pd.name.toLowerCase() === b.toLowerCase());
                       const imgA = plantA ? resolvePlantImageSource(plantA) : null;
@@ -456,10 +472,9 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
               const suggestions = [];
               areaPlants.forEach((planted) => {
                 const info = getCompanionInfo(planted);
-                (info.excellent || []).forEach((comp) => {
+                catalogCompanions(info).forEach((comp) => {
                   if (
                     !areaPlants.some((p) => p.toLowerCase() === comp.toLowerCase()) &&
-                    produceData.some((pd) => pd.name.toLowerCase() === comp.toLowerCase()) &&
                     !suggestions.some((s) => s.name.toLowerCase() === comp.toLowerCase()) &&
                     // A flower bed only recommends other flowers to add.
                     canPlantInArea(comp, area)
@@ -529,8 +544,8 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                   "Delete garden?",
                   `This will remove "${area.name || "this garden"}" and everything planted in it. This can't be undone.`,
                   [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "Delete", style: "destructive", onPress: () => { setSelectedAreaId(null); onDeleteArea && onDeleteArea(area.id); } },
+                    { text: t("common.cancel"), style: "cancel" },
+                    { text: t("common.delete"), style: "destructive", onPress: () => { setSelectedAreaId(null); onDeleteArea && onDeleteArea(area.id); } },
                   ]
                 );
               }}

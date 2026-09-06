@@ -6,6 +6,7 @@ import { semantic } from "../theme";
 import { formatDate } from "../lib/i18n";
 import { CardHeader } from "./CardHeader";
 import { SkeletonSection } from "./Skeleton";
+import { touchSlop } from "../lib/a11y";
 
 export const COMPOST_STORAGE_KEY = "pp_compostLog";
 
@@ -173,7 +174,7 @@ export const CompostTrackerSection = memo(function CompostTrackerSection({ theme
                 <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700" }}>
                   {formatDate(new Date(e.date + "T12:00:00"), { month: "short", day: "numeric" })}
                 </Text>
-                <Pressable onPress={() => removeEntry(e.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel="Delete compost entry">
+                <Pressable onPress={() => removeEntry(e.id)} hitSlop={touchSlop(13)} accessibilityRole="button" accessibilityLabel="Delete compost entry">
                   <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>✕</Text>
                 </Pressable>
               </View>

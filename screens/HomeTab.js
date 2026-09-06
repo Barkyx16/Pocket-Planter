@@ -92,14 +92,17 @@ export function HomeTab({ activationSteps, claimDailyBonus, combinedGardenMap, c
       const frost = getUpcomingFrost(weather);
       const extremeHeat = weather?.maxTempF >= 98;
       if (frost) {
+        // All three branches translated. Two of them used to be English literals
+        // sitting inside an otherwise translated sentence, so nine locales read
+        // "Se espera helada tonight".
         const whenText =
-          frost.daysOut === 0 ? "tonight"
+          frost.daysOut === 0 ? t("home.tonightLower")
           : frost.daysOut === 1 ? t("home.tomorrowNight")
-          : `in ${frost.daysOut} days`;
+          : t("home.inNDays", { count: frost.daysOut });
         const countdownText =
           frost.daysOut === 0 ? t("home.tonight")
           : frost.daysOut === 1 ? t("home.n1NightAway")
-          : `❄️ ${frost.daysOut} nights away`;
+          : t("home.nNightsAway", { count: frost.daysOut });
         return (
           <View style={[styles.frostBanner, { borderColor: "#6bc7ff" }]}>
             <Text style={styles.frostBannerIcon}>❄️</Text>
@@ -373,7 +376,8 @@ zone={zone}
   theme={theme}
   savedPlants={savedPlants}
   wateringHistory={wateringHistory}
-  wateringAmounts={wateringAmounts}
+  wateredPlants={wateredPlants}
+  weather={weather}
   onWater={(name) => waterPlant(name)}
   onOpenPlant={openPlantFromList}
 />

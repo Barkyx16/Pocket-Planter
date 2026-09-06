@@ -4,6 +4,8 @@ import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { getLastWateredText, getPlantHealthStatus, getTodayKey, getWateringStreak, resolvePlantImageSource } from "../core";
+import { touchSlop } from "../lib/a11y";
+import { useTranslation } from "../lib/i18n";
 
 export const SavedPlantsCard = memo(function SavedPlantsCard({
   theme,
@@ -19,6 +21,7 @@ export const SavedPlantsCard = memo(function SavedPlantsCard({
   pinnedPlants = [],
   onTogglePin,
 }) {
+const { t } = useTranslation();
 const [sortMode, setSortMode] = useState("recent");
   const today = getTodayKey();
   const savedItems = useMemo(() => {
@@ -47,9 +50,9 @@ const [sortMode, setSortMode] = useState("recent");
   const visibleItems = premiumUnlocked ? savedItems : savedItems.slice(0, 5);
 
   const SORT_OPTIONS = [
-    { id: "recent", label: "Recent" },
-    { id: "water", label: "Needs water" },
-    { id: "alpha", label: "A–Z" },
+    { id: "recent", label: t("savedPlants.recent") },
+    { id: "water", label: t("savedPlants.needsWater") },
+    { id: "alpha", label: t("savedPlants.alpha") },
   ];
 
   return (
@@ -107,7 +110,7 @@ const [sortMode, setSortMode] = useState("recent");
               {onTogglePin ? (
                 <Pressable
                   onPress={() => onTogglePin(item.name)}
-                  hitSlop={8}
+                  hitSlop={touchSlop(14)}
                   accessibilityRole="button"
                   accessibilityLabel={pinnedPlants.includes(item.name) ? `Unpin ${item.name}` : `Pin ${item.name}`}
                   style={{ position: "absolute", top: 4, right: 4, zIndex: 5, padding: 4 }}

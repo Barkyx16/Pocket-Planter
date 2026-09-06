@@ -7,6 +7,7 @@ import { IconText } from "./IconText";
 import { GerminationTestSection } from "./GerminationTestSection";
 import { GrowLightSection } from "./GrowLightSection";
 import { BarcodeScannerModal } from "./BarcodeScannerModal";
+import { touchSlop } from "../lib/a11y";
 
 const STORAGE_KEY = "pp_seedInventory";
 
@@ -140,7 +141,7 @@ export const SeedInventoryCard = memo(function SeedInventoryCard({ theme }) {
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.color }} />
                 <Text numberOfLines={1} style={{ flex: 1, color: theme.text, fontSize: 14, fontWeight: "800" }}>{item.name}</Text>
                 {item.low ? (
-                  <Pressable onPress={() => shopFor(item.name)} hitSlop={6} style={{ backgroundColor: "rgba(255, 159, 67, 0.16)", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: "rgba(255, 159, 67, 0.3)" }}>
+                  <Pressable onPress={() => shopFor(item.name)} hitSlop={touchSlop(10)} style={{ backgroundColor: "rgba(255, 159, 67, 0.16)", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: "rgba(255, 159, 67, 0.3)" }}>
                     <IconText label={t("seedInventory.reorder")} style={{
   color: "#ff9f43",
   fontSize: 10,
@@ -150,10 +151,10 @@ export const SeedInventoryCard = memo(function SeedInventoryCard({ theme }) {
                 ) : (
                   <Text style={{ color: c.color, fontSize: 10, fontWeight: "900" }}>{c.label}</Text>
                 )}
-                <Pressable onPress={() => toggleLow(item.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel={item.low ? t("seedInventory.markAsStocked") : t("seedInventory.markAsRunningLow")} style={{ paddingHorizontal: 4 }}>
+                <Pressable onPress={() => toggleLow(item.id)} hitSlop={touchSlop(14)} accessibilityRole="button" accessibilityLabel={item.low ? t("seedInventory.markAsStocked") : t("seedInventory.markAsRunningLow")} style={{ paddingHorizontal: 4 }}>
                   <Text style={{ fontSize: 14, opacity: item.low ? 1 : 0.4 }}>🚩</Text>
                 </Pressable>
-                <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.removeItem")} onPress={() => removeItem(item.id)} hitSlop={8} style={{ paddingHorizontal: 2 }}>
+                <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.removeItem")} onPress={() => removeItem(item.id)} hitSlop={touchSlop(14)} style={{ paddingHorizontal: 2 }}>
                   <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text>
                 </Pressable>
               </View>

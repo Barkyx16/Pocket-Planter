@@ -18,6 +18,7 @@ import { HouseplantCareLogSection } from "../components/HouseplantCareLogSection
 import { PlantRoomsSection } from "../components/PlantRoomsSection";
 import { PetSafeSection } from "../components/PetSafeSection";
 import { PropagationTrackerCard } from "../components/PropagationTrackerCard";
+import { useTranslation } from "../lib/i18n";
 
 export function FlowerTab({
   theme, savedPlants, openPlantFromList,
@@ -30,6 +31,7 @@ export function FlowerTab({
 }) {
   // Browse every flower & houseplant, same as the Plants tab lists every edible.
   // Free users get a taste and then hit the upgrade wall.
+  const { t } = useTranslation();
   const FREE_FLOWER_LIMIT = 6;
   const [flowerVisible, setFlowerVisible] = useState(20);
   const flowerCatalog = produceData
@@ -50,9 +52,9 @@ export function FlowerTab({
       {/* Every flower & houseplant in the catalog — the Flowers-tab twin of the
           Plants tab list, free-capped the same way. Open by default; the rest of
           the tab's sections stay collapsed so this is what you land on. */}
-      <CollapsibleCard theme={theme} storageKey="flower_catalog" title="🌸 All Flowers & Houseplants" defaultOpen={true}>
+      <CollapsibleCard theme={theme} storageKey="flower_catalog" title={t("flowerTab.allFlowersTitle")} defaultOpen={true}>
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginBottom: 12 }}>
-          {flowerCatalog.length} flowers and houseplants to browse, save, and plant.
+          {t("flowerTab.catalogCount", { count: flowerCatalog.length })}
         </Text>
         {flowerShown.map((item) => (
           <GlowPlantCard
@@ -82,11 +84,11 @@ export function FlowerTab({
           <Pressable
             onPress={onViewPremium}
             accessibilityRole="button"
-            accessibilityLabel="Unlock all flowers and houseplants with Premium"
+            accessibilityLabel={t("flowerTab.unlockAllA11y")}
             style={{ marginTop: 14, backgroundColor: "rgba(255, 216, 107, 0.16)", borderRadius: 16, paddingVertical: 14, paddingHorizontal: 16, alignItems: "center", borderWidth: 1, borderColor: "#ffd86b" }}
           >
             <Text style={{ color: "#ffd86b", fontWeight: "900", fontSize: 14 }}>
-              🔒 Unlock all {flowerCatalog.length} flowers & houseplants with Premium
+              {t("flowerTab.unlockAllCta", { count: flowerCatalog.length })}
             </Text>
           </Pressable>
         ) : premiumUnlocked && flowerCatalog.length > flowerVisible ? (
@@ -95,7 +97,7 @@ export function FlowerTab({
             style={{ marginTop: 14, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
           >
             <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>
-              Show more — {flowerCatalog.length - flowerVisible} more
+              {t("flowerTab.showMore", { count: flowerCatalog.length - flowerVisible })}
             </Text>
           </Pressable>
         ) : null}
@@ -103,7 +105,7 @@ export function FlowerTab({
 
       {/* The flower planner — works like the Garden tab's map, but flowers only. */}
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-        <Text style={[styles.cardTitle, { color: theme.text }]}>🌸 Flower Garden</Text>
+        <Text style={[styles.cardTitle, { color: theme.text }]}>{t("flowerTab.flowerGarden")}</Text>
         <GardenAreaManager theme={theme} gardenAreas={flowerAreas} onAddArea={addGardenArea} mode="flower" />
         {flowerSaved.length ? (
           <AreaPlannerMap
@@ -124,14 +126,14 @@ export function FlowerTab({
         ) : (
           <View style={styles.emptyStateCard}>
             <Text style={styles.emptyStateIcon}>🌸</Text>
-            <Text style={styles.emptyStateTitle}>Plan your flower & houseplant beds</Text>
-            <Text style={styles.emptyStateText}>Save some flowers or houseplants from the Plants tab, then add a bed above to arrange them.</Text>
+            <Text style={styles.emptyStateTitle}>{t("flowerTab.planYourBeds")}</Text>
+            <Text style={styles.emptyStateText}>{t("flowerTab.planYourBedsBody")}</Text>
           </View>
         )}
       </View>
 
       {/* Flower & houseplant combos only — the edible combos live on the Garden tab. */}
-      <CollapsibleCard theme={theme} storageKey="flower_combos" title="💐 Flower & Houseplant Combos">
+      <CollapsibleCard theme={theme} storageKey="flower_combos" title={t("flowerTab.combosTitle")}>
       {premiumUnlocked ? (
         <GuildTemplatesCard
           theme={theme}
@@ -145,21 +147,21 @@ export function FlowerTab({
       ) : (
         <PremiumLockedCard
           theme={theme}
-          title="Flower combos locked"
-          body="Unlock Premium for proven flower and houseplant combos you can plant as a ready-made bed."
+          title={t("flowerTab.combosLocked")}
+          body={t("flowerTab.combosLockedBody")}
           onUnlock={onViewPremium}
         />
       )}
       </CollapsibleCard>
 
-      <CollapsibleCard theme={theme} storageKey="flowers_blooms" title="🌸 Blooms & Flowers">
+      <CollapsibleCard theme={theme} storageKey="flowers_blooms" title={t("flowerTab.bloomsTitle")}>
       {premiumUnlocked ? (
         <SegmentedCard
           theme={theme}
           accent="#ffb6c1"
           tabs={[
-            { id: "pollinators", label: "🐝 Pollinators", node: <PollinatorPlannerCard theme={theme} savedPlants={savedPlants} onOpenPlant={open} /> },
-            { id: "bouquets", label: "💐 Bouquets", node: (
+            { id: "pollinators", label: t("flowerTab.pollinators"), node: <PollinatorPlannerCard theme={theme} savedPlants={savedPlants} onOpenPlant={open} /> },
+            { id: "bouquets", label: t("flowerTab.bouquets"), node: (
               <View style={{ gap: 18 }}>
                 <CutFlowerGuideCard theme={theme} savedPlants={savedPlants} onOpenPlant={open} />
                 <VaseTrackerSection theme={theme} />
@@ -170,31 +172,31 @@ export function FlowerTab({
       ) : (
         <PremiumLockedCard
           theme={theme}
-          title="Blooms & bouquets locked"
-          body="Unlock Premium for pollinator planning, cut-flower guides, and vase tracking."
+          title={t("flowerTab.bloomsLocked")}
+          body={t("flowerTab.bloomsLockedBody")}
           onUnlock={onViewPremium}
         />
       )}
       </CollapsibleCard>
 
-      <CollapsibleCard theme={theme} storageKey="flowers_tools" title="🪴 Home & Care Tools">
+      <CollapsibleCard theme={theme} storageKey="flowers_tools" title={t("flowerTab.homeToolsTitle")}>
       {premiumUnlocked ? (
         <SegmentedCard
           theme={theme}
           accent="#ffb6c1"
           tabs={[
-            { id: "houseplants", label: "🪴 Houseplants", node: <HouseplantCareCard theme={theme} savedPlants={savedPlants} onOpenPlant={open} /> },
-            { id: "carelog", label: "💧 Care Log", node: <HouseplantCareLogSection theme={theme} savedPlants={savedPlants} onOpenPlant={open} /> },
-            { id: "rooms", label: "🏠 Rooms", node: <PlantRoomsSection theme={theme} savedPlants={savedPlants} /> },
-            { id: "petsafe", label: "🐾 Pet-Safe", node: <PetSafeSection theme={theme} savedPlants={savedPlants} onOpenPlant={open} /> },
-            { id: "propagate", label: "🌱 Propagate", node: <PropagationTrackerCard theme={theme} /> },
+            { id: "houseplants", label: t("flowerTab.houseplants"), node: <HouseplantCareCard theme={theme} savedPlants={savedPlants} onOpenPlant={open} /> },
+            { id: "carelog", label: t("flowerTab.careLog"), node: <HouseplantCareLogSection theme={theme} savedPlants={savedPlants} onOpenPlant={open} /> },
+            { id: "rooms", label: t("flowerTab.rooms"), node: <PlantRoomsSection theme={theme} savedPlants={savedPlants} /> },
+            { id: "petsafe", label: t("flowerTab.petSafe"), node: <PetSafeSection theme={theme} savedPlants={savedPlants} onOpenPlant={open} /> },
+            { id: "propagate", label: t("flowerTab.propagate"), node: <PropagationTrackerCard theme={theme} /> },
           ]}
         />
       ) : (
         <PremiumLockedCard
           theme={theme}
-          title="Home & care tools locked"
-          body="Unlock Premium for houseplant care schedules, rooms, pet-safe checks, and propagation tracking."
+          title={t("flowerTab.homeToolsLocked")}
+          body={t("flowerTab.homeToolsLockedBody")}
           onUnlock={onViewPremium}
         />
       )}

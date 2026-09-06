@@ -2,13 +2,17 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { getClimateBucket, getTodayKey } from "../core";
+import { flipMonth, getClimateBucket, getFertilizerDaysSince, getTodayKey } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const FertilizerIntelligenceCard = memo(function FertilizerIntelligenceCard({ theme, weather, zone, savedPlants, fertilizerTrackers, onOpenPlant }) {
   const { t } = useTranslation();
-  const currentMonth = new Date().getMonth() + 1;
+  // The feeding tables below are authored against the northern calendar — like
+  // every other month table in the app — so translate the local month back to the
+  // reference one. Otherwise a southern gardener is told to skip feeding "for
+  // winter" in the middle of their growing season.
+  const currentMonth = flipMonth(new Date().getMonth() + 1);
   const today = getTodayKey();
 
   const getSeasonalFertilizerTip = () => {
@@ -161,10 +165,8 @@ const getPlantsDueForFertilizer = () => {
   return savedPlants.filter((plantName) => {
     const tracker = fertilizerTrackers?.[plantName];
     if (!tracker) return true;
-    const daysSince = Math.floor(
-      (new Date() - new Date(tracker.lastFertilized)) / (1000 * 60 * 60 * 24)
-    );
-    return daysSince >= 14;
+    const daysSince = getFertilizerDaysSince(tracker);
+    return daysSince === null || daysSince >= 14;
   }).slice(0, 3);
 };
 

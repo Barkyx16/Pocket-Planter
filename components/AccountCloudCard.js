@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { styles } from "../styles";
 import { supabase } from "../lib/supabase";
+import { disableBiometricLogin } from "../lib/biometricAuth";
 import { IconText } from "./IconText";
 import { formatDate, useTranslation } from "../lib/i18n";
 
@@ -87,7 +88,7 @@ const resetPassword = async () => {
     Alert.alert(t("accountCloud.resetEmailSent"));
   } catch (err) {
     console.log("RESET CRASH:", err);
-    Alert.alert("Something went wrong. Try again.");
+    Alert.alert(t("accountCloud.somethingWentWrong"));
   }
 };
 
@@ -262,6 +263,10 @@ return (
                       Alert.alert(t("accountCloud.deletionFailed"), t("accountCloud.deletionFailedBody"));
                       return;
                     }
+                    // The biometric login stores this account's email and
+                    // password in SecureStore, which the sign-out sweep does not
+                    // touch — so they outlived the account they belonged to.
+                    await disableBiometricLogin();
                     await supabase.auth.signOut();
                     Alert.alert(t("accountCloud.accountDeleted"), t("accountCloud.accountDeletedBody"));
                   } catch (err) {

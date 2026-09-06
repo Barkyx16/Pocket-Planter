@@ -5,7 +5,7 @@ import { formatReminderTime } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
-export const ReminderControlCard = memo(function ReminderControlCard({ theme, remindersOn, frostAlertsOn, monthlyPlantingOn, dailyWateringOn, wateringReminderTime, onChangeWateringTime, plantOfDayOn, onTogglePlantOfDay, onToggleReminders, onToggleFrost, onToggleMonthlyPlanting, onToggleDailyWatering }) {
+export const ReminderControlCard = memo(function ReminderControlCard({ theme, remindersOn, frostAlertsOn, monthlyPlantingOn, dailyWateringOn, wateringReminderTime, onChangeWateringTime, plantOfDayOn, onTogglePlantOfDay, weeklyRecapOn, onToggleWeeklyRecap, onToggleReminders, onToggleFrost, onToggleMonthlyPlanting, onToggleDailyWatering }) {
   const { t } = useTranslation();
   const TIME_OPTIONS = [
     { hour: 6, minute: 0 },
@@ -26,13 +26,13 @@ export const ReminderControlCard = memo(function ReminderControlCard({ theme, re
           text: formatReminderTime(t),
           onPress: () => onChangeWateringTime(t),
         })),
-        { text: "Cancel", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
       ]
     );
   };
   return (
     <View>
-      {[{ label: t("reminderControl.wateringReminders"), text: t("reminderControl.addDailyRemindersFromPlant"), value: remindersOn, onToggle: onToggleReminders }, { label: t("reminderControl.frostAlerts"), text: t("reminderControl.eveningReminderToCheckOvernight"), value: frostAlertsOn, onToggle: onToggleFrost }, { label: t("reminderControl.monthlyPlantingGuides"), text: t("reminderControl.reminderOnThe1stOf"), value: monthlyPlantingOn, onToggle: onToggleMonthlyPlanting }, { label: t("reminderControl.dailyWateringCheck"), text: t("reminderControl.morningReminderToCheckYour"), value: dailyWateringOn, onToggle: onToggleDailyWatering }, { label: t("reminderControl.plantOfTheDay"), text: t("reminderControl.dailyPlantPickEveryMorning"), value: plantOfDayOn, onToggle: onTogglePlantOfDay }].map((row) => (
+      {[{ label: t("reminderControl.wateringReminders"), text: t("reminderControl.addDailyRemindersFromPlant"), value: remindersOn, onToggle: onToggleReminders }, { label: t("reminderControl.frostAlerts"), text: t("reminderControl.eveningReminderToCheckOvernight"), value: frostAlertsOn, onToggle: onToggleFrost }, { label: t("reminderControl.monthlyPlantingGuides"), text: t("reminderControl.reminderOnThe1stOf"), value: monthlyPlantingOn, onToggle: onToggleMonthlyPlanting }, { label: t("reminderControl.dailyWateringCheck"), text: t("reminderControl.morningReminderToCheckYour"), value: dailyWateringOn, onToggle: onToggleDailyWatering }, { label: t("reminderControl.plantOfTheDay"), text: t("reminderControl.dailyPlantPickEveryMorning"), value: plantOfDayOn, onToggle: onTogglePlantOfDay }, { label: t("reminderControl.weeklyRecap"), text: t("reminderControl.sundayEveningSummaryOfYour"), value: weeklyRecapOn, onToggle: onToggleWeeklyRecap }].map((row) => (
         <View key={row.label} style={styles.settingRow}>
           <View style={{ flex: 1, minWidth: 0 }}><Text style={[styles.settingTitle, { color: theme.text }]}>{row.label}</Text><Text style={[styles.settingText, { color: theme.secondaryText }]}>{row.text}</Text></View>
           <Switch value={row.value} onValueChange={row.onToggle} trackColor={{ false: "#314c39", true: "#5cff89" }} thumbColor="#ffffff" />

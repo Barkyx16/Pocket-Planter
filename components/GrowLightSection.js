@@ -1,18 +1,18 @@
 import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { getTodayKey, tapHaptic } from "../core";
+import { getDaysSince, getTodayKey, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
+import { touchSlop } from "../lib/a11y";
 
 export const GROW_LIGHT_STORAGE_KEY = "pp_growLights";
 
 const HOUR_OPTS = [12, 14, 16];
 const ON_HOUR = 6; // suggested lights-on time
 
-function daysUnder(startKey) {
-  const then = new Date(startKey + "T12:00:00").getTime();
-  return Math.max(1, Math.floor((Date.now() - then) / 86400000) + 1);
-}
+// Day 1 is the day the light went on. Counting from the current clock time
+// instead of midday held the number back until noon each day.
+const daysUnder = (startKey) => Math.max(1, (getDaysSince(startKey) ?? 0) + 1);
 const offLabel = (hours) => {
   const off = (ON_HOUR + hours) % 24;
   const ampm = (h) => `${((h + 11) % 12) + 1}${h < 12 ? "am" : "pm"}`;
@@ -101,7 +101,7 @@ export const GrowLightSection = memo(function GrowLightSection({ theme }) {
                   Day {daysUnder(tr.start)} · {tr.hours}h/day · {offLabel(tr.hours)}
                 </Text>
               </View>
-              <Pressable onPress={() => remove(tr.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel="Remove tray">
+              <Pressable onPress={() => remove(tr.id)} hitSlop={touchSlop(14)} accessibilityRole="button" accessibilityLabel="Remove tray">
                 <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text>
               </Pressable>
             </View>

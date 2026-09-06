@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Linking, Pressable, Text, View } from "react-native";
 import { tapHaptic } from "../core";
 import { useTranslation } from "../lib/i18n";
+import { touchSlop } from "../lib/a11y";
 
 const STORAGE_KEY = "pp_toolkit_owned";
 
@@ -129,7 +130,7 @@ export const GardenToolkitCard = memo(function GardenToolkitCard({ theme, onComp
                     onPress={() => markOwned(item.name)}
                     accessibilityRole="checkbox"
                     accessibilityLabel={`Mark ${item.name} as owned`}
-                    hitSlop={8}
+                    hitSlop={touchSlop(24)}
                     style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: "rgba(92, 255, 137, 0.5)" }}
                   />
                   <Text style={{ flex: 1, color: theme.text, fontSize: 14, fontWeight: "800" }} numberOfLines={1}>
@@ -166,7 +167,7 @@ export const GardenToolkitCard = memo(function GardenToolkitCard({ theme, onComp
                     onPress={() => unmark(item.name)}
                     accessibilityRole="checkbox"
                     accessibilityLabel={`Remove ${item.name} from owned`}
-                    hitSlop={8}
+                    hitSlop={touchSlop(24)}
                     style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: "#5cff89", alignItems: "center", justifyContent: "center" }}
                   >
                     <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "900" }}>✓</Text>

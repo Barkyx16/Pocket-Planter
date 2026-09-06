@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
+import { flipMonth } from "../core";
 import { getPestImage } from "../data/pestImageMap";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
@@ -13,7 +14,12 @@ export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, on
   const { t } = useTranslation();
   if (!pest) return null;
 
-  const months = Array.isArray(pest.months) ? pest.months : [];
+  // PEST_WATCH_DATA months are authored against the northern calendar and
+  // getActivePests spreads them through untouched, so this screen was listing
+  // "Jun · Jul · Aug" for a pest its own card had just flagged as active in a
+  // southern summer. Translate to the reader's calendar, like every other month
+  // display in the app.
+  const months = (Array.isArray(pest.months) ? pest.months : []).map(flipMonth).sort((a, b) => a - b);
   const activeLabel = months.length
     ? months.map((m) => MONTH_FULL[m - 1]).join(" · ")
     : "Varies by region";

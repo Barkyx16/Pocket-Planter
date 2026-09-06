@@ -8,10 +8,12 @@ export const FrostBanner = memo(function FrostBanner({ theme, weather, frostAler
   const { t } = useTranslation();
   const frost = getUpcomingFrost(weather);
   if (!frost) return null;
+  // Same wording as the Home tab's banner, and translated the same way — this
+  // copy carried no keys at all.
   const whenText =
-    frost.daysOut === 0 ? "tonight"
-    : frost.daysOut === 1 ? "tomorrow night"
-    : `in ${frost.daysOut} days`;
+    frost.daysOut === 0 ? t("home.tonightLower")
+    : frost.daysOut === 1 ? t("home.tomorrowNight")
+    : t("home.inNDays", { count: frost.daysOut });
   return (
     <View style={[styles.frostBanner, { borderColor: "#6bc7ff" }]}>
       <Text style={styles.frostBannerIcon}>❄️</Text>

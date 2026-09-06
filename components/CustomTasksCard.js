@@ -5,6 +5,7 @@ import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { tapHaptic } from "../core";
 import { useTranslation } from "../lib/i18n";
 import { ChoreRotationSection } from "./ChoreRotationSection";
+import { touchSlop } from "../lib/a11y";
 
 const STORAGE_KEY = "pp_customTasks";
 const INTERVALS = [
@@ -97,7 +98,7 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
                 <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }} numberOfLines={1}>{task.title}</Text>
                 <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 2 }}>Every {INTERVALS.find((i) => i.days === task.interval)?.label.toLowerCase() || `${task.interval} days`}</Text>
               </View>
-              <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.deleteTask")} onPress={() => remove(task)} hitSlop={8}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.deleteTask")} onPress={() => remove(task)} hitSlop={touchSlop(14)}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
             </View>
           ))}
         </View>

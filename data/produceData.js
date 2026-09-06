@@ -3026,7 +3026,7 @@ const produceData = [
     image: "larkspur",
     minZone: "2a",
     maxZone: "9b",
-    plantMonths: [9, 10, 3],
+    plantMonths: [3, 9, 10],
     notes:
       "Larkspur is grown for its flowers. Give it full sun to part shade and well-drained soil, and deadhead spent blooms to keep the display going through the season.",
   },
@@ -6141,16 +6141,6 @@ const produceData = [
       "Korean Melon (Chamoe) is a sweet golden melon on warm-season vines. Give it full sun and steady water, and pick fruit when it turns bright yellow.",
   },
   {
-    name: "Charentais Melon",
-    type: "Fruit",
-    image: "charentaismelon",
-    minZone: "5a",
-    maxZone: "11b",
-    plantMonths: [4, 5, 6],
-    notes:
-      "Charentais is a fragrant French cantaloupe type. Give it full sun, warm soil, and steady water, and harvest when it smells sweet and slips from the vine.",
-  },
-  {
     name: "Canary Melon",
     type: "Fruit",
     image: "canarymelon",
@@ -6241,16 +6231,6 @@ const produceData = [
       "Damson is a small, tart plum ideal for jam and preserves. Give it full sun, plant while dormant, and thin the heavy fruit set for better size.",
   },
   {
-    name: "Greengage",
-    type: "Fruit Tree",
-    image: "greengage",
-    minZone: "4a",
-    maxZone: "9b",
-    plantMonths: [1, 2, 3],
-    notes:
-      "Greengage is a richly sweet green plum. Give it full sun and winter chill, plant it dormant, and thin the fruit so branches don't overload.",
-  },
-  {
     name: "Mirabelle Plum",
     type: "Fruit Tree",
     image: "mirabelleplum",
@@ -6309,46 +6289,6 @@ const produceData = [
     plantMonths: [3, 4],
     notes:
       "Pineberry is a white strawberry with a pineapple-like flavor. Grow it like a strawberry in full sun and rich soil, and plant a red variety nearby to pollinate.",
-  },
-  {
-    name: "Strawberry Guava",
-    type: "Fruit",
-    image: "strawberryguava",
-    minZone: "9a",
-    maxZone: "11b",
-    plantMonths: [3, 4, 5],
-    notes:
-      "Strawberry Guava is a small evergreen tree with sweet red fruit. Give it full sun and well-drained soil in a frost-free spot, or grow it in a large pot.",
-  },
-  {
-    name: "Rose Hip",
-    type: "Fruit",
-    image: "rosehip",
-    minZone: "3a",
-    maxZone: "9b",
-    plantMonths: [3, 4],
-    notes:
-      "Rose Hip is the vitamin-rich fruit of rugosa and other roses. Give the shrub full sun, skip deadheading in late summer, and pick hips after the first frost.",
-  },
-  {
-    name: "Goumi Berry",
-    type: "Berry",
-    image: "goumiberry",
-    minZone: "5a",
-    maxZone: "9b",
-    plantMonths: [3, 4],
-    notes:
-      "Goumi is a hardy, nitrogen-fixing shrub with tart-sweet red berries. Give it full sun, and it thrives even in poor soil once established.",
-  },
-  {
-    name: "Chilean Guava (Ugni)",
-    type: "Berry",
-    image: "chileanguava",
-    minZone: "7a",
-    maxZone: "10b",
-    plantMonths: [3, 4, 5],
-    notes:
-      "Chilean Guava (Ugni) is a compact evergreen shrub with aromatic red berries. Give it full sun to part shade and well-drained soil; it grows well in pots.",
   },
   {
     name: "Grape Hyacinth",

@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
-import { formatTemp, getClimateBucket, getSuggestionsForMonth, getTodayKey } from "../core";
+import { flipMonth, formatTemp, getClimateBucket, getSeasonForDate, getSuggestionsForMonth, getTodayKey, isHarvestReady } from "../core";
 import { formatDate, useTranslation } from "../lib/i18n";
 
 export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ theme, weather, zone, savedPlants, wateredPlants, gardenMap, harvestTrackers, onOpenPlant, unitSystem }) {
@@ -35,7 +35,7 @@ export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ the
   const wateringSkippable = weather?.precipChance >= 65;
 
   const unwateredCount = savedPlants.filter((p) => wateredPlants?.[p] !== today).length;
-  const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, t]) => Math.max(0, t.days - Math.floor((new Date() - new Date(t.startedAt)) / (1000 * 60 * 60 * 24))) === 0).length;
+  const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).length;
   const weeklyHigh = Math.max(...forecast.map((d) => d.maxTempF));
   const weeklyLow = Math.min(...forecast.map((d) => d.minTempF));
   const rainyDays = forecast.filter((d) => d.precipChance >= 50).length;
@@ -47,8 +47,11 @@ export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ the
     if (frostRiskDay) return { icon: "❄️", text: `Frost on ${formatDay(frostRiskDay.date)} — cover tender plants the night before.`, color: "#6bc7ff" };
     if (heatRiskDay) return { icon: "🔥", text: `Heat stress on ${formatDay(heatRiskDay.date)} — water early and mulch to protect roots.`, color: "#ff7b7b" };
     if (rainyDays >= 4) return { icon: "🌧️", text: `${rainyDays} rainy days — check drainage and hold off fertilizing until soil dries.`, color: "#6bc7ff" };
-    if (climate === "hot" && currentMonth >= 5 && currentMonth <= 9) return { icon: "☀️", text: "Hot-zone summer — water deeply every 2–3 days and harvest often.", color: "#ffd86b" };
-    if (climate === "cold" && currentMonth >= 9) return { icon: "🍂", text: "Cold-zone fall — harvest before first frost and plant garlic for spring.", color: "#ff9f43" };
+    // Reference month: the 5–9 window is northern summer. getSuggestionsForMonth
+    // above needs the local month, so only this seasonal test is translated.
+    const refMonth = flipMonth(currentMonth);
+    if (climate === "hot" && refMonth >= 5 && refMonth <= 9) return { icon: "☀️", text: "Hot-zone summer — water deeply every 2–3 days and harvest often.", color: "#ffd86b" };
+    if (climate === "cold" && getSeasonForDate().key === "fall") return { icon: "🍂", text: "Cold-zone fall — harvest before first frost and plant garlic for spring.", color: "#ff9f43" };
     return { icon: "🌱", text: `Good growing week — ${weeklyHigh > 85 ? "stay on top of watering" : "great for planting and garden care"}.`, color: "#5cff89" };
   };
   const seasonalInsight = getSeasonalInsight();

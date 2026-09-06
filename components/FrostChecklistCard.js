@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
-import { COLD_THRESHOLD_F, FROST_TASKS, tapHaptic } from "../core";
+import { COLD_THRESHOLD_F, FROST_TASKS, getTodayKey, tapHaptic } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const FrostChecklistCard = memo(function FrostChecklistCard({ theme, weather, frostChecklist, setFrostChecklist }) {
@@ -16,15 +16,28 @@ export const FrostChecklistCard = memo(function FrostChecklistCard({ theme, weat
 
   const coldestF = lows.length ? Math.min(...lows) : null;
   if (coldestF == null || coldestF >= COLD_THRESHOLD_F) return null;
+  // Ticks belong to one cold snap. They used to be stored under the bare task id
+  // and never cleared, so after the first frost the card read "You're cold-ready"
+  // for every cold night that followed. Key them to the coldest night instead,
+  // the way the monthly checklist keys off the month.
+  const coldestDay = window.find((d) => d?.minTempF === coldestF);
+  const eventKey = coldestDay?.date || getTodayKey();
+  const taskKey = (id) => `${eventKey}:${id}`;
 
   const coldestC = Math.round(((coldestF - 32) * 5) / 9);
   const isTonight = typeof window[0]?.minTempF === "number" && window[0].minTempF < COLD_THRESHOLD_F;
 
   const toggle = (id) => {
     tapHaptic("light");
-    setFrostChecklist((current) => ({ ...current, [id]: !current[id] }));
+    setFrostChecklist((current) => {
+      // Drop anything from an earlier cold snap so the map can't grow forever.
+      const next = {};
+      Object.entries(current || {}).forEach(([k, v]) => { if (v && k.startsWith(`${eventKey}:`)) next[k] = v; });
+      next[taskKey(id)] = !current?.[taskKey(id)];
+      return next;
+    });
   };
-  const doneCount = FROST_TASKS.filter((t) => frostChecklist[t.id]).length;
+  const doneCount = FROST_TASKS.filter((task) => frostChecklist[taskKey(task.id)]).length;
   const allDone = doneCount === FROST_TASKS.length;
 
   return (
@@ -49,7 +62,7 @@ export const FrostChecklistCard = memo(function FrostChecklistCard({ theme, weat
 
       <View style={{ gap: 8, marginTop: 14 }}>
         {FROST_TASKS.map((task) => {
-          const checked = !!frostChecklist[task.id];
+          const checked = !!frostChecklist[taskKey(task.id)];
           return (
             <Pressable
               key={task.id}

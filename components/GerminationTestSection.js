@@ -4,6 +4,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { getTodayKey, tapHaptic } from "../core";
 import { formatDate } from "../lib/i18n";
 import { SkeletonSection } from "./Skeleton";
+import { touchSlop } from "../lib/a11y";
 
 export const GERM_STORAGE_KEY = "pp_germTests";
 
@@ -149,7 +150,7 @@ export const GerminationTestSection = memo(function GerminationTestSection({ the
                     {tst.sprouted}/{tst.sown} · {formatDate(new Date(tst.date + "T12:00:00"), { month: "short", day: "numeric", year: "numeric" })}
                   </Text>
                 </View>
-                <Pressable onPress={() => remove(tst.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel="Delete test">
+                <Pressable onPress={() => remove(tst.id)} hitSlop={touchSlop(13)} accessibilityRole="button" accessibilityLabel="Delete test">
                   <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>✕</Text>
                 </Pressable>
               </View>

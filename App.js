@@ -86,23 +86,27 @@ import {
   getHarvestDays,
   getNextWaterInfo,
   getPlantDetails,
+  resolveCompanionName,
   getPlantDifficulty,
   getActivationSteps,
   getPlantSeasonLabel,
   getProfileBanners,
   getRainSkipToday,
   getRarity,
+  getSeasonForDate,
   getSmartWeatherRecommendation,
   getSuccessionInterval,
   getSuggestionsForMonth,
   getTodayKey,
+  getTotalWaterings,
   getUpcomingFrost,
   getWateringRhythm,
   getWateringStreak,
   getZipRecord,
+  isHarvestReady,
+  isSameDayKey,
   isPerennial,
   matchesType,
-  maybeAskForReview,
   migrateGardenToAreas,
   normalizeType,
   resolvePlantImageSource,
@@ -120,8 +124,11 @@ import { getBannerImage } from "./data/bannerImageMap";
 import { GlobalSearchModal } from "./components/GlobalSearchModal";
 import { GardenPlacementModal } from "./components/GardenPlacementModal";
 import { syncWidgets } from "./lib/widgets";
+import { incrementAppOpens, maybeRequestReview } from "./utils/reviewPrompt";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { PremiumLockedSection } from "./components/PremiumLockedSection";
+import { MAX_FONT_SCALE_COMPACT, touchSlop } from "./lib/a11y";
 import { OnboardingCard } from "./components/OnboardingCard";
 import { PestDetailScreen } from "./components/PestDetailScreen";
 import { DiseaseDetailScreen } from "./components/DiseaseDetailScreen";
@@ -251,9 +258,63 @@ if (Pressable && Pressable.type && !Pressable.__ppPressPatched) {
 // the tab bar, the More sheet, jumpToTab() and the render guard all read it, so a
 // new premium tab can't be half-protected.
 const PREMIUM_TAB_IDS = new Set(["garden", "weather", "games", "journal"]);
-const PREMIUM_TAB_LABELS = { garden: "Garden", weather: "Weather", games: "Garden Games", journal: "Journal" };
+
+// What a free user sees in place of a paid tab. Copy sells the tab they just
+// tried to open, rather than repeating one generic "upgrade" line four times.
+const LOCKED_TAB_COPY = {
+  garden: { icon: "🌱", title: "Your garden, mapped", description: "Lay out beds, track what's planted where, and get watering and spacing guidance for every area." },
+  weather: { icon: "🌤️", title: "Weather intelligence", description: "Frost alerts, rainfall tracking, and daily water-or-don't calls based on your actual forecast." },
+  games: { icon: "🎮", title: "Garden games", description: "Play, learn your plants, and earn XP toward your gardener level." },
+  journal: { icon: "📔", title: "Your garden journal", description: "A dated, photo-backed record of every harvest, planting, and note across your seasons." },
+};
 
 const OVERFLOW_TAB_IDS = ["flowers", "games", "pests", "journal", "profile", "settings", "premium"];
+
+// Tab structure is static, so it lives at module scope rather than being rebuilt
+// on every render of a component that re-renders on any of ~100 state changes.
+// Labels are NOT baked in here — labelKey is resolved through t() at render time
+// so switching language still re-labels the bar. Anything without a labelKey is
+// literal copy that hasn't been translated yet.
+//
+// Five primary destinations. Apple and Google both cap a tab bar at five; the
+// previous eight forced an 8pt label that could not survive translation. Weather
+// stays in the bar because it drives a daily decision (water or don't, frost
+// tonight); Journal is a periodic activity, so it moves behind More. Swapping
+// the two is a one-line change here plus one in OVERFLOW_TAB_IDS.
+const TABS = [
+  { id: "home", labelKey: "tabs.home", icon: "home" },
+  { id: "plants", labelKey: "tabs.plants", icon: "leaf" },
+  { id: "garden", labelKey: "tabs.garden", icon: "grid" },
+  { id: "weather", labelKey: "tabs.weather", icon: "cloud" },
+  { id: "more", labelKey: "tabs.more", icon: "ellipsis-horizontal" },
+];
+
+// Fire-and-forget write for cached UI state. Returns the promise so a caller
+// that does care can still await it, but swallows the rejection by default so a
+// failed cache write can't raise an unhandled rejection. Do NOT use this for
+// writes whose failure the user needs to know about.
+const persist = (key, value) => AsyncStorage.setItem(key, value).catch(() => {});
+
+// Read side of the same deal. Every hydration read below was a bare
+// .then() with no rejection handler, so a read failure became an unhandled
+// rejection during startup — the noisiest possible moment. A missing cached
+// value just means the state keeps its default, which is already the
+// first-launch behaviour.
+const hydrate = (key, apply) => AsyncStorage.getItem(key).then(apply).catch(() => {});
+
+// How stale a cached forecast may be before it is treated as no forecast at all.
+const WEATHER_CACHE_MAX_AGE_MS = 3 * 60 * 60 * 1000; // 3 hours
+
+// Everything behind the "More" sheet, in the order it appears there.
+const MORE_ITEMS = [
+  { id: "flowers", label: "Flowers & Home", icon: "flower" },
+  { id: "games", label: "Garden Games", icon: "game-controller" },
+  { id: "pests", label: "Pest Watch", icon: "bug" },
+  { id: "journal", labelKey: "tabs.journal", icon: "book" },
+  { id: "profile", labelKey: "tabs.quests", icon: "flash" },
+  { id: "settings", labelKey: "tabs.settings", icon: "settings" },
+  { id: "premium", labelKey: "tabs.premium", icon: "star" },
+];
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -463,6 +524,9 @@ useEffect(() => {
       if (m) { try { setMonthlyChecklist(JSON.parse(m)); } catch (e) {} }
       if (f) { try { setFrostChecklist(JSON.parse(f)); } catch (e) {} }
       if (fh === "true") setFrostDatesHidden(true);
+    } catch (e) {
+      // try/finally with no catch let a rejected Promise.all escape the async
+      // IIFE with nothing to receive it. The checklists just stay empty.
     } finally {
       checklistsHydrated.current = true;
     }
@@ -471,17 +535,17 @@ useEffect(() => {
 
 useEffect(() => {
   if (!checklistsHydrated.current) return;
-  AsyncStorage.setItem("pp_monthlyChecklist", JSON.stringify(monthlyChecklist));
+  persist("pp_monthlyChecklist", JSON.stringify(monthlyChecklist));
 }, [monthlyChecklist]);
 
 useEffect(() => {
   if (!checklistsHydrated.current) return;
-  AsyncStorage.setItem("pp_frostChecklist", JSON.stringify(frostChecklist));
+  persist("pp_frostChecklist", JSON.stringify(frostChecklist));
 }, [frostChecklist]);
 
 useEffect(() => {
   if (!checklistsHydrated.current) return;
-  AsyncStorage.setItem("pp_frostDatesHidden", frostDatesHidden ? "true" : "false");
+  persist("pp_frostDatesHidden", frostDatesHidden ? "true" : "false");
 }, [frostDatesHidden]);
 const [harvestGoal, setHarvestGoal] = useState(null); // { target, label, createdAt }
 const [suppliesSpent, setSuppliesSpent] = useState(0); // total $ spent on seeds/supplies (manual)
@@ -489,6 +553,7 @@ const [wateringAmounts, setWateringAmounts] = useState([]); // [{ id, plantName,
 const [snoozedPlants, setSnoozedPlants] = useState({}); // { plantName: dateKey snoozed-until }
 const [wateringReminderTime, setWateringReminderTime] = useState({ hour: 9, minute: 0 });
 const [plantOfDayOn, setPlantOfDayOn] = useState(false);
+const [weeklyRecapOn, setWeeklyRecapOn] = useState(false); // Sunday-evening garden summary
 const [streakFreeze, setStreakFreeze] = useState({ available: true, lastUsed: null, weekKey: null });
 const [refreshing, setRefreshing] = useState(false);
 const [weatherRefreshToken, setWeatherRefreshToken] = useState(0);
@@ -653,20 +718,14 @@ const clearLocalAccountData = async () => {
   setRecord(null);
   setLanguage(detectDeviceLocale());
   try {
-    const keys = Object.values(STORAGE_KEYS);
-    // Zone and weather caches are keyed per location, so they have to be swept
-    // by prefix rather than listed.
+    // Sweep every app-owned key rather than a hand-kept list. STORAGE_KEYS only
+    // covers the state App.js threads itself, so signing out used to leave the
+    // previous account's beds, harvest log, budget, wishlist and every
+    // self-persisting tracker behind — including the names in the chore rotation
+    // — for whoever signed in next. Location caches were already swept by prefix
+    // for the same reason. Biometric credentials live in SecureStore, not here.
     const allKeys = await AsyncStorage.getAllKeys();
-    const cached = allKeys.filter((k) => k.startsWith("pp_zoneCache_") || k.startsWith("pp_weatherCache_"));
-    await AsyncStorage.multiRemove([
-      ...keys,
-      ...cached,
-      "pp_careLog",
-      "pp_activeBannerId",
-      "pp_bonusXP",
-      "pp_questXP",
-      "pp_completedQuestIds",
-    ]);
+    await AsyncStorage.multiRemove(allKeys.filter((k) => k.startsWith("pp_")));
   } catch (err) {
     console.log("CLEAR STORAGE ERROR:", err);
   }
@@ -812,6 +871,7 @@ const saveProfileToSupabase = async () => {
         .from("profiles")
         .update({
           unit_system: unitSystem,
+          weekly_recap_on: weeklyRecapOn,
           badge_earned_dates: badgeEarnedDates,
           banner_earned_dates: bannerEarnedDates,
           // Worldwide zone support: `country` tells another device how to read
@@ -823,7 +883,7 @@ const saveProfileToSupabase = async () => {
         .eq("id", user.id);
       if (prefErr) {
         optionalPrefsUnavailable.current = true;
-        console.log("Optional prefs sync disabled — add unit_system / badge_earned_dates / banner_earned_dates / country / latitude columns to enable:", prefErr.message);
+        console.log("Optional prefs sync disabled — add unit_system / weekly_recap_on / badge_earned_dates / banner_earned_dates / country / latitude columns to enable:", prefErr.message);
       }
     } catch (e) {
       optionalPrefsUnavailable.current = true;
@@ -888,7 +948,7 @@ if (data?.subscription_plan)
   if (data?.daily_bonus_date) {
   setDailyBonusDate(data.daily_bonus_date);
 
-  if (data.daily_bonus_date === getTodayKey()) {
+  if (isSameDayKey(data.daily_bonus_date, getTodayKey())) {
     setDailyBonusClaimed(true);
   } else {
     setDailyBonusClaimed(false);
@@ -909,6 +969,9 @@ if (typeof data?.daily_watering_on === "boolean")
 
 if (typeof data?.plant_of_day_on === "boolean")
   setPlantOfDayOn(data.plant_of_day_on);
+
+if (typeof data?.weekly_recap_on === "boolean")
+  setWeeklyRecapOn(data.weekly_recap_on);
 
   if (Array.isArray(data?.saved_plants))
     setSavedPlants(data.saved_plants);
@@ -1020,7 +1083,7 @@ if (typeof data?.supplies_spent === "number")
 if (Array.isArray(data?.watering_amounts))
   setWateringAmounts(data.watering_amounts);
 
-setDailyBonusClaimed(data?.daily_bonus_date === getTodayKey());
+setDailyBonusClaimed(isSameDayKey(data?.daily_bonus_date, getTodayKey()));
  
      setCloudProfileLoaded(true);
   cloudProfileLoadedRef.current = true;
@@ -1079,6 +1142,13 @@ setDailyBonusClaimed(data?.daily_bonus_date === getTodayKey());
       const row = getZipRecord(zip);
       if (row) {
         setRecord({ ...row, countryCode: country, source: "table", lat: null, lon: null });
+        // The table has no coordinates, so drop any carried over from a previous
+        // country — otherwise moving from, say, Australia to a US ZIP left every
+        // seasonal helper six months out, permanently, because the stale
+        // latitude stayed persisted and re-applied on each launch. The effect
+        // above resets the hemisphere to northern once this lands.
+        setLatitude(null);
+        AsyncStorage.removeItem(STORAGE_KEYS.latitude).catch(() => {});
         setZoneLoading(false);
         return undefined;
       }
@@ -1318,6 +1388,7 @@ const achievementBadges = useMemo(
       harvestTrackers,
       fertilizerTrackers,
       harvestLog,
+      wateringHistory,
     }),
   [
     savedPlants,
@@ -1331,6 +1402,7 @@ const achievementBadges = useMemo(
     harvestTrackers,
     fertilizerTrackers,
     harvestLog,
+    wateringHistory,
   ]
 );
 const dailyQuests = useMemo(
@@ -1373,6 +1445,7 @@ const profileBanners = useMemo(
       careLog,
       comparePlants,
       premiumUnlocked,
+      wateringHistory,
     }),
   [
     gardenXP,
@@ -1385,6 +1458,7 @@ const profileBanners = useMemo(
     careLog,
     comparePlants,
     premiumUnlocked,
+    wateringHistory,
   ]
 );
 
@@ -1457,13 +1531,18 @@ const theme = useMemo(
       Alert.alert("Plant not found", `Could not find "${name}" in produceData.`);
     }
   }
-function recordRecentPlant(item) {
+// The handlers below are passed as props into memoised card components. As plain
+  // function declarations they were rebuilt on every render of this component, so
+  // every memo() downstream compared unequal and re-rendered anyway — the memo
+  // wrappers were inert. Empty deps are safe here: these close over refs, state
+  // setters, and module imports only, never over a value that changes.
+  const recordRecentPlant = useCallback((item) => {
     if (!item?.name) return;
     setRecentPlants((current) => {
       const next = [item.name, ...current.filter((n) => n !== item.name)];
       return next.slice(0, 6);
     });
-  }
+  }, []);
   function togglePinnedPlant(name) {
     if (!name) return;
     tapHaptic("light");
@@ -1479,22 +1558,22 @@ function recordRecentPlant(item) {
     recordRecentPlant(item);
     setSelectedPlant(item);
   }
-  function openPlantFromList(item) {
+  const openPlantFromList = useCallback((item) => {
     plantReturnY.current = currentScrollY.current;
     setReturnSection("exact");
     recordRecentPlant(item);
     setSelectedPlant(item);
-  }
+  }, [recordRecentPlant]);
   function handleBackFromPlant() {
     setSelectedPlant(null);
     setTimeout(() => { scrollRef.current?.scrollTo({ y: plantReturnY.current, animated: false }); }, 80);
   }
-  function openPest(pest) {
+  const openPest = useCallback((pest) => {
     if (!pest) return;
     tapHaptic("light");
     pestReturnY.current = currentScrollY.current;
     setSelectedPest(pest);
-  }
+  }, []);
   function handleBackFromPest() {
     setSelectedPest(null);
     setTimeout(() => { scrollRef.current?.scrollTo({ y: pestReturnY.current, animated: false }); }, 80);
@@ -1754,10 +1833,7 @@ const today = getTodayKey();
 if (map[STORAGE_KEYS.dailyBonusDate]) {
   setDailyBonusDate(map[STORAGE_KEYS.dailyBonusDate]);
 }
-if (
-  map[STORAGE_KEYS.dailyBonusDate] ===
-  today
-) {
+if (isSameDayKey(map[STORAGE_KEYS.dailyBonusDate], today)) {
   setDailyBonusClaimed(true);
 } else {
   setDailyBonusClaimed(false);
@@ -1804,175 +1880,187 @@ if (map[STORAGE_KEYS.harvestTrackers])
   }, []);
 
   // ── Persist to storage ─────────────────────────────────────────────────────
+  // Every write below is fire-and-forget. AsyncStorage rejects on a full or
+  // corrupt store, and an un-caught rejection here surfaces as an unhandled
+  // promise rejection warning with no useful stack — one per failing key, on
+  // every change. Losing one cache write is not worth interrupting the user, so
+  // swallow it; the loud failures (backup/restore, sign-in) handle their own.
  useEffect(() => {
-  AsyncStorage.setItem(STORAGE_KEYS.zip, zip);
+  persist(STORAGE_KEYS.zip, zip);
 }, [zip]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.savedPlants,
     JSON.stringify(savedPlants)
   );
 }, [savedPlants]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.plantNotes,
     JSON.stringify(plantNotes)
   );
 }, [plantNotes]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.followedPlants,
     JSON.stringify(followedPlants)
   );
 }, [followedPlants]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.journalEntries,
     JSON.stringify(journalEntries)
   );
 }, [journalEntries]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.selectedMonth,
     String(selectedMonth)
   );
 }, [selectedMonth]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.selectedType,
     selectedType
   );
 }, [selectedType]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.remindersOn,
     JSON.stringify(remindersOn)
   );
 }, [remindersOn]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.frostAlertsOn,
     JSON.stringify(frostAlertsOn)
   );
 }, [frostAlertsOn]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.appearanceMode,
     appearanceMode
   );
 }, [appearanceMode]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.subscriptionPlan,
     subscriptionPlan
   );
 }, [subscriptionPlan]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.premiumUnlocked,
     JSON.stringify(premiumUnlocked)
   );
 }, [premiumUnlocked]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.gardenMap,
     JSON.stringify(gardenMap)
   );
 }, [gardenMap]);
 
 useEffect(() => {
-  AsyncStorage.setItem("pp_gardenAreas", JSON.stringify(gardenAreas));
+  persist("pp_gardenAreas", JSON.stringify(gardenAreas));
 }, [gardenAreas]);
 useEffect(() => {
-  AsyncStorage.setItem("pp_areaHistory", JSON.stringify(areaHistory));
+  persist("pp_areaHistory", JSON.stringify(areaHistory));
 }, [areaHistory]);
 useEffect(() => {
-  AsyncStorage.setItem("pp_sowLog", JSON.stringify(sowLog));
+  persist("pp_sowLog", JSON.stringify(sowLog));
 }, [sowLog]);
 useEffect(() => {
-  AsyncStorage.setItem("pp_frostOverrides", JSON.stringify(frostOverrides));
+  persist("pp_frostOverrides", JSON.stringify(frostOverrides));
   setFrostOverrideRef(frostOverrides); // keep the pure date helpers in sync
 }, [frostOverrides]);
 useEffect(() => {
-  if (latitude == null || Number.isNaN(latitude)) return;
-  AsyncStorage.setItem(STORAGE_KEYS.latitude, String(latitude));
+  if (latitude == null || Number.isNaN(latitude)) {
+    // No coordinates for this location — the bundled US ZIP table carries none.
+    // Fall back to the northern default rather than leaving a previous country's
+    // hemisphere in place. Storage is deliberately untouched here: this branch
+    // also runs on mount, before the stored latitude has been hydrated.
+    setHemisphereFromLatitude(0);
+    return;
+  }
+  persist(STORAGE_KEYS.latitude, String(latitude));
   setHemisphereFromLatitude(latitude); // keep the seasonal helpers in sync
 }, [latitude]);
 useEffect(() => {
-  AsyncStorage.setItem(STORAGE_KEYS.country, country);
+  persist(STORAGE_KEYS.country, country);
 }, [country]);
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.wateredPlants,
     JSON.stringify(wateredPlants)
   );
 }, [wateredPlants]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.wateringHistory,
     JSON.stringify(wateringHistory)
   );
 }, [wateringHistory]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.wateringReminders,
     JSON.stringify(wateringReminders)
   );
 }, [wateringReminders]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.fertilizerTrackers,
     JSON.stringify(fertilizerTrackers)
   );
 }, [fertilizerTrackers]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.harvestTrackers,
     JSON.stringify(harvestTrackers)
   );
 }, [harvestTrackers]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.streakData,
     JSON.stringify(streakData)
   );
 }, [streakData]);
 
 useEffect(() => {
-  AsyncStorage.setItem(
+  persist(
     STORAGE_KEYS.profileTheme,
     selectedProfileTheme
   );
 }, [selectedProfileTheme]);
 
 useEffect(() => {
-  AsyncStorage.setItem("pp_careLog", JSON.stringify(careLog));
+  persist("pp_careLog", JSON.stringify(careLog));
 }, [careLog]);
 
 useEffect(() => {
   if (!persistHydrated.current.recentPlants) { persistHydrated.current.recentPlants = true; return; }
-  AsyncStorage.setItem("pp_recentPlants", JSON.stringify(recentPlants));
+  persist("pp_recentPlants", JSON.stringify(recentPlants));
 }, [recentPlants]);
 
 useEffect(() => {
-  AsyncStorage.getItem("pp_recentPlants").then((val) => {
+  hydrate("pp_recentPlants", (val) => {
     if (val) {
       try { setRecentPlants(JSON.parse(val)); } catch (e) {}
     }
@@ -1981,23 +2069,23 @@ useEffect(() => {
 
 useEffect(() => {
   if (!persistHydrated.current.pinnedPlants) { persistHydrated.current.pinnedPlants = true; return; }
-  AsyncStorage.setItem("pp_pinnedPlants", JSON.stringify(pinnedPlants));
+  persist("pp_pinnedPlants", JSON.stringify(pinnedPlants));
 }, [pinnedPlants]);
 
 useEffect(() => {
   // Don't persist until the saved list has hydrated, otherwise the initial empty []
   // clobbers stored milestones on every launch and they re-fire forever.
   if (!milestonesHydrated.current) return;
-  AsyncStorage.setItem("pp_firedMilestones", JSON.stringify(firedMilestones));
+  persist("pp_firedMilestones", JSON.stringify(firedMilestones));
 }, [firedMilestones]);
 
 useEffect(() => {
   if (!persistHydrated.current.plantSaveDates) { persistHydrated.current.plantSaveDates = true; return; }
-  AsyncStorage.setItem("pp_plantSaveDates", JSON.stringify(plantSaveDates));
+  persist("pp_plantSaveDates", JSON.stringify(plantSaveDates));
 }, [plantSaveDates]);
 
 useEffect(() => {
-  AsyncStorage.getItem("pp_plantSaveDates").then((val) => {
+  hydrate("pp_plantSaveDates", (val) => {
     if (val) {
       try { setPlantSaveDates(JSON.parse(val)); } catch (e) {}
     }
@@ -2006,15 +2094,15 @@ useEffect(() => {
 
 useEffect(() => {
   if (!persistHydrated.current.harvestGoal) { persistHydrated.current.harvestGoal = true; return; }
-  AsyncStorage.setItem("pp_harvestGoal", JSON.stringify(harvestGoal));
+  persist("pp_harvestGoal", JSON.stringify(harvestGoal));
 }, [harvestGoal]);
 
 useEffect(() => {
-  AsyncStorage.setItem("pp_unitSystem", unitSystem);
+  persist("pp_unitSystem", unitSystem);
 }, [unitSystem]);
 
 useEffect(() => {
-  AsyncStorage.getItem("pp_unitSystem").then((val) => {
+  hydrate("pp_unitSystem", (val) => {
     if (val === "metric" || val === "imperial") setUnitSystem(val);
   }).catch(() => {});
 }, []);
@@ -2022,11 +2110,11 @@ useEffect(() => {
 // Keep the core haptics switch in sync, and persist the preference.
 useEffect(() => {
   setHapticsEnabled(hapticsOn);
-  AsyncStorage.setItem("pp_hapticsOn", hapticsOn ? "1" : "0");
+  persist("pp_hapticsOn", hapticsOn ? "1" : "0");
 }, [hapticsOn]);
 
 useEffect(() => {
-  AsyncStorage.getItem("pp_hapticsOn").then((val) => {
+  hydrate("pp_hapticsOn", (val) => {
     if (val === "0") setHapticsOn(false);
   }).catch(() => {});
 }, []);
@@ -2034,11 +2122,11 @@ useEffect(() => {
 // Remember the Plants-tab filters between sessions.
 useEffect(() => {
   if (!persistHydrated.current.plantFilters) { persistHydrated.current.plantFilters = true; return; }
-  AsyncStorage.setItem("pp_plantFilters", JSON.stringify({ selectedType, plantDifficultyFilter, plantNowOnly, plantSortMode, plantAttrFilters })).catch(() => {});
+  persist("pp_plantFilters", JSON.stringify({ selectedType, plantDifficultyFilter, plantNowOnly, plantSortMode, plantAttrFilters }));
 }, [selectedType, plantDifficultyFilter, plantNowOnly, plantSortMode, plantAttrFilters]);
 
 useEffect(() => {
-  AsyncStorage.getItem("pp_plantFilters").then((val) => {
+  hydrate("pp_plantFilters", (val) => {
     if (!val) return;
     try {
       const f = JSON.parse(val) || {};
@@ -2052,16 +2140,16 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  AsyncStorage.setItem("pp_suppliesSpent", String(suppliesSpent));
+  persist("pp_suppliesSpent", String(suppliesSpent));
 }, [suppliesSpent]);
 
 useEffect(() => {
   if (!persistHydrated.current.wateringAmounts) { persistHydrated.current.wateringAmounts = true; return; }
-  AsyncStorage.setItem("pp_wateringAmounts", JSON.stringify(wateringAmounts));
+  persist("pp_wateringAmounts", JSON.stringify(wateringAmounts));
 }, [wateringAmounts]);
 
 useEffect(() => {
-  AsyncStorage.getItem("pp_harvestGoal").then((val) => {
+  hydrate("pp_harvestGoal", (val) => {
     if (val) {
       try { setHarvestGoal(JSON.parse(val)); } catch (e) {}
     }
@@ -2069,7 +2157,7 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  AsyncStorage.getItem("pp_suppliesSpent").then((val) => {
+  hydrate("pp_suppliesSpent", (val) => {
     if (val != null) {
       const n = parseFloat(val);
       if (!Number.isNaN(n)) setSuppliesSpent(n);
@@ -2078,7 +2166,7 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  AsyncStorage.getItem("pp_wateringAmounts").then((val) => {
+  hydrate("pp_wateringAmounts", (val) => {
     if (val) {
       try {
         const parsed = JSON.parse(val);
@@ -2088,7 +2176,7 @@ useEffect(() => {
   });
 }, []);
 useEffect(() => {
-  AsyncStorage.getItem("pp_areaHistory").then((val) => {
+  hydrate("pp_areaHistory", (val) => {
     if (val) {
       try {
         const parsed = JSON.parse(val);
@@ -2098,7 +2186,7 @@ useEffect(() => {
   });
 }, []);
 useEffect(() => {
-  AsyncStorage.getItem("pp_sowLog").then((val) => {
+  hydrate("pp_sowLog", (val) => {
     if (val) {
       try {
         const parsed = JSON.parse(val);
@@ -2108,7 +2196,7 @@ useEffect(() => {
   });
 }, []);
 useEffect(() => {
-  AsyncStorage.getItem("pp_frostOverrides").then((val) => {
+  hydrate("pp_frostOverrides", (val) => {
     if (val) {
       try {
         const parsed = JSON.parse(val);
@@ -2121,7 +2209,7 @@ useEffect(() => {
   });
 }, []);
 useEffect(() => {
-  AsyncStorage.getItem(STORAGE_KEYS.latitude).then((val) => {
+  hydrate(STORAGE_KEYS.latitude, (val) => {
     if (cloudProfileLoadedRef.current) return; // cloud value is newer
     const parsed = parseFloat(val);
     if (Number.isNaN(parsed)) return;
@@ -2130,19 +2218,19 @@ useEffect(() => {
   });
 }, []);
 useEffect(() => {
-  AsyncStorage.getItem(STORAGE_KEYS.country).then((val) => {
+  hydrate(STORAGE_KEYS.country, (val) => {
     if (cloudProfileLoadedRef.current) return; // cloud value is newer
     if (val && COUNTRIES.some((c) => c.code === val)) setCountry(val);
   });
 }, []);
 useEffect(() => {
-  AsyncStorage.getItem("pp_lastSyncedAt").then((val) => {
+  hydrate("pp_lastSyncedAt", (val) => {
     const n = parseInt(val, 10);
     if (!Number.isNaN(n)) setLastSyncedAt(n);
   });
 }, []);
 useEffect(() => {
-  AsyncStorage.getItem("pp_vacation").then((val) => {
+  hydrate("pp_vacation", (val) => {
     if (val) {
       try {
         const parsed = JSON.parse(val);
@@ -2152,12 +2240,12 @@ useEffect(() => {
   });
 }, []);
 useEffect(() => {
-  if (vacation) AsyncStorage.setItem("pp_vacation", JSON.stringify(vacation));
+  if (vacation) persist("pp_vacation", JSON.stringify(vacation));
   else AsyncStorage.removeItem("pp_vacation");
 }, [vacation]);
 const milestonesHydrated = useRef(false);
 useEffect(() => {
-  AsyncStorage.getItem("pp_firedMilestones").then((val) => {
+  hydrate("pp_firedMilestones", (val) => {
     if (val) {
       try { setFiredMilestones(JSON.parse(val)); } catch (e) {}
     }
@@ -2218,7 +2306,7 @@ useEffect(() => {
 }, [harvestLog, harvestGoal, firedMilestones, milestoneCelebration, showStreakCelebration]);
 
 useEffect(() => {
-  AsyncStorage.getItem("pp_pinnedPlants").then((val) => {
+  hydrate("pp_pinnedPlants", (val) => {
     if (val) {
       try { setPinnedPlants(JSON.parse(val)); } catch (e) {}
     }
@@ -2227,15 +2315,15 @@ useEffect(() => {
 
 useEffect(() => {
   if (!persistHydrated.current.snoozedPlants) { persistHydrated.current.snoozedPlants = true; return; }
-  AsyncStorage.setItem("pp_snoozedPlants", JSON.stringify(snoozedPlants));
+  persist("pp_snoozedPlants", JSON.stringify(snoozedPlants));
 }, [snoozedPlants]);
 
 useEffect(() => {
-  AsyncStorage.setItem("pp_wateringReminderTime", JSON.stringify(wateringReminderTime));
+  persist("pp_wateringReminderTime", JSON.stringify(wateringReminderTime));
 }, [wateringReminderTime]);
 
 useEffect(() => {
-  AsyncStorage.getItem("pp_wateringReminderTime").then((val) => {
+  hydrate("pp_wateringReminderTime", (val) => {
     if (val) {
       try {
         const parsed = JSON.parse(val);
@@ -2246,11 +2334,31 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  AsyncStorage.setItem("pp_plantOfDayOn", JSON.stringify(plantOfDayOn));
+  persist("pp_plantOfDayOn", JSON.stringify(plantOfDayOn));
 }, [plantOfDayOn]);
 
 useEffect(() => {
-  AsyncStorage.getItem("pp_plantOfDayOn").then((val) => {
+  persist("pp_weeklyRecapOn", JSON.stringify(weeklyRecapOn));
+}, [weeklyRecapOn]);
+
+// A repeating trigger carries the body it was scheduled with, so without this the
+// Sunday notice would keep reciting whatever the numbers were the day it was
+// switched on. Re-scheduling is a cancel + set, so it is safe to repeat.
+useEffect(() => {
+  if (!weeklyRecapOn) return;
+  scheduleWeeklyRecap({ silent: true });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [weeklyRecapOn, journalEntries.length, harvestLog.length, streakData?.count, getTotalWaterings(wateringHistory)]);
+
+useEffect(() => {
+  hydrate("pp_weeklyRecapOn", (val) => {
+    if (!val || cloudProfileLoadedRef.current) return;
+    try { setWeeklyRecapOn(JSON.parse(val) === true); } catch (e) {}
+  });
+}, []);
+
+useEffect(() => {
+  hydrate("pp_plantOfDayOn", (val) => {
     if (val) {
       try { setPlantOfDayOn(JSON.parse(val)); } catch (e) {}
     }
@@ -2277,7 +2385,7 @@ await scheduleDailyReminder({
 }, [wateringReminderTime, dailyWateringOn]);
 
 useEffect(() => {
-  AsyncStorage.getItem("pp_snoozedPlants").then((val) => {
+  hydrate("pp_snoozedPlants", (val) => {
     if (!val) return;
     try {
       const parsed = JSON.parse(val);
@@ -2298,11 +2406,11 @@ useEffect(() => {
 
 useEffect(() => {
   if (!persistHydrated.current.streakFreeze) { persistHydrated.current.streakFreeze = true; return; }
-  AsyncStorage.setItem("pp_streakFreeze", JSON.stringify(streakFreeze));
+  persist("pp_streakFreeze", JSON.stringify(streakFreeze));
 }, [streakFreeze]);
 
 useEffect(() => {
-  AsyncStorage.getItem("pp_streakFreeze").then((val) => {
+  hydrate("pp_streakFreeze", (val) => {
     let loaded = { available: true, lastUsed: null, weekKey: null };
     if (val) {
       try { loaded = JSON.parse(val); } catch (e) {}
@@ -2320,24 +2428,59 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  AsyncStorage.setItem("pp_harvestLog", JSON.stringify(harvestLog));
+  persist("pp_harvestLog", JSON.stringify(harvestLog));
 }, [harvestLog]);
 
 useEffect(() => {
-  AsyncStorage.setItem("pp_activeBannerId", activeBannerId || "");
+  persist("pp_activeBannerId", activeBannerId || "");
 }, [activeBannerId]);
 
 useEffect(() => {
-  AsyncStorage.setItem("pp_bonusXP", String(bonusXP));
+  persist("pp_bonusXP", String(bonusXP));
 }, [bonusXP]);
 
 useEffect(() => {
-  AsyncStorage.setItem("pp_questXP", String(questXP));
+  persist("pp_questXP", String(questXP));
 }, [questXP]);
 
 useEffect(() => {
-  AsyncStorage.setItem("pp_completedQuestIds", JSON.stringify(completedQuestIds));
+  persist("pp_completedQuestIds", JSON.stringify(completedQuestIds));
 }, [completedQuestIds]);
+
+// These five were written on every change and never read back: they sit outside
+// STORAGE_KEYS, so the multiGet hydration above misses them, and only a cloud
+// profile or a restored backup ever put them back. A signed-out gardener lost
+// their whole care log, their bonus and quest XP, their equipped banner, and
+// every quest claim on each app restart — which also made the day's quests
+// claimable again for more XP. The cloud row is still authoritative when there
+// is one, matching the other hydrations.
+useEffect(() => {
+  hydrate("pp_careLog", (val) => {
+    if (!val || cloudProfileLoadedRef.current) return;
+    try { const parsed = JSON.parse(val); if (Array.isArray(parsed)) setCareLog(parsed); } catch (e) {}
+  });
+  hydrate("pp_bonusXP", (val) => {
+    if (val == null || cloudProfileLoadedRef.current) return;
+    const n = Number(val);
+    if (Number.isFinite(n)) setBonusXP(n);
+  });
+  hydrate("pp_questXP", (val) => {
+    if (val == null || cloudProfileLoadedRef.current) return;
+    const n = Number(val);
+    if (Number.isFinite(n)) setQuestXP(n);
+  });
+  hydrate("pp_completedQuestIds", (val) => {
+    if (!val || cloudProfileLoadedRef.current) return;
+    try {
+      const parsed = JSON.parse(val);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) setCompletedQuestIds(parsed);
+    } catch (e) {}
+  });
+  hydrate("pp_activeBannerId", (val) => {
+    if (!val || cloudProfileLoadedRef.current) return;
+    setActiveBannerId(val);
+  });
+}, []);
 
 useEffect(() => {
   const { data: listener } =
@@ -2451,6 +2594,11 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
 
  async function updateDailyStreak() {
     const today = getTodayKey();
+    // A state updater has to be pure — React may run it more than once for a
+    // single update — so anything that buzzes, alerts, or schedules is recorded
+    // here and fired once after the update is queued. Assigned rather than
+    // pushed, so a repeated run of the updater cannot queue it twice.
+    let celebrate = null;
     setStreakData((current) => {
       if (!current?.lastOpened) return { count: 1, lastOpened: today };
       if (current.lastOpened === today) return current;
@@ -2461,13 +2609,12 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
         const newCount = (current.count || 0) + 1;
         const milestones = [7, 14, 30, 60, 100];
         if (milestones.includes(newCount)) {
-          Vibration.vibrate([0, 80, 60, 120]);
-          successHaptic();
-          setShowStreakCelebration(newCount);
-          setTimeout(() => setShowStreakCelebration(null), 3000);
-          if (newCount >= 7) {
-            setTimeout(() => { maybeAskForReview(); }, 3500);
-          }
+          celebrate = () => {
+            Vibration.vibrate([0, 80, 60, 120]);
+            successHaptic();
+            setShowStreakCelebration(newCount);
+            setTimeout(() => setShowStreakCelebration(null), 3000);
+          };
         }
        return { count: newCount, lastOpened: today };
       }
@@ -2477,9 +2624,11 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
         const daysSinceFreeze = (currentDate - freezeDate) / (1000 * 60 * 60 * 24);
         // Freeze was used within the missed window — protect the streak.
         if (daysSinceFreeze <= 2) {
-          const popup = { id: Date.now().toString(), amount: t("streak.savedTitle") };
-          setXpPopups((popups) => [...popups, popup]);
-          setTimeout(() => setXpPopups((popups) => popups.filter((p) => p.id !== popup.id)), 2500);
+          celebrate = () => {
+            const popup = { id: Date.now().toString(), amount: t("streak.savedTitle") };
+            setXpPopups((popups) => [...popups, popup]);
+            setTimeout(() => setXpPopups((popups) => popups.filter((p) => p.id !== popup.id)), 2500);
+          };
           return { count: current.count || 1, lastOpened: today };
         }
       }
@@ -2491,6 +2640,7 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
       }
       return { count: 1, lastOpened: today };
     });
+    if (celebrate) celebrate();
   }
 
   // Offer to restore a just-reset streak with a freeze (if one's available).
@@ -2716,14 +2866,18 @@ function restoreFromBackup(text) {
     t("backup.restoreTitle"),
     t("backup.restoreBody"),
     [
-      { text: "Cancel", style: "cancel" },
+      { text: t("common.cancel"), style: "cancel" },
       {
         text: "Restore",
         style: "destructive",
         onPress: () => {
           if (Array.isArray(data.savedPlants)) setSavedPlants(data.savedPlants);
           if (Array.isArray(data.journalEntries)) setJournalEntries(data.journalEntries);
-          if (Array.isArray(data.gardenAreas)) setGardenAreas(data.gardenAreas);
+          // Through migrateGardenToAreas, like the cloud load and the local
+          // hydrate: it normalises slot keys, and a backup from an older build
+          // can still carry the bare numeric keys that count as planted but
+          // never render in the bed.
+          if (Array.isArray(data.gardenAreas)) setGardenAreas(migrateGardenToAreas(data.gardenAreas, data.gardenMap));
           if (data.gardenMap && typeof data.gardenMap === "object") setGardenMap(data.gardenMap);
           if (data.wateredPlants && typeof data.wateredPlants === "object") setWateredPlants(data.wateredPlants);
           if (data.wateringHistory && typeof data.wateringHistory === "object") setWateringHistory(data.wateringHistory);
@@ -2766,13 +2920,29 @@ function deleteJournalEntriesOlderThan(days) {
     "Delete old photos?",
     `This permanently removes ${toRemove.length} photo${toRemove.length === 1 ? "" : "s"} older than ${label}. This can't be undone. Export a backup first if you want to keep them.`,
     [
-      { text: "Cancel", style: "cancel" },
+      { text: t("common.cancel"), style: "cancel" },
       {
         text: `Delete ${toRemove.length}`,
         style: "destructive",
         onPress: () => {
           setJournalEntries((current) => current.filter((e) => new Date(e.createdAt).getTime() >= cutoff));
           successHaptic();
+          // Delete the uploaded files too, the way deleteJournalEntry does — this
+          // path only dropped the local entries, so every photo it claimed to
+          // remove permanently stayed in the bucket with its URL still live.
+          const paths = toRemove.map((e) => e.storagePath).filter(Boolean);
+          if (paths.length) {
+            (async () => {
+              // Chunked so one oversized request can't fail the whole cleanup.
+              for (let i = 0; i < paths.length; i += 50) {
+                try {
+                  await supabase.storage.from("journal-photos").remove(paths.slice(i, i + 50));
+                } catch (e) {
+                  console.log("Storage cleanup skipped:", e?.message);
+                }
+              }
+            })();
+          }
           Alert.alert("Photos cleared", `${toRemove.length} old photo${toRemove.length === 1 ? "" : "s"} removed.`);
         },
       },
@@ -2838,8 +3008,12 @@ function buildWeeklyRecapBody() {
     return `This week: ${parts.join("  •  ")}. Tap to see your full garden recap 🌿`;
   }
 
-  async function scheduleWeeklyRecap() {
-    const granted = await ensureNotificationPermission();
+  // `silent` is for the refresh below: it must never trigger the permission
+  // prompt, which ensureNotificationPermission() will do on a user-facing call.
+  async function scheduleWeeklyRecap({ silent = false } = {}) {
+    const granted = silent
+      ? (await Notifications.getPermissionsAsync()).granted
+      : await ensureNotificationPermission();
     if (!granted) return false;
     await Notifications.cancelScheduledNotificationAsync("weekly-recap").catch(() => {});
     await Notifications.scheduleNotificationAsync({
@@ -2862,6 +3036,24 @@ function buildWeeklyRecapBody() {
 
   async function cancelWeeklyRecap() {
     await Notifications.cancelScheduledNotificationAsync("weekly-recap").catch(() => {});
+  }
+
+async function toggleWeeklyRecap(value) {
+    setWeeklyRecapOn(value);
+    if (value) {
+      const granted = await ensureNotificationPermission();
+      if (!granted) {
+        Alert.alert(t("notify.disabledTitle"), t("notify.enableForRecap"));
+        setWeeklyRecapOn(false);
+        return;
+      }
+      const ok = await scheduleWeeklyRecap();
+      if (ok) Alert.alert(t("notify.weeklyRecapOnTitle"), t("notify.weeklyRecapOnBody"));
+      else setWeeklyRecapOn(false);
+    } else {
+      await cancelWeeklyRecap();
+      Alert.alert(t("notify.weeklyRecapOffTitle"), t("notify.weeklyRecapOffBody"));
+    }
   }
 
 async function togglePlantOfDay(value) {
@@ -2933,7 +3125,12 @@ async function scheduleFertilizerReminder(plantName, days) {
     const fireDate = new Date();
     fireDate.setDate(fireDate.getDate() + days);
     fireDate.setHours(9, 0, 0, 0);
-    const id = `fertilize-${plantName}-${Date.now()}`;
+    // A stable id, cancelled before re-scheduling — the same shape as
+    // `water-${plantName}`. The old `fertilize-<plant>-<Date.now()>` minted a new
+    // id every time, so feeding a plant three times left three overlapping
+    // reminders and nothing could ever cancel them, not even signing out.
+    const id = `fertilize-${plantName}`;
+    await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
     await Notifications.scheduleNotificationAsync({
       identifier: id,
       content: {
@@ -2950,15 +3147,37 @@ async function scheduleFertilizerReminder(plantName, days) {
   }
 
   async function checkHarvestNotifications() {
+    const ready = Object.entries(harvestTrackers || {})
+      // Ready-or-overdue: an exact `=== 0` meant that skipping a day of app
+      // opens skipped the notification entirely.
+      .filter(([, tracker]) => isHarvestReady(tracker))
+      .map(([plantName]) => plantName);
+    if (!ready.length) return;
+
+    // One notice per plant per day, persisted — the frost and heat alerts guard
+    // themselves the same way. This runs on every launch, so without it a plant
+    // whose window had passed announced itself again every single time the app
+    // was opened.
+    const today = getTodayKey();
+    let sent = {};
+    try { sent = JSON.parse((await AsyncStorage.getItem("pp_harvestAlertSent")) || "{}") || {}; } catch (e) { /* ignore */ }
+    const fresh = ready.filter((name) => sent[name] !== today);
+    if (!fresh.length) return;
+
     const { status } = await Notifications.requestPermissionsAsync();
     if (status !== "granted") return;
-    Object.entries(harvestTrackers || {}).forEach(async ([plantName, tracker]) => {
-      const daysPassed = Math.floor((new Date() - new Date(tracker.startedAt)) / (1000 * 60 * 60 * 24));
-      const daysLeft = tracker.days - daysPassed;
-      if (daysLeft === 0) {
-        await Notifications.scheduleNotificationAsync({ content: { title: "🎉 Harvest Ready", body: `${plantName} should be ready to harvest today.` }, trigger: null });
-      }
-    });
+
+    for (const plantName of fresh) {
+      await Notifications.scheduleNotificationAsync({
+        content: { title: "🎉 Harvest Ready", body: `${plantName} should be ready to harvest today.` },
+        trigger: null,
+      }).catch(() => {});
+      sent[plantName] = today;
+    }
+    // Keep only what is still being tracked so the map can't grow forever.
+    const kept = {};
+    ready.forEach((name) => { if (sent[name]) kept[name] = sent[name]; });
+    AsyncStorage.setItem("pp_harvestAlertSent", JSON.stringify(kept)).catch(() => {});
   }
 
   async function schedulePlantReminder(plantName) {
@@ -2966,7 +3185,7 @@ async function scheduleFertilizerReminder(plantName, days) {
     Alert.alert(
       t("notify.enableFirstTitle"),
       t("notify.enableFirstBody"),
-      [{ text: "OK" }]
+      [{ text: t("common.ok") }]
     );
     return;
   }
@@ -2988,7 +3207,7 @@ async function scheduleFertilizerReminder(plantName, days) {
         onPress: () => scheduleReminder(plantName, 9, 0),
       },
       {
-        text: "Cancel",
+        text: t("common.cancel"),
         style: "cancel",
       },
     ]
@@ -3029,7 +3248,7 @@ async function scheduleReminder(plantName, hour, minute) {
     );
   } catch (error) {
     console.log("Reminder error:", error);
-    Alert.alert("Error", t("notify.reminderFailed"));
+    Alert.alert(t("accountCloud.errorTitle"), t("notify.reminderFailed"));
   }
 }
 // Schedule a one-off notification for a plant's next watering, based on its
@@ -3071,9 +3290,12 @@ async function cancelPlantWaterReminder(plantName) {
 }
 
 async function claimDailyBonus() {
-  const nowIso = new Date().toISOString();
+  // A day key, not a timestamp: this was written as an ISO string and then read
+  // back with `=== getTodayKey()` in three places, which never matched — so the
+  // bonus always looked unclaimed on launch and then refused to be claimed.
+  const nowIso = getTodayKey();
 
-  if (dailyBonusDate && (Date.now() - new Date(dailyBonusDate).getTime()) < 24 * 60 * 60 * 1000) {
+  if (isSameDayKey(dailyBonusDate, getTodayKey())) {
     Alert.alert(
       t("bonus.alreadyClaimedTitle"),
       t("bonus.alreadyClaimedBody")
@@ -3135,28 +3357,32 @@ function markPlantWatered(plantName) {
     // ── Mark watered ──
     successHaptic();
     setWateredPlants((current) => ({ ...current, [plantName]: today }));
-    setWateringHistory((current) => {
-      const existing = Array.isArray(current[plantName]) ? current[plantName] : [];
-      if (existing[existing.length - 1] === today) return current;
-      const next = { ...current, [plantName]: [...existing, today] };
-      const newStreak = getWateringStreak(plantName, next);
-      const milestones = [7, 14, 30, 60, 100];
-      if (milestones.includes(newStreak)) {
-        Vibration.vibrate([0, 80, 60, 120]);
-        successHaptic();
-        const popup = { id: Date.now().toString(), amount: `🔥 ${newStreak}-day streak!` };
-        setXpPopups((popups) => [...popups, popup]);
-        setTimeout(() => {
-          setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
-        }, 2000);
-        setTimeout(() => {
-          Alert.alert(`🔥 ${newStreak}-Day Watering Streak!`, `Incredible consistency with ${plantName}. Keep it growing!`);
-        }, 300);
-      } else {
-        Alert.alert("Watered", `${plantName} was marked watered for today.`);
-      }
-      return next;
-    });
+    // Work out the celebration from the current history first, then queue the
+    // state change. Running alerts and haptics inside the updater meant they
+    // fired again any time React re-ran it for the same update.
+    const existingHistory = Array.isArray(wateringHistory[plantName]) ? wateringHistory[plantName] : [];
+    const alreadyLoggedToday = existingHistory[existingHistory.length - 1] === today;
+    const nextHistory = alreadyLoggedToday
+      ? wateringHistory
+      : { ...wateringHistory, [plantName]: [...existingHistory, today] };
+    setWateringHistory(nextHistory);
+
+    const newStreak = getWateringStreak(plantName, nextHistory);
+    const milestones = [7, 14, 30, 60, 100];
+    if (!alreadyLoggedToday && milestones.includes(newStreak)) {
+      Vibration.vibrate([0, 80, 60, 120]);
+      successHaptic();
+      const popup = { id: Date.now().toString(), amount: `🔥 ${newStreak}-day streak!` };
+      setXpPopups((popups) => [...popups, popup]);
+      setTimeout(() => {
+        setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
+      }, 2000);
+      setTimeout(() => {
+        Alert.alert(`🔥 ${newStreak}-Day Watering Streak!`, `Incredible consistency with ${plantName}. Keep it growing!`);
+      }, 300);
+    } else {
+      Alert.alert("Watered", `${plantName} was marked watered for today.`);
+    }
     schedulePlantWaterReminder(plantName);
     maybePromptPremium("Watering tracked. Upgrade to Premium to unlock unlimited plants, the garden dashboard, planting & frost calendars, and more.");
   }
@@ -3225,19 +3451,34 @@ function logHarvest(plantName, amount, unit, note) {
     note: note || "",
     createdAt: new Date().toISOString(),
   };
-  setHarvestLog((current) => {
-    const next = [entry, ...current];
-    // First-ever harvest is a great moment to ask for a review.
-    if (current.length === 0) setTimeout(() => { maybeAskForReview(); }, 1200);
+  setHarvestLog((current) => [entry, ...current]);
+  // Picking the crop is what finishes the countdown. There was no way to end a
+  // tracker — only Start/Restart — so once a plant's window arrived it stayed
+  // "ready to harvest" forever, in the counts, the widget and the notification.
+  setHarvestTrackers((current) => {
+    if (!current[plantName]) return current;
+    const next = { ...current };
+    delete next[plantName];
     return next;
   });
   logZoneActivity(user, zone, plantName, "harvested");
   successHaptic();
   Vibration.vibrate([0, 80, 60, 120]);
   Alert.alert(t("garden.harvestLogged"), `${plantName} harvest saved to your garden record.`);
+  // A logged harvest is the app's best moment to ask. Unconditional — every
+  // harvest, not just the first; reviewPrompt owns all the gating. Delayed so
+  // the alert and haptics land first, and unawaited so nothing here blocks on
+  // the native prompt or on the alert being dismissed.
+  setTimeout(() => { maybeRequestReview(); }, 1200);
+}
+
+function cancelFertilizerReminder(plantName) {
+  Notifications.cancelScheduledNotificationAsync(`fertilize-${plantName}`).catch(() => {});
 }
 
 function toggleFertilizerTracker(plantName) {
+  // Turning the tracker off should also silence its pending reminder.
+  if (fertilizerTrackers[plantName]) cancelFertilizerReminder(plantName);
   setFertilizerTrackers((current) => {
     const next = { ...current };
     if (next[plantName]) {
@@ -3278,18 +3519,23 @@ function snoozePlantWatering(plantName) {
   tomorrow.setDate(tomorrow.getDate() + 1);
   const key = getDateKey(tomorrow);
   tapHaptic("light");
-  setSnoozedPlants((current) => {
-    const next = { ...current, [plantName]: key };
-    scheduleSnoozeSummary(next);
-    return next;
-  });
+  // Quiet the plant's own reminder too. Snoozing used to leave `water-<plant>`
+  // scheduled, so the app would nag about the very plant it had just been told
+  // to leave alone — every other path that changes a plant's watering state
+  // (marking watered, un-saving) cancels it.
+  cancelPlantWaterReminder(plantName);
+  // Computed here rather than inside the updater: React may run an updater more
+  // than once, and scheduleSnoozeSummary cancels and re-schedules a notification.
+  const snoozed = { ...snoozedPlants, [plantName]: key };
+  setSnoozedPlants(snoozed);
+  scheduleSnoozeSummary(snoozed);
   showUndoToast(`${plantName} snoozed until tomorrow`, () => {
-    setSnoozedPlants((current) => {
-      const next = { ...current };
-      delete next[plantName];
-      scheduleSnoozeSummary(next);
-      return next;
-    });
+    const restored = { ...snoozedPlants };
+    delete restored[plantName];
+    setSnoozedPlants(restored);
+    scheduleSnoozeSummary(restored);
+    // Undo puts the reminder back on its normal rhythm.
+    schedulePlantWaterReminder(plantName);
     setUndoToast(null);
   });
 }
@@ -3344,53 +3590,6 @@ function getSuccessionInterval(plantName) {
   const hit = SUCCESSION_INTERVALS.find((row) => row.match.some((w) => n.includes(w)));
   return hit ? hit.days : null;
 }
-function getWaterTriage(savedPlants, wateringHistory, wateringAmounts) {
-  const rows = (savedPlants || [])
-    .map((name) => {
-      const item = produceData.find((p) => p.name === name);
-      if (!item) return null;
-      const info = getNextWaterInfo(name, item, wateringHistory);
-      if (!info) return null;
-      // Normalize "days until next water": negative/zero = due or overdue.
-      const d = typeof info.daysUntil === "number" ? info.daysUntil : null;
-      if (d === null) return null;
-      let bucket;
-      if (d < 0) bucket = "overdue";
-      else if (d === 0) bucket = "today";
-      else if (d === 1) bucket = "tomorrow";
-      else return null; // not urgent — leave it off the queue
-      return { name, item, info, daysUntil: d, bucket };
-    })
-    .filter(Boolean);
-  const order = { overdue: 0, today: 1, tomorrow: 2 };
-  return rows.sort((a, b) => {
-    if (order[a.bucket] !== order[b.bucket]) return order[a.bucket] - order[b.bucket];
-    return a.daysUntil - b.daysUntil; // most overdue first within a bucket
-  });
-}
-function getWaterTriage(savedPlants, wateringHistory, wateringAmounts) {
-  const rows = (savedPlants || [])
-    .map((name) => {
-      const item = produceData.find((p) => p.name === name);
-      if (!item) return null;
-      const info = getNextWaterInfo(name, item, wateringHistory);
-      if (!info) return null;
-      const d = typeof info.daysUntil === "number" ? info.daysUntil : null;
-      if (d === null) return null;
-      let bucket;
-      if (d < 0) bucket = "overdue";
-      else if (d === 0) bucket = "today";
-      else if (d === 1) bucket = "tomorrow";
-      else return null;
-      return { name, item, info, daysUntil: d, bucket };
-    })
-    .filter(Boolean);
-  const order = { overdue: 0, today: 1, tomorrow: 2 };
-  return rows.sort((a, b) => {
-    if (order[a.bucket] !== order[b.bucket]) return order[a.bucket] - order[b.bucket];
-    return a.daysUntil - b.daysUntil;
-  });
-}
 function getSuccessionInfo(name, item, zone, sowLog) {
   const interval = getSuccessionInterval(name);
   if (!interval) return null;
@@ -3405,19 +3604,10 @@ function getSuccessionInfo(name, item, zone, sowLog) {
   return { interval, status: "waiting", daysSince, daysUntil: interval - daysSince };
 }
 
-const COMPANION_NAME_ALIASES = {
-  "bean": "Green Bean",
-  "beans": "Green Bean",
-  "squash": "Zucchini",
-  "melon": "Watermelon",
-  "grape": "Grapes",
-};
 function resolveCompanionPlant(name) {
-  const raw = String(name || "").toLowerCase();
-  const aliased = COMPANION_NAME_ALIASES[raw] || name;
-  return produceData.find(
-    (p) => String(p.name).toLowerCase() === String(aliased).toLowerCase()
-  ) || null;
+  // Aliases live in core so the garden planner resolves companions identically.
+  const resolved = resolveCompanionName(name);
+  return resolved ? produceData.find((p) => p.name === resolved) || null : null;
 }
 
 function getCompanionDisplayName(name) {
@@ -3462,13 +3652,11 @@ function assignPlantToAreaSlot(areaId, slotId, plantName, opts = {}) {
     const family = getPlantFamily(plantName);
     if (family) {
       const now = new Date();
-      const monthNum = now.getMonth() + 1;
-      const season =
-        monthNum >= 3 && monthNum <= 5 ? "Spring"
-        : monthNum >= 6 && monthNum <= 8 ? "Summer"
-        : monthNum >= 9 && monthNum <= 11 ? "Fall"
-        : "Winter";
-      const todayKey = `${now.getFullYear()}-${String(monthNum).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      // The shared season model: astronomical boundaries, and correct below the
+      // equator. This inline month ladder labelled every southern planting with
+      // the opposite season, and rotation warnings de-duplicate on that label.
+      const season = getSeasonForDate(now).label;
+      const todayKey = getDateKey(now);
       const entry = { family, plant: plantName, season, year: now.getFullYear(), dateKey: todayKey };
       setAreaHistory((current) => {
         const existing = Array.isArray(current[areaId]) ? current[areaId] : [];
@@ -3531,7 +3719,7 @@ function quickAddPlantToGarden(plantName) {
       "Save it first",
       `Save ${plantName} to your plants, then you can add it to a garden bed.`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         { text: "Save plant", onPress: () => toggleSavedPlant(plantName) },
       ]
     );
@@ -3541,7 +3729,7 @@ function quickAddPlantToGarden(plantName) {
   // Already planted somewhere? Point them to it instead of duplicating.
   const existing = (gardenAreas || []).find((a) => Object.values(a.plots || {}).includes(plantName));
   if (existing) {
-    Alert.alert("Already planted", `${plantName} is already in ${existing.name}. Rearrange it anytime.`, [{ text: "OK" }, { text: t("garden.openGarden"), onPress: () => jumpToTab(existing.kind === "flower" ? "flowers" : "garden") }]);
+    Alert.alert("Already planted", `${plantName} is already in ${existing.name}. Rearrange it anytime.`, [{ text: t("common.ok") }, { text: t("garden.openGarden"), onPress: () => jumpToTab(existing.kind === "flower" ? "flowers" : "garden") }]);
     return;
   }
 
@@ -3707,7 +3895,10 @@ function autoOptimizeGarden() {
       const pair = firstConflict(area);
       if (!pair) continue;
       for (const [slot, plant] of [pair[0], pair[1]]) {
-        const target = areas.find((d) => d !== area && freeSlot(d) !== null && !wouldConflict(d, plant));
+        // canPlantInArea keeps the two gardens separate — every other placement
+        // path checks it. Without it the optimiser could move an edible into a
+        // flower bed, where it renders on the Flowers tab and looks lost.
+        const target = areas.find((d) => d !== area && canPlantInArea(plant, d) && freeSlot(d) !== null && !wouldConflict(d, plant));
         if (target) {
           delete area.plots[slot];
           target.plots[freeSlot(target)] = plant;
@@ -3735,7 +3926,7 @@ function autoOptimizeGarden() {
     t("garden.optimizeTitle"),
     `This will move ${moved} plant${moved === 1 ? "" : "s"} and resolve ${resolved} of ${before} conflict${before === 1 ? "" : "s"}${after > 0 ? ` (${after} would need more space)` : ""}. Apply it?`,
     [
-      { text: "Cancel", style: "cancel" },
+      { text: t("common.cancel"), style: "cancel" },
       {
         text: t("garden.optimizeConfirm"),
         onPress: () => {
@@ -3890,9 +4081,9 @@ function deleteGardenArea(areaId) {
     t("garden.deleteAreaTitle"),
     t("garden.deleteAreaBody"),
     [
-      { text: "Cancel", style: "cancel" },
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("common.delete"),
         style: "destructive",
         onPress: () =>
           setGardenAreas((current) => current.filter((area) => area.id !== areaId)),
@@ -3982,7 +4173,12 @@ async function detectLocationAndZone() {
         const cachedRaw = await AsyncStorage.getItem(cacheKey);
         if (cachedRaw) {
           const cached = JSON.parse(cachedRaw);
-          if (cached?.weather) setWeather(cached.weather);
+          // Coordinates never go stale, so those are always worth reusing. The
+          // forecast is: `ts` was written from the start but never read, so an
+          // offline phone painted a days-old forecast as today's — and the frost
+          // and heat effects below fired alerts off it.
+          const age = Date.now() - (Number(cached?.ts) || 0);
+          if (cached?.weather && age < WEATHER_CACHE_MAX_AGE_MS) setWeather(cached.weather);
           if (!coords && cached?.coords) coords = cached.coords;
         }
       } catch (e) {}
@@ -4058,14 +4254,24 @@ useEffect(() => {
     const frost = getUpcomingFrost(weather);
     if (!frost) return;
     if (lastFrostAlertDate.current === frost.date) return;
-    lastFrostAlertDate.current = frost.date;
     const whenText =
       frost.daysOut === 0 ? "tonight"
       : frost.daysOut === 1 ? "tomorrow night"
       : `in ${frost.daysOut} days`;
     (async () => {
+      // Persist the guard, the way the heat alert below does: the in-memory ref
+      // resets on every app start, and the cached forecast repaints immediately,
+      // so reopening the app fired the same frost warning again and again.
+      let alreadySent = null;
+      try { alreadySent = await AsyncStorage.getItem("pp_frostAlertDay"); } catch (e) { /* ignore */ }
+      if (alreadySent === frost.date) { lastFrostAlertDate.current = frost.date; return; }
+
       const granted = await ensureNotificationPermission();
       if (!granted) return;
+
+      lastFrostAlertDate.current = frost.date;
+      try { await AsyncStorage.setItem("pp_frostAlertDay", frost.date); } catch (e) { /* ignore */ }
+
       await Notifications.scheduleNotificationAsync({
         identifier: "frost-detected",
         content: {
@@ -4087,12 +4293,13 @@ useEffect(() => {
     if (idx === -1) return;
     const day = days[idx];
     if (lastHeatAlertDate.current === day.date) return;
-    const whenText = idx === 0 ? "today" : idx === 1 ? "tomorrow" : `in ${idx} days`;
     (async () => {
-      // Only one heat alert per forecast day, delivered at the phone's local
-      // midnight — NOT immediately. Otherwise every weather refresh through the
-      // day fires another notification. The guard is persisted so an app reload
-      // (which resets the in-memory ref) can't repeat it either.
+      // Only one heat alert per forecast day, and it lands at the start of the hot
+      // day itself rather than immediately, so a refresh every hour can't fire a
+      // stream of them. It used to schedule for the *next* midnight while wording
+      // the text for now, so "extreme heat today" arrived once that day was over
+      // and "tomorrow" arrived on the morning it meant. The guard is persisted so
+      // an app reload (which resets the in-memory ref) can't repeat it either.
       let alreadySent = null;
       try { alreadySent = await AsyncStorage.getItem("pp_heatAlertDay"); } catch (e) { /* ignore */ }
       if (alreadySent === day.date) { lastHeatAlertDate.current = day.date; return; }
@@ -4103,18 +4310,19 @@ useEffect(() => {
       lastHeatAlertDate.current = day.date;
       try { await AsyncStorage.setItem("pp_heatAlertDay", day.date); } catch (e) { /* ignore */ }
 
-      // The device's next local midnight (00:00).
-      const midnight = new Date();
-      midnight.setHours(24, 0, 0, 0);
+      // Midnight at the start of the hot day. If that is already behind us the
+      // heat is today, so send it now — the advice is still actionable.
+      const midnight = new Date(`${day.date}T00:00:00`);
+      const sendNow = Number.isNaN(midnight.getTime()) || midnight <= new Date();
 
       await Notifications.scheduleNotificationAsync({
         identifier: "heat-detected",
         content: {
-          title: `🔥 Extreme heat ${whenText} — ${formatTemp(day.maxTempF, unitSystem, true)}`,
+          title: `🔥 Extreme heat today — ${formatTemp(day.maxTempF, unitSystem, true)}`,
           body: "Water deeply before 9 AM, shade young transplants, and hold off on planting until it cools.",
           sound: true,
         },
-        trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: midnight },
+        trigger: sendNow ? null : { type: Notifications.SchedulableTriggerInputTypes.DATE, date: midnight },
       });
     })();
   }, [weather, frostAlertsOn, unitSystem]);
@@ -4205,7 +4413,7 @@ useEffect(() => {
   }
   function dismissPremiumIntro() {
     setShowPremiumIntro(false);
-    AsyncStorage.setItem(STORAGE_KEYS.seenPremiumIntro, JSON.stringify(true));
+    persist(STORAGE_KEYS.seenPremiumIntro, JSON.stringify(true));
   }
 
   // ── Free-plan upsell ─────────────────────────────────────────────────────────
@@ -4245,25 +4453,23 @@ useEffect(() => {
     );
   }
 
-  // Safety net: if premium access ends while the user is sitting on a paid tab
-  // (subscription lapses, restore fails, sign-out), bounce them home rather than
-  // leaving paid content on screen. Navigation is already gated in jumpToTab —
-  // this covers state changing underneath an open tab.
-  useEffect(() => {
-    if (!premiumUnlocked && PREMIUM_TAB_IDS.has(activeTab)) setActiveTab("home");
-  }, [premiumUnlocked, activeTab]);
+  // Premium access ending while the user sits on a paid tab (lapse, failed
+  // restore, sign-out) used to bounce them to Home. It no longer does: the tab
+  // now renders an upsell wall in place of the paid content, which keeps the
+  // paid screen off-limits without teleporting someone mid-task and without
+  // explaining why. The gate itself lives in the render below.
 
   // Garden Games award bonus XP (per correct answer and on finishing a game). XP
   // rolls into the same bonusXP bucket as the daily bonus and shows the floating
   // "+XP" popup for instant feedback.
-  function awardGameXP(amount) {
+  const awardGameXP = useCallback((amount) => {
     const xp = Number(amount) || 0;
     if (xp <= 0) return;
     setBonusXP((prev) => prev + xp);
     const popup = { id: `game-${Date.now()}-${Math.random()}`, amount: xp };
     setXpPopups((popups) => [...popups, popup]);
     setTimeout(() => setXpPopups((popups) => popups.filter((p) => p.id !== popup.id)), 1600);
-  }
+  }, []);
 
   // Wraps setCompletedQuestIds so finishing a quest fires the upsell. Completed
   // quests are stored as date-keyed arrays ({ "2026-07-29": ["q1","q2"] }), so we
@@ -4284,57 +4490,77 @@ useEffect(() => {
 
   // ── Plant actions ──────────────────────────────────────────────────────────
   function toggleSavedPlant(name) {
-    setSavedPlants((current) => {
-      tapHaptic("light");
-      if (current.includes(name)) { cancelPlantWaterReminder(name); return current.filter((item) => item !== name); }
-      if (!premiumUnlocked && current.length >= 5) {
-        Alert.alert(t("premium.savesLockedTitle"), t("premium.savesLockedBody"), [{ text: t("common.maybeLater"), style: "cancel" }, { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") }]);
-        return current;
-      }
-      if (current.length === 0) {
-        (async () => {
-          try {
-            const seen = await AsyncStorage.getItem("pp_firstSaveSeen");
-            if (!seen) {
-              await AsyncStorage.setItem("pp_firstSaveSeen", "true");
-              successHaptic();
-              Vibration.vibrate([0, 80, 60, 120]);
-              setShowFirstSave(true);
-              setTimeout(() => setShowFirstSave(false), 3200);
-            }
-          } catch (error) {
-            console.log("First save celebration skipped:", error);
+    // Decided here rather than inside the state updater: React can run an updater
+    // more than once for a single update, which fired the haptic, the "saves
+    // locked" alert and the Premium upsell twice over.
+    tapHaptic("light");
+    if (savedPlants.includes(name)) {
+      cancelPlantWaterReminder(name);
+      setSavedPlants((current) => current.filter((item) => item !== name));
+      // Drop the per-plant state that is keyed by name and read without checking
+      // the plant is still saved: a removed plant kept counting toward "harvests
+      // ready" (and its notification), toward "fertilizer due", and toward the
+      // watered-today totals behind the daily quests and XP. Watering history is
+      // deliberately kept — it is the plant's record if it comes back.
+      const dropKey = (setter) => setter((current) => {
+        if (!current || !(name in current)) return current;
+        const next = { ...current };
+        delete next[name];
+        return next;
+      });
+      cancelFertilizerReminder(name);
+      dropKey(setHarvestTrackers);
+      dropKey(setFertilizerTrackers);
+      dropKey(setSnoozedPlants);
+      dropKey(setWateredPlants);
+      return;
+    }
+    if (!premiumUnlocked && savedPlants.length >= 5) {
+      Alert.alert(t("premium.savesLockedTitle"), t("premium.savesLockedBody"), [{ text: t("common.maybeLater"), style: "cancel" }, { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") }]);
+      return;
+    }
+    const isFirstSave = savedPlants.length === 0;
+    setSavedPlants((current) => (current.includes(name) ? current : [...current, name].sort()));
+    setPlantSaveDates((current) => (current[name] ? current : { ...current, [name]: getTodayKey() }));
+    logZoneActivity(user, zone, name, "saved");
+
+    if (isFirstSave) {
+      (async () => {
+        try {
+          const seen = await AsyncStorage.getItem("pp_firstSaveSeen");
+          if (!seen) {
+            await AsyncStorage.setItem("pp_firstSaveSeen", "true");
+            successHaptic();
+            Vibration.vibrate([0, 80, 60, 120]);
+            setShowFirstSave(true);
+            setTimeout(() => setShowFirstSave(false), 3200);
           }
-        })();
-      }
-      const next = [...current, name].sort();
-      logZoneActivity(user, zone, name, "saved");
-      setPlantSaveDates((current) => (current[name] ? current : { ...current, [name]: getTodayKey() }));
-      if (next.length === 5) {
-        setTimeout(() => { maybeAskForReview(); }, 800);
-      }
-      // Free plan: nudge Premium on every save. (The 6th+ save is blocked above
-      // with its own "saves locked" alert, so this only fires on saves 1–5.)
-      // On the very first save, wait for the full-screen celebration to clear
-      // (~3.2s) so we don't pop an alert over it.
-      if (!premiumUnlocked) {
-        // Share the cooldown so a capped action right after a save doesn't also pop.
-        lastPremiumPromptRef.current = Date.now();
-        const upsellDelay = current.length === 0 ? 3600 : 450;
-        setTimeout(() => {
-          Alert.alert(
-            "Go unlimited with Premium",
-            "You're on the free plan — up to 5 saved plants. Upgrade to Premium to save unlimited plants, plus unlock the garden dashboard, planting, sowing & frost calendars, pest watch, plant picks, and the Flowers & Home tab.",
-            [
-              { text: t("common.maybeLater"), style: "cancel" },
-              { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") },
-            ]
-          );
-        }, upsellDelay);
-      }
-      return next;
-    });
+        } catch (error) {
+          console.log("First save celebration skipped:", error);
+        }
+      })();
+    }
+
+    // Free plan: nudge Premium on every save. (The 6th+ save is blocked above
+    // with its own "saves locked" alert, so this only fires on saves 1–5.)
+    // On the very first save, wait for the full-screen celebration to clear
+    // (~3.2s) so we don't pop an alert over it.
+    if (!premiumUnlocked) {
+      // Share the cooldown so a capped action right after a save doesn't also pop.
+      lastPremiumPromptRef.current = Date.now();
+      setTimeout(() => {
+        Alert.alert(
+          "Go unlimited with Premium",
+          "You're on the free plan — up to 5 saved plants. Upgrade to Premium to save unlimited plants, plus unlock the garden dashboard, planting, sowing & frost calendars, pest watch, plant picks, and the Flowers & Home tab.",
+          [
+            { text: t("common.maybeLater"), style: "cancel" },
+            { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") },
+          ]
+        );
+      }, isFirstSave ? 3600 : 450);
+    }
   }
+
   // Save a whole set of plants at once (e.g. a plant-combo template). Plants must be
   // saved before they can be placed in a bed, so this is what makes a combo's plants
   // show up as options in the garden map. Honors the free-tier 5-save cap and shows a
@@ -4523,10 +4749,10 @@ useEffect(() => {
   }, [bannerEarnedDates]);
 
   useEffect(() => {
-    AsyncStorage.getItem("pp_badgeEarnedDates").then((val) => {
+    hydrate("pp_badgeEarnedDates", (val) => {
       if (val) { try { setBadgeEarnedDates(JSON.parse(val) || {}); } catch (e) { /* ignore */ } }
     }).catch(() => {});
-    AsyncStorage.getItem("pp_bannerEarnedDates").then((val) => {
+    hydrate("pp_bannerEarnedDates", (val) => {
       if (val) { try { setBannerEarnedDates(JSON.parse(val) || {}); } catch (e) { /* ignore */ } }
     }).catch(() => {});
   }, []);
@@ -4537,14 +4763,19 @@ const glowOpacity =
     outputRange: [0.35, 0.95],
   });
 
-function jumpToTab(tab) {
+// useCallback with empty deps: this closes over refs (scrollRef, tabFade),
+// state setters, and module imports only — nothing that changes between
+// renders. It is passed as a prop into most screens and memoised cards, so an
+// unstable identity here defeated their memo() on every render. Note this is
+// only safe because the premium gate was lifted out; re-introducing any
+// reactive value in the body means adding it to the dep array.
+const jumpToTab = useCallback((tab) => {
   // Every in-app navigation funnels through here — notification taps, card
-  // "open garden" buttons, deep links — and none of them used to check premium,
-  // so a free user could land on a paid tab. Enforce it once, here.
-  if (PREMIUM_TAB_IDS.has(tab) && !premiumUnlocked) {
-    promptPremiumFeature(PREMIUM_TAB_LABELS[tab] || tab);
-    return;
-  }
+  // "open garden" buttons, deep links. A free user is now allowed to LAND on a
+  // paid tab; what they get is the upsell wall, not the content. Blocking
+  // navigation with an alert told them "no" and left them where they were,
+  // which sells nothing. The content gate is in the render below, so this
+  // staying open does not expose anything paid.
   const out = motionDuration("fast");
   const swap = () => {
     setActiveTab(tab);
@@ -4568,14 +4799,13 @@ function jumpToTab(tab) {
     easing: EASING.accelerate,
     useNativeDriver: true,
   }).start(swap);
-}
-  function jumpToSmartReminders() {
-    // Route through jumpToTab so this respects the premium gate like everything else.
-    if (PREMIUM_TAB_IDS.has("garden") && !premiumUnlocked) { promptPremiumFeature(PREMIUM_TAB_LABELS.garden); return; }
-    setActiveTab("garden");
-    setSelectedPlant(null);
-    setTimeout(() => { scrollRef.current?.scrollTo({ y: 0, animated: false }); }, 100);
-  }
+}, []);
+  const jumpToSmartReminders = useCallback(() => {
+    // Was the last path with its own copy of the paywall — it alerted and
+    // refused while every other route now lands on the upsell wall. It also
+    // bypassed jumpToTab's fade. Both fixed by just going through jumpToTab.
+    jumpToTab("garden");
+  }, [jumpToTab]);
 
   // ── Early returns ──────────────────────────────────────────────────────────
   if (loading || !fontsReady) return <LoadingScreen />;
@@ -4715,7 +4945,7 @@ function jumpToTab(tab) {
                 onPress={() => setShowPassword((v) => !v)}
                 accessibilityRole="button"
                 accessibilityLabel={showPassword ? "Hide password" : "Show password"}
-                hitSlop={10}
+                hitSlop={touchSlop(22)}
                 style={{ position: "absolute", right: 14, top: 0, bottom: 0, justifyContent: "center" }}
               >
                 <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={22} color="#8fbf9d" />
@@ -4899,7 +5129,7 @@ function jumpToTab(tab) {
           <Text style={[styles.levelUpText, { fontSize: 12, fontWeight: "900", letterSpacing: 1, color: "#5cff89", marginBottom: 6 }]}>ACHIEVEMENT UNLOCKED</Text>
           <Text style={styles.levelUpTitle}>{celebrationBadge.title}</Text>
           <Text style={styles.levelUpText}>{celebrationBadge.text}</Text>
-          <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>Tap anywhere to close</Text>
+          <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>{t("achievement.tapAnywhereToClose")}</Text>
         </View>
       </Pressable>
     ) : null}
@@ -4938,7 +5168,7 @@ function jumpToTab(tab) {
           <Text style={styles.levelUpEmoji}>{milestoneCelebration.emoji}</Text>
           <Text style={styles.levelUpTitle}>{milestoneCelebration.title}</Text>
           <Text style={styles.levelUpText}>{milestoneCelebration.text}</Text>
-          <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>Tap anywhere to close</Text>
+          <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>{t("achievement.tapAnywhereToClose")}</Text>
         </View>
       </Pressable>
     ) : null}
@@ -4955,7 +5185,7 @@ function jumpToTab(tab) {
               ? "You've been growing with Pocket Planter for a whole year. What a journey! 🌳"
               : `You've been gardening with Pocket Planter for ${showAnniversary} days. Your garden has come so far! 🌱`}
           </Text>
-          <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>Tap anywhere to close</Text>
+          <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>{t("achievement.tapAnywhereToClose")}</Text>
         </View>
       </Pressable>
     ) : null}
@@ -4966,7 +5196,7 @@ function jumpToTab(tab) {
           <Text style={styles.levelUpEmoji}>🌱</Text>
           <Text style={styles.levelUpTitle}>FIRST PLANT!</Text>
           <Text style={styles.levelUpText}>You just saved your very first plant. Welcome to your garden journey! 🌿</Text>
-          <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>Tap anywhere to close</Text>
+          <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>{t("achievement.tapAnywhereToClose")}</Text>
         </View>
       </Pressable>
     ) : null}
@@ -4993,7 +5223,18 @@ function jumpToTab(tab) {
     >
       {/* Cross-fades on tab change; opacity is driven on the native thread. */}
       <Animated.View style={{ opacity: tabFade }}>
-          <>
+          {/*
+            Per-tab boundary. The root ErrorBoundary catches everything, but it
+            replaces the WHOLE app with the fallback — one bad screen takes the
+            session, which is what makes people reinstall. This one contains the
+            damage to the active tab; the tab bar below stays mounted, so the
+            user can navigate away.
+
+            key={activeTab} is what makes it recoverable: switching tabs remounts
+            the boundary, which resets hasError. Without the key a crash would
+            stick until the user hit "Try again".
+          */}
+          <ErrorBoundary key={activeTab} style={{ minHeight: 520 }}>
           {activeTab === "home" ? (
   <>
     {!record ? (
@@ -5076,7 +5317,7 @@ function jumpToTab(tab) {
             <View style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "80%", paddingTop: 18 }}>
               <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingBottom: 12 }}>
                 <Text style={[styles.cardTitle, { color: theme.text, flex: 1 }]}>{t("language.select")}</Text>
-                <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.close")} onPress={() => { tapHaptic(); setShowLanguagePicker(false); }} hitSlop={12}>
+                <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.close")} onPress={() => { tapHaptic(); setShowLanguagePicker(false); }} hitSlop={touchSlop(24)}>
                   <Ionicons name="close" size={24} color={theme.secondaryText} />
                 </Pressable>
               </View>
@@ -5117,7 +5358,7 @@ function jumpToTab(tab) {
             <View style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "80%", paddingTop: 18 }}>
               <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingBottom: 12 }}>
                 <Text style={[styles.cardTitle, { color: theme.text, flex: 1 }]}>{t("country.select")}</Text>
-                <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.close")} onPress={() => { tapHaptic(); setShowCountryPicker(false); setCountrySearch(""); }} hitSlop={12}>
+                <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.close")} onPress={() => { tapHaptic(); setShowCountryPicker(false); setCountrySearch(""); }} hitSlop={touchSlop(24)}>
                   <Ionicons name="close" size={24} color={theme.secondaryText} />
                 </Pressable>
               </View>
@@ -5495,6 +5736,9 @@ function jumpToTab(tab) {
 {record && activeTab === "settings" ? (
   <SettingsTab
   language={language}
+  lastSyncedAt={lastSyncedAt}
+  weeklyRecapOn={weeklyRecapOn}
+  toggleWeeklyRecap={toggleWeeklyRecap}
   setLanguage={setLanguage}
   appearanceMode={appearanceMode}
   setAppearanceMode={setAppearanceMode}
@@ -5555,7 +5799,21 @@ function jumpToTab(tab) {
   unlockPremium={unlockPremium}
 />
 ) : null}
-</>
+{/*
+  One wall for all four paid tabs. Each tab's own slot already renders null
+  when premium is off, so this sibling fills the gap rather than repeating a
+  fallback four times. It is also the real content gate now that jumpToTab
+  lets free users land here.
+*/}
+{PREMIUM_TAB_IDS.has(activeTab) && !premiumUnlocked ? (
+  <PremiumLockedSection
+    icon={(LOCKED_TAB_COPY[activeTab] || {}).icon || "🔒"}
+    title={(LOCKED_TAB_COPY[activeTab] || {}).title || "Premium feature"}
+    description={(LOCKED_TAB_COPY[activeTab] || {}).description || "Upgrade to unlock this part of Pocket Planter."}
+    onUnlock={() => jumpToTab("premium")}
+  />
+) : null}
+</ErrorBoundary>
       </Animated.View>
 </ScrollView>
 {record && showScrollTop ? (
@@ -5573,7 +5831,7 @@ function jumpToTab(tab) {
     onPress={() => Alert.alert("Quick Log 🌱", "Log a garden action without leaving this screen.", [
       { text: "💧 Water all due plants", onPress: () => waterAllPlants() },
       { text: "📸 Add garden photo", onPress: () => pickJournalPhoto("Garden") },
-      { text: "Cancel", style: "cancel" },
+      { text: t("common.cancel"), style: "cancel" },
     ])}
     accessibilityRole="button"
     accessibilityLabel="Quick log a garden action"
@@ -5594,21 +5852,14 @@ function jumpToTab(tab) {
           accessibilityRole="button"
           accessibilityLabel={t("a11y.close")}
           onPress={() => { tapHaptic(); setShowMoreSheet(false); }}
-          hitSlop={12}
+          hitSlop={touchSlop(24)}
         >
           <Ionicons name="close" size={24} color={theme.secondaryText} />
         </Pressable>
       </View>
 
-      {[
-        { id: "flowers", label: "Flowers & Home", icon: "flower", premium: false },
-        { id: "games", label: "Garden Games", icon: "game-controller", premium: true },
-        { id: "pests", label: "Pest Watch", icon: "bug", premium: false },
-        { id: "journal", label: t("tabs.journal"), icon: "book", premium: true },
-        { id: "profile", label: t("tabs.quests"), icon: "flash", premium: false },
-        { id: "settings", label: t("tabs.settings"), icon: "settings", premium: false },
-        { id: "premium", label: t("tabs.premium"), icon: "star", premium: false },
-      ].filter((item) => !(item.id === "premium" && premiumUnlocked)).map((item) => {
+      {MORE_ITEMS.filter((item) => !(item.id === "premium" && premiumUnlocked)).map((item) => {
+        const label = item.labelKey ? t(item.labelKey) : item.label;
         const locked = PREMIUM_TAB_IDS.has(item.id) && !premiumUnlocked;
         const selected = activeTab === item.id;
         return (
@@ -5616,11 +5867,11 @@ function jumpToTab(tab) {
             key={item.id}
             accessibilityRole="button"
             accessibilityState={{ selected }}
-            accessibilityLabel={item.label}
+            accessibilityLabel={label}
             onPress={() => {
               tapHaptic();
               setShowMoreSheet(false);
-              if (locked) { promptPremiumFeature(item.label); return; }
+              // Locked items still navigate — the tab renders the upsell wall.
               jumpToTab(item.id);
             }}
             style={{
@@ -5634,7 +5885,7 @@ function jumpToTab(tab) {
             <View style={{ width: 30, height: 30, borderRadius: 8, marginRight: 12, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(92, 255, 137, 0.12)" }}>
               <Ionicons name={item.icon} size={17} color="#5cff89" />
             </View>
-            <Text style={{ color: theme.text, fontSize: 16, fontWeight: "700", flex: 1 }}>{item.label}</Text>
+            <Text style={{ color: theme.text, fontSize: 16, fontWeight: "700", flex: 1 }}>{label}</Text>
             {locked ? <Ionicons name="lock-closed" size={16} color={theme.secondaryText} /> : null}
             {selected ? <Ionicons name="checkmark" size={20} color="#5cff89" /> : null}
           </Pressable>
@@ -5646,25 +5897,15 @@ function jumpToTab(tab) {
 
 {record ? (
   <View style={styles.bottomTabs}>
-  {[
-    // Five primary destinations. Apple and Google both cap a tab bar at five;
-    // the previous eight forced an 8pt label that could not survive translation.
-    // Weather stays in the bar because it drives a daily decision (water or
-    // don't, frost tonight); Journal is a periodic activity, so it moves behind
-    // More. Swapping the two is a one-line change here plus one in OVERFLOW_TABS.
-    { id: "home", label: t("tabs.home"), icon: "home", premium: false },
-    { id: "plants", label: t("tabs.plants"), icon: "leaf", premium: false },
-    { id: "garden", label: t("tabs.garden"), icon: "grid", premium: true },
-    { id: "weather", label: t("tabs.weather"), icon: "cloud", premium: true },
-    { id: "more", label: t("tabs.more"), icon: "ellipsis-horizontal", premium: false },
-  ].map((tab) => {
+  {TABS.map((tab) => {
+      const label = t(tab.labelKey);
       // "More" reads as selected while any of the destinations behind it is open.
       const active = tab.id === "more"
         ? OVERFLOW_TAB_IDS.includes(activeTab)
         : activeTab === tab.id;
       const locked = PREMIUM_TAB_IDS.has(tab.id) && !premiumUnlocked;
       return (
-        <Pressable key={tab.id} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={tab.label} onPress={() => { if (tab.id === "more") { tapHaptic(); setShowMoreSheet(true); return; } if (locked) { tapHaptic(); promptPremiumFeature(tab.label); return; } jumpToTab(tab.id); }} style={({ pressed }) => [styles.bottomTabButton, active && styles.bottomTabButtonActive, active && styles.bottomTabGlow, pressed && styles.bottomTabPressed]}>
+        <Pressable key={tab.id} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={label} onPress={() => { if (tab.id === "more") { tapHaptic(); setShowMoreSheet(true); return; } jumpToTab(tab.id); }} style={({ pressed }) => [styles.bottomTabButton, active && styles.bottomTabButtonActive, active && styles.bottomTabGlow, pressed && styles.bottomTabPressed]}>
           <View style={[styles.bottomTabInner, active && styles.bottomTabInnerActive]}>
             <Ionicons name={tab.icon} size={18} color={active ? "#07120b" : "#d7ebdc"} />
             <Text
@@ -5673,8 +5914,12 @@ function jumpToTab(tab) {
               // English. Shrink to fit rather than ellipsising the word.
               adjustsFontSizeToFit
               minimumFontScale={0.75}
+              // Five labels share one row. Past ~1.3x the OS text scale they
+              // clip regardless of adjustsFontSizeToFit, because the row itself
+              // stops growing — so cap here rather than shipping cut-off words.
+              maxFontSizeMultiplier={MAX_FONT_SCALE_COMPACT}
               style={[styles.bottomTabText, active && styles.bottomTabTextActive]}
-            >{tab.label}</Text>
+            >{label}</Text>
           </View>
         </Pressable>
       );
@@ -5686,14 +5931,27 @@ function jumpToTab(tab) {
 );
 }
 
+// Module-level rather than a ref: this must count one open per launch, and a
+// ref would reset if App ever remounts (StrictMode's dev double-mount, a fast
+// refresh). Set before the await so two effects in the same tick can't both
+// pass the check.
+let appOpenCounted = false;
+
 export default function App() {
   // Language lives here rather than inside AppInner so the provider sits above
   // every one of AppInner's early returns (splash, auth, loading), and so that
   // memoised components anywhere in the tree re-render on a language change.
   const [language, setLanguageState] = useState(DEFAULT_LOCALE);
 
+  // Fire and forget — incrementAppOpens never throws and nothing renders off it.
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEYS.language).then((stored) => {
+    if (appOpenCounted) return;
+    appOpenCounted = true;
+    incrementAppOpens();
+  }, []);
+
+  useEffect(() => {
+    hydrate(STORAGE_KEYS.language, (stored) => {
       // An explicit choice wins; otherwise follow the device language.
       const chosen = isSupportedLocale(stored) ? stored : detectDeviceLocale();
       setLanguageState(chosen);

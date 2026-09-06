@@ -43,18 +43,21 @@ function numInput(theme, value, onChange, placeholder) {
 
 // ── Fertilizer mixing ────────────────────────────────────────────────────────
 function FertilizerCalc({ theme, metric }) {
-  const [containerL, setContainerL] = useState(String(metric ? 8 : round(2 * GAL_TO_L, 2))); // stored in litres
+  // Held in whatever unit the field is labelled with — imperial users type
+  // gallons. It used to be litres either way, so "2" from an imperial gardener
+  // was read as 2 litres and mixed the feed nearly four times too strong.
+  const [containerSize, setContainerSize] = useState(String(metric ? 8 : 2));
   const [ratePerGal, setRatePerGal] = useState(1); // tbsp per gallon (label rate)
   const [strength, setStrength] = useState(1);
 
-  const containerVol = parseFloat(containerL) || 0; // litres
-  const gallons = containerVol / GAL_TO_L;
+  const containerVol = parseFloat(containerSize) || 0; // litres (metric) or gallons
+  const gallons = metric ? containerVol / GAL_TO_L : containerVol;
   const tbsp = ratePerGal * gallons * strength;
   const valid = containerVol > 0;
 
   const containerPresets = metric
-    ? [{ l: 4, label: "4 L" }, { l: 8, label: "8 L" }, { l: 10, label: "10 L" }]
-    : [{ l: 1 * GAL_TO_L, label: "1 gal" }, { l: 2 * GAL_TO_L, label: "2 gal" }, { l: 5 * GAL_TO_L, label: "5 gal" }];
+    ? [{ v: 4, label: "4 L" }, { v: 8, label: "8 L" }, { v: 10, label: "10 L" }]
+    : [{ v: 1, label: "1 gal" }, { v: 2, label: "2 gal" }, { v: 5, label: "5 gal" }];
 
   return (
     <View>
@@ -63,10 +66,10 @@ function FertilizerCalc({ theme, metric }) {
       </Text>
 
       <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>WATERING CONTAINER ({metric ? "litres" : "gallons"})</Text>
-      {numInput(theme, containerL, setContainerL, metric ? "e.g. 8" : "e.g. 7.6")}
+      {numInput(theme, containerSize, setContainerSize, metric ? "e.g. 8" : "e.g. 2")}
       <View style={{ flexDirection: "row", gap: 6, marginTop: 6 }}>
         {containerPresets.map((p) => (
-          <Chip key={p.label} label={p.label} color="#6bc7ff" active={Math.abs(containerVol - p.l) < 0.05} onPress={() => setContainerL(String(round(p.l, 2)))} />
+          <Chip key={p.label} label={p.label} color="#6bc7ff" active={Math.abs(containerVol - p.v) < 0.05} onPress={() => setContainerSize(String(p.v))} />
         ))}
       </View>
 
@@ -352,6 +355,7 @@ function PottingMixCalc({ theme, metric }) {
 
 export const GardenCalculatorsSection = memo(function GardenCalculatorsSection({ theme, unitSystem }) {
   const metric = unitSystem === "metric";
+  const unitKey = metric ? "metric" : "imperial";
   const [tab, setTab] = useState("fert");
 
   const TABS = [
@@ -368,10 +372,14 @@ export const GardenCalculatorsSection = memo(function GardenCalculatorsSection({
           <Chip key={tb.id} label={tb.label} color={tb.color} active={tab === tb.id} onPress={() => setTab(tb.id)} />
         ))}
       </View>
-      {tab === "fert" ? <FertilizerCalc theme={theme} metric={metric} /> : null}
-      {tab === "water" ? <WateringCalc theme={theme} metric={metric} /> : null}
+      {/* Every input below is seeded from `metric` and held in that unit. Keying on
+          it remounts the calculator when the user changes units in Settings —
+          otherwise a bed area typed as 10 sq ft stayed "10" under an m² label, and
+          the weekly target stayed 25 (mm) while being applied as inches. */}
+      {tab === "fert" ? <FertilizerCalc key={unitKey} theme={theme} metric={metric} /> : null}
+      {tab === "water" ? <WateringCalc key={unitKey} theme={theme} metric={metric} /> : null}
       {tab === "timer" ? <WateringTimer theme={theme} /> : null}
-      {tab === "mix" ? <PottingMixCalc theme={theme} metric={metric} /> : null}
+      {tab === "mix" ? <PottingMixCalc key={unitKey} theme={theme} metric={metric} /> : null}
     </View>
   );
 });

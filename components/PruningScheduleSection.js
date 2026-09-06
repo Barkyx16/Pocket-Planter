@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
-import { flipMonth, getMonthKey, tapHaptic } from "../core";
+import { careWindowKey, flipMonth, getMonthKey, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
 
 export const PRUNING_STORAGE_KEY = "pp_pruningDone";
@@ -12,6 +12,10 @@ const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Se
 // Localised for the southern hemisphere via flipMonth at render time.
 const PRUNE_WINDOWS = {
   apple: { months: [1, 2], tip: "Prune when fully dormant to shape the tree and open the canopy." },
+  // Compound names do not contain their base word as far as whole-word matching
+  // is concerned, so the true relatives have to be listed in their own right.
+  // Without these, Crabapple, Peppermint and Spearmint showed no pruning window.
+  crabapple: { months: [1, 2], tip: "Prune when fully dormant to shape the tree and open the canopy." },
   pear: { months: [1, 2], tip: "Dormant-prune to remove crossing branches and encourage fruiting spurs." },
   fig: { months: [2], tip: "Prune late winter before new growth to control size." },
   grape: { months: [2, 3], tip: "Prune hard while dormant — grapes fruit on new wood." },
@@ -28,14 +32,15 @@ const PRUNE_WINDOWS = {
   tomato: { months: [6, 7, 8], tip: "Pinch out side-shoots weekly on cordon (indeterminate) types." },
   basil: { months: [6, 7, 8, 9], tip: "Pinch the growing tips often to keep it bushy and delay flowering." },
   mint: { months: [6, 7, 8], tip: "Cut back regularly to force fresh, tender leaves." },
+  peppermint: { months: [6, 7, 8], tip: "Cut back regularly to force fresh, tender leaves." },
+  spearmint: { months: [6, 7, 8], tip: "Cut back regularly to force fresh, tender leaves." },
   raspberry: { months: [8, 9], tip: "Cut out canes that just fruited; tie in this year's new canes." },
   blackberry: { months: [8, 9], tip: "Remove fruited canes after harvest to make room for new growth." },
   lavender: { months: [8], tip: "Trim after flowering, staying above the woody base." },
 };
 
-const lc = (s) => String(s || "").toLowerCase();
 function pruneFor(name) {
-  const key = Object.keys(PRUNE_WINDOWS).find((k) => lc(name).includes(k));
+  const key = careWindowKey(name, Object.keys(PRUNE_WINDOWS));
   return key ? PRUNE_WINDOWS[key] : null;
 }
 

@@ -18,7 +18,10 @@ export class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <View style={{ flex: 1, backgroundColor: "#07120b", alignItems: "center", justifyContent: "center", padding: 28 }}>
+        // flex:1 fills the screen at the root, but collapses to nothing inside a
+        // ScrollView's content container — so a nested boundary passes a
+        // minHeight through `style` to stay visible.
+        <View style={[{ flex: 1, backgroundColor: "#07120b", alignItems: "center", justifyContent: "center", padding: 28 }, this.props.style]}>
           <Text style={{ fontSize: 48, marginBottom: 16 }}>🌱</Text>
           <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "900", textAlign: "center", marginBottom: 10 }}>
             {t("errorBoundary.somethingWentWrong")}

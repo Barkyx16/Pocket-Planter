@@ -3,6 +3,7 @@ import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import produceData from "../data/produceData";
 import { resolvePlantImageSource, tapHaptic } from "../core";
+import { useTranslation } from "../lib/i18n";
 
 // Shown when the user adds a plant to their garden. Lets them choose WHICH bed it
 // goes in, swap out a plant already in there, or spin up a brand-new bed. Only beds
@@ -31,6 +32,7 @@ function Thumb({ name, size = 48 }) {
 }
 
 export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCreateNew, onClose }) {
+  const { t } = useTranslation();
   const visible = !!prompt;
   const plantName = prompt?.plantName || "";
   const flowerKind = !!prompt?.flowerKind;
@@ -41,10 +43,7 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
   const [expandedBed, setExpandedBed] = useState(null);
   useEffect(() => { setExpandedBed(null); }, [plantName]);
 
-  const gardenLabel = flowerKind ? "Flowers & Home garden" : "garden";
-  const typeNote = flowerKind
-    ? "🌸 Flowers & houseplants live in your Flowers & Home garden."
-    : "🌿 Edible plants live in your garden beds.";
+  const typeNote = flowerKind ? t("gardenPlacement.flowerNote") : t("gardenPlacement.edibleNote");
 
   // One row = "put plantName into this occupied slot, replacing what's there".
   const SwapRow = ({ bed, occ }) => (
@@ -79,10 +78,10 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingBottom: 8 }}>
             <Thumb name={plantName} />
             <View style={{ flex: 1 }}>
-              <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900" }}>Where should {plantName} go?</Text>
+              <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900" }}>{t("gardenPlacement.whereShouldGo", { plant: plantName })}</Text>
               <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>{typeNote}</Text>
             </View>
-            <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => { tapHaptic(); onClose(); }} hitSlop={12}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.close")} onPress={() => { tapHaptic(); onClose(); }} hitSlop={12}>
               <Ionicons name="close" size={24} color={theme.secondaryText} />
             </Pressable>
           </View>
@@ -91,7 +90,7 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
             {beds.length ? (
               <>
                 <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, paddingHorizontal: 20, marginTop: 12, marginBottom: 8 }}>
-                  🪴 PICK A BED
+                  {t("gardenPlacement.pickABed")}
                 </Text>
                 {beds.map((b) => {
                   const conflicts = b.conflicts || [];
@@ -113,7 +112,7 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
                           <View style={{ flex: 1, minWidth: 0 }}>
                             <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900" }} numberOfLines={1}>{b.areaName}</Text>
                             <Text style={{ color: conflicts.length ? "#ffd86b" : theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }} numberOfLines={1}>
-                              {conflicts.length ? `⚠ May clash with ${clashList}` : "Has room — no conflicts"}
+                              {conflicts.length ? t("gardenPlacement.mayClashWith", { plants: clashList }) : t("gardenPlacement.hasRoom")}
                             </Text>
                           </View>
                           <Ionicons name="add-circle" size={24} color={conflicts.length ? "#ffd86b" : "#5cff89"} />
@@ -124,7 +123,7 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
                           <View style={{ flex: 1, minWidth: 0 }}>
                             <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900" }} numberOfLines={1}>{b.areaName}</Text>
                             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>
-                              Full ({occupants.length} plant{occupants.length === 1 ? "" : "s"}) — swap one out below
+                              {t("gardenPlacement.fullSwapBelow", { count: occupants.length })}
                             </Text>
                           </View>
                           <Ionicons name="lock-closed" size={18} color={theme.secondaryText} />
@@ -148,7 +147,7 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
                             style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 6, marginLeft: 16, paddingVertical: 10, borderRadius: 14, backgroundColor: "rgba(92, 255, 137, 0.08)", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
                           >
                             <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900" }}>
-                              Swap out {conflicts.length ? "another" : "a"} plant ({others.length})
+                              {conflicts.length ? t("gardenPlacement.swapOutAnother", { count: others.length }) : t("gardenPlacement.swapOutA", { count: others.length })}
                             </Text>
                             <Ionicons name="chevron-down" size={14} color="#8effab" />
                           </Pressable>
@@ -160,26 +159,26 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
               </>
             ) : (
               <View style={{ marginHorizontal: 20, marginTop: 14, marginBottom: 4, padding: 16, borderRadius: 16, backgroundColor: "rgba(255, 255, 255, 0.05)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.1)" }}>
-                <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }}>No {gardenLabel} beds yet</Text>
+                <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }}>{flowerKind ? t("gardenPlacement.noFlowerBedsYet") : t("gardenPlacement.noBedsYet")}</Text>
                 <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4, lineHeight: 18 }}>
-                  Create a new bed below and {plantName} will be planted in it.
+                  {t("gardenPlacement.createBelowAndPlant", { plant: plantName })}
                 </Text>
               </View>
             )}
 
             {/* Always available: make a new garden right here */}
             <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, paddingHorizontal: 20, marginTop: 14, marginBottom: 8 }}>
-              {beds.length ? "OR START A NEW ONE" : "CREATE ONE"}
+              {beds.length ? t("gardenPlacement.orStartNewOne") : t("gardenPlacement.createOne")}
             </Text>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Create a new ${gardenLabel} bed for ${plantName}`}
+              accessibilityLabel={t("gardenPlacement.createNewBedFor", { plant: plantName })}
               onPress={() => { tapHaptic(); onCreateNew(); }}
               style={{ flexDirection: "row", alignItems: "center", gap: 12, marginHorizontal: 20, marginBottom: 8, padding: 14, borderRadius: 16, backgroundColor: "#5cff89" }}
             >
               <Ionicons name="add" size={22} color="#07120b" />
               <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900", flex: 1 }}>
-                Plant in a new {flowerKind ? "Flowers & Home" : "garden"} bed
+                {flowerKind ? t("gardenPlacement.plantInNewFlowerBed") : t("gardenPlacement.plantInNewBed")}
               </Text>
             </Pressable>
 

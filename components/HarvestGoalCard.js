@@ -30,7 +30,7 @@ export const HarvestGoalCard = memo(function HarvestGoalCard({ theme, harvestLog
 
   const clearGoal = () => {
     Alert.alert("Clear goal?", "This removes your current harvest goal. Your harvest log stays.", [
-      { text: "Cancel", style: "cancel" },
+      { text: t("common.cancel"), style: "cancel" },
       { text: "Clear", style: "destructive", onPress: () => { setHarvestGoal(null); setInput(""); } },
     ]);
   };

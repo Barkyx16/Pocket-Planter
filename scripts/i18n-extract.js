@@ -43,7 +43,10 @@ function isUiString(v) {
 
 function slugify(text, used) {
   let base = String(text)
-    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}️]/gu, "")
+    // Strips emoji for comparison; matching individual code points is the
+    // point here, so the combined-character warning does not apply.
+    // eslint-disable-next-line no-misleading-character-class
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, "")
     .trim().toLowerCase()
     .replace(/[^a-z0-9\s]/g, "")
     .split(/\s+/).filter(Boolean).slice(0, 5)

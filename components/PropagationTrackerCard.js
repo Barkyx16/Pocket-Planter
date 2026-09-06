@@ -1,9 +1,10 @@
 import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { getTodayKey, tapHaptic } from "../core";
+import { getDaysSince, getTodayKey, tapHaptic } from "../core";
 import { formatDate } from "../lib/i18n";
 import { SkeletonSection } from "./Skeleton";
+import { touchSlop } from "../lib/a11y";
 
 export const PROPAGATION_STORAGE_KEY = "pp_propagation";
 
@@ -15,10 +16,9 @@ const METHODS = [
 ];
 const methodOf = (id) => METHODS.find((m) => m.id === id) || METHODS[0];
 
-function daysSince(dateKey) {
-  const then = new Date(dateKey + "T12:00:00").getTime();
-  return Math.max(0, Math.floor((Date.now() - then) / 86400000));
-}
+// Midday-to-midday via core — measuring from the current clock time meant a
+// cutting taken yesterday still showed "0d" all morning.
+const daysSince = (dateKey) => Math.max(0, getDaysSince(dateKey) ?? 0);
 
 export const PropagationTrackerCard = memo(function PropagationTrackerCard({ theme }) {
   const [items, setItems] = useState([]); // { id, name, method, date, rooted }
@@ -94,7 +94,7 @@ export const PropagationTrackerCard = memo(function PropagationTrackerCard({ the
             const d = daysSince(i.date);
             return (
               <View key={i.id} style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: i.rooted ? "rgba(92,255,137,0.08)" : "rgba(255,255,255,0.04)", borderRadius: 12, paddingVertical: 9, paddingHorizontal: 10, borderWidth: 1, borderColor: i.rooted ? "rgba(92,255,137,0.28)" : "rgba(255,255,255,0.08)" }}>
-                <Pressable onPress={() => toggleRooted(i.id)} accessibilityRole="checkbox" accessibilityState={{ checked: i.rooted }} hitSlop={6} style={{ width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center", backgroundColor: i.rooted ? "#5cff89" : "transparent", borderWidth: 2, borderColor: i.rooted ? "#5cff89" : "rgba(255,255,255,0.3)" }}>
+                <Pressable onPress={() => toggleRooted(i.id)} accessibilityRole="checkbox" accessibilityState={{ checked: i.rooted }} hitSlop={touchSlop(26)} style={{ width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center", backgroundColor: i.rooted ? "#5cff89" : "transparent", borderWidth: 2, borderColor: i.rooted ? "#5cff89" : "rgba(255,255,255,0.3)" }}>
                   {i.rooted ? <Text style={{ color: "#07120b", fontSize: 13, fontWeight: "900" }}>🌱</Text> : null}
                 </Pressable>
                 <View style={{ flex: 1 }}>
@@ -103,7 +103,7 @@ export const PropagationTrackerCard = memo(function PropagationTrackerCard({ the
                     {methodOf(i.method).label} · {i.rooted ? "rooted!" : `day ${d}`} · {formatDate(new Date(i.date + "T12:00:00"), { month: "short", day: "numeric" })}
                   </Text>
                 </View>
-                <Pressable onPress={() => remove(i.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel="Delete">
+                <Pressable onPress={() => remove(i.id)} hitSlop={touchSlop(13)} accessibilityRole="button" accessibilityLabel="Delete">
                   <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>✕</Text>
                 </Pressable>
               </View>

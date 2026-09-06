@@ -22,7 +22,7 @@ export const FrostWindowCard = memo(function FrostWindowCard({ theme, plants, zo
 });
 
   return (
-    <View style={{ borderRadius: 24, padding: 18, marginBottom: 18, borderWidth: 1.5, backgroundColor: "rgba(107, 199, 255, 0.1)", borderCrolor: "#6bc7ff" }}>
+    <View style={{ borderRadius: 24, padding: 18, marginBottom: 18, borderWidth: 1.5, backgroundColor: "rgba(107, 199, 255, 0.1)", borderColor: "#6bc7ff" }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
         <Text style={{ fontSize: 24 }}>⏳</Text>
         <View style={{ flex: 1 }}>

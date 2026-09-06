@@ -1,38 +1,27 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
-import { getPlantDifficulty, getSeasonForMonth, getSuggestionsForMonth, normalizeType, resolvePlantImageSource } from "../core";
+import { getNextSeasonStart, getPlantDifficulty, getSeasonForDate, getSuggestionsForMonth, normalizeType, resolvePlantImageSource } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, zone, onOpenPlant, onBrowse }) {
   const { t } = useTranslation();
   const now = new Date();
   now.setHours(12, 0, 0, 0);
-  const currentMonth = now.getMonth() + 1;
-  const currentSeason = getSeasonForMonth(currentMonth);
+  const currentSeason = getSeasonForDate(now);
 
-  // Find the first day of the next season and how far out it is.
-  const SEASON_STARTS = { spring: 3, summer: 6, fall: 9, winter: 12 };
-  const nextSeasonName =
-    currentSeason.key === "spring" ? "summer"
-    : currentSeason.key === "summer" ? "fall"
-    : currentSeason.key === "fall" ? "winter"
-    : "spring";
-  const nextStartMonth = SEASON_STARTS[nextSeasonName];
-
-  // Build a date for the next season's start (roll to next year if needed).
-  let nextStart = new Date(now.getFullYear(), nextStartMonth - 1, 1, 12, 0, 0, 0);
-  if (nextStart <= now) nextStart = new Date(now.getFullYear() + 1, nextStartMonth - 1, 1, 12, 0, 0, 0);
-  const daysUntilNext = Math.round((nextStart - now) / (1000 * 60 * 60 * 24));
+  // The next season opens on its equinox or solstice, not on the first of the month.
+  const next = getNextSeasonStart(now);
+  const daysUntilNext = next.daysUntil;
 
   // Only show when we're inside the ~3-week run-up to the season change.
   if (daysUntilNext > 21 || daysUntilNext < 0) return null;
   if (!zone) return null;
 
-  const seasonLabel = { spring: "Spring", summer: "Summer", fall: "Fall", winter: "Winter" }[nextSeasonName];
-  const seasonEmoji = { spring: "🌱", summer: "☀️", fall: "🍂", winter: "❄️" }[nextSeasonName];
+  const seasonLabel = next.label;
+  const seasonEmoji = next.emoji;
 
   // What to plant as the next season opens — pull zone-matched picks for that month.
-  const picks = getSuggestionsForMonth(zone, nextStartMonth).slice(0, 4);
+  const picks = getSuggestionsForMonth(zone, next.month).slice(0, 4);
 
   return (
     <View style={{ borderRadius: 24, padding: 18, marginBottom: 18, borderWidth: 1.5, backgroundColor: "rgba(255, 159, 67, 0.1)", borderColor: "#ff9f43" }}>

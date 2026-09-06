@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { formatTemp, getClimateBucket, getDateKey, getFertilizerDays, getSeedStartInfo, getTodayKey, resolvePlantImageSource } from "../core";
+import { formatTemp, getClimateBucket, getDateKey, getSeasonForDate, getSeedStartInfo, getTodayKey, isFertilizerDue, isHarvestReady, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
@@ -10,7 +10,6 @@ export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weathe
   const { t } = useTranslation();
   const today = getTodayKey();
   const currentHour = new Date().getHours();
-  const currentMonth = new Date().getMonth() + 1;
 
   // Snoozing a plant should quiet it here too. This card used to ignore snoozes
   // entirely, so a plant you'd deliberately put off kept showing up as "needs water".
@@ -22,21 +21,21 @@ export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weathe
   const needsWaterCount = unwateredPlants.length;
   const allWatered = needsWaterCount === 0 && savedPlants.length > 0;
 
-  const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, t]) => {
-    return Math.max(0, t.days - Math.floor((new Date() - new Date(t.startedAt)) / (1000 * 60 * 60 * 24))) === 0;
-  }).map(([name]) => name);
+  const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).map(([name]) => name);
 
   const fertDuePlants = savedPlants.filter(p => {
     const t = fertilizerTrackers?.[p];
     if (!t) return false;
-    return Math.floor((new Date() - new Date(t.lastFertilized)) / (1000 * 60 * 60 * 24)) >= getFertilizerDays(p);
+    return isFertilizerDue(p, t);
   });
 
   // Seeds it's time to start indoors for this zone (from the old game-plan card).
   const seedsToStart = (compatiblePlants || [])
     .filter((item) => getSeedStartInfo(item, zone)?.status === "start-now");
 
-  const todayPhotos = journalEntries.filter(e => e.createdAt?.startsWith(today)).length;
+  // Local day, not the UTC prefix: an evening photo used to leave the daily plan
+  // stuck one task short.
+  const todayPhotos = journalEntries.filter((e) => e.createdAt && getDateKey(new Date(e.createdAt)) === today).length;
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
 
   const getTimeOfDayGreeting = () => {
@@ -57,15 +56,18 @@ export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weathe
 
   const getSeasonalTip = () => {
     const climate = getClimateBucket(zone);
-    if (currentMonth >= 3 && currentMonth <= 5) {
+    // Keyed off the real season span so the advice turns over on the equinox,
+    // and reads correctly below the equator.
+    const seasonKey = getSeasonForDate().key;
+    if (seasonKey === "spring") {
       if (climate === "hot") return "🌱 Hot zone spring: get plants in the ground now before summer heat peaks. Prioritize tomatoes, peppers, and basil.";
       return "🌱 Spring is prime planting season. Focus on getting seeds started and transplants in the ground while temps are mild.";
     }
-    if (currentMonth >= 6 && currentMonth <= 8) {
+    if (seasonKey === "summer") {
       if (climate === "hot") return "🔥 Summer in hot zones: deep watering every 2-3 days keeps roots cool. Harvest zucchini and beans daily.";
       return "☀️ Summer peak: water consistently, harvest regularly, and watch for heat stress on leafy greens.";
     }
-    if (currentMonth >= 9 && currentMonth <= 11) {
+    if (seasonKey === "fall") {
       if (climate === "cold") return "🍂 Fall in cold zones: harvest everything before first frost and plant garlic for next spring.";
       return "🍂 Fall growing season: great time for cool crops like kale, spinach, lettuce, and root vegetables.";
     }

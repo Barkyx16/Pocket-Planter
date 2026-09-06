@@ -78,7 +78,10 @@ export const WateringHeatmapCard = memo(function WateringHeatmapCard({ theme, wa
   let longestStreak = 0, run = 0, prev = null;
   sortedKeys.forEach((key) => {
     const d = new Date(`${key}T12:00:00`);
-    run = prev && (d - prev) === 86400000 ? run + 1 : 1;
+    // Round the gap to whole days: the clocks change twice a year, and an exact
+    // 86400000 comparison broke every streak that ran across one.
+    const gap = prev ? Math.round((d - prev) / 86400000) : null;
+    run = gap === 1 ? run + 1 : 1;
     if (run > longestStreak) longestStreak = run;
     prev = d;
   });

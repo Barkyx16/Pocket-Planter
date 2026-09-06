@@ -1,9 +1,9 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
-import { useTranslation, formatDate } from "../lib/i18n";
+import { formatDate, useTranslation } from "../lib/i18n";
 
 export const GrowthTimelapseCard = memo(function GrowthTimelapseCard({ theme, journalEntries }) {
-  const { t } = useTranslation();
+  const { t, growthStageLabel } = useTranslation();
   // Group photos by plant, keep only plants with 2+ dated photos, oldest → newest.
   const groups = {};
   (journalEntries || []).forEach((e) => {
@@ -19,7 +19,12 @@ export const GrowthTimelapseCard = memo(function GrowthTimelapseCard({ theme, jo
   const [playing, setPlaying] = useState(false);
   const timer = useRef(null);
 
-  const frames = (playable.find(([n]) => n === selected) || [])[1] || [];
+  // Fall back to the first playable plant. `selected` is seeded once at mount, so
+  // it was "" until a plant became playable — and it kept naming a plant that had
+  // dropped out of the list after entries were deleted. Either way `frames` came
+  // back empty and the render below dereferenced an undefined frame.
+  const entry = playable.find(([n]) => n === selected) || playable[0];
+  const frames = (entry || [])[1] || [];
 
   useEffect(() => { setIndex(0); setPlaying(false); }, [selected]);
 
@@ -42,7 +47,8 @@ export const GrowthTimelapseCard = memo(function GrowthTimelapseCard({ theme, jo
     );
   }
 
-  const frame = frames[Math.min(index, frames.length - 1)];
+  const frame = frames.length ? frames[Math.min(index, frames.length - 1)] : null;
+  if (!frame) return null;
 
   return (
     <View>
@@ -64,7 +70,7 @@ export const GrowthTimelapseCard = memo(function GrowthTimelapseCard({ theme, jo
           <Image source={{ uri: frame.imageUri }} style={{ width: "100%", height: 240 }} resizeMode="cover" />
           <View style={{ padding: 12 }}>
             <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }}>
-              {frame.growthStage || "Growing"} · {formatDate(new Date(frame.createdAt), {
+              {frame.growthStage ? growthStageLabel(frame.growthStage) : t("journal.growing")} · {formatDate(new Date(frame.createdAt), {
   month: "short",
   day: "numeric",
   year: "numeric"
