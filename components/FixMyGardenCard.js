@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
@@ -8,7 +8,9 @@ import { useTranslation } from "../lib/i18n";
 
 export const FixMyGardenCard = memo(function FixMyGardenCard({ theme, gardenAreas, onOpenPlant, onFocusConflict }) {
   const { t } = useTranslation();
-  const conflicts = findGardenConflicts(gardenAreas);
+  // O(n^2) over every bed, plus a relocation search per conflict — only redo it
+  // when the beds actually change.
+  const conflicts = useMemo(() => findGardenConflicts(gardenAreas), [gardenAreas]);
   const [expanded, setExpanded] = useState(null);
   if (!conflicts.length) return null;
 

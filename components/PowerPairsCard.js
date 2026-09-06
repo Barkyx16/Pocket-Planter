@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
@@ -40,7 +40,9 @@ const pairReason = (aObj, bObj) => {
 
 export const PowerPairsCard = memo(function PowerPairsCard({ theme, gardenAreas, onOpenPlant }) {
   const { t } = useTranslation();
-  const pairs = getPowerPairs(gardenAreas);
+  // Compares every plant in a bed against every other, so it is far too heavy
+  // to redo on renders the beds had nothing to do with.
+  const pairs = useMemo(() => getPowerPairs(gardenAreas), [gardenAreas]);
   const [expanded, setExpanded] = useState(null);
   if (!pairs.length) return null;
 

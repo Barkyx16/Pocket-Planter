@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
@@ -33,7 +33,21 @@ import { t } from "../lib/i18n";
 
 export function GardenTab({ addGardenArea, assignPlantToAreaSlot, careLog, clearAreaSlot, deleteGardenArea, fertilizerTrackers, gardenAreas, gardenFocusAreaId, gardenY, harvestTrackers, onAddSetupToGarden, onAutoOptimize, onFocusConflict, onSavePlant, onSaveMany, openPlantFromList, pickAreaPhoto, renameGardenArea, savedPlants, scheduleFertilizerReminder, setAreaStyle, setCareLog, showUndoToast, theme, unitSystem, waterArea, wateredPlants, weather, zip, zone }) {
   // The Garden tab is edibles-only — flower beds live on the Flowers tab.
-  const edibleAreas = (gardenAreas || []).filter((a) => a.kind !== "flower");
+  //
+  // Memoised because its identity matters twice over: the two companion passes
+  // below key off it, and it is handed to PowerPairsCard and FixMyGardenCard,
+  // both of them memo() components. Rebuilding the array on every render gave
+  // them a new prop every time, so their memo never held and each one redid its
+  // own O(n^2) sweep of the beds on renders that had nothing to do with the
+  // garden.
+  const edibleAreas = useMemo(
+    () => (gardenAreas || []).filter((a) => a.kind !== "flower"),
+    [gardenAreas]
+  );
+  // Comparing every plant in a bed against every other, once per change of the
+  // beds rather than four times per render.
+  const powerPairs = useMemo(() => getPowerPairs(edibleAreas), [edibleAreas]);
+  const gardenConflicts = useMemo(() => findGardenConflicts(edibleAreas), [edibleAreas]);
   const plantedNames = Array.from(new Set(edibleAreas.flatMap((a) => Object.values(a.plots || {}).filter(Boolean))));
   const [toolkitDone, setToolkitDone] = useState(false);
   return (
@@ -87,11 +101,11 @@ export function GardenTab({ addGardenArea, assignPlantToAreaSlot, careLog, clear
       <ToggleSection label={t("garden.plantCombos")} closeLabel={t("garden.closePlantCombos")} marginTop={10}>
         <GuildTemplatesCard theme={theme} mode="garden" savedPlants={savedPlants} onSavePlant={onSavePlant} onSaveMany={onSaveMany} onAddSetup={onAddSetupToGarden} onOpenPlant={openPlantFromList} />
       </ToggleSection>
-      {(getPowerPairs(edibleAreas).length || findGardenConflicts(edibleAreas).length) ? (
+      {(powerPairs.length || gardenConflicts.length) ? (
       <ToggleSection label={t("garden.companionCheck")} marginTop={10}>
       {(() => {
-        const hasPairs = getPowerPairs(edibleAreas).length > 0;
-        const hasConflicts = findGardenConflicts(edibleAreas).length > 0;
+        const hasPairs = powerPairs.length > 0;
+        const hasConflicts = gardenConflicts.length > 0;
         const pairsNode = (
           <PowerPairsCard theme={theme} gardenAreas={edibleAreas} onOpenPlant={openPlantFromList} />
         );

@@ -907,7 +907,7 @@ export function careWindowKey(name, keys) {
   const primary = String(name || "").toLowerCase().replace(/\s*\([^)]*\)/g, " ").trim();
   if (!primary) return null;
   return (
-    (keys || []).find((key) => {
+    (Array.isArray(keys) ? keys : []).find((key) => {
       if (!plantNameMatchesKey(primary, key)) return false;
       const lookalikes = CARE_WINDOW_LOOKALIKES[String(key).toLowerCase()];
       return !lookalikes || !lookalikes.some((l) => primary.includes(l));
@@ -1395,14 +1395,28 @@ export const COMPANION_NAME_ALIASES = {
   chive: "Chives",
 };
 
+// Lowercased catalog name -> its canonical spelling. Built once: this resolver
+// sits inside getCompatibilityScore, which findGardenConflicts and getPowerPairs
+// call for every pair of plants in every bed, so a linear scan of 612 plants per
+// lookup turned the garden screen into tens of milliseconds of pure searching.
+let _catalogByLowerName = null;
+function catalogIndex() {
+  if (!_catalogByLowerName) {
+    _catalogByLowerName = new Map();
+    produceData.forEach((p) => {
+      if (p?.name) _catalogByLowerName.set(String(p.name).toLowerCase(), p.name);
+    });
+  }
+  return _catalogByLowerName;
+}
+
 // The catalog name a companion refers to, or null when the app has no such plant
 // (the charts mention "Tansy" and "Grass", which are advice rather than entries).
 export function resolveCompanionName(name) {
   const raw = String(name || "").trim().toLowerCase();
   if (!raw) return null;
   const aliased = String(COMPANION_NAME_ALIASES[raw] || name).toLowerCase();
-  const hit = produceData.find((p) => String(p.name).toLowerCase() === aliased);
-  return hit ? hit.name : null;
+  return catalogIndex().get(aliased) || null;
 }
 
 // Compound names whose base word whole-word matching cannot see, but which do
@@ -1418,7 +1432,22 @@ const COMPANION_ALIASES = {
   crabapple: "Apple",
 };
 
+// Companion lookups are the hot path behind the garden screen: findGardenConflicts
+// and getPowerPairs both compare every plant in a bed against every other, so a
+// twenty-bed garden asks for a few thousand of these per pass. The answer depends
+// only on the plant's name against static tables, so it is worth remembering —
+// the cache is bounded by the catalog and never invalidates.
+const _companionInfoCache = new Map();
+
 export function getCompanionInfo(plantName) {
+  const cacheKey = String(plantName || "");
+  if (_companionInfoCache.has(cacheKey)) return _companionInfoCache.get(cacheKey);
+  const info = computeCompanionInfo(plantName);
+  _companionInfoCache.set(cacheKey, info);
+  return info;
+}
+
+function computeCompanionInfo(plantName) {
   // Flowers get their combos computed from light/water needs (see above).
   if (isFlowerName(plantName)) return getFlowerCompanionInfo(plantName);
   // This used to be a bare substring test against keys in declaration order, so
@@ -1686,8 +1715,19 @@ export function findGardenConflicts(gardenAreas) {
 
 export function getCompatibilityScore(plantName, comparePlant) {
   const info = getCompanionInfo(plantName);
-  if (info.excellent.some((item) => item.toLowerCase() === comparePlant.toLowerCase())) return { label: "Excellent Pair", color: "#5cff89", icon: "🟢" };
-  if (info.avoid.some((item) => item.toLowerCase() === comparePlant.toLowerCase())) return { label: "Avoid", color: "#ff7b7b", icon: "🔴" };
+  // The charts name some companions generically ("Bean", "Squash"), so compare
+  // the catalog plant each entry resolves to rather than the raw word. Corn lists
+  // "Bean" and the gardener plants a Green Bean: the planner already offered the
+  // pairing, but this read the two strings straight and called the Three Sisters
+  // Neutral — no green badge on the bed, and getPowerPairs never surfaced it.
+  const target = resolveCompanionName(comparePlant) || String(comparePlant || "");
+  const matches = (list) =>
+    (list || []).some((item) => {
+      const entry = resolveCompanionName(item) || String(item || "");
+      return entry.toLowerCase() === target.toLowerCase();
+    });
+  if (matches(info.excellent)) return { label: "Excellent Pair", color: "#5cff89", icon: "🟢" };
+  if (matches(info.avoid)) return { label: "Avoid", color: "#ff7b7b", icon: "🔴" };
   return { label: "Neutral", color: "#ffd86b", icon: "🟡" };
 }
 
