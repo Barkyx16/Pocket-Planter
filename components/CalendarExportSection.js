@@ -2,6 +2,7 @@ import { memo, useState } from "react";
 import { Alert, Platform, Pressable, Share, Text, View } from "react-native";
 import * as Calendar from "expo-calendar";
 import { tapHaptic } from "../core";
+import { t } from "../lib/i18n";
 
 // Turns the garden's recurring chores into real calendar events. Uses
 // expo-calendar to write straight to the device calendar, and falls back to a
@@ -86,14 +87,14 @@ export const CalendarExportSection = memo(function CalendarExportSection({ theme
       const { status } = await Calendar.requestCalendarPermissionsAsync();
       if (status !== "granted") {
         Alert.alert(
-          "Calendar access needed",
-          "Allow calendar access to add the reminder, or use “Share as .ics file” instead.",
+          t("alerts.calendarAccessTitle"),
+          t("alerts.calendarAccessBody"),
         );
         return;
       }
       const calId = await getWritableCalendarId();
       if (!calId) {
-        Alert.alert("No calendar found", "Couldn't find a calendar to write to. Try the .ics file export instead.");
+        Alert.alert(t("alerts.noCalendarTitle"), t("alerts.noCalendarBody"));
         return;
       }
       const start = nextEightAM();
@@ -109,9 +110,9 @@ export const CalendarExportSection = memo(function CalendarExportSection({ theme
         },
         notes: "Added by Pocket Planter 🌿",
       });
-      Alert.alert("Added to calendar ✅", `${task.title} — ${freq.label.toLowerCase()}, starting ${start.toLocaleDateString()}.`);
+      Alert.alert(t("alerts.addedToCalendarTitle"), t("alerts.addedToCalendarBody", { task: task.title, freq: freq.label.toLowerCase(), date: start.toLocaleDateString() }));
     } catch (e) {
-      Alert.alert("Couldn't add event", "Something went wrong. Try the .ics file export instead.");
+      Alert.alert(t("alerts.calendarFailedTitle"), t("alerts.calendarFailedBody"));
     } finally {
       setBusy(false);
     }

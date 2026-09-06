@@ -19,8 +19,8 @@ export const ReminderControlCard = memo(function ReminderControlCard({ theme, re
   const pickTime = () => {
     if (!onChangeWateringTime) return;
     Alert.alert(
-      "Watering Reminder Time",
-      "When should Pocket Planter remind you each day?",
+      t("alerts.reminderTimeTitle"),
+      t("alerts.reminderTimeBody"),
       [
         ...TIME_OPTIONS.map((t) => ({
           text: formatReminderTime(t),

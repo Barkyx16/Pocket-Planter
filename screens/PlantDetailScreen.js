@@ -9,7 +9,7 @@ import { WeatherParticles } from "../components/WeatherParticles";
 import { getCompanionInfo, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, normalizeType, resolvePlantImageSource } from "../core";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { getPestImage } from "../data/pestImageMap";
-import { formatDate } from "../lib/i18n";
+import { formatDate, t } from "../lib/i18n";
 import { styles } from "../styles";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Alert, Animated, Image, Linking, Pressable, SafeAreaView, ScrollView, StatusBar, Text, TextInput, View } from "react-native";
@@ -166,7 +166,7 @@ export function PlantDetailScreen({
                 days: getHarvestDays(selectedPlant),
               },
             }));
-            Alert.alert("Harvest Tracker Started", `${selectedPlant.name} is now being tracked.`);
+            Alert.alert(t("alerts.harvestTrackerTitle"), t("alerts.harvestTrackerBody", { plant: selectedPlant.name }));
           }}
         >
           <Text style={styles.harvestTrackerButtonText}>

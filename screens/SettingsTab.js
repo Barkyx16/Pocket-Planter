@@ -72,7 +72,7 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn
               if (value) {
                 const granted = await ensureNotificationPermission();
                 if (!granted) {
-                  Alert.alert("Notifications Disabled", "Enable notifications in your phone settings to receive frost alerts.");
+                  Alert.alert(t("alerts.notificationsDisabledTitle"), t("alerts.notificationsDisabledBody"));
                   setFrostAlertsOn(false);
                   return;
                 }
@@ -99,10 +99,10 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn
                 }
                 const frost = getUpcomingFrost(weather);
                 Alert.alert(
-                  "Frost Alerts On ❄️",
+                  t("alerts.frostOnTitle"),
                   frost
-                    ? `Frost is already in your forecast — low of ${formatTemp(frost.minTempF, unitSystem, true)} coming. You'll also get a check-in reminder during cold months.`
-                    : "You'll get a frost check-in reminder during your zone's cold months, plus an instant alert whenever frost appears in your forecast."
+                    ? t("alerts.frostOnBodyForecast", { temp: formatTemp(frost.minTempF, unitSystem, true) })
+                    : t("alerts.frostOnBodyDefault")
                 );
               } else {
                 const allMonths = [1, 2, 3, 4, 5, 9, 10, 11, 12];
@@ -110,7 +110,7 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn
                   await cancelReminder(`frost-daily-${month}`);
                 }
                 await cancelReminder("frost-detected");
-                Alert.alert("Frost Alerts Off", "You will no longer receive frost alerts.");
+                Alert.alert(t("alerts.frostOffTitle"), t("alerts.frostOffBody"));
               }
             }}
             onToggleMonthlyPlanting={async (value) => {
@@ -138,13 +138,13 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn
                       },
                     });
                   }
-                  Alert.alert("Monthly Planting Guides On 🌱", "You'll receive a planting guide on the 1st of every month.");
+                  Alert.alert(t("alerts.monthlyOnTitle"), t("alerts.monthlyOnBody"));
                 }
               } else {
                 for (let month = 1; month <= 12; month++) {
                   await cancelReminder(`monthly-planting-${month}`);
                 }
-                Alert.alert("Monthly Planting Reminders Off", "You will no longer receive monthly planting guide reminders.");
+                Alert.alert(t("alerts.monthlyOffTitle"), t("alerts.monthlyOffBody"));
               }
             }}
             onToggleDailyWatering={async (value) => {
@@ -161,11 +161,11 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn
                     : t("settings.timeToCheckYourGarden"),
                 });
                 if (ok) {
-                  Alert.alert("Daily Watering Check On 💧", `Pocket Planter will remind you every morning at ${formatReminderTime(wateringReminderTime)} to check your garden.`);
+                  Alert.alert(t("alerts.waterOnTitle"), t("alerts.waterOnBody", { time: formatReminderTime(wateringReminderTime) }));
                 }
               } else {
                 await cancelReminder("daily-watering");
-                Alert.alert("Daily Watering Reminder Off", "You will no longer receive daily watering reminders.");
+                Alert.alert(t("alerts.waterOffTitle"), t("alerts.waterOffBody"));
               }
             }}
           />

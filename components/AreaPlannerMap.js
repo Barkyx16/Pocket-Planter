@@ -82,7 +82,7 @@ export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas,
       if (!getPlantName(area.plots?.[slotId])) emptySlots.push(slotId);
     }
     if (!emptySlots.length) {
-      Alert.alert("Garden's full", "There are no empty plots in this bed to add companions to.");
+      Alert.alert(t("alerts.gardenFullTitle"), t("alerts.gardenFullBody"));
       setPerfectGardenPlant(null);
       return;
     }
@@ -105,7 +105,7 @@ export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas,
     // Only one of the two is a real plant card — just open it, no need to ask.
     if (buttons.length === 1) { buttons[0].onPress(); return; }
     buttons.push({ text: t("common.cancel"), style: "cancel" });
-    Alert.alert("View plant", "Which plant do you want to open?", buttons);
+    Alert.alert(t("alerts.viewPlantTitle"), t("alerts.viewPlantBody"), buttons);
   }
 
   function suggestCompanionsForPlant(areaId, plantName) {
@@ -541,8 +541,8 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
             <Pressable
               onPress={() => {
                 Alert.alert(
-                  "Delete garden?",
-                  `This will remove "${area.name || "this garden"}" and everything planted in it. This can't be undone.`,
+                  t("alerts.deleteGardenTitle"),
+                  t("alerts.deleteGardenBody", { name: area.name || t("alerts.deleteGardenFallbackName") }),
                   [
                     { text: t("common.cancel"), style: "cancel" },
                     { text: t("common.delete"), style: "destructive", onPress: () => { setSelectedAreaId(null); onDeleteArea && onDeleteArea(area.id); } },

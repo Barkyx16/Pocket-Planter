@@ -38,7 +38,7 @@ export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlant
 
   const addCareEntry = () => {
     if (!selectedAction) {
-      Alert.alert("Select an action", "Please tap a care action before logging.");
+      Alert.alert(t("alerts.selectActionTitle"), t("alerts.selectActionBody"));
       return;
     }
     const action = CARE_ACTIONS.find(a => a.id === selectedAction);
@@ -60,8 +60,8 @@ export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlant
 
     if (selectedAction === "fertilize" && selectedPlant !== "Garden" && onFertilizerLogged) {
       Alert.alert(
-        "Fertilized! 🌾",
-        `Want a reminder to fertilize ${selectedPlant} again?`,
+        t("alerts.fertilizedTitle"),
+        t("alerts.fertilizedBody", { plant: selectedPlant }),
         [
           { text: "No thanks", style: "cancel" },
           { text: "In 7 days", onPress: () => onFertilizerLogged(selectedPlant, 7) },
@@ -70,7 +70,7 @@ export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlant
         ]
       );
     } else {
-      Alert.alert("Care logged! 🌱", `${action.icon} ${action.label} logged for ${selectedPlant}.`);
+      Alert.alert(t("alerts.careLoggedTitle"), t("alerts.careLoggedBody", { icon: action.icon, label: action.label, plant: selectedPlant }));
     }
   };
 

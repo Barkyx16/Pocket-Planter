@@ -44,6 +44,7 @@ import {
   isSupportedLocale,
   setLocale,
   t,
+  tn,
 } from "./lib/i18n";
 import {
   COUNTRIES,
@@ -1528,7 +1529,7 @@ const theme = useMemo(
       setReturnSection("exact");
       setSelectedPlant(found);
     } else {
-      Alert.alert("Plant not found", `Could not find "${name}" in produceData.`);
+      Alert.alert(t("alerts.plantNotFoundTitle"), t("alerts.plantNotFoundBody", { name }));
     }
   }
 // The handlers below are passed as props into memoised card components. As plain
@@ -2673,8 +2674,8 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
   async function pickJournalPhoto(plantName) {
   if (!user) {
     Alert.alert(
-      "Login required",
-      "Please log in before adding journal photos."
+      t("alerts.loginRequiredTitle"),
+      t("alerts.loginRequiredBody")
     );
     return;
   }
@@ -2810,8 +2811,8 @@ console.log(
     error
   );
   Alert.alert(
-    "Upload failed",
-    "Could not upload this journal photo."
+    t("alerts.uploadFailedTitle"),
+    t("alerts.uploadFailedBody")
   );
 } finally {
   setUploadingPhoto(false);
@@ -2912,13 +2913,13 @@ function deleteJournalEntriesOlderThan(days) {
   const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
   const toRemove = journalEntries.filter((e) => new Date(e.createdAt).getTime() < cutoff);
   if (!toRemove.length) {
-    Alert.alert("Nothing to clear", "You have no photos older than that.");
+    Alert.alert(t("alerts.nothingToClearTitle"), t("alerts.nothingToClearBody"));
     return;
   }
   const label = days >= 365 ? "1 year" : "6 months";
   Alert.alert(
-    "Delete old photos?",
-    `This permanently removes ${toRemove.length} photo${toRemove.length === 1 ? "" : "s"} older than ${label}. This can't be undone. Export a backup first if you want to keep them.`,
+    t("alerts.deleteOldPhotosTitle"),
+    tn("alerts.deleteOldPhotosBody", toRemove.length, { label }),
     [
       { text: t("common.cancel"), style: "cancel" },
       {
@@ -2943,7 +2944,7 @@ function deleteJournalEntriesOlderThan(days) {
               }
             })();
           }
-          Alert.alert("Photos cleared", `${toRemove.length} old photo${toRemove.length === 1 ? "" : "s"} removed.`);
+          Alert.alert(t("alerts.photosClearedTitle"), tn("alerts.photosClearedBody", toRemove.length));
         },
       },
     ]
@@ -3191,7 +3192,7 @@ async function scheduleFertilizerReminder(plantName, days) {
   }
 
   Alert.alert(
-    `Set Reminder for ${plantName}`,
+    t("alerts.setReminderForTitle", { plant: plantName }),
     t("notify.timePrompt"),
     [
       {
@@ -3322,8 +3323,8 @@ async function claimDailyBonus() {
 
   if (isStreakBonus) {
     Alert.alert(
-      "🔥 7-Day Streak Bonus!",
-      `Incredible! You've been gardening for ${streakData.count} days in a row. You earned 100 XP!`
+      t("alerts.streakBonusTitle"),
+      t("alerts.streakBonusBody", { count: streakData.count })
     );
   }
 
@@ -3378,10 +3379,10 @@ function markPlantWatered(plantName) {
         setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
       }, 2000);
       setTimeout(() => {
-        Alert.alert(`🔥 ${newStreak}-Day Watering Streak!`, `Incredible consistency with ${plantName}. Keep it growing!`);
+        Alert.alert(t("alerts.wateringStreakTitle", { count: newStreak }), t("alerts.wateringStreakBody", { plant: plantName }));
       }, 300);
     } else {
-      Alert.alert("Watered", `${plantName} was marked watered for today.`);
+      Alert.alert(t("alerts.wateredTitle"), t("alerts.wateredBody", { plant: plantName }));
     }
     schedulePlantWaterReminder(plantName);
     maybePromptPremium("Watering tracked. Upgrade to Premium to unlock unlimited plants, the garden dashboard, planting & frost calendars, and more.");
@@ -3631,10 +3632,8 @@ function assignPlantToAreaSlot(areaId, slotId, plantName, opts = {}) {
     if (!opts.silent) {
       const flowerBed = targetArea.kind === "flower";
       Alert.alert(
-        "Can't plant here",
-        flowerBed
-          ? `The Flowers & Home garden is only for flowers and houseplants. ${plantName} is an edible — add it to a bed on the Garden tab.`
-          : `Garden beds are only for edible plants. ${plantName} is a flower or houseplant — add it in the Flowers & Home garden.`
+        t("alerts.cantPlantHereTitle"),
+        t(flowerBed ? "alerts.cantPlantHereFlowerBody" : "alerts.cantPlantHereEdibleBody", { plant: plantName })
       );
     }
     return;
@@ -3716,8 +3715,8 @@ function quickAddPlantToGarden(plantName) {
   // You can only plant what you've saved — save the plant first, then place it in a bed.
   if (!savedPlants.includes(plantName)) {
     Alert.alert(
-      "Save it first",
-      `Save ${plantName} to your plants, then you can add it to a garden bed.`,
+      t("alerts.saveItFirstTitle"),
+      t("alerts.saveItFirstBody", { plant: plantName }),
       [
         { text: t("common.cancel"), style: "cancel" },
         { text: "Save plant", onPress: () => toggleSavedPlant(plantName) },
@@ -3729,7 +3728,7 @@ function quickAddPlantToGarden(plantName) {
   // Already planted somewhere? Point them to it instead of duplicating.
   const existing = (gardenAreas || []).find((a) => Object.values(a.plots || {}).includes(plantName));
   if (existing) {
-    Alert.alert("Already planted", `${plantName} is already in ${existing.name}. Rearrange it anytime.`, [{ text: t("common.ok") }, { text: t("garden.openGarden"), onPress: () => jumpToTab(existing.kind === "flower" ? "flowers" : "garden") }]);
+    Alert.alert(t("alerts.alreadyPlantedTitle"), t("alerts.alreadyPlantedBody", { plant: plantName, bed: existing.name }), [{ text: t("common.ok") }, { text: t("garden.openGarden"), onPress: () => jumpToTab(existing.kind === "flower" ? "flowers" : "garden") }]);
     return;
   }
 
@@ -3791,7 +3790,7 @@ function replaceFromPlacementPrompt(bed, conflict) {
   assignPlantToAreaSlot(bed.areaId, conflict.slotId, plantName, { silent: true });
   successHaptic();
   setTimeout(() => {
-    Alert.alert("Swapped", `${plantName} replaced ${conflict.plant} in ${bed.areaName}.`, [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab(flowerKind ? "flowers" : "garden") }]);
+    Alert.alert(t("alerts.swappedTitle"), t("alerts.swappedBody", { plant: plantName, other: conflict.plant, bed: bed.areaName }), [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab(flowerKind ? "flowers" : "garden") }]);
   }, 250);
 }
 
@@ -3815,7 +3814,7 @@ function createBedFromPlacementPrompt() {
   successHaptic();
   const tab = flowerKind ? "flowers" : "garden";
   setTimeout(() => {
-    Alert.alert("New garden created", `${plantName} was planted in a new ${flowerKind ? "Flowers & Home" : "garden"} bed.`, [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab(tab) }]);
+    Alert.alert(t("alerts.newGardenTitle"), t("alerts.newGardenBody", { plant: plantName, kind: t(flowerKind ? "alerts.newGardenKindFlower" : "alerts.newGardenKindEdible") }), [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab(tab) }]);
   }, 300);
 }
 
@@ -3916,8 +3915,8 @@ function autoOptimizeGarden() {
 
   if (moved === 0) {
     Alert.alert(
-      "No room to auto-fix 🌱",
-      `Found ${before} companion conflict${before === 1 ? "" : "s"}, but there's no free spot in another bed to relocate a plant. Add a bed (or clear a slot) so there's somewhere to move one, then try again.`
+      t("alerts.noRoomAutoFixTitle"),
+      tn("alerts.noRoomAutoFixBody", before)
     );
     return;
   }
@@ -4040,10 +4039,10 @@ function addSetupToGarden(setupName, plantNames) {
   successHaptic();
 
   const beds = [edibles.length ? "Garden" : null, flowers.length ? "Flowers" : null].filter(Boolean).join(" & ");
-  const capNote = capped ? " Free plans stop at 5 saved plants — upgrade to Premium to add the rest of this setup." : "";
+  const capNote = capped ? ` ${t("alerts.setupCapNote")}` : "";
   Alert.alert(
-    `${clean} planted`,
-    `Added a pre-planted bed to your ${beds} tab. Open it to see the layout and any companion conflicts.${capNote}`,
+    t("alerts.setupPlantedTitle", { plant: clean }),
+    t("alerts.setupPlantedBody", { tab: beds, capNote }),
     [{ text: t("common.gotIt") }, { text: t("garden.openGarden"), onPress: () => jumpToTab(flowers.length && !edibles.length ? "flowers" : "garden") }]
   );
 }
@@ -4429,8 +4428,8 @@ useEffect(() => {
     lastPremiumPromptRef.current = now;
     setTimeout(() => {
       Alert.alert(
-        "Go unlimited with Premium",
-        message || "You're on the free plan. Upgrade to Premium to save unlimited plants, plus unlock the garden dashboard, planting, sowing & frost calendars, pest watch, plant picks, and the Flowers & Home tab.",
+        t("alerts.premiumTitle"),
+        message || t("alerts.premiumBodyDefault"),
         [
           { text: t("common.maybeLater"), style: "cancel" },
           { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") },
@@ -4550,8 +4549,8 @@ useEffect(() => {
       lastPremiumPromptRef.current = Date.now();
       setTimeout(() => {
         Alert.alert(
-          "Go unlimited with Premium",
-          "You're on the free plan — up to 5 saved plants. Upgrade to Premium to save unlimited plants, plus unlock the garden dashboard, planting, sowing & frost calendars, pest watch, plant picks, and the Flowers & Home tab.",
+          t("alerts.premiumTitle"),
+          t("alerts.premiumBodySaves"),
           [
             { text: t("common.maybeLater"), style: "cancel" },
             { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") },
@@ -4567,7 +4566,7 @@ useEffect(() => {
   // single confirmation instead of one popup per plant.
   function saveManyPlants(names) {
     const toAdd = Array.from(new Set((names || []).filter((n) => produceData.some((p) => p.name === n) && !savedPlants.includes(n))));
-    if (!toAdd.length) { Alert.alert("Already saved", "All of these are already in your plants."); return; }
+    if (!toAdd.length) { Alert.alert(t("alerts.alreadySavedTitle"), t("alerts.alreadySavedBody")); return; }
     let added = toAdd;
     let capped = false;
     if (!premiumUnlocked) {
@@ -4582,9 +4581,9 @@ useEffect(() => {
     setSavedPlants((current) => Array.from(new Set([...current, ...added])).sort());
     setPlantSaveDates((current) => { const next = { ...current }; added.forEach((n) => { if (!next[n]) next[n] = getTodayKey(); }); return next; });
     if (capped) {
-      Alert.alert(`Saved ${added.length}`, `Added ${added.length} to your plants. Free plans stop at 5 saved plants — upgrade to Premium to save the rest of this combo.`, [{ text: t("common.maybeLater"), style: "cancel" }, { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") }]);
+      Alert.alert(t("alerts.savedCountTitle", { count: added.length }), t("alerts.savedCappedBody", { count: added.length }), [{ text: t("common.maybeLater"), style: "cancel" }, { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") }]);
     } else {
-      Alert.alert("Saved", `Added ${added.length} plant${added.length === 1 ? "" : "s"} to your plants. Tap a bed slot on the garden map to place them.`);
+      Alert.alert(t("alerts.savedTitle"), tn("alerts.savedBody", added.length));
     }
   }
   function toggleComparePlant(plantName) {
@@ -5828,7 +5827,7 @@ const jumpToTab = useCallback((tab) => {
 ) : null}
 {record && (activeTab === "home" || activeTab === "plants") && savedPlants.some((p) => wateredPlants[p] !== getTodayKey()) ? (
   <Pressable
-    onPress={() => Alert.alert("Quick Log 🌱", "Log a garden action without leaving this screen.", [
+    onPress={() => Alert.alert(t("alerts.quickLogTitle"), t("alerts.quickLogBody"), [
       { text: "💧 Water all due plants", onPress: () => waterAllPlants() },
       { text: "📸 Add garden photo", onPress: () => pickJournalPhoto("Garden") },
       { text: t("common.cancel"), style: "cancel" },

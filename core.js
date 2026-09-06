@@ -6,7 +6,7 @@ import zipZoneData from "./data/zipZoneData";
 import { PLANT_DETAILS } from "./data/plantDetails";
 import { PLANT_HEALTH } from "./data/plantHealth";
 import { DISEASE_LIBRARY } from "./data/diseaseData";
-import { formatDate } from "./lib/i18n";
+import { formatDate, t } from "./lib/i18n";
 
 export const loadingScreenImage = require("./assets/loading-screen.png");
 
@@ -3982,6 +3982,41 @@ export function getDailyQuests({ savedPlants, journalEntries, gardenMap, watered
   ];
 }
 
+// ── The level curve ──────────────────────────────────────────────────────────
+// Levels used to cost 250 * (L-1)^2, which put Level 100 at 2,450,250 XP. Nobody
+// could get there. A keen gardener — a hundred plants, a three-year streak, a
+// thousand journal photos — earns about 70,000 XP and stalls at level 17; even
+// an extreme decade-long profile with every plant in the catalog saved reaches
+// 36. Levels 40 through 100 were unreachable, and with them thirteen level
+// badges and the secret "Garden Gnome" that needs all of them: fourteen of the
+// fifty-three achievements were dead content.
+//
+// The curve now stays quadratic to level 5 and goes linear after it, at the
+// 2,000 XP/level the quadratic charges at that point. Below level 5 the cost is
+// unchanged, and above it the new cost is always lower than the old, so no
+// gardener can open the app and find themselves demoted — levels only ever go
+// up. Level 100 lands at 194,000 XP: reachable by a dedicated keeper over years,
+// which is what a hundredth level should ask for.
+const LEVEL_LINEAR_FROM = 5;
+const LEVEL_LINEAR_STEP = 2000;
+const LEVEL_QUADRATIC_BASE = 250;
+
+// Total XP needed to reach a level.
+export function xpForLevel(level) {
+  const value = Math.max(1, Math.floor(level));
+  if (value <= LEVEL_LINEAR_FROM) return LEVEL_QUADRATIC_BASE * (value - 1) * (value - 1);
+  return LEVEL_QUADRATIC_BASE * (LEVEL_LINEAR_FROM - 1) * (LEVEL_LINEAR_FROM - 1)
+    + LEVEL_LINEAR_STEP * (value - LEVEL_LINEAR_FROM);
+}
+
+// The level a given XP total earns. The inverse of xpForLevel.
+export function levelForXP(xp) {
+  const value = Math.max(0, Number(xp) || 0);
+  const joinXP = xpForLevel(LEVEL_LINEAR_FROM);
+  if (value < joinXP) return Math.floor(Math.sqrt(value / LEVEL_QUADRATIC_BASE)) + 1;
+  return Math.floor((value - joinXP) / LEVEL_LINEAR_STEP) + LEVEL_LINEAR_FROM;
+}
+
 export function getConsistencyBonus(streakCount) {
   const c = streakCount || 0;
   // Rewards sustained streaks with escalating one-time bonus XP tiers.
@@ -4462,9 +4497,9 @@ export function getGardenXP({ savedPlants, journalEntries, gardenMap, wateredPla
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
   const consistencyBonus = getConsistencyBonus(streakData?.count || 0);
   const xp = savedPlants.length * 25 + journalEntries.length * 40 + gardenPlotCount * 35 + wateredTodayCount * 15 + (streakData?.count || 0) * 20 + consistencyBonus + (bonusXP || 0) + (questXP || 0);
-  const level = Math.floor(Math.sqrt(xp / 250)) + 1;
-const xpForCurrentLevel = level === 1 ? 0 : 250 * (level - 1) * (level - 1);
-const xpForNextLevel = 250 * level * level;
+  const level = levelForXP(xp);
+const xpForCurrentLevel = xpForLevel(level);
+const xpForNextLevel = xpForLevel(level + 1);
 const currentLevelXP = xp - xpForCurrentLevel;
 const nextLevelXP = xpForNextLevel - xpForCurrentLevel;
   let title = "Seedling";
@@ -4623,12 +4658,12 @@ export function getSuccessionInfo(name, item, zone, sowLog) {
 
 export function applyGardenTemplate({ template, savedPlants, onAssign }) {
   const plantNames = savedPlants.filter(Boolean).map((plant) => typeof plant === "string" ? plant : plant?.name).filter(Boolean);
-  if (!plantNames.length) { Alert.alert("Save plants first", "Save a few plants before applying a garden template."); return; }
+  if (!plantNames.length) { Alert.alert(t("alerts.savePlantsFirstTitle"), t("alerts.savePlantsFirstBody")); return; }
   const templateSlots = { backyard: ["slot-1","slot-2","slot-3","slot-4","slot-5","slot-6"], balcony: ["slot-1","slot-2","slot-3","slot-4"], raised: ["slot-1","slot-2","slot-4","slot-5","slot-7","slot-8"], herbs: ["slot-1","slot-2","slot-3","slot-4","slot-5","slot-6"] };
   const slots = templateSlots[template] || templateSlots.backyard;
   slots.forEach((slotId, index) => { onAssign(slotId, plantNames[index % plantNames.length]); });
   successHaptic();
-  Alert.alert("Template Applied 🌱", "Your garden layout has been filled with saved plants.");
+  Alert.alert(t("alerts.templateAppliedTitle"), t("alerts.templateAppliedBody"));
 }
 
 export function getPowerPairs(gardenAreas) {

@@ -28,7 +28,7 @@ export const DataExportCard = memo(function DataExportCard({ theme, harvestLog, 
 
   const shareCsv = async (label, csv, count) => {
     if (!count) {
-      Alert.alert("Nothing to export", `You don't have any ${label} entries yet.`);
+      Alert.alert(t("alerts.nothingToExportTitle"), t("alerts.nothingToExportBody", { label }));
       return;
     }
     try {

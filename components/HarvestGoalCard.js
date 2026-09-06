@@ -20,7 +20,7 @@ export const HarvestGoalCard = memo(function HarvestGoalCard({ theme, harvestLog
   const setGoal = () => {
     const n = parseInt(input, 10);
     if (!n || n < 1) {
-      Alert.alert("Enter a number", "Set how many harvests you want to log this season (e.g. 20).");
+      Alert.alert(t("alerts.enterNumberTitle"), t("alerts.enterNumberBody"));
       return;
     }
     tapHaptic("light");
@@ -29,9 +29,9 @@ export const HarvestGoalCard = memo(function HarvestGoalCard({ theme, harvestLog
   };
 
   const clearGoal = () => {
-    Alert.alert("Clear goal?", "This removes your current harvest goal. Your harvest log stays.", [
+    Alert.alert(t("alerts.clearGoalTitle"), t("alerts.clearGoalBody"), [
       { text: t("common.cancel"), style: "cancel" },
-      { text: "Clear", style: "destructive", onPress: () => { setHarvestGoal(null); setInput(""); } },
+      { text: t("alerts.clearGoalConfirm"), style: "destructive", onPress: () => { setHarvestGoal(null); setInput(""); } },
     ]);
   };
 if (!harvestGoal) {

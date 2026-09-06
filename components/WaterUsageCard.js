@@ -31,7 +31,7 @@ export const WaterUsageCard = memo(function WaterUsageCard({ theme, savedPlants,
   const addEntry = () => {
     const n = parseFloat(amount);
     if (Number.isNaN(n) || n <= 0) {
-      Alert.alert("Enter an amount", "Type how much you watered (e.g. 2).");
+      Alert.alert(t("alerts.enterAmountTitle"), t("alerts.enterAmountWaterBody"));
       return;
     }
     tapHaptic("light");

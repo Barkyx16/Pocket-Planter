@@ -9,7 +9,7 @@ import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { TabHero } from "../components/TabHero";
 import { GlowPlantCard } from "../components/GlowPlantCard";
 import { PersonalPlantingCalendar } from "../components/PersonalPlantingCalendar";
-import { t } from "../lib/i18n";
+import { t, tn } from "../lib/i18n";
 import { IconText } from "../components/IconText";
 
 export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filteredPlants, followedPlants, markPlantWatered, monthScrollDone, monthScrollRef, monthlyPicksY, monthlySuggestions, openPlantFromList, openPlantFromMonthly, plantSearch, plantDifficultyFilter, setPlantDifficultyFilter, plantNowOnly, setPlantNowOnly, plantSortMode, setPlantSortMode, plantAttrFilters, setPlantAttrFilters, addPlantToGarden, gardenPlantNames, plantsListY, plantsVisibleCount, recentPlants, savedPlants, scrollRef, selectedMonth, selectedType, setComparePlants, setPlantSearch, setPlantsVisibleCount, setSelectedMonth, setSelectedType, snoozePlantWatering, snoozedPlants, theme, toggleComparePlant, toggleFollowPlant, toggleSavedPlant, wateredPlants, wateringHistory, weather, zone }) {
@@ -48,11 +48,11 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
   const bulkSave = () => {
     const toSave = bulkSel.filter((n) => !savedPlants.includes(n));
     toSave.forEach((n) => toggleSavedPlant(n));
-    Alert.alert("Saved", toSave.length ? `Added ${toSave.length} plant${toSave.length === 1 ? "" : "s"} to your garden.` : "Those were already saved.");
+    Alert.alert(t("alerts.savedTitle"), toSave.length ? tn("alerts.savedGardenBody", toSave.length) : t("alerts.alreadySavedShortBody"));
     exitSelect();
   };
   const bulkCompare = () => {
-    if (bulkSel.length !== 2) { Alert.alert("Pick exactly 2", "Select two plants to compare them side by side."); return; }
+    if (bulkSel.length !== 2) { Alert.alert(t("alerts.pickTwoTitle"), t("alerts.pickTwoBody")); return; }
     setComparePlants([...bulkSel]);
     exitSelect();
   };

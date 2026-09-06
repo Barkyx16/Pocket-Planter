@@ -71,8 +71,6 @@ export const FLOWER_COLORS = {
   Strawflower: ["yellow", "orange", "red", "pink", "white"],
   Gomphrena: ["purple", "pink", "white", "orange"],
   "Celosia (Cockscomb)": ["red", "orange", "yellow", "pink", "purple"],
-  Salvia: ["red", "purple", "blue", "pink", "white"],
-  Dianthus: ["red", "pink", "white", "purple"],
   "Sweet William": ["red", "pink", "white", "purple"],
   Cornflower: ["blue", "purple", "pink", "white"],
   "Baby's Breath": ["white", "pink"],
@@ -107,7 +105,7 @@ export const PALETTES = [
 ];
 
 // ── Fragrance & evening bloomers (#3) ────────────────────────────────────────
-export const FRAGRANT = new Set(["Rose", "Lavender", "Jasmine", "Gardenia", "Lilac", "Sweet Pea", "Sweet Alyssum", "Peony", "Freesia", "Stock", "Hyacinth", "Bee Balm", "Carnation", "Dianthus", "Sweet William", "Wisteria", "Lily of the Valley", "Plumeria (Frangipani)", "Magnolia", "Moonflower"]);
+export const FRAGRANT = new Set(["Rose", "Lavender", "Jasmine", "Gardenia", "Lilac", "Sweet Pea", "Sweet Alyssum", "Peony", "Freesia", "Stock", "Hyacinth", "Bee Balm", "Carnation", "Sweet William", "Wisteria", "Lily of the Valley", "Plumeria (Frangipani)", "Magnolia", "Moonflower"]);
 export const EVENING_SCENTED = new Set(["Jasmine", "Gardenia", "Stock", "Moonflower", "Plumeria (Frangipani)"]);
 
 // ── Deadhead / pinch tips (#1) ───────────────────────────────────────────────
@@ -124,7 +122,6 @@ export const DEADHEAD_TIPS = {
   Coneflower: "Deadhead for more blooms, or leave late ones for the birds.",
   "Black-Eyed Susan": "Deadhead through summer; leave the last seed heads for goldfinches.",
   "Sweet Pea": "Pick flowers constantly — one seed pod tells the plant to stop.",
-  Dianthus: "Shear the whole plant back by a third after the first flush.",
   Yarrow: "Cut spent corymbs to the foliage for a rebloom.",
   Coreopsis: "Shear over the whole plant when bloom fades to refresh it.",
   Pansy: "Pinch spent flowers and it will bloom for months in cool weather.",
@@ -134,7 +131,6 @@ export const DEADHEAD_TIPS = {
   "Gerbera Daisy": "Pull spent flower stems cleanly from the base rather than cutting.",
   "Shasta Daisy": "Deadhead to the next bud, then shear the whole plant after the main flush.",
   Poppy: "Leave a few pods to self-sow and remove the rest to prolong bloom.",
-  Salvia: "Cut flowered spikes back to a side shoot for a second flush.",
   "Celosia (Cockscomb)": "Cut spent plumes — they also dry well for arrangements.",
   Gomphrena: "Deadhead lightly; the round heads dry into everlasting flowers.",
   Osteospermum: "Deadhead regularly — it blooms in flushes through the season.",
@@ -252,9 +248,9 @@ export const PET_SAFE = new Set([
   "Calathea", "Prayer Plant", "Christmas Cactus", "Echeveria", "Hens and Chicks", "Burro's Tail",
   "Rose", "Sunflower", "Zinnia", "Snapdragon", "Marigold", "Nasturtium", "Calendula", "Cosmos", "Petunia", "Coreopsis",
   // ── worldwide expansion ──
-  "Gerbera Daisy", "Shasta Daisy", "Statice", "Strawflower", "Gomphrena", "Cornflower", "Celosia (Cockscomb)", "Salvia",
+  "Gerbera Daisy", "Shasta Daisy", "Statice", "Strawflower", "Gomphrena", "Cornflower", "Celosia (Cockscomb)",
   "Portulaca (Moss Rose)", "Passion Flower",
-  "Peperomia", "Pilea (Chinese Money Plant)", "Hoya (Wax Plant)", "String of Hearts", "Air Plant (Tillandsia)",
+  "Pilea (Chinese Money Plant)", "Hoya (Wax Plant)", "String of Hearts", "Air Plant (Tillandsia)",
   "Nerve Plant (Fittonia)", "Polka Dot Plant", "Haworthia", "Ponytail Palm", "Money Tree (Pachira)", "Cast Iron Plant",
   "Staghorn Fern", "Venus Flytrap", "Pitcher Plant", "African Violet", "Bromeliad", "Guzmania",
   "Lithops (Living Stones)", "Aeonium", "Ghost Plant", "Bunny Ear Cactus", "Barrel Cactus", "Prickly Pear Cactus",
@@ -312,7 +308,6 @@ export const HOUSEPLANT_CARE = {
   "English Ivy": [2, 7, "Average", 2, "A cool, bright spot; trim it to stay tidy."],
   Dracaena: [1, 12, "Average", 3, "Low-light tolerant; sensitive to fluoride — use filtered water."],
   Cordyline: [2, 9, "High", 2, "Bright light and humidity keep the leaf colors vivid."],
-  Peperomia: [2, 12, "Average", 3, "Semi-succulent leaves — let it dry between waterings."],
   "Pilea (Chinese Money Plant)": [2, 9, "Average", 2, "Rotate it weekly for an even shape; pot up the pups."],
   "String of Hearts": [3, 14, "Low", 2, "Bright light; water sparingly like a succulent."],
   "Hoya (Wax Plant)": [2, 12, "Average", 3, "Don't cut the flower spurs — it reblooms from them."],

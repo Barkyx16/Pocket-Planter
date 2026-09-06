@@ -19,7 +19,7 @@ export const GardenROICard = memo(function GardenROICard({ theme, harvestLog, su
   const saveSpent = () => {
     const n = parseFloat(draft);
     if (Number.isNaN(n) || n < 0) {
-      Alert.alert("Enter an amount", "Type what you've spent on seeds and supplies (e.g. 45).");
+      Alert.alert(t("alerts.enterAmountTitle"), t("alerts.enterAmountSuppliesBody"));
       return;
     }
     tapHaptic("light");

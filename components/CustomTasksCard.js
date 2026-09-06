@@ -51,7 +51,7 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
     } catch (e) { /* scheduling may be limited in Expo Go */ }
     persist([{ id: Date.now().toString(), title: t, interval, notifId }, ...tasks]);
     setTitle("");
-    if (!notifId) Alert.alert("Task saved", "Reminders need notification permission (and a dev build) to fire, but your task is saved here.");
+    if (!notifId) Alert.alert(t("alerts.taskSavedTitle"), t("alerts.taskSavedBody"));
   };
 
   const remove = async (task) => {

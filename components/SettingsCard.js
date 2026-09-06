@@ -295,10 +295,10 @@ async function choosePlan(plan) {
           console.log(n.identifier, "|", JSON.stringify(n.trigger));
         });
         Alert.alert(
-          "Scheduled Reminders",
+          t("alerts.scheduledRemindersTitle"),
           scheduled.length
             ? scheduled.map((n) => `• ${n.identifier}`).join("\n")
-            : "Nothing scheduled. (In Expo Go, scheduling may be limited — confirm in a dev build.)"
+            : t("alerts.nothingScheduledBody")
         );
       }}
     >
@@ -318,14 +318,14 @@ async function choosePlan(plan) {
         let granted = settings.granted;
         if (!granted) granted = (await Notifications.requestPermissionsAsync()).granted;
         if (!granted) {
-          Alert.alert("Notifications Off", "Enable notifications for Pocket Planter in your phone settings, then try again.");
+          Alert.alert(t("alerts.notificationsOffTitle"), t("alerts.notificationsOffBody"));
           return;
         }
         await Notifications.scheduleNotificationAsync({
           content: { title: "🔔 Test Notification", body: "If you see this, notifications are firing correctly!", sound: true },
           trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 5 },
         });
-        Alert.alert("Test Scheduled ⏱️", "Background the app now — a test notification will fire in ~5 seconds.");
+        Alert.alert(t("alerts.testScheduledTitle"), t("alerts.testScheduledBody"));
       }}
     >
       <Text style={styles.premiumDevButtonIcon}>⏱️</Text>
@@ -342,8 +342,8 @@ async function choosePlan(plan) {
       onPress={async () => {
         await Notifications.cancelAllScheduledNotificationsAsync();
         Alert.alert(
-          "All Reminders Cleared",
-          "Every scheduled notification was canceled. Re-toggle your reminders on the Garden tab to reschedule them cleanly."
+          t("alerts.remindersClearedTitle"),
+          t("alerts.remindersClearedBody")
         );
       }}
     >
