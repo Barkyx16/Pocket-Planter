@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LayoutAnimation, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
-import { formatTemp, getTodayKey, isHarvestReady, tapHaptic } from "../core";
+import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, WARM_DAY_THRESHOLD_F, formatTemp, getTodayKey, isHarvestReady, tapHaptic } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
@@ -37,9 +37,9 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
 
   const getConditionDetails = () => {
     if (!weather) return { icon: "🌤️", label: "Loading", color: "#8effab", urgency: null };
-    if (weather.minTempF <= 35) return { icon: "❄️", label: "Frost Risk", color: "#6bc7ff", urgency: "high" };
-    if (weather.maxTempF >= 98) return { icon: "🔥", label: "Extreme Heat", color: "#ff7b7b", urgency: "high" };
-    if (weather.maxTempF >= 90) return { icon: "☀️", label: "Hot Day", color: "#ff7b7b", urgency: "medium" };
+    if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", label: "Frost Risk", color: "#6bc7ff", urgency: "high" };
+    if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", label: "Extreme Heat", color: "#ff7b7b", urgency: "high" };
+    if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) return { icon: "☀️", label: "Hot Day", color: "#ff7b7b", urgency: "medium" };
     if (weather.precipChance >= 70) return { icon: "🌧️", label: "Heavy Rain", color: "#6bc7ff", urgency: "medium" };
     if (weather.precipChance >= 40) return { icon: "🌦️", label: "Possible Rain", color: "#8effab", urgency: null };
     if (weather.maxTempF >= 65 && weather.maxTempF <= 85) return { icon: "✅", label: "Perfect Day", color: "#5cff89", urgency: null };
@@ -50,14 +50,14 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
     const actions = [];
     if (!weather) return actions;
 
-    if (weather.minTempF <= 35) {
+    if (weather.minTempF <= FROST_THRESHOLD_F) {
       actions.push({ id: "frost-indoors", icon: "🏠", text: "Move containers indoors or near shelter tonight", priority: "high" });
       actions.push({ id: "frost-cover", icon: "🧣", text: "Cover frost-sensitive plants before dark", priority: "high" });
     }
-    if (weather.maxTempF >= 98) {
+    if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) {
       actions.push({ id: "heat-shade", icon: "🌿", text: "Add shade cloth over young transplants", priority: "high" });
       actions.push({ id: "heat-skip-transplant", icon: "🚫", text: "Skip transplanting today — heat stress risk too high", priority: "medium" });
-    } else if (weather.maxTempF >= 90) {
+    } else if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) {
       actions.push({ id: "warm-mulch", icon: "🪵", text: "Add mulch around plants to retain soil moisture", priority: "medium" });
     }
     if (weather.precipChance >= 70) {
@@ -67,7 +67,7 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
       actions.push({ id: "rain-check-soil", icon: "🌱", text: "Check soil moisture before watering — rain may help", priority: "low" });
     }
     if (unwateredCount > 0 && weather.precipChance < 40) {
-      actions.push({ id: "water-remaining", icon: "💧", text: `${unwateredCount} saved plant${unwateredCount === 1 ? "" : "s"} still need watering today`, priority: weather.maxTempF >= 90 ? "high" : "medium" });
+      actions.push({ id: "water-remaining", icon: "💧", text: `${unwateredCount} saved plant${unwateredCount === 1 ? "" : "s"} still need watering today`, priority: weather.maxTempF >= WARM_DAY_THRESHOLD_F ? "high" : "medium" });
     }
     if (harvestsReady > 0) {
       actions.push({ id: "harvest-ready", icon: "🎉", text: `${harvestsReady} plant${harvestsReady === 1 ? "" : "s"} ready to harvest — pick today for peak flavor`, priority: "high" });

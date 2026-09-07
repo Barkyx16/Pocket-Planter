@@ -147,3 +147,40 @@ describe("csvEscape", () => {
     }));
   });
 });
+
+describe("weather thresholds", () => {
+  const core2 = require(path.join(ROOT, "core.js"));
+  it("names three tiers that mean different things", () => {
+    // HEAT changes what the app does; EXTREME_HEAT is when it says so loudly;
+    // WARM is a display tier only. They must stay ordered and distinct.
+    eq(core2.FROST_THRESHOLD_F, 35);
+    eq(core2.WARM_DAY_THRESHOLD_F, 90);
+    eq(core2.HEAT_THRESHOLD_F, 95);
+    eq(core2.EXTREME_HEAT_THRESHOLD_F, 98);
+    ok(core2.WARM_DAY_THRESHOLD_F < core2.HEAT_THRESHOLD_F, "warm must be below acting-hot");
+    ok(core2.HEAT_THRESHOLD_F < core2.EXTREME_HEAT_THRESHOLD_F, "acting-hot must be below extreme");
+  });
+  it("is what the app actually compares against, everywhere", () => {
+    // These were exported and imported by nothing, so 30-odd loose literals had
+    // drifted around them. A bare number here means the constant is decorative.
+    const fs2 = require("fs");
+    const files = [];
+    for (const d of ["components", "screens"]) {
+      for (const f of fs2.readdirSync(path.join(ROOT, d))) if (f.endsWith(".js")) files.push(path.join(d, f));
+    }
+    files.push("App.js", "core.js");
+    const offenders = [];
+    for (const rel of files) {
+      const src = fs2.readFileSync(path.join(ROOT, rel), "utf8");
+      src.split("\n").forEach((line, i) => {
+        if (/(maxTempF\s*>=\s*(90|95|98)\b)|(minTempF\s*<=\s*35\b)/.test(line)) offenders.push(`${rel}:${i + 1}`);
+      });
+    }
+    eq(offenders, []);
+  });
+  it("drives the frost forecast from the named threshold", () => {
+    const at = (t) => core2.getUpcomingFrost({ forecast: [{ date: "d", minTempF: t }] });
+    ok(at(core2.FROST_THRESHOLD_F) !== null, "at the threshold it is frost");
+    eq(at(core2.FROST_THRESHOLD_F + 1), null, "a degree above it is not");
+  });
+});

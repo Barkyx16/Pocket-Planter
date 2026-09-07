@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { flipMonth, getClimateBucket, getFertilizerDaysSince, getTodayKey } from "../core";
+import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, flipMonth, getClimateBucket, getFertilizerDaysSince, getTodayKey } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
@@ -155,9 +155,9 @@ export const FertilizerIntelligenceCard = memo(function FertilizerIntelligenceCa
 
 const getWeatherWarning = () => {
   if (!weather) return null;
-  if (weather.maxTempF >= 95) return { icon: "🔥", text: "Too hot to fertilize today. Wait for temps below 90°F to avoid root burn." };
+  if (weather.maxTempF >= HEAT_THRESHOLD_F) return { icon: "🔥", text: "Too hot to fertilize today. Wait for temps below 90°F to avoid root burn." };
   if (weather.precipChance >= 70) return { icon: "🌧️", text: "Rain expected today. Hold off — heavy rain will wash away fertilizer before roots absorb it." };
-  if (weather.minTempF <= 35) return { icon: "❄️", text: "Frost risk tonight. Don't fertilize — cold temps slow nutrient absorption significantly." };
+  if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", text: "Frost risk tonight. Don't fertilize — cold temps slow nutrient absorption significantly." };
   return { icon: "✅", text: "Great conditions to fertilize today. Mild temps and low rain chance means nutrients will absorb well." };
 };
 

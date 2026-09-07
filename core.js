@@ -2432,7 +2432,7 @@ export function getSeasonalIntelligenceLabel(item, zone, weather) {
   if (!zoneMatch(zone, item.minZone, item.maxZone)) return { icon: "📍", label: "Outside your zone", text: "This plant may need containers, shade, or protection in your area." };
   if (!months.length) return { icon: "🌿", label: "Zone fit", text: "Season timing varies, but this plant matches your growing zone." };
   if (months.includes(currentMonth)) {
-    if (weather?.maxTempF >= 98) return { icon: "🔥", label: "Plant early morning", text: "It is in season, but heat is high. Plant early and water deeply." };
+    if (weather?.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", label: "Plant early morning", text: "It is in season, but heat is high. Plant early and water deeply." };
     return { icon: "✅", label: "Perfect planting week", text: "This is a strong time to plant it in your zone." };
   }
   const nextMonth = months.find((month) => month > currentMonth);
@@ -2447,8 +2447,20 @@ export function getRainSkipToday(weather) {
   return null;
 }
 
+// The weather thresholds, in one place because they are asked about from three
+// dozen spots across the app and were written as loose numbers in every one of
+// them — including here. FROST_THRESHOLD_F and HEAT_THRESHOLD_F were already
+// exported and imported by nothing at all, so editing either would have changed
+// nothing at all either.
+//
+// Three tiers, and they mean different things. HEAT is the point where the app
+// changes what it does — shorter watering interval, no fertilising, plant in the
+// early morning. EXTREME_HEAT is the point where it says so loudly: heat stress
+// warnings and the red badge. WARM is a display tier only, for "Hot Day".
 export const FROST_THRESHOLD_F = 35;
 export const HEAT_THRESHOLD_F = 95;
+export const EXTREME_HEAT_THRESHOLD_F = 98;
+export const WARM_DAY_THRESHOLD_F = 90;
 
 export function getUpcomingFrost(weather) {
   const forecast = Array.isArray(weather?.forecast) ? weather.forecast : [];
@@ -2668,15 +2680,15 @@ export function getSeedStartInfo(item, zone) {
 export function getSmartWeatherRecommendation(zone, weather, plants = []) {
   if (!weather) return { title: "Weather scan loading", body: "Once your forecast loads, Pocket Planter will suggest what to water, protect, or plant next.", level: "Common" };
   const plantNowCount = plants.filter((item) => getPlantSeasonLabel(item, zone) === "Plant now").length;
-  if (weather.minTempF <= 35) return { title: "Frost protection night", body: "Cover tender plants, move containers near shelter, and wait on transplanting until lows warm back up.", level: "Epic" };
-  if (weather.maxTempF >= 98) return { title: "Heat stress warning", body: "Water deeply before the afternoon, shade young starts, and skip transplanting today.", level: "Rare" };
+  if (weather.minTempF <= FROST_THRESHOLD_F) return { title: "Frost protection night", body: "Cover tender plants, move containers near shelter, and wait on transplanting until lows warm back up.", level: "Epic" };
+  if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { title: "Heat stress warning", body: "Water deeply before the afternoon, shade young starts, and skip transplanting today.", level: "Rare" };
   if (weather.precipChance >= 70) return { title: "Rain-friendly garden day", body: "Let rain handle watering. Check drainage and avoid soaking containers twice.", level: "Rare" };
   return { title: "Prime Garden Window!", body: `${plantNowCount || "Several"} zone-matched plants look reasonable right now. Focus on soil moisture and steady starts.`, level: "Common" };
 }
 
 export function getWateringTip(weather) {
   if (!weather) return "Water deeply and consistently while monitoring soil moisture.";
-  if (weather.maxTempF >= 95) return "Hot weather is coming. Deep morning watering will help reduce stress and evaporation.";
+  if (weather.maxTempF >= HEAT_THRESHOLD_F) return "Hot weather is coming. Deep morning watering will help reduce stress and evaporation.";
   if (weather.precipChance >= 65) return "Rain is likely this week. Check the soil before watering again.";
   return "Keep the soil lightly moist and avoid shallow watering.";
 }
@@ -2694,11 +2706,11 @@ export function getShouldGrowText(item, zone, weather) {
     return `${item.name} is typically grown outside your current zone. You may still have success with containers, raised beds, or a greenhouse setup depending on your microclimate.`;
   }
 
-  if (weather?.minTempF <= 35) {
+  if (weather?.minTempF <= FROST_THRESHOLD_F) {
     return `${item.name} is a good fit for your zone but frost is in the forecast. Hold off on transplanting outdoors until overnight lows stay consistently above 40°F. Starting seeds indoors now is a great option.`;
   }
 
-  if (weather?.maxTempF >= 98) {
+  if (weather?.maxTempF >= EXTREME_HEAT_THRESHOLD_F) {
     if (plantNameMatchesKey(name, "lettuce") || plantNameMatchesKey(name, "spinach") || plantNameMatchesKey(name, "pea") || plantNameMatchesKey(name, "radish")) {
       return `${item.name} prefers cooler temperatures and will struggle in the current heat. Wait for temperatures to drop below 80°F or plant in a shaded spot with morning sun only.`;
     }
@@ -2833,7 +2845,7 @@ export function getWhereToPlantText(item) {
 
 export function getPlantSpecificTip(item, zone, weather) {
   const seasonLabel = getPlantSeasonLabel(item, zone);
-  if (seasonLabel === "Plant now" && weather?.maxTempF >= 95) return "This plant is in season, but the heat is high. Plant early in the morning, mulch well, and keep watering consistent.";
+  if (seasonLabel === "Plant now" && weather?.maxTempF >= HEAT_THRESHOLD_F) return "This plant is in season, but the heat is high. Plant early in the morning, mulch well, and keep watering consistent.";
   if (seasonLabel === "Plant now" && weather?.minTempF <= 38) return "This plant is in season, but nights are still chilly. Protect young starts until temperatures stay warmer.";
   if (seasonLabel === "Plant now") return "This is a good time to grow it in your area. Focus on soil moisture, spacing, and steady care during the first few weeks.";
   return "Save or follow this plant so you can come back when its planting window gets closer.";
@@ -3620,7 +3632,7 @@ export function getNextWaterInfo(plantName, item, wateringHistory, wateredPlants
   if (!lastDate) return null;
 
   let interval = getBaseWaterInterval(item);
-  if (weather?.maxTempF >= 95) interval = Math.max(1, interval - 1);
+  if (weather?.maxTempF >= HEAT_THRESHOLD_F) interval = Math.max(1, interval - 1);
 
   const base = new Date(`${String(lastDate).slice(0, 10)}T12:00:00`);
   if (Number.isNaN(base.getTime())) return null;
@@ -4851,8 +4863,8 @@ export function getMonthEmoji(monthNumber) {
 export function getWeatherIconFromDay(day) {
   if (!day) return "🌤️";
   if (day.precipChance >= 65) return "🌧️";
-  if (day.minTempF <= 35) return "❄️";
-  if (day.maxTempF >= 95) return "🔥";
+  if (day.minTempF <= FROST_THRESHOLD_F) return "❄️";
+  if (day.maxTempF >= HEAT_THRESHOLD_F) return "🔥";
   return "☀️";
 }
 
@@ -5009,8 +5021,8 @@ export function getPowerPairs(gardenAreas) {
 
 export function getPlantHealthStatus({ plantName, item, wateredPlants, wateringHistory, weather }) {
   const wateredToday = wateredPlants?.[plantName] === getTodayKey();
-  if (weather?.minTempF <= 35) return { label: "Frost Risk", icon: "❄️", color: "#6bc7ff" };
-  if (weather?.maxTempF >= 95 && !wateredToday) return { label: "Heat Stressed", icon: "🔥", color: "#ff7a7a" };
+  if (weather?.minTempF <= FROST_THRESHOLD_F) return { label: "Frost Risk", icon: "❄️", color: "#6bc7ff" };
+  if (weather?.maxTempF >= HEAT_THRESHOLD_F && !wateredToday) return { label: "Heat Stressed", icon: "🔥", color: "#ff7a7a" };
 
   // "Not watered today" is not the same as "thirsty". Every plant that had not
   // been watered since midnight read Needs Water, so an apple on a five-day

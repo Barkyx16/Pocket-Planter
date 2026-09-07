@@ -1,7 +1,7 @@
 import { memo, useMemo } from "react";
 import { Pressable, Share, Text, View } from "react-native";
 import { styles } from "../styles";
-import { calculateGardenHealth, formatTemp, getConsistencyBonus, getTodayKey, getTotalWaterings, isFertilizerDue, isHarvestReady, tapHaptic } from "../core";
+import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, calculateGardenHealth, formatTemp, getConsistencyBonus, getTodayKey, getTotalWaterings, isFertilizerDue, isHarvestReady, tapHaptic } from "../core";
 import { AnimatedBar } from "./AnimatedBar";
 import { IconText } from "./IconText";
 import { formatDate, useTranslation } from "../lib/i18n";
@@ -89,8 +89,8 @@ return isFertilizerDue(plantName, tracker);
   };
 
   const weatherStatus = !weather ? null
-    : weather.minTempF <= 35 ? { icon: "❄️", label: "Frost Risk", color: "#6bc7ff" }
-    : weather.maxTempF >= 98 ? { icon: "🔥", label: "Heat Alert", color: "#ff7b7b" }
+    : weather.minTempF <= FROST_THRESHOLD_F ? { icon: "❄️", label: "Frost Risk", color: "#6bc7ff" }
+    : weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F ? { icon: "🔥", label: "Heat Alert", color: "#ff7b7b" }
     : weather.precipChance >= 70 ? { icon: "🌧️", label: "Rain Today", color: "#6bc7ff" }
     : { icon: "☀️", label: "Good Day", color: "#5cff89" };
 

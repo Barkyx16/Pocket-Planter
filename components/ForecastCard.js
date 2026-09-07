@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
-import { formatTemp, getClimateBucket, getTodayKey, getWeatherIconFromDay } from "../core";
+import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, formatTemp, getClimateBucket, getTodayKey, getWeatherIconFromDay } from "../core";
 import { formatDate, useTranslation } from "../lib/i18n";
 
 export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, savedPlants, wateredPlants, unitSystem }) {
@@ -35,7 +35,7 @@ export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, s
     const heatSkip = climate === "hot" ? 104 : climate === "cold" ? 94 : 98;
     const heatWater = climate === "hot" ? 95 : climate === "cold" ? 85 : 90;
     const greatMax = climate === "cold" ? 80 : 85;
-    if (day.minTempF <= 35) return { text: "Cover plants", color: "#6bc7ff" };
+    if (day.minTempF <= FROST_THRESHOLD_F) return { text: "Cover plants", color: "#6bc7ff" };
     if (day.maxTempF >= heatSkip) return { text: "Skip planting", color: "#ff7b7b" };
     if (day.maxTempF >= heatWater) return { text: "Water early", color: "#ffd86b" };
     if (day.precipChance >= 70) return { text: "Skip watering", color: "#6bc7ff" };
@@ -61,8 +61,8 @@ export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, s
   };
 
   const getWeekSummary = () => {
-    const frostDays = forecast.filter(d => d.minTempF <= 35).length;
-    const heatDays = forecast.filter(d => d.maxTempF >= 95).length;
+    const frostDays = forecast.filter(d => d.minTempF <= FROST_THRESHOLD_F).length;
+    const heatDays = forecast.filter(d => d.maxTempF >= HEAT_THRESHOLD_F).length;
     if (frostDays > 0) return { icon: "❄️", text: `${frostDays} frost risk night${frostDays === 1 ? "" : "s"} this week — keep covers ready.`, color: "#6bc7ff" };
     if (heatDays >= 3) return { icon: "🔥", text: `${heatDays} days above 95°F — water deeply every morning and mulch heavily.`, color: "#ff7b7b" };
     if (rainyDays >= 4) return { icon: "🌧️", text: `${rainyDays} rainy days ahead — hold off on fertilizing and check container drainage.`, color: "#6bc7ff" };

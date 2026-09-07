@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
-import { flipMonth, formatTemp, getClimateBucket, getSeasonForDate, getSuggestionsForMonth, getTodayKey, isHarvestReady } from "../core";
+import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, flipMonth, formatTemp, getClimateBucket, getSeasonForDate, getSuggestionsForMonth, getTodayKey, isHarvestReady } from "../core";
 import { formatDate, useTranslation } from "../lib/i18n";
 
 export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ theme, weather, zone, savedPlants, wateredPlants, gardenMap, harvestTrackers, onOpenPlant, unitSystem }) {
@@ -30,8 +30,8 @@ export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ the
   const bestHarvestDay = forecast.find((d) => d.precipChance < 30 && d.maxTempF < 95 && d.maxTempF > 50) || forecast[0];
   const bestFertilizerDay = forecast.find((d) => d.precipChance < 50 && d.maxTempF < 90 && d.minTempF > 40) || forecast[0];
   const heavyRainDay = forecast.find((d) => d.precipChance >= 70);
-  const frostRiskDay = forecast.find((d) => d.minTempF <= 35);
-  const heatRiskDay = forecast.find((d) => d.maxTempF >= 95);
+  const frostRiskDay = forecast.find((d) => d.minTempF <= FROST_THRESHOLD_F);
+  const heatRiskDay = forecast.find((d) => d.maxTempF >= HEAT_THRESHOLD_F);
   const wateringSkippable = weather?.precipChance >= 65;
 
   const unwateredCount = savedPlants.filter((p) => wateredPlants?.[p] !== today).length;

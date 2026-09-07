@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Alert, Pressable, Text, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { styles } from "../styles";
-import { SCREEN_WIDTH, WHATS_NEW_ITEMS, WHATS_NEW_VERSION, formatTemp, getRainSkipToday, getTodayKey, getUpcomingFrost, homeBuddyImage, isMonthlyChecklistComplete, zoneIsFrostFree } from "../core";
+import { EXTREME_HEAT_THRESHOLD_F, SCREEN_WIDTH, WHATS_NEW_ITEMS, WHATS_NEW_VERSION, formatTemp, getRainSkipToday, getTodayKey, getUpcomingFrost, homeBuddyImage, isMonthlyChecklistComplete, zoneIsFrostFree } from "../core";
 import { t } from "../lib/i18n";
 import { CollapsibleCard } from "../components/CollapsibleCard";
 import { TabHero } from "../components/TabHero";
@@ -90,7 +90,7 @@ export function HomeTab({ activationSteps, claimDailyBonus, combinedGardenMap, c
         AsyncStorage.setItem("pp_homeBannerDismissedDate", today).catch(() => {});
       };
       const frost = getUpcomingFrost(weather);
-      const extremeHeat = weather?.maxTempF >= 98;
+      const extremeHeat = weather?.maxTempF >= EXTREME_HEAT_THRESHOLD_F;
       if (frost) {
         // All three branches translated. Two of them used to be English literals
         // sitting inside an otherwise translated sentence, so nine locales read

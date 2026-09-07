@@ -62,64 +62,7 @@ import {
 } from "./lib/zoneResolver";
 import produceData from "./data/produceData";
 import { styles } from "./styles";
-import {
-  getDateKey,
-  getPlantFamily,
-  hasPremiumEntitlement,
-  PROFILE_THEMES,
-  RARITY_STYLES,
-  SCREEN_WIDTH,
-  STORAGE_KEYS,
-  WHATS_NEW_VERSION,
-  applyModuleBackup,
-  calculateGardenHealth,
-  canPlantInArea,
-  isFlowerBedPlant,
-  nextFreeSlotId,
-  collectModuleBackup,
-  formatTemp,
-  getAchievementBadges,
-  buildWidgetSnapshot,
-  getBaseWaterInterval,
-  getCompatibilityScore,
-  getCompatiblePlants,
-  getDailyQuests,
-  getGardenXP,
-  getHarvestDays,
-  getNextWaterInfo,
-  getPlantDetails,
-  nextStreakState,
-  resolveCompanionName,
-  getPlantDifficulty,
-  getActivationSteps,
-  getPlantSeasonLabel,
-  getProfileBanners,
-  getRainSkipToday,
-  getRarity,
-  getSeasonForDate,
-  getSmartWeatherRecommendation,
-  getSuccessionInterval,
-  getSuggestionsForMonth,
-  getTodayKey,
-  getTotalWaterings,
-  getUpcomingFrost,
-  getWateringRhythm,
-  getWateringStreak,
-  getZipRecord,
-  isHarvestReady,
-  isSameDayKey,
-  isPerennial,
-  matchesType,
-  migrateGardenToAreas,
-  normalizeType,
-  resolvePlantImageSource,
-  setFrostOverrideRef,
-  setHapticsEnabled,
-  setHemisphereFromLatitude,
-  successHaptic,
-  tapHaptic,
-  welcomeBuddyImage,
-} from "./core";
+import { HEAT_THRESHOLD_F, PROFILE_THEMES, RARITY_STYLES, SCREEN_WIDTH, STORAGE_KEYS, WHATS_NEW_VERSION, applyModuleBackup, buildWidgetSnapshot, calculateGardenHealth, canPlantInArea, collectModuleBackup, formatTemp, getAchievementBadges, getActivationSteps, getBaseWaterInterval, getCompatibilityScore, getCompatiblePlants, getDailyQuests, getDateKey, getGardenXP, getHarvestDays, getNextWaterInfo, getPlantDetails, getPlantDifficulty, getPlantFamily, getPlantSeasonLabel, getProfileBanners, getRainSkipToday, getRarity, getSeasonForDate, getSmartWeatherRecommendation, getSuccessionInterval, getSuggestionsForMonth, getTodayKey, getTotalWaterings, getUpcomingFrost, getWateringRhythm, getWateringStreak, getZipRecord, hasPremiumEntitlement, isFlowerBedPlant, isHarvestReady, isPerennial, isSameDayKey, matchesType, migrateGardenToAreas, nextFreeSlotId, nextStreakState, normalizeType, resolveCompanionName, resolvePlantImageSource, setFrostOverrideRef, setHapticsEnabled, setHemisphereFromLatitude, successHaptic, tapHaptic, welcomeBuddyImage } from "./core";
 import { BackgroundDecoration } from "./components/BackgroundDecoration";
 import { ConfettiBurst } from "./components/ConfettiBurst";
 import { getBadgeImage } from "./data/badgeImageMap";
@@ -3282,7 +3225,7 @@ async function schedulePlantWaterReminder(plantName) {
     if (!item) return;
     const rhythm = getWateringRhythm(plantName, item, wateringHistory);
     let interval = rhythm ? Math.max(1, Math.round(rhythm.avgGap)) : getBaseWaterInterval(item);
-    if (weather?.maxTempF >= 95) interval = Math.max(1, interval - 1);
+    if (weather?.maxTempF >= HEAT_THRESHOLD_F) interval = Math.max(1, interval - 1);
     const fireDate = new Date();
     fireDate.setDate(fireDate.getDate() + interval);
     fireDate.setHours(wateringReminderTime?.hour ?? 8, wateringReminderTime?.minute ?? 0, 0, 0);
@@ -4307,7 +4250,7 @@ useEffect(() => {
     if (!frostAlertsOn) return;
     const days = weather?.forecast || [];
     // First upcoming day (today or the next two) that hits extreme heat.
-    const idx = days.findIndex((d, i) => i <= 2 && typeof d.maxTempF === "number" && d.maxTempF >= 95);
+    const idx = days.findIndex((d, i) => i <= 2 && typeof d.maxTempF === "number" && d.maxTempF >= HEAT_THRESHOLD_F);
     if (idx === -1) return;
     const day = days[idx];
     if (lastHeatAlertDate.current === day.date) return;

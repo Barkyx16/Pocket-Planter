@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
-import { formatTemp, getClimateBucket } from "../core";
+import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, WARM_DAY_THRESHOLD_F, formatTemp, getClimateBucket } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
@@ -12,9 +12,9 @@ export const WeatherTeaserCard = memo(function WeatherTeaserCard({ theme, weathe
 
   const getConditionPreview = () => {
     if (!weather) return { icon: "🌤️", label: "Loading forecast...", color: "#8effab" };
-    if (weather.minTempF <= 35) return { icon: "❄️", label: "Frost risk tonight — premium alert available", color: "#6bc7ff" };
-    if (weather.maxTempF >= 98) return { icon: "🔥", label: "Extreme heat today — premium action plan available", color: "#ff7b7b" };
-    if (weather.maxTempF >= 90) return { icon: "☀️", label: "Hot day — premium watering guide available", color: "#ffd86b" };
+    if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", label: "Frost risk tonight — premium alert available", color: "#6bc7ff" };
+    if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", label: "Extreme heat today — premium action plan available", color: "#ff7b7b" };
+    if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) return { icon: "☀️", label: "Hot day — premium watering guide available", color: "#ffd86b" };
     if (weather.precipChance >= 70) return { icon: "🌧️", label: "Heavy rain today — premium garden plan available", color: "#6bc7ff" };
     return { icon: "✅", label: "Good growing conditions today", color: "#5cff89" };
   };

@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
-import { getHarvestCountdown, getPlantDifficulty, getPlantSeasonLabel, normalizeType, resolvePlantImageSource } from "../core";
+import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, getHarvestCountdown, getPlantDifficulty, getPlantSeasonLabel, normalizeType, resolvePlantImageSource } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const PlantTodayHero = memo(function PlantTodayHero({ theme, monthlySuggestions, compatiblePlants, savedPlants = [], zone, weather, onOpen }) {
@@ -28,8 +28,8 @@ export const PlantTodayHero = memo(function PlantTodayHero({ theme, monthlySugge
 
   const getWhyNow = () => {
     const seasonLabel = getPlantSeasonLabel(plant, zone);
-    if (weather?.minTempF <= 35) return "Start it indoors now — frost is in the forecast, so it'll be ready to transplant once nights warm up.";
-    if (weather?.maxTempF >= 95 && difficulty.label !== "Hard") return `It can handle the current heat — plant early morning and water deeply to get it established.`;
+    if (weather?.minTempF <= FROST_THRESHOLD_F) return "Start it indoors now — frost is in the forecast, so it'll be ready to transplant once nights warm up.";
+    if (weather?.maxTempF >= HEAT_THRESHOLD_F && difficulty.label !== "Hard") return `It can handle the current heat — plant early morning and water deeply to get it established.`;
     if (seasonLabel === "Plant now") return `This is a prime planting window for ${type.toLowerCase()} in Zone ${zone || "your area"} right now.`;
     if (difficulty.label === "Easy") return `An easy, forgiving grower — a great low-effort pick to add to your garden this week.`;
     return `A strong seasonal match for Zone ${zone || "your area"} worth planning into your garden this week.`;

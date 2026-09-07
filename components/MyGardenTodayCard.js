@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { formatTemp, getClimateBucket, getDateKey, getSeasonForDate, getSeedStartInfo, getTodayKey, isFertilizerDue, isHarvestReady, resolvePlantImageSource } from "../core";
+import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, WARM_DAY_THRESHOLD_F, formatTemp, getClimateBucket, getDateKey, getSeasonForDate, getSeedStartInfo, getTodayKey, isFertilizerDue, isHarvestReady, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
@@ -46,9 +46,9 @@ export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weathe
 
   const getWeatherSummary = () => {
     if (!weather) return { icon: "🌤️", title: "Weather loading", text: "Your forecast will appear shortly.", color: "#d7ebdc", urgent: false };
-    if (weather.minTempF <= 35) return { icon: "❄️", title: "Frost risk tonight", text: `Low of ${formatTemp(weather.minTempF, unitSystem, true)} — cover tender plants and move containers to shelter before dark.`, color: "#6bc7ff", urgent: true };
-    if (weather.maxTempF >= 98) return { icon: "🔥", title: "Extreme heat today", text: `High of ${formatTemp(weather.maxTempF, unitSystem, true)} — water before 9 AM, add shade cloth, and skip transplanting.`, color: "#ff7b7b", urgent: true };
-    if (weather.maxTempF >= 90) return { icon: "☀️", title: "Hot day ahead", text: `High of ${formatTemp(weather.maxTempF, unitSystem, true)} — water deeply early and mulch around roots to hold moisture.`, color: "#ffd86b", urgent: false };
+    if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", title: "Frost risk tonight", text: `Low of ${formatTemp(weather.minTempF, unitSystem, true)} — cover tender plants and move containers to shelter before dark.`, color: "#6bc7ff", urgent: true };
+    if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", title: "Extreme heat today", text: `High of ${formatTemp(weather.maxTempF, unitSystem, true)} — water before 9 AM, add shade cloth, and skip transplanting.`, color: "#ff7b7b", urgent: true };
+    if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) return { icon: "☀️", title: "Hot day ahead", text: `High of ${formatTemp(weather.maxTempF, unitSystem, true)} — water deeply early and mulch around roots to hold moisture.`, color: "#ffd86b", urgent: false };
     if (weather.precipChance >= 70) return { icon: "🌧️", title: "Rain likely today", text: `${Math.round(weather.precipChance)}% chance of rain — skip watering and check drainage on containers.`, color: "#6bc7ff", urgent: false };
     if (weather.precipChance >= 40) return { icon: "🌦️", title: "Possible showers", text: `${Math.round(weather.precipChance)}% rain chance — check soil before watering, may not be needed.`, color: "#8effab", urgent: false };
     return { icon: "✅", title: "Great garden day", text: `${formatTemp(weather.maxTempF, unitSystem)} high, ${Math.round(weather.precipChance)}% rain — ideal conditions for planting, watering, and garden care.`, color: "#5cff89", urgent: false };
