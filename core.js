@@ -3549,6 +3549,19 @@ export function formatLength(inches, units) {
   return `${Number.isInteger(n) ? n : n.toFixed(1)}"`;
 }
 
+// Whole days between two date keys. Both ends sit at local midday so the gap is
+// a whole number of days, and it is rounded rather than floored — the clocks
+// change twice a year, and flooring 23 hours reports a day that did not happen.
+// Two callers had written this by hand and floored it, which put the chore
+// rotation a day out and labelled yesterday's timeline entries "Today" for a
+// week after every spring forward.
+export function daysBetweenKeys(fromKey, toKey) {
+  const from = new Date(`${String(fromKey).slice(0, 10)}T12:00:00`);
+  const to = new Date(`${String(toKey).slice(0, 10)}T12:00:00`);
+  if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return null;
+  return Math.round((to - from) / 86400000);
+}
+
 export function getDaysSince(dateString) {
   if (!dateString) return null;
   const slice = String(dateString).slice(0, 10);

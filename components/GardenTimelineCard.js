@@ -1,15 +1,16 @@
 import { memo, useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { buildGardenTimeline, getTimelineMonthRecap, getTimelineOnThisDay, resolvePlantImageSource } from "../core";
+import { buildGardenTimeline, daysBetweenKeys, getDateKey, getTimelineMonthRecap, getTimelineOnThisDay, getTodayKey, resolvePlantImageSource } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 // One unified, auto-generated feed of the garden's life — plantings, sowings,
 // photos, harvests, care, waterings, and badges — plus a monthly recap and an
 // "On this day" memory. All derived from data the app already tracks.
 function relTime(ts) {
-  const now = Date.now();
-  const days = Math.floor((new Date(now).setHours(0, 0, 0, 0) - new Date(ts).setHours(0, 0, 0, 0)) / 86400000);
+  // Both ends via the shared day count: subtracting midnights and flooring loses
+  // a day across a clock change, so yesterday's entries read "Today".
+  const days = daysBetweenKeys(getDateKey(new Date(ts)), getTodayKey());
   if (days <= 0) return "Today";
   if (days === 1) return "Yesterday";
   if (days < 7) return `${days}d ago`;

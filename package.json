@@ -11,8 +11,9 @@
     "check:i18n": "node scripts/check-i18n.js",
     "lint": "eslint .",
     "smoke": "node scripts/smoke-test.js",
-    "check": "npm run lint && npm run check:i18n && npm run test && npm run smoke",
-    "test": "node scripts/test.js"
+    "check": "npm run lint && npm run check:i18n && npm run test:tz && npm run smoke",
+    "test": "node scripts/test.js",
+    "test:tz": "for tz in UTC America/Los_Angeles Europe/London Pacific/Auckland Asia/Tokyo; do echo \"\u2500\u2500 $tz\"; TZ=$tz node scripts/test.js || exit 1; done"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",

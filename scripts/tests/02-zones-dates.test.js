@@ -184,3 +184,35 @@ describe("weather thresholds", () => {
     eq(at(core2.FROST_THRESHOLD_F + 1), null, "a degree above it is not");
   });
 });
+
+describe("daysBetweenKeys", () => {
+  const core3 = require(path.join(ROOT, "core.js"));
+  it("counts whole days", () => {
+    eq(core3.daysBetweenKeys("2026-06-01", "2026-06-08"), 7);
+    eq(core3.daysBetweenKeys("2026-06-01", "2026-06-01"), 0);
+    eq(core3.daysBetweenKeys("2026-06-08", "2026-06-01"), -7, "backwards is negative");
+  });
+  it("survives the clock changing", () => {
+    // US spring forward 2026 is 8 March; those local days are 23 hours long, and
+    // flooring the gap reports a day that never happened. Only meaningful when
+    // the suite runs in a zone that observes it — npm run test:tz covers others.
+    eq(core3.daysBetweenKeys("2026-03-07", "2026-03-08"), 1);
+    eq(core3.daysBetweenKeys("2026-03-07", "2026-03-09"), 2);
+    eq(core3.daysBetweenKeys("2026-03-01", "2026-03-08"), 7);
+    eq(core3.daysBetweenKeys("2026-10-26", "2026-11-02"), 7, "autumn back");
+    eq(core3.daysBetweenKeys("2026-11-01", "2026-11-02"), 1);
+  });
+  it("declines an unreadable key rather than returning NaN", () => {
+    eq(core3.daysBetweenKeys("nonsense", "2026-06-01"), null);
+    eq(core3.daysBetweenKeys(null, undefined), null);
+  });
+  it("is what the components use, so the fix cannot be undone quietly", () => {
+    const fs3 = require("fs");
+    const offenders = [];
+    for (const rel of ["components/ChoreRotationSection.js", "components/GardenTimelineCard.js"]) {
+      const src = fs3.readFileSync(path.join(ROOT, rel), "utf8");
+      if (/Math\.floor\([^)]*86400000|Math\.floor\([^)]*1000 \* 60 \* 60 \* 24/.test(src)) offenders.push(rel);
+    }
+    eq(offenders, []);
+  });
+});

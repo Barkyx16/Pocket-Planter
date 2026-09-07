@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { getTodayKey, tapHaptic } from "../core";
+import { daysBetweenKeys, getTodayKey, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
 
 export const CHORE_STORAGE_KEY = "pp_choreRotation";
@@ -9,11 +9,9 @@ export const CHORE_STORAGE_KEY = "pp_choreRotation";
 const CHORE_SUGGESTIONS = ["Water", "Weed", "Harvest", "Compost", "Feed plants"];
 const DEFAULT = { members: [], chores: [], startDate: getTodayKey(), periodDays: 7 };
 
-function daysBetween(aKey, bKey) {
-  const a = new Date(aKey + "T12:00:00").getTime();
-  const b = new Date(bKey + "T12:00:00").getTime();
-  return Math.floor((b - a) / 86400000);
-}
+// Shared with the rest of the app: flooring this put the rotation a day behind
+// for months after every clock change.
+const daysBetween = (aKey, bKey) => daysBetweenKeys(aKey, bKey) ?? 0;
 
 export const ChoreRotationSection = memo(function ChoreRotationSection({ theme }) {
   const [data, setData] = useState(DEFAULT);
