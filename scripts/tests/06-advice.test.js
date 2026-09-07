@@ -279,3 +279,51 @@ describe("getPlantingSteps", () => {
     eq(bad.map((i) => i.name), []);
   });
 });
+
+describe("getPlantingGuide", () => {
+  const details = require(path.join(ROOT, "data/plantDetails.js")).PLANT_DETAILS;
+  const plantOf = (n) => items.find((i) => i.name === n);
+  it("never says full sun for a plant that wants shade", () => {
+    // 111 plants were shown "Full sun" while the badge beside them said otherwise.
+    const wrong = items.filter((i) => {
+      const need = core.getPlantSunNeed(i).need;
+      return (need === "partial" || need === "shade") && /^Full sun/.test(core.getPlantingGuide(i).sun);
+    });
+    eq(wrong.map((i) => i.name), []);
+  });
+  it("shows the plant's own spacing, not its category's range", () => {
+    // Nearly half the catalog was shown a range that excluded its own value.
+    const wrong = items.filter((i) => {
+      const authored = (details[i.name] || {}).spacingInches;
+      if (typeof authored !== "number") return false;
+      const shown = core.getPlantingGuide(i).spacing;
+      const inches = /ft/.test(shown) ? parseFloat(shown) * 12 : parseFloat(shown);
+      return Math.abs(inches - authored) > 0.6;
+    });
+    eq(wrong.map((i) => i.name), []);
+  });
+  it("keeps the curated answer where nothing is authored", () => {
+    // Trees author no sowing depth, and Number(null) is 0 — which read "Surface".
+    eq(core.getPlantingGuide(plantOf("Apple")).depth, "Root ball depth");
+    eq(core.getPlantingGuide(plantOf("Mango")).depth, "Root ball depth");
+  });
+  it("measures beds in inches and orchards in feet", () => {
+    eq(core.getPlantingGuide(plantOf("Tomato")).spacing, '24"');
+    eq(core.getPlantingGuide(plantOf("Apple")).spacing, "20 ft");
+  });
+  it("does not hand a look-alike another crop's guide", () => {
+    // Corn Salad had sweetcorn's depth and spacing; Popcorn had none of corn's.
+    if (plantOf("Corn Salad (Mache)")) {
+      const mache = core.getPlantingGuide(plantOf("Corn Salad (Mache)"));
+      ok(/partial/.test(mache.sun), `mache should not be full sun: ${mache.sun}`);
+    }
+    eq(core.getPlantingGuide(plantOf("Popcorn")).germ, core.getPlantingGuide(plantOf("Corn")).germ);
+  });
+  it("fills every field for every plant", () => {
+    const bad = items.filter((i) => {
+      const g = core.getPlantingGuide(i);
+      return ["depth", "spacing", "sun", "germ"].some((k) => !g[k] || /undefined|NaN|null/.test(String(g[k])));
+    });
+    eq(bad.map((i) => i.name), []);
+  });
+});

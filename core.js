@@ -2768,12 +2768,25 @@ export function getShouldGrowText(item, zone, weather) {
   return `${item.name} is a solid choice for Zone ${zone || "your area"} when planted during the proper season. Prepare your soil with compost, water consistently, and give plants enough space for airflow and healthy growth throughout the season.`;
 }
 
+// Compact form for the planting-guide card, where the prose version would read
+// oddly in a table cell: a quarter inch becomes 1/4", two feet becomes 2 ft.
+function formatInchesShort(value) {
+  // Typed check, not Number(): the trees author plantingDepthInches as null, and
+  // Number(null) is 0, which turned "Root ball depth" into "Surface".
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) return null;
+  const n = value;
+  if (n === 0) return "Surface";
+  if (n >= 36) { const ft = n / 12; return `${Number.isInteger(ft) ? ft : ft.toFixed(1)} ft`; }
+  const fractions = { 0.125: '1/8"', 0.25: '1/4"', 0.5: '1/2"', 0.75: '3/4"', 1.5: '1.5"' };
+  return fractions[n] || `${Number.isInteger(n) ? n : n.toFixed(1)}"`;
+}
+
 // Sowing depths are authored as fractions of an inch. "0.25 inches" reads like a
 // measurement error; a quarter inch reads like an instruction.
 function formatInches(value) {
   const n = Number(value);
   if (!Number.isFinite(n)) return "";
-  if (n >= 24) { const ft = n / 12; return `${Number.isInteger(ft) ? ft : ft.toFixed(1)} ft`; }
+  if (n >= 36) { const ft = n / 12; return `${Number.isInteger(ft) ? ft : ft.toFixed(1)} ft`; }
   const fractions = { 0.125: "an eighth of an inch", 0.25: "a quarter inch", 0.5: "half an inch", 0.75: "three quarters of an inch" };
   if (fractions[n]) return fractions[n];
   return `${Number.isInteger(n) ? n : n.toFixed(1)} inch${n === 1 ? "" : "es"}`;
@@ -5050,22 +5063,38 @@ export function getPlantingGuide(item) {
 
   // Name-based overrides for common specifics
   let guide = { ...(GUIDES[type] || GUIDES["Vegetables"]) };
-  if (["carrot", "radish", "beet", "turnip"].some((w) => plantNameMatchesKey(name, w))) {
+  if (["carrot", "radish", "beet", "turnip"].some((w) => matchesCrop(name, w))) {
     guide = { depth: '1/4"–1/2"', spacing: '2"–4"', sun: "Full sun", germ: "5–10 days" };
-  } else if (["tomato", "pepper", "eggplant"].some((w) => plantNameMatchesKey(name, w))) {
+  } else if (["tomato", "pepper", "eggplant"].some((w) => matchesCrop(name, w))) {
     guide = { depth: '1/4"', spacing: '18"–24"', sun: "Full sun (6–8 hrs)", germ: "6–14 days" };
-  } else if (["lettuce", "spinach", "kale", "arugula"].some((w) => plantNameMatchesKey(name, w))) {
+  } else if (["lettuce", "spinach", "kale", "arugula"].some((w) => matchesCrop(name, w))) {
     guide = { depth: '1/4"', spacing: '6"–12"', sun: "Full to partial sun", germ: "5–10 days" };
-  } else if (["squash", "zucchini", "cucumber", "pumpkin", "melon"].some((w) => plantNameMatchesKey(name, w))) {
+  } else if (["squash", "zucchini", "cucumber", "pumpkin", "melon"].some((w) => matchesCrop(name, w))) {
     guide = { depth: '1"', spacing: '24"–36"', sun: "Full sun", germ: "7–10 days" };
-  } else if (["bean", "pea"].some((w) => plantNameMatchesKey(name, w))) {
+  } else if (["bean", "pea"].some((w) => matchesCrop(name, w))) {
     guide = { depth: '1"–1.5"', spacing: '3"–6"', sun: "Full sun", germ: "7–14 days" };
-  } else if (["corn"].some((w) => plantNameMatchesKey(name, w))) {
+  } else if (["corn"].some((w) => matchesCrop(name, w))) {
     guide = { depth: '1"–2"', spacing: '8"–12"', sun: "Full sun", germ: "7–10 days" };
-  } else if (["onion", "garlic"].some((w) => plantNameMatchesKey(name, w))) {
+  } else if (["onion", "garlic"].some((w) => matchesCrop(name, w))) {
     guide = { depth: '1"–2"', spacing: '4"–6"', sun: "Full sun", germ: "7–14 days" };
   }
-  return guide;
+  // The curated ranges above are a category answer; PLANT_DETAILS holds this
+  // plant's own numbers. Nearly half the catalog was being shown a spacing range
+  // that did not contain its own authored spacing, and 111 plants were told
+  // "Full sun" while the sun badge on the same screen said partial shade. Prefer
+  // what is authored, and keep the curated value only where nothing is.
+  const authored = getPlantDetails(item) || {};
+  const depth = formatInchesShort(authored.plantingDepthInches);
+  const spacing = formatInchesShort(authored.spacingInches);
+  const need = getPlantSunNeed(item);
+  return {
+    ...guide,
+    ...(depth ? { depth } : {}),
+    ...(spacing ? { spacing } : {}),
+    sun: need.need === "shade" ? "Shade to partial sun"
+      : need.need === "partial" ? "Full to partial sun"
+        : guide.sun,
+  };
 }
 
 export function getPlantFamily(plantName) {
