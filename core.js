@@ -929,6 +929,45 @@ export function careWindowKey(name, keys) {
   );
 }
 
+// Plants named after a crop they are not.
+//
+// Whole-word matching stops "Peppermint" reading as a pepper, but it cannot help
+// with a name that really does contain the word: a Sweet Potato is not a potato,
+// Corn Salad is a small winter leaf rather than a six-foot grass, Tamarillo is a
+// tree, Malabar and New Zealand and Water spinach are heat-loving vines and not
+// true spinach, a Black-Eyed Pea is a cowpea that wants the summer the garden
+// peas are dodging, and Garlic Chives never form a clove. Advice written for the
+// crop they borrow their name from is worse than saying something general.
+//
+// One table because these are facts about the catalog, not about any one screen.
+const CROP_IMPOSTORS = {
+  potato: ["sweet potato"],
+  corn: ["corn salad"],
+  tomato: ["tamarillo"],
+  spinach: ["malabar", "new zealand", "water spinach"],
+  pea: ["black-eyed", "black eyed", "cowpea"],
+  garlic: ["garlic chive"],
+};
+
+// And the mirror image: compounds that really are the crop, which whole-word
+// matching cannot see inside. Popcorn is maize and wants the same block planting
+// for pollination; Broccolini is started indoors like the broccoli it is named
+// for. Kept short and explicit — guessing is what caused the trouble above.
+const CROP_SYNONYMS = {
+  corn: ["popcorn"],
+  broccoli: ["broccolini"],
+};
+
+// plantNameMatchesKey, minus the plants that only borrow the word and plus the
+// ones that hide it inside a longer name.
+export function matchesCrop(name, key) {
+  const lower = String(name || "").toLowerCase();
+  const k = String(key || "").toLowerCase();
+  if ((CROP_SYNONYMS[k] || []).some((synonym) => lower.includes(synonym))) return true;
+  if (!plantNameMatchesKey(name, key)) return false;
+  return !(CROP_IMPOSTORS[k] || []).some((impostor) => lower.includes(impostor));
+}
+
 export function normalizeType(type, name = "") {
   const value = String(type || "").trim();
   if (value === "Vegetable") return "Vegetables";
@@ -2675,14 +2714,9 @@ export function getShouldGrowText(item, zone, weather) {
   // — Sweet Pea is a flower and was being told to "expect a productive harvest"
   // off the back of the pea tip.
   const edible = !isOrnamental(item);
-  // Whole-word matching still cannot tell a crop from something merely named
-  // after it. Sweet Potato is not a potato, Malabar and New Zealand spinach are
-  // heat-loving vines rather than true spinach, Garlic Chives are grown for
-  // leaves and never form a clove, and a Black-Eyed Pea is a cowpea that wants
-  // the summer the garden peas are trying to beat. Advice aimed at the crop they
-  // are named after is worse than the generic line.
-  const isKey = (key, ...notThese) =>
-    plantNameMatchesKey(name, key) && !notThese.some((n) => name.includes(n));
+  // matchesCrop rather than plantNameMatchesKey: see CROP_IMPOSTORS, which keeps
+  // Sweet Potato, Garlic Chives and the rest off advice meant for another crop.
+  const isKey = (key) => matchesCrop(name, key);
 
   if (edible && climate === "moderate") {
     // Zones 6-8: the temperate garden, and the largest group of gardeners here.
@@ -2690,16 +2724,16 @@ export function getShouldGrowText(item, zone, weather) {
     if (plantNameMatchesKey(name, "tomato")) return "Tomatoes do well in your zone with a little planning. Start seeds indoors six to eight weeks before your last frost, harden them off, and plant out once nights stay above 50°F.";
     if (plantNameMatchesKey(name, "pepper")) return "Peppers need warmth to get going in a temperate zone. Start them indoors early, wait for the soil to warm before transplanting, and expect the heaviest picking in late summer.";
     if (plantNameMatchesKey(name, "lettuce")) return "Lettuce is a spring and autumn crop in your zone — it bolts once summer heat arrives. Sow little and often, and give it afternoon shade to stretch the season.";
-    if (isKey("spinach", "malabar", "new zealand")) return "Spinach suits your zone in the cooler halves of the year. Sow in early spring and again in late summer for an autumn cut; it will bolt if it is sown into midsummer heat.";
+    if (isKey("spinach")) return "Spinach suits your zone in the cooler halves of the year. Sow in early spring and again in late summer for an autumn cut; it will bolt if it is sown into midsummer heat.";
     if (plantNameMatchesKey(name, "kale")) return "Kale is one of the easiest crops in a temperate zone and stands through most of the winter. Sow in midsummer for autumn and winter picking — the leaves sweeten after the first frosts.";
     if (plantNameMatchesKey(name, "broccoli") || plantNameMatchesKey(name, "cauliflower") || plantNameMatchesKey(name, "cabbage")) return "Brassicas do best either side of summer in your zone. Start indoors and transplant for a spring crop, or sow in midsummer for a better autumn one, and net against cabbage white butterflies.";
     if (plantNameMatchesKey(name, "carrot")) return "Carrots grow well in your zone from an early spring sowing and again in midsummer for autumn roots. Give them deep, stone-free soil and thin the seedlings, or you will get forked and stunted roots.";
-    if (isKey("garlic", "chive")) return "Garlic is a classic temperate crop and wants your winter. Plant cloves in autumn so they get the cold spell they need to split into a head, and lift them when the lower leaves brown in midsummer.";
-    if (isKey("pea", "black-eyed", "black eyed", "cow")) return "Peas love the cool start to your season. Sow as soon as the soil can be worked, give them something to climb, and pick often — they stop cropping once the summer heat sets in.";
+    if (isKey("garlic")) return "Garlic is a classic temperate crop and wants your winter. Plant cloves in autumn so they get the cold spell they need to split into a head, and lift them when the lower leaves brown in midsummer.";
+    if (isKey("pea")) return "Peas love the cool start to your season. Sow as soon as the soil can be worked, give them something to climb, and pick often — they stop cropping once the summer heat sets in.";
     if (plantNameMatchesKey(name, "bean")) return "Beans are a reliable summer crop in your zone but hate cold soil. Sow after the last frost, sow a second batch a few weeks later, and keep picking to stop the plants shutting down.";
     if (plantNameMatchesKey(name, "zucchini") || plantNameMatchesKey(name, "squash") || plantNameMatchesKey(name, "cucumber")) return "This one is happy in a temperate summer once the cold has passed. Plant out after the last frost into rich soil, water at the base rather than the leaves, and expect more than you planned for.";
     if (plantNameMatchesKey(name, "sweet potato")) return "Sweet potatoes are not potatoes and want a warm season, which your zone gives them only just. Plant rooted slips well after the last frost once the soil is properly warm, and lift the roots before the first autumn frost.";
-    if (isKey("potato", "sweet")) return "Potatoes suit your zone's long cool spring. Plant seed potatoes a couple of weeks before the last frost, earth them up as the shoots grow, and lift maincrops once the foliage dies back.";
+    if (isKey("potato")) return "Potatoes suit your zone's long cool spring. Plant seed potatoes a couple of weeks before the last frost, earth them up as the shoots grow, and lift maincrops once the foliage dies back.";
     if (plantNameMatchesKey(name, "strawberry")) return "Strawberries are perennial in your zone and crop harder in their second year. Plant in spring or autumn, mulch under the fruit to keep it clean, and cover the crowns through the coldest weeks.";
     if (plantNameMatchesKey(name, "basil")) return "Basil is the tender one in a temperate garden. Keep it indoors until nights are reliably above 50°F, give it the sunniest spot you have, and pinch the tips to delay flowering.";
     if (plantNameMatchesKey(name, "apple") || plantNameMatchesKey(name, "pear") || plantNameMatchesKey(name, "plum") || plantNameMatchesKey(name, "cherry")) return "Your zone gives this the winter chill it needs to set fruit properly, which warmer zones cannot. Plant a bare-root tree while dormant, prune to open the centre, and thin a heavy set so the branches carry it.";
@@ -2717,9 +2751,9 @@ export function getShouldGrowText(item, zone, weather) {
 
   if (edible && climate === "cold") {
     if (plantNameMatchesKey(name, "kale")) return "Kale is one of the best cold zone vegetables — it actually improves in flavor after frost. Plant in late summer for a fall and early winter harvest that gets sweeter with every cold snap.";
-    if (isKey("spinach", "malabar", "new zealand")) return "Spinach thrives in cold zones and is one of the first crops you can plant in spring. It tolerates light frost and produces tender leaves in cool weather.";
-    if (isKey("pea", "black-eyed", "black eyed", "cow")) return "Peas are perfect for cold zones — they prefer cool weather and can be planted as soon as soil can be worked in spring. Expect a productive harvest before summer heat arrives.";
-    if (isKey("potato", "sweet")) return "Potatoes are well suited for cold zones with long cool growing seasons. Plant certified seed potatoes in early spring and expect a generous harvest by late summer.";
+    if (isKey("spinach")) return "Spinach thrives in cold zones and is one of the first crops you can plant in spring. It tolerates light frost and produces tender leaves in cool weather.";
+    if (isKey("pea")) return "Peas are perfect for cold zones — they prefer cool weather and can be planted as soon as soil can be worked in spring. Expect a productive harvest before summer heat arrives.";
+    if (isKey("potato")) return "Potatoes are well suited for cold zones with long cool growing seasons. Plant certified seed potatoes in early spring and expect a generous harvest by late summer.";
     if (plantNameMatchesKey(name, "carrot")) return "Carrots thrive in cool climates and develop excellent sweetness after light frost exposure. Plant in deep, loose, rock-free soil for straight, full-sized roots.";
     if (plantNameMatchesKey(name, "broccoli")) return "Broccoli is ideal for cold zones — it prefers cool temperatures and produces best in spring or fall. Start indoors early and transplant when weather cools for a premium harvest.";
   }
@@ -2732,6 +2766,17 @@ export function getShouldGrowText(item, zone, weather) {
     return `${item.name} requires more attention but is absolutely worth growing in Zone ${zone || "your area"}. Focus on proper soil preparation, consistent watering, and monitoring for pests. The effort pays off with an impressive and rewarding harvest.`;
   }
   return `${item.name} is a solid choice for Zone ${zone || "your area"} when planted during the proper season. Prepare your soil with compost, water consistently, and give plants enough space for airflow and healthy growth throughout the season.`;
+}
+
+// Sowing depths are authored as fractions of an inch. "0.25 inches" reads like a
+// measurement error; a quarter inch reads like an instruction.
+function formatInches(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "";
+  if (n >= 24) { const ft = n / 12; return `${Number.isInteger(ft) ? ft : ft.toFixed(1)} ft`; }
+  const fractions = { 0.125: "an eighth of an inch", 0.25: "a quarter inch", 0.5: "half an inch", 0.75: "three quarters of an inch" };
+  if (fractions[n]) return fractions[n];
+  return `${Number.isInteger(n) ? n : n.toFixed(1)} inch${n === 1 ? "" : "es"}`;
 }
 
 export function getWhereToPlantText(item) {
@@ -2787,7 +2832,7 @@ export function getPlantingSteps(item) {
   const name = String(item?.name || "").toLowerCase();
 
   // VEGETABLES
-  if (plantNameMatchesKey(name, "tomato")) return [
+  if (matchesCrop(name, "tomato")) return [
     "Choose a sunny spot with at least 8 hours of direct sunlight daily.",
     "Dig a deep hole and bury the stem up to the lowest set of leaves — tomatoes root along buried stems.",
     "Space plants 24–36 inches apart to allow airflow and prevent disease.",
@@ -2796,7 +2841,7 @@ export function getPlantingSteps(item) {
     "Install a cage or stake at planting time before roots establish.",
     "Feed with a balanced fertilizer every 2 weeks once flowers appear.",
   ];
-  if (plantNameMatchesKey(name, "pepper")) return [
+  if (matchesCrop(name, "pepper")) return [
     "Start seeds indoors 8–10 weeks before last frost or buy transplants.",
     "Choose a warm, sunny location with well-draining soil.",
     "Plant 18–24 inches apart after all frost risk has passed.",
@@ -2805,7 +2850,7 @@ export function getPlantingSteps(item) {
     "Feed with a low-nitrogen fertilizer once flowering begins.",
     "Harvest regularly to encourage more fruit production throughout the season.",
   ];
-  if (plantNameMatchesKey(name, "cucumber")) return [
+  if (matchesCrop(name, "cucumber")) return [
     "Wait until soil temperature reaches at least 60°F before planting.",
     "Sow seeds 1 inch deep directly in the garden or start indoors 3 weeks early.",
     "Plant in hills of 2–3 seeds or space transplants 12 inches apart.",
@@ -2814,7 +2859,7 @@ export function getPlantingSteps(item) {
     "Mulch heavily to keep soil cool and moist during hot weather.",
     "Harvest when cucumbers reach full size but before they yellow — pick often to keep plants producing.",
   ];
-  if (plantNameMatchesKey(name, "zucchini") || plantNameMatchesKey(name, "squash")) return [
+  if (matchesCrop(name, "zucchini") || matchesCrop(name, "squash")) return [
     "Direct sow seeds 1 inch deep after last frost when soil is warm.",
     "Plant in groups of 2–3 seeds and thin to the strongest plant.",
     "Space plants 3–4 feet apart — zucchini gets large quickly.",
@@ -2823,7 +2868,7 @@ export function getPlantingSteps(item) {
     "Harvest zucchini when 6–8 inches long for best flavor and texture.",
     "Check plants daily during peak season — zucchini grows extremely fast.",
   ];
-  if (plantNameMatchesKey(name, "carrot")) return [
+  if (matchesCrop(name, "carrot")) return [
     "Loosen soil at least 12 inches deep and remove all rocks and debris.",
     "Sow seeds directly — carrots do not transplant well.",
     "Sprinkle seeds thinly in rows 12 inches apart and cover with just 1/4 inch of soil.",
@@ -2832,7 +2877,7 @@ export function getPlantingSteps(item) {
     "Avoid heavy nitrogen fertilizer — it causes forked roots.",
     "Harvest when tops reach full color — gently loosen soil with a fork before pulling.",
   ];
-  if (plantNameMatchesKey(name, "lettuce")) return [
+  if (matchesCrop(name, "lettuce")) return [
     "Choose a spot with morning sun and afternoon shade in warm climates.",
     "Sow seeds 1/8 inch deep directly in loose, fertile soil.",
     "Keep rows 12 inches apart and thin seedlings to 6 inches once established.",
@@ -2841,7 +2886,7 @@ export function getPlantingSteps(item) {
     "Replant every 2–3 weeks for a continuous harvest throughout the season.",
     "Bolt prevention: harvest before temperatures consistently exceed 80°F.",
   ];
-  if (plantNameMatchesKey(name, "spinach")) return [
+  if (matchesCrop(name, "spinach")) return [
     "Plant in early spring or fall — spinach struggles in summer heat.",
     "Sow seeds 1/2 inch deep in rows 12 inches apart.",
     "Thin seedlings to 6 inches apart when they reach 2 inches tall.",
@@ -2850,7 +2895,7 @@ export function getPlantingSteps(item) {
     "Harvest outer leaves when they reach 3–4 inches or cut the whole plant.",
     "Plant a new batch every 2 weeks for continuous harvest before summer.",
   ];
-  if (plantNameMatchesKey(name, "kale")) return [
+  if (matchesCrop(name, "kale")) return [
     "Start seeds indoors 6 weeks before last frost or direct sow in late summer for fall harvest.",
     "Plant in full sun to partial shade in rich, well-draining soil.",
     "Space transplants 18–24 inches apart for large healthy plants.",
@@ -2859,7 +2904,7 @@ export function getPlantingSteps(item) {
     "Harvest outer leaves first, leaving the center to keep growing.",
     "Flavor improves after a light frost — fall kale is often sweeter than spring kale.",
   ];
-  if (plantNameMatchesKey(name, "broccoli")) return [
+  if (matchesCrop(name, "broccoli")) return [
     "Start seeds indoors 6–8 weeks before last frost.",
     "Transplant outdoors 2–3 weeks before last frost — broccoli tolerates light frost.",
     "Space plants 18 inches apart in rows 24 inches wide.",
@@ -2868,7 +2913,7 @@ export function getPlantingSteps(item) {
     "Harvest the main head before flowers open — cut at an angle to allow side shoots to form.",
     "Continue harvesting side shoots for weeks after the main head is cut.",
   ];
-  if (plantNameMatchesKey(name, "cabbage")) return [
+  if (matchesCrop(name, "cabbage")) return [
     "Start seeds indoors 6–8 weeks before last frost.",
     "Harden off transplants for one week before moving outside.",
     "Space plants 12–24 inches apart depending on desired head size.",
@@ -2877,7 +2922,7 @@ export function getPlantingSteps(item) {
     "Watch for cabbage worms and treat with Bt spray if needed.",
     "Harvest when heads feel solid and firm when squeezed.",
   ];
-  if (plantNameMatchesKey(name, "potato")) return [
+  if (matchesCrop(name, "potato")) return [
     "Cut seed potatoes into chunks with at least 2 eyes each and let them cure for 24 hours.",
     "Dig trenches 4 inches deep and 12 inches apart.",
     "Place seed potato chunks cut side down, 12 inches apart in the trench.",
@@ -2886,7 +2931,7 @@ export function getPlantingSteps(item) {
     "Stop watering when foliage begins to yellow and die back.",
     "Harvest 2–3 weeks after foliage dies — dig carefully to avoid damaging tubers.",
   ];
-  if (plantNameMatchesKey(name, "onion")) return [
+  if (matchesCrop(name, "onion")) return [
     "Plant sets or transplants in early spring as soon as soil can be worked.",
     "Choose a sunny spot with loose, well-draining soil.",
     "Plant sets 1 inch deep and 4–6 inches apart in rows 12 inches apart.",
@@ -2895,7 +2940,7 @@ export function getPlantingSteps(item) {
     "Push over any remaining tops to redirect energy to the bulb.",
     "Harvest when tops are fully brown and dry — cure in a warm dry place for 2–4 weeks before storing.",
   ];
-  if (plantNameMatchesKey(name, "garlic")) return [
+  if (matchesCrop(name, "garlic")) return [
     "Plant individual cloves in fall, 4–6 weeks before ground freezes.",
     "Choose the largest cloves from the bulb for the best yield.",
     "Plant cloves pointed end up, 2 inches deep and 6 inches apart.",
@@ -2904,7 +2949,7 @@ export function getPlantingSteps(item) {
     "Snap off scapes (curly shoots) in early summer to redirect energy to the bulb.",
     "Harvest when lower leaves turn brown but upper leaves are still green — usually June or July.",
   ];
-  if (plantNameMatchesKey(name, "corn")) return [
+  if (matchesCrop(name, "corn")) return [
     "Wait until soil reaches 60°F before planting — corn needs warm soil to germinate.",
     "Plant in blocks of at least 4 rows rather than single rows for good pollination.",
     "Sow seeds 1 inch deep, 9–12 inches apart in rows 30–36 inches apart.",
@@ -2913,7 +2958,7 @@ export function getPlantingSteps(item) {
     "Silk turns brown and dries out when ears are ready — check by peeling back husk.",
     "Harvest immediately when ready — sugar converts to starch quickly after picking.",
   ];
-  if (plantNameMatchesKey(name, "bean") || plantNameMatchesKey(name, "greenbean")) return [
+  if (matchesCrop(name, "bean") || matchesCrop(name, "greenbean")) return [
     "Direct sow after last frost when soil reaches 60°F.",
     "Plant seeds 1–2 inches deep, 3 inches apart in rows 18 inches apart.",
     "For pole beans install support before planting — plants grow 6–8 feet tall.",
@@ -2922,7 +2967,7 @@ export function getPlantingSteps(item) {
     "Begin harvesting when pods are firm and snap cleanly — don't let pods mature on plant.",
     "Pick every 2–3 days to keep plants producing throughout the season.",
   ];
-  if (plantNameMatchesKey(name, "pea")) return [
+  if (matchesCrop(name, "pea")) return [
     "Plant in early spring as soon as soil can be worked — peas prefer cool weather.",
     "Sow seeds 1 inch deep, 2 inches apart in rows 18 inches apart.",
     "Install a trellis or netting before planting for climbing varieties.",
@@ -2931,7 +2976,7 @@ export function getPlantingSteps(item) {
     "Harvest when pods are plump and bright green — taste one to check sweetness.",
     "Pick regularly to keep plants producing — leaving pods on the vine stops new growth.",
   ];
-  if (plantNameMatchesKey(name, "radish")) return [
+  if (matchesCrop(name, "radish")) return [
     "Sow seeds directly in spring or fall — radishes bolt quickly in summer heat.",
     "Plant 1/2 inch deep, 1 inch apart in rows 6 inches apart.",
     "Thin to 2 inches apart once seedlings emerge.",
@@ -2940,7 +2985,7 @@ export function getPlantingSteps(item) {
     "Harvest promptly when mature — leaving them in ground makes them woody and hot.",
     "Succession plant every 2 weeks for continuous harvest throughout cool season.",
   ];
-  if (plantNameMatchesKey(name, "beet")) return [
+  if (matchesCrop(name, "beet")) return [
     "Sow seeds directly in early spring or late summer for fall harvest.",
     "Plant 1/2 inch deep, 3 inches apart in rows 12 inches apart.",
     "Soak seeds in water for 24 hours before planting to improve germination.",
@@ -2949,7 +2994,7 @@ export function getPlantingSteps(item) {
     "Harvest when roots reach 1.5–3 inches in diameter for best flavor.",
     "Don't forget the greens — beet tops are edible and highly nutritious.",
   ];
-  if (plantNameMatchesKey(name, "eggplant")) return [
+  if (matchesCrop(name, "eggplant")) return [
     "Start seeds indoors 8–10 weeks before last frost — eggplant needs a long warm season.",
     "Transplant outdoors only when night temperatures stay above 55°F consistently.",
     "Space plants 18–24 inches apart in full sun.",
@@ -2958,7 +3003,7 @@ export function getPlantingSteps(item) {
     "Feed with a balanced fertilizer every 3 weeks once flowering begins.",
     "Harvest when skin is glossy and bright — dull skin means the fruit is overripe.",
   ];
-  if (plantNameMatchesKey(name, "celery")) return [
+  if (matchesCrop(name, "celery")) return [
     "Start seeds indoors 10–12 weeks before last frost — celery has a very long growing season.",
     "Transplant when seedlings are 3–4 inches tall and frost risk has passed.",
     "Space plants 12 inches apart in rich, moisture-retentive soil.",
@@ -2967,7 +3012,7 @@ export function getPlantingSteps(item) {
     "Blanch stalks by wrapping with newspaper 2 weeks before harvest for milder flavor.",
     "Harvest by cutting the whole plant at soil level when stalks reach full size.",
   ];
-  if (plantNameMatchesKey(name, "pumpkin")) return [
+  if (matchesCrop(name, "pumpkin")) return [
     "Sow seeds directly after last frost when soil is warm.",
     "Plant 3–5 seeds per hill, 1 inch deep, in hills spaced 6 feet apart.",
     "Thin to 2–3 plants per hill once seedlings emerge.",
@@ -2976,7 +3021,7 @@ export function getPlantingSteps(item) {
     "Pinch off excess small pumpkins to direct energy into 1–2 large fruits.",
     "Harvest when skin is hard, color is fully developed, and stem begins to dry.",
   ];
-  if (plantNameMatchesKey(name, "watermelon")) return [
+  if (matchesCrop(name, "watermelon")) return [
     "Start seeds indoors 2–3 weeks before last frost or direct sow when soil reaches 70°F.",
     "Plant in hills 6 feet apart — watermelons need a lot of space to spread.",
     "Water deeply but infrequently — deep roots prefer long dry periods between waterings.",
@@ -2985,7 +3030,7 @@ export function getPlantingSteps(item) {
     "Tap the melon — a hollow thump means it's ripe.",
     "Check the tendril closest to the fruit — when it dries and browns the melon is ready.",
   ];
-  if (plantNameMatchesKey(name, "okra")) return [
+  if (matchesCrop(name, "okra")) return [
     "Soak seeds overnight in water to improve germination.",
     "Direct sow after last frost when soil reaches 65°F.",
     "Plant 1 inch deep, 12 inches apart in rows 3 feet apart.",
@@ -2996,7 +3041,7 @@ export function getPlantingSteps(item) {
   ];
 
   // HERBS
-  if (plantNameMatchesKey(name, "basil")) return [
+  if (matchesCrop(name, "basil")) return [
     "Start seeds indoors 6 weeks before last frost or direct sow after frost.",
     "Plant in a warm, sunny location with at least 6 hours of direct sun.",
     "Space plants 12–18 inches apart in well-draining fertile soil.",
@@ -3005,7 +3050,7 @@ export function getPlantingSteps(item) {
     "Harvest by pinching stems just above a leaf node to encourage bushy growth.",
     "Bring containers indoors before first frost to extend the season.",
   ];
-  if (plantNameMatchesKey(name, "mint")) return [
+  if (matchesCrop(name, "mint")) return [
     "Plant in a container — mint spreads aggressively and will take over a garden bed.",
     "Choose a spot with partial shade to full sun.",
     "Plant in moist, rich soil and water regularly.",
@@ -3014,7 +3059,7 @@ export function getPlantingSteps(item) {
     "Harvest stems regularly — the more you pick the bushier it grows.",
     "Bring containers indoors before frost for year-round fresh mint.",
   ];
-  if (plantNameMatchesKey(name, "rosemary")) return [
+  if (matchesCrop(name, "rosemary")) return [
     "Plant in full sun with excellent drainage — rosemary hates wet feet.",
     "Space plants 2–3 feet apart in sandy or loamy soil.",
     "Water deeply but infrequently — rosemary is drought tolerant once established.",
@@ -3023,7 +3068,7 @@ export function getPlantingSteps(item) {
     "Harvest by snipping young stem tips — never cut back more than one third at a time.",
     "In cold zones grow in containers and bring indoors for winter.",
   ];
-  if (plantNameMatchesKey(name, "thyme")) return [
+  if (matchesCrop(name, "thyme")) return [
     "Plant in full sun with very well-draining soil — thyme tolerates drought well.",
     "Space plants 12 inches apart.",
     "Water sparingly once established — overwatering is the most common mistake.",
@@ -3032,7 +3077,7 @@ export function getPlantingSteps(item) {
     "Divide plants every 2–3 years to keep them vigorous.",
     "Thyme is cold hardy in most zones and can overwinter outdoors.",
   ];
-  if (plantNameMatchesKey(name, "cilantro")) return [
+  if (matchesCrop(name, "cilantro")) return [
     "Direct sow seeds in cool weather — cilantro bolts quickly in heat.",
     "Plant 1/4 inch deep in rows 12 inches apart.",
     "Succession sow every 3 weeks for continuous harvest.",
@@ -3041,7 +3086,7 @@ export function getPlantingSteps(item) {
     "Let some plants bolt and go to seed — coriander seeds are also edible.",
     "Plant in fall in warm climates for the best cool-season harvest.",
   ];
-  if (plantNameMatchesKey(name, "parsley")) return [
+  if (matchesCrop(name, "parsley")) return [
     "Soak seeds in water for 24 hours before planting to speed germination.",
     "Sow 1/4 inch deep in rich, moist soil in full sun to partial shade.",
     "Thin seedlings to 8 inches apart — parsley needs room to develop.",
@@ -3050,7 +3095,7 @@ export function getPlantingSteps(item) {
     "Harvest outer stems first, cutting at the base of the stem.",
     "Parsley is biennial — it will overwinter and flower in its second year.",
   ];
-  if (plantNameMatchesKey(name, "fennel")) return [
+  if (matchesCrop(name, "fennel")) return [
     "Direct sow in a dedicated spot away from other vegetables.",
     "Plant in full sun in well-draining soil.",
     "Sow seeds 1/4 inch deep, 12 inches apart.",
@@ -3061,7 +3106,7 @@ export function getPlantingSteps(item) {
   ];
 
   // BERRIES
-  if (plantNameMatchesKey(name, "strawberry")) return [
+  if (matchesCrop(name, "strawberry")) return [
     "Plant in early spring in full sun with well-draining, slightly acidic soil.",
     "Set crowns at soil level — planting too deep causes rot, too shallow causes drying.",
     "Space plants 12–18 inches apart in rows 24 inches apart.",
@@ -3070,7 +3115,7 @@ export function getPlantingSteps(item) {
     "Feed with a high-potassium fertilizer in spring and after harvest.",
     "Replace plants every 3 years as productivity declines with age.",
   ];
-  if (plantNameMatchesKey(name, "blueberry")) return [
+  if (matchesCrop(name, "blueberry")) return [
     "Choose a spot with full sun and very acidic soil (pH 4.5–5.5).",
     "Amend soil with sulfur or peat moss to lower pH if needed.",
     "Plant at least 2 different varieties for cross-pollination and higher yield.",
@@ -3079,7 +3124,7 @@ export function getPlantingSteps(item) {
     "Water consistently — blueberries have shallow roots that dry out quickly.",
     "Do not expect a full harvest for 3 years — patience pays off with long-lived productive bushes.",
   ];
-  if (plantNameMatchesKey(name, "raspberry")) return [
+  if (matchesCrop(name, "raspberry")) return [
     "Plant bare root canes in early spring in full sun.",
     "Space canes 2 feet apart in rows 8 feet apart.",
     "Install a trellis or post-and-wire support system before planting.",
@@ -3090,7 +3135,7 @@ export function getPlantingSteps(item) {
   ];
 
   // TREE FRUITS
-  if (plantNameMatchesKey(name, "apple")) return [
+  if (matchesCrop(name, "apple")) return [
     "Choose a sunny location with good air circulation to prevent disease.",
     "Plant bare root trees in early spring before buds break.",
     "Dig a hole twice as wide as the root ball and just as deep.",
@@ -3099,7 +3144,7 @@ export function getPlantingSteps(item) {
     "Stake young trees for the first 2 years for stability.",
     "Prune annually in late winter to maintain an open canopy and good airflow.",
   ];
-  if (plantNameMatchesKey(name, "peach")) return [
+  if (matchesCrop(name, "peach")) return [
     "Plant in full sun with well-draining soil in spring.",
     "Dig a hole wide enough to spread roots without bending.",
     "Keep the bud union 2 inches above soil level.",
@@ -3108,7 +3153,7 @@ export function getPlantingSteps(item) {
     "Prune to an open vase shape annually in late winter.",
     "Apply dormant oil spray in late winter to control overwintering pests.",
   ];
-  if (plantNameMatchesKey(name, "lemon") || plantNameMatchesKey(name, "lime") || plantNameMatchesKey(name, "orange") || plantNameMatchesKey(name, "grapefruit") || plantNameMatchesKey(name, "mandarin")) return [
+  if (matchesCrop(name, "lemon") || matchesCrop(name, "lime") || matchesCrop(name, "orange") || matchesCrop(name, "grapefruit") || matchesCrop(name, "mandarin")) return [
     "Plant in the warmest, sunniest spot in your garden or in a large container.",
     "Use well-draining citrus mix soil and ensure excellent drainage.",
     "Plant with the bud union above soil line.",
@@ -3117,7 +3162,7 @@ export function getPlantingSteps(item) {
     "Protect from frost — cover or bring containers indoors when temps drop below 32°F.",
     "Prune only to remove dead wood and crossing branches — citrus needs minimal pruning.",
   ];
-  if (plantNameMatchesKey(name, "avocado")) return [
+  if (matchesCrop(name, "avocado")) return [
     "Plant in full sun in a warm frost-free location.",
     "Use fast-draining soil — avocados are extremely sensitive to root rot.",
     "Dig a hole as deep as the root ball and 3 times as wide.",
@@ -3126,7 +3171,7 @@ export function getPlantingSteps(item) {
     "Fertilize with a nitrogen-rich fertilizer 4 times per year.",
     "Mulch around the base but keep mulch away from the trunk to prevent rot.",
   ];
-  if (plantNameMatchesKey(name, "fig")) return [
+  if (matchesCrop(name, "fig")) return [
     "Plant in full sun against a south-facing wall in cooler climates for extra warmth.",
     "Dig a hole twice the width of the root ball.",
     "Figs tolerate poor soil but need excellent drainage.",
@@ -3135,7 +3180,7 @@ export function getPlantingSteps(item) {
     "In cold zones wrap trunk with burlap in winter or grow in containers.",
     "Harvest when fruit softens and hangs downward — figs do not ripen off the tree.",
   ];
-  if (plantNameMatchesKey(name, "pomegranate")) return [
+  if (matchesCrop(name, "pomegranate")) return [
     "Plant in full sun in well-draining soil — pomegranates tolerate drought and heat.",
     "Space plants 15–20 feet apart or prune as a shrub.",
     "Water regularly for the first 2 years while roots establish.",
@@ -3171,14 +3216,60 @@ export function getPlantingSteps(item) {
     "Feed with a high-potassium fertilizer in spring.",
     "Watch for birds and pests once fruit begins forming.",
   ];
-  return [
-    "Prepare loose soil with compost or organic matter before planting.",
-    "Plant during the recommended window for your zone.",
-    "Water gently after planting and keep soil evenly moist.",
-    "Mulch around plants to retain moisture and reduce weeds.",
-    "Fertilize regularly once plants are established.",
-    "Monitor for pests and disease and treat early if needed.",
-  ];
+  // Everything without a hand-written guide used to land on six sentences that
+  // said nothing a gardener could act on — the same six for 380 of the 612
+  // plants, while PLANT_DETAILS held that plant's sowing depth, spacing, light
+  // and water needs the whole time. Build the steps from what is actually known
+  // about it, and fall back a clause at a time when a field is missing.
+  const authored = getPlantDetails(item) || {};
+  const sun = getPlantSunNeed(item);
+  const depth = typeof authored.plantingDepthInches === "number" ? authored.plantingDepthInches : null;
+  const spacing = typeof authored.spacingInches === "number" ? authored.spacingInches : null;
+  const window = getPlantingWindowText(item);
+  const steps = [];
+
+  steps.push(
+    sun.need === "shade"
+      ? "Pick a spot out of direct midday sun, and work compost into the soil before planting."
+      : sun.need === "partial"
+        ? "Pick a spot with morning sun and afternoon shade, and work compost into the soil before planting."
+        : "Pick the sunniest spot you have, and work compost into the soil before planting."
+  );
+  // Left exactly as written: the window is a list of month abbreviations, and
+  // lower-casing the first one turned "Mar" into "mar".
+  if (window && window !== "Check your zone") steps.push(`Plant during its window: ${window}.`);
+  if (depth != null) {
+    steps.push(depth === 0
+      ? "Press the seed onto the surface and leave it uncovered — it needs light to germinate."
+      : `Sow ${formatInches(depth)} deep${spacing ? `, ${formatInches(spacing)} apart` : ""}.`);
+  } else if (spacing != null) {
+    // Past a couple of feet this is a tree or a cane, and "so the leaves can dry"
+    // is the wrong reason to be talking about spacing.
+    steps.push(spacing >= 60
+      ? `Leave ${formatInches(spacing)} around it — that is what it will fill when mature.`
+      : `Set plants ${formatInches(spacing)} apart so the leaves can dry after rain.`);
+  }
+  steps.push(
+    authored.waterNeeds === "high"
+      ? "Water deeply two or three times a week — it wilts quickly once the soil dries out."
+      : authored.waterNeeds === "low"
+        ? "Let the top of the soil dry between waterings; it resents sitting wet."
+        : "Water when the top inch of soil feels dry, at the base rather than over the leaves."
+  );
+  steps.push("Mulch around the base to hold moisture in and keep weeds down.");
+  steps.push(
+    authored.perennial === true
+      ? "Feed in spring and cut back spent growth at the end of the season — this one comes back next year."
+      : "Feed every few weeks once it is growing away strongly."
+  );
+  if (typeof authored.daysToMaturity === "number" && authored.daysToMaturity > 0) {
+    steps.push(authored.daysToMaturity >= 365
+      ? "Expect to wait a year or more for the first real crop — check on it through the seasons."
+      : `Expect it to be ready about ${authored.daysToMaturity} days from planting; watch for pests before then.`);
+  } else {
+    steps.push("Check it over for pests and disease as it grows, and deal with them early.");
+  }
+  return steps;
 }
 
 export function getRarity(item) {

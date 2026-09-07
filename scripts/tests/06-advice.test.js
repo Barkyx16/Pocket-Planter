@@ -214,3 +214,68 @@ describe("getWhereToPlantText", () => {
     eq(bad.map((i) => i.name), []);
   });
 });
+
+describe("matchesCrop", () => {
+  it("keeps the real crop", () => {
+    for (const [n, k] of [["Potato", "potato"], ["Corn", "corn"], ["Tomato", "tomato"],
+                          ["Spinach", "spinach"], ["Snap Pea", "pea"], ["Garlic", "garlic"]]) {
+      ok(core.matchesCrop(n, k), `${n} should match ${k}`);
+    }
+  });
+  it("sees a crop hidden inside a longer name", () => {
+    // Popcorn is maize and wants the same block planting; Broccolini is broccoli.
+    ok(core.matchesCrop("Popcorn", "corn"));
+    ok(core.matchesCrop("Broccolini", "broccoli"));
+  });
+  it("keeps the look-alikes out even so", () => {
+    for (const [n, k] of [["Acorn Squash", "corn"], ["Cornflower", "corn"],
+                          ["Cornelian Cherry", "corn"], ["Corn Salad (Mache)", "corn"]]) {
+      ok(!core.matchesCrop(n, k), `${n} must not be treated as ${k}`);
+    }
+  });
+  it("drops the plants that only borrow the name", () => {
+    for (const [n, k] of [["Sweet Potato", "potato"], ["Corn Salad (Mache)", "corn"],
+                          ["Tamarillo (Tree Tomato)", "tomato"], ["Malabar Spinach", "spinach"],
+                          ["New Zealand Spinach", "spinach"], ["Water Spinach (Kangkong)", "spinach"],
+                          ["Black-Eyed Pea", "pea"], ["Garlic Chives", "garlic"]]) {
+      ok(!core.matchesCrop(n, k), `${n} must not be treated as ${k}`);
+    }
+  });
+});
+
+describe("getPlantingSteps", () => {
+  const plantOf = (n) => items.find((i) => i.name === n);
+  const steps = (n) => core.getPlantingSteps(plantOf(n)).join(" ");
+  it("keeps the hand-written guides for the crops that have one", () => {
+    ok(/bury the stem/i.test(steps("Tomato")), "tomato guide");
+    ok(/seed potatoes/i.test(steps("Potato")), "potato guide");
+  });
+  it("does not hand a guide to a plant that only shares the name", () => {
+    ok(!/bury the stem/i.test(steps("Tamarillo (Tree Tomato)")), "tamarillo is a tree");
+    ok(!/seed potatoes/i.test(steps("Sweet Potato")), "sweet potato grows from slips");
+    if (plantOf("Corn Salad (Mache)")) ok(!/block|pollinat/i.test(steps("Corn Salad (Mache)")), "mache is not sweetcorn");
+    ok(!/summer heat/i.test(steps("Malabar Spinach")), "malabar spinach likes the heat");
+  });
+  it("builds real steps from the authored data instead of one generic list", () => {
+    const bok = steps("Bok Choy");
+    ok(/half an inch deep/.test(bok), `sowing depth missing: ${bok}`);
+    ok(/8 inches apart/.test(bok), "spacing missing");
+    ok(/morning sun and afternoon shade/.test(bok), "partial-shade plant not told so");
+    ok(/50 days/.test(bok), "days to maturity missing");
+  });
+  it("describes a tree's spacing as the room it will fill", () => {
+    ok(/30 ft/.test(steps("Mango")), "tree spacing in feet");
+    ok(!/leaves can dry/.test(steps("Mango")), "wrong reason for a tree's spacing");
+  });
+  it("tells a perennial it will come back", () => {
+    ok(/comes back next year/.test(steps("Grapes")));
+  });
+  it("gives every plant at least four usable steps", () => {
+    const bad = items.filter((i) => {
+      const st = core.getPlantingSteps(i);
+      return !Array.isArray(st) || st.length < 4 ||
+        st.some((x) => typeof x !== "string" || !x.endsWith(".") || /undefined|NaN|null| {2,}/.test(x));
+    });
+    eq(bad.map((i) => i.name), []);
+  });
+});
