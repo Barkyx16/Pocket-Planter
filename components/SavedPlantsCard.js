@@ -97,7 +97,11 @@ const [sortMode, setSortMode] = useState("recent");
           const imageSource = resolvePlantImageSource(item);
           const health = getPlantHealthStatus({
             plantName: item.name,
+            // Pass the plant and its history so the badge reads the watering
+            // schedule rather than just asking whether today's date matches.
+            item,
             wateredPlants,
+            wateringHistory,
             weather,
           });
 

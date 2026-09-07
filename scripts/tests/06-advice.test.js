@@ -327,3 +327,49 @@ describe("getPlantingGuide", () => {
     eq(bad.map((i) => i.name), []);
   });
 });
+
+describe("getPlantHealthStatus", () => {
+  const plantOf = (n) => items.find((i) => i.name === n);
+  const ago = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
+  const status = (name, daysAgo, weather) => {
+    const item = plantOf(name);
+    const when = daysAgo == null ? null : ago(daysAgo);
+    return core.getPlantHealthStatus({
+      plantName: name, item,
+      wateredPlants: when ? { [name]: when } : {},
+      wateringHistory: when ? { [name]: [when] } : {},
+      weather,
+    }).label;
+  };
+  it("agrees with the watering schedule instead of the calendar", () => {
+    // Everything not watered since midnight used to read Needs Water, so an
+    // apple on a five-day interval wore the badge four days out of five.
+    for (const [name, days] of [["Tomato", 1], ["Apple", 1], ["Apple", 3], ["Basil", 1]]) {
+      const item = plantOf(name);
+      const when = ago(days);
+      const next = core.getNextWaterInfo(name, item, { [name]: [when] }, { [name]: when }, null);
+      const due = next.daysUntil <= 0;
+      eq(status(name, days) === "Needs Water", due, `${name} watered ${days}d ago`);
+    }
+  });
+  it("asks for water once the interval is actually up", () => {
+    eq(status("Tomato", 3), "Needs Water");
+    eq(status("Apple", 5), "Needs Water");
+    eq(status("Tomato", 0), "Healthy");
+  });
+  it("treats a plant that has never been watered as thirsty", () => {
+    eq(status("Tomato", null), "Needs Water");
+  });
+  it("puts frost and heat ahead of thirst", () => {
+    eq(status("Tomato", 0, { minTempF: 30 }), "Frost Risk");
+    eq(status("Tomato", 5, { maxTempF: 99 }), "Heat Stressed");
+  });
+  it("holds off when rain is coming, like the schedule does", () => {
+    eq(status("Tomato", 5, { precipChance: 90 }), "Healthy");
+  });
+  it("still answers without a plant object", () => {
+    // Older call shape: no interval to reason about, so fall back to the day.
+    eq(core.getPlantHealthStatus({ plantName: "Tomato", wateredPlants: { Tomato: ago(1) }, weather: null }).label, "Needs Water");
+    eq(core.getPlantHealthStatus({ plantName: "Tomato", wateredPlants: { Tomato: core.getTodayKey() }, weather: null }).label, "Healthy");
+  });
+});

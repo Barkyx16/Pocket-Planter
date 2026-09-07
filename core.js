@@ -5007,11 +5007,22 @@ export function getPowerPairs(gardenAreas) {
   return pairs.slice(0, 6);
 }
 
-export function getPlantHealthStatus({ plantName, wateredPlants, weather }) {
+export function getPlantHealthStatus({ plantName, item, wateredPlants, wateringHistory, weather }) {
   const wateredToday = wateredPlants?.[plantName] === getTodayKey();
   if (weather?.minTempF <= 35) return { label: "Frost Risk", icon: "❄️", color: "#6bc7ff" };
   if (weather?.maxTempF >= 95 && !wateredToday) return { label: "Heat Stressed", icon: "🔥", color: "#ff7a7a" };
-  if (!wateredToday) return { label: "Needs Water", icon: "💧", color: "#ffd86b" };
+
+  // "Not watered today" is not the same as "thirsty". Every plant that had not
+  // been watered since midnight read Needs Water, so an apple on a five-day
+  // interval wore the badge four days out of five — and the card beside it said
+  // "Water in 4 days". Ask the same schedule that draws that line: it knows the
+  // plant's interval, shortens it in heat and holds off when rain is coming.
+  //
+  // Without an item there is no interval to reason about, so fall back to the
+  // old question rather than guess.
+  const next = item ? getNextWaterInfo(plantName, item, wateringHistory, wateredPlants, weather) : null;
+  const thirsty = next ? next.daysUntil <= 0 : !wateredToday;
+  if (thirsty) return { label: "Needs Water", icon: "💧", color: "#ffd86b" };
   return { label: "Healthy", icon: "🌿", color: "#5cff89" };
 }
 
