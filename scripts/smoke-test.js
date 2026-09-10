@@ -170,16 +170,87 @@ const theme = {
 };
 
 // A permissive prop bag — components pull what they need and ignore the rest.
-const props = new Proxy(
+//
+// Rendered twice, with two of these. The empty bag is the cold-start case: no
+// plants, no history, no forecast. It is the harder one for a component to
+// survive, and it runs in all ten languages.
+//
+// The populated bag reaches what the empty one cannot. A list with nothing in it
+// renders no rows, so anything that only goes wrong once there is data — walking
+// a non-empty array, reducing without a seed, dereferencing what .find() did not
+// find, a missing key in a list — went straight through unseen.
+const permissive = (bag) => new Proxy(bag, {
+  get: (t, k) => (k in t ? t[k] : typeof k === "string" && k.startsWith("on") ? () => {} : typeof k === "string" && k.startsWith("set") ? () => {} : undefined),
+});
+
+const emptyProps = permissive(
   {
     theme, zone: "9b", unitSystem: "imperial", savedPlants: [], journalEntries: [],
     harvestLog: [], careLog: [], gardenMap: {}, gardenAreas: [], wateredPlants: {},
     wateringHistory: {}, streakData: { count: 3 }, plantNotes: {}, weather: null,
     record: { zone: "9b", zonetitle: "9b: 25 to 30", zipcode: "90210" },
     premiumUnlocked: true, language: "en", user: null,
-  },
-  { get: (t, k) => (k in t ? t[k] : typeof k === "string" && k.startsWith("on") ? () => {} : k.startsWith("set") ? () => {} : undefined) }
+  }
 );
+
+// The same app, with a garden in it.
+const populatedProps = (() => {
+  const produce = require(path.join(ROOT, "data/produceData.js"));
+  const catalog = produce.default || produce;
+  const names = catalog.slice(0, 40).map((i) => i.name);
+  const key = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
+  const iso = (n) => new Date(Date.now() - n * 86400000).toISOString();
+  const history = {}; names.forEach((n, i) => { history[n] = [key(9), key(6), key(3), key(i % 4)]; });
+  const watered = {}; names.slice(0, 12).forEach((n) => { watered[n] = key(0); });
+  return permissive({
+    theme, zone: "9b", unitSystem: "imperial", language: "en",
+    savedPlants: names, savedPlantObjs: catalog.slice(0, 40),
+    plant: catalog[0], item: catalog[0], selectedPlant: catalog[0],
+    journalEntries: Array.from({ length: 25 }, (_, i) => ({ id: `j${i}`, plantName: names[i % 40], imageUri: "file://x.jpg", createdAt: iso(i), mood: "happy", growthStage: "fruiting" })),
+    harvestLog: Array.from({ length: 18 }, (_, i) => ({ id: `h${i}`, plantName: names[i % 40], plant: names[i % 40], date: key(i), amount: "3", unit: "kg", note: "", createdAt: iso(i) })),
+    careLog: Array.from({ length: 15 }, (_, i) => ({ id: `c${i}`, date: key(i), plant: names[i % 40], actionId: "prune", actionLabel: "Pruned", actionIcon: "\u2702\ufe0f", actionColor: "#5cff89", note: "", createdAt: iso(i) })),
+    gardenMap: Object.fromEntries(names.slice(0, 20).map((n, i) => [`slot-${i}`, n])),
+    gardenAreas: Array.from({ length: 4 }, (_, a) => ({
+      id: `a${a}`, name: `Bed ${a}`, kind: a === 3 ? "flower" : "veg", emoji: "\ud83c\udf31", color: "#5cff89", size: 8,
+      plots: Object.fromEntries(Array.from({ length: 8 }, (_, sl) => [`slot-${sl + 1}`, names[(a * 8 + sl) % 40]])),
+    })),
+    wateredPlants: watered, wateringHistory: history,
+    streakData: { count: 42, lastOpened: key(0) },
+    plantNotes: Object.fromEntries(names.slice(0, 6).map((n) => [n, `A note about ${n}`])),
+    harvestTrackers: Object.fromEntries(names.slice(0, 5).map((n) => [n, { days: 60, startedAt: iso(30) }])),
+    fertilizerTrackers: Object.fromEntries(names.slice(0, 5).map((n) => [n, { lastFertilized: iso(20) }])),
+    sowLog: Object.fromEntries(names.slice(0, 5).map((n) => [n, [key(30)]])),
+    followedPlants: names.slice(0, 5), pinnedPlants: names.slice(0, 3), comparePlants: names.slice(0, 2),
+    snoozedPlants: {}, plantFolders: { "Herbs": names.slice(0, 4) },
+    plantSaveDates: Object.fromEntries(names.map((n) => [n, key(20)])),
+    // Deliberately awkward: frost tonight and extreme heat today, so the weather
+    // branches that only exist at the edges get rendered too.
+    weather: { maxTempF: 96, minTempF: 34, precipChance: 70, forecast: Array.from({ length: 7 }, (_, i) => ({ date: key(-i), maxTempF: 80 + i, minTempF: 30 + i, precipChance: 10 * i })) },
+    record: { zone: "9b", zonetitle: "9b: 25 to 30", zipcode: "90210" },
+    gardenXP: { xp: 12000, level: 8, title: "Backyard Grower", currentLevelXP: 200, nextLevelXP: 2000, progress: 0.1 },
+    premiumUnlocked: true, user: { id: "u1", email: "a@b.c" },
+    zip: "90210", country: "US", monthlySuggestions: catalog.slice(0, 6),
+    suppliesSpent: 120, harvestGoal: { target: 20, createdAt: iso(0) },
+    badgeEarnedDates: {}, bannerEarnedDates: {}, completedQuestIds: {},
+    resolveCompanionPlant: (n) => catalog.find((i) => i.name === n) || null,
+    getCompanionDisplayName: (n) => n, getCompanionImage: () => null,
+    rarityStyle: () => ({ label: "Common", color: "#8effab" }),
+    fadeAnimation: { interpolate: () => 0 }, glowOpacity: { interpolate: () => 0 },
+    xpPopups: [], showLevelUp: false, gardenPlacementPrompt: null, uploadingPhoto: false,
+    // Filled in from what the first populated run tripped over, so the pass
+    // reaches the component rather than bailing out at its first missing prop.
+    dailyQuests: [{ id: "q1", label: "Water 3 plants", goal: 3, progress: 1, xp: 20, done: false }],
+    frostChecklist: {}, streakFreeze: { available: 1, lastUsed: null },
+    achievementBadges: [{ id: "b1", category: "Plants", icon: "\ud83c\udf31", title: "First plant", text: "Saved your first plant.", unlocked: true, progress: 1, goal: 1 }],
+    profileBanners: [{ id: "seedling_banner", emoji: "\ud83c\udf31", title: "Seedling Starter", subtitle: "Unlocked at Level 1", unlocked: true, gradient: ["#5cff89", "#1f7a3a"] }],
+    smartWeather: { title: "Prime Garden Window!", body: "A good day to plant.", level: "Common" },
+    compatiblePlants: catalog.slice(0, 8), activationSteps: [], monthlyChecklist: {},
+    recentPlants: names.slice(0, 5), plantAttrFilters: [], wateringAmounts: [],
+    recommendation: { title: "Prime Garden Window!", body: "A good day to plant.", level: "Common" },
+    filteredPlants: catalog.slice(0, 30), plantSearch: "", selectedType: "All",
+    smartRecommendation: { title: "Prime Garden Window!", body: "A good day to plant.", level: "Common" },
+  });
+})();
 
 const files = [
   ...fs.readdirSync(path.join(ROOT, "components")).filter((f) => f.endsWith(".js")).map((f) => "components/" + f),
@@ -189,7 +260,16 @@ const files = [
 let evalFail = 0, renderFail = 0, rendered = 0, skipped = 0;
 const failures = [];
 
-for (const locale of locales) {
+// Ten languages against an empty app, then one more pass with a garden in it.
+// The populated pass runs in English only: it is there to reach data-dependent
+// code, and re-running it in ten languages would double the time to say the
+// same thing.
+const passes = [
+  ...locales.map((locale) => ({ locale, label: locale, props: emptyProps })),
+  { locale: "en", label: "en (populated)", props: populatedProps },
+];
+
+for (const { locale, label, props } of passes) {
   i18n.setLocale(locale);
   for (const rel of files) {
     let mod;
@@ -197,7 +277,7 @@ for (const locale of locales) {
       delete require.cache[require.resolve(path.join(ROOT, rel))];
       mod = require(path.join(ROOT, rel));
     } catch (e) {
-      evalFail += 1; failures.push(`[${locale}] ${rel}  MODULE FAILED TO LOAD: ${e.message}`); continue;
+      evalFail += 1; failures.push(`[${label}] ${rel}  MODULE FAILED TO LOAD: ${e.message}`); continue;
     }
     for (const [name, Comp] of Object.entries(mod)) {
       if (typeof Comp !== "function" && !(Comp && Comp.$$typeof)) continue;
@@ -214,17 +294,25 @@ for (const locale of locales) {
         // A component that needs richer fixture data than the generic prop bag
         // supplies is not a bug — it just isn't smoke-testable this way. Genuine
         // defects (missing import, undefined function, bad module) still fail.
-        if (/Cannot read propert|is not iterable|Invalid hook|Objects are not valid|Minified React/.test(msg)) {
-          skipped += 1; continue;
+        // The skip list is for the empty pass, where a component wanting richer
+        // fixture data than the generic bag supplies is not a defect. The
+        // populated bag is complete — every module renders against it with
+        // nothing skipped — so there the same error means the component really
+        // did fall over on real data, and it counts.
+        if (props !== populatedProps
+            && /Cannot read propert|is not iterable|Invalid hook|Objects are not valid|Minified React/.test(msg)) {
+          skipped += 1;
+          if (process.env.PP_SHOW_SKIPS) console.log(`  SKIP [${label}] ${rel} <${name}>  ${msg.split("\n")[0].slice(0, 110)}`);
+          continue;
         }
         renderFail += 1;
-        failures.push(`[${locale}] ${rel} <${name}>  ${msg.split("\n")[0].slice(0, 130)}`);
+        failures.push(`[${label}] ${rel} <${name}>  ${msg.split("\n")[0].slice(0, 130)}`);
       }
     }
   }
 }
 
-console.log(`\n  locales tested:   ${locales.join(", ")}`);
+console.log(`\n  passes:           ${passes.map((p) => p.label).join(", ")}`);
 console.log(`  modules:          ${files.length}`);
 console.log(`  rendered OK:      ${rendered}`);
 console.log(`  skipped:          ${skipped}`);
