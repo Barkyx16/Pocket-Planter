@@ -285,3 +285,26 @@ describe("the watering reminders switch", () => {
       "the first run must be skipped, the way the other hydrate-sensitive effects do");
   });
 });
+
+describe("signing out", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const start = app.indexOf("const clearLocalAccountData");
+  const reset = start < 0 ? "" : app.slice(start, app.indexOf("\n};", start));
+
+  it("cancels everything the previous account had scheduled", () => {
+    // Per-plant reminders are daily repeats and they name the plant — "Time to
+    // water Tomato" — so leaving them scheduled tells whoever picks the device up
+    // next about someone else's garden, and what was in it.
+    ok(start > 0, "there should be a local reset on sign-out");
+    ok(/cancelAllScheduledNotificationsAsync\(\)/.test(reset),
+      "the reset must cancel scheduled notifications");
+  });
+  it("clears the once-a-day alert guards so the next account is not silenced", () => {
+    for (const key of ["pp_harvestAlertSent", "pp_frostAlertDay", "pp_heatAlertDay"]) {
+      ok(reset.includes(key), `${key} should be cleared on sign-out`);
+    }
+  });
+  it("still runs on the sign-out event", () => {
+    ok(/event === "SIGNED_OUT"\) clearLocalAccountData\(\)/.test(app));
+  });
+});

@@ -687,6 +687,16 @@ useEffect(() => {
 }, []);
 
 const clearLocalAccountData = async () => {
+  // Everything scheduled belonged to the account that just left. A per-plant
+  // reminder is a daily repeat that names the plant — "Time to water Tomato" —
+  // so without this the next person to use the device carried on being told
+  // about someone else's garden every morning, and told what was in it. The
+  // RevenueCat identity below is detached for the same reason.
+  Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
+  // The once-a-day guards that stop an alert repeating are device-local, so a
+  // stale one would swallow the next account's first frost or heat warning.
+  AsyncStorage.multiRemove(["pp_harvestAlertSent", "pp_frostAlertDay", "pp_heatAlertDay"]).catch(() => {});
+
   setPremiumUnlocked(false);
   // Detach the RevenueCat identity so the next account on this device doesn't
   // inherit the previous user's entitlement.
