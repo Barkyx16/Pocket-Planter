@@ -258,3 +258,36 @@ describe("getTomorrowKey", () => {
     eq(offenders, []);
   });
 });
+
+describe("frost alert scheduling", () => {
+  const core5 = require(path.join(ROOT, "core.js"));
+  it("puts frost in the southern winter for southern gardeners", () => {
+    core5.setHemisphereFromLatitude(-33.87);
+    const south = core5.getFrostSeasonMonths("10a");
+    core5.setHemisphereFromLatitude(40.7);
+    const north = core5.getFrostSeasonMonths("10a");
+    eq(south, [6, 7, 8], "southern frost is the middle of the year");
+    eq(north, [1, 2, 12], "northern frost is either end of it");
+  });
+  it("cancels every month when the switch goes off, not a northern subset", () => {
+    // The off path listed [1,2,3,4,5,9,10,11,12], which never names June, July
+    // or August — the whole of a southern frost season. For southern zone 10a,
+    // whose months are exactly [6,7,8], turning the switch off did nothing.
+    const src = require("fs").readFileSync(path.join(ROOT, "screens/SettingsTab.js"), "utf8");
+    ok(/for \(let month = 1; month <= 12; month \+= 1\) \{\s*\n\s*await cancelReminder\(`frost-daily-\$\{month\}`\)/.test(src),
+      "the off path must cancel all twelve months");
+    ok(!/const allMonths = \[1, 2, 3, 4, 5, 9, 10, 11, 12\]/.test(src),
+      "the hardcoded northern month list must be gone");
+  });
+  it("never schedules a month the off path cannot cancel", () => {
+    for (const lat of [40.7, -33.87]) {
+      core5.setHemisphereFromLatitude(lat);
+      for (const zone of ["3a", "4a", "7a", "9b", "10a", "11b"]) {
+        for (const month of core5.getFrostSeasonMonths(zone)) {
+          ok(month >= 1 && month <= 12, `zone ${zone} at lat ${lat} scheduled month ${month}`);
+        }
+      }
+    }
+    core5.setHemisphereFromLatitude(40.7);
+  });
+});

@@ -105,8 +105,15 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn
                     : t("alerts.frostOnBodyDefault")
                 );
               } else {
-                const allMonths = [1, 2, 3, 4, 5, 9, 10, 11, 12];
-                for (const month of allMonths) {
+                // Every month, not a list of the ones a northern frost season
+                // uses. getFrostSeasonMonths flips for the southern hemisphere,
+                // where frost falls in June, July and August — none of which
+                // this used to name. A gardener in southern zone 10a has frost
+                // months of exactly [6, 7, 8], so turning the switch off
+                // cancelled nothing at all and the alerts kept coming right
+                // through their frost season. Cancelling an id that was never
+                // scheduled costs nothing, so the safe set is all twelve.
+                for (let month = 1; month <= 12; month += 1) {
                   await cancelReminder(`frost-daily-${month}`);
                 }
                 await cancelReminder("frost-detected");
