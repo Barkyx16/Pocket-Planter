@@ -206,3 +206,31 @@ describe("onlyKnownPlantKeys", () => {
     ok(/plantNotes, harvestTrackers, fertilizerTrackers/.test(app), "the backup keeps them");
   });
 });
+
+describe("reduced motion", () => {
+  const fs7 = require("fs");
+  const read = (rel) => fs7.readFileSync(path.join(ROOT, rel), "utf8");
+  it("is honoured by every looping animation", () => {
+    // A loop runs until the content arrives, so an unguarded one is exactly what
+    // the OS setting exists to stop. Skeleton was the one that never asked, and
+    // thirteen cards use it.
+    const loopers = ["components/Skeleton.js", "components/FloatingParticle.js"];
+    const unguarded = loopers.filter((rel) => {
+      const src = read(rel);
+      return /Animated\.loop\(/.test(src) && !/useReducedMotion|isReducedMotion|reduceMotionRef/.test(src);
+    });
+    eq(unguarded, []);
+  });
+  it("finds no animation quietly ignoring the motion module", () => {
+    const files = [];
+    for (const d of ["components", "screens"]) {
+      for (const f of fs7.readdirSync(path.join(ROOT, d))) if (f.endsWith(".js")) files.push(path.join(d, f));
+    }
+    const offenders = files.filter((rel) => {
+      const src = read(rel);
+      if (!/Animated\.loop\(/.test(src)) return false;
+      return !/useReducedMotion|isReducedMotion|reduceMotionRef/.test(src);
+    });
+    eq(offenders, [], "these loop forever without asking about reduced motion");
+  });
+});
