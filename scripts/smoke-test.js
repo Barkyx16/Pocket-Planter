@@ -264,12 +264,35 @@ const failures = [];
 // The populated pass runs in English only: it is there to reach data-dependent
 // code, and re-running it in ten languages would double the time to say the
 // same thing.
-const passes = [
-  ...locales.map((locale) => ({ locale, label: locale, props: emptyProps })),
-  { locale: "en", label: "en (populated)", props: populatedProps },
+// States a real gardener is in that the two main bags do not cover. Both of them
+// set premiumUnlocked, so the entire free tier — every locked card and upsell —
+// had never been rendered once. "no location yet" is how the app looks between
+// launch and the zone lookup returning, and how it stays if a postal code cannot
+// be resolved at all; rendering that found a crash on the Home tab.
+const variants = [
+  ["free tier", { premiumUnlocked: false }],
+  ["metric", { unitSystem: "metric" }],
+  ["no location yet", { zone: null, zip: "", record: null, weather: null, latitude: null }],
+  ["southern hemisphere", { zone: "10a", latitude: -33.87, record: { zone: "10a", zonetitle: "10a: 30 to 35", zipcode: "2000" } }],
+  // What a restore from an older backup can hand back: rows that exist but are
+  // missing most of their fields.
+  ["partial data", {
+    journalEntries: [{ id: "j1" }], harvestLog: [{ id: "h1" }], careLog: [{ id: "c1" }],
+    gardenAreas: [{ id: "a1" }], harvestTrackers: { X: {} }, fertilizerTrackers: { X: {} }, streakData: {},
+  }],
 ];
 
-for (const { locale, label, props } of passes) {
+const passes = [
+  // `strict: false` on the empty passes only — see the skip list below.
+  ...locales.map((locale) => ({ locale, label: locale, props: emptyProps, strict: false })),
+  { locale: "en", label: "en (populated)", props: populatedProps, strict: true },
+  ...variants.map(([label, override]) => ({
+    locale: "en", label: `en (${label})`, strict: true,
+    props: permissive(Object.assign({}, populatedProps, override)),
+  })),
+];
+
+for (const { locale, label, props, strict } of passes) {
   i18n.setLocale(locale);
   for (const rel of files) {
     let mod;
@@ -299,7 +322,7 @@ for (const { locale, label, props } of passes) {
         // populated bag is complete — every module renders against it with
         // nothing skipped — so there the same error means the component really
         // did fall over on real data, and it counts.
-        if (props !== populatedProps
+        if (!strict
             && /Cannot read propert|is not iterable|Invalid hook|Objects are not valid|Minified React/.test(msg)) {
           skipped += 1;
           if (process.env.PP_SHOW_SKIPS) console.log(`  SKIP [${label}] ${rel} <${name}>  ${msg.split("\n")[0].slice(0, 110)}`);

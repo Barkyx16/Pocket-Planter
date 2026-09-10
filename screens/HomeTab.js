@@ -505,7 +505,14 @@ zone={zone}
   </View>
 ) : null}
 
-    {/* GROWING ZONE — moved to the bottom of the home page */}
+    {/* GROWING ZONE — moved to the bottom of the home page.
+        Rendered only once there is a record to show. `record` starts null and is
+        filled in by an async lookup, so there is a window on every launch where
+        it is not there yet — and if the postal code cannot be resolved at all it
+        stays null for good. Reading record.zone through that crashed the whole
+        Home tab; App.js reads the same value as record?.zone a few lines from
+        where it is set. */}
+    {record ? (
     <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: theme.card, borderRadius: 24, padding: 16, marginTop: 4, marginBottom: 8, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)" }}>
       <View>
         <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", textTransform: "uppercase", letterSpacing: 0.5 }}>{t("zone.yourZone")}</Text>
@@ -528,6 +535,7 @@ zone={zone}
         <Text style={{ color: "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{t("zone.change")}</Text>
       </Pressable>
     </View>
+    ) : null}
             </>
   );
 }
