@@ -3298,6 +3298,39 @@ async function cancelPlantWaterReminder(plantName) {
   try { await Notifications.cancelScheduledNotificationAsync(`water-${plantName}`); } catch (e) { /* ignore */ }
 }
 
+// Switching watering reminders off has to stop the ones already scheduled, not
+// only refuse to make new ones.
+//
+// A per-plant reminder is a DAILY repeat — the confirmation says so, "a daily
+// Tomato check-in at 7:00 AM every morning" — and schedulePlantReminder and
+// schedulePlantWaterReminder both check the switch, but only on the way in.
+// Nothing ever cancelled. So a gardener who set reminders on eight plants and
+// then turned the feature off kept getting all eight, every morning, for ever,
+// with no way out of it inside the app: the one control that clears them is a
+// developer button on the Settings screen.
+useEffect(() => {
+  // Not on the first run. remindersOn starts false and only turns true when the
+  // stored value arrives, so acting on that initial false would cancel the
+  // reminders of every gardener who had them switched on, on every launch.
+  if (!persistHydrated.current.remindersToggle) {
+    persistHydrated.current.remindersToggle = true;
+    return;
+  }
+  if (remindersOn) return;
+  (async () => {
+    for (const plantName of Object.keys(wateringReminders || {})) {
+      await cancelReminder(`plant-${plantName}`);
+    }
+    for (const plantName of savedPlants || []) {
+      await cancelPlantWaterReminder(plantName);
+    }
+  })();
+  // savedPlants and wateringReminders are in the deps because a re-run is free:
+  // with the switch on it returns immediately, and with it off cancelling an
+  // already-cancelled reminder does nothing. A plant saved while reminders are
+  // off then gets the same treatment as the rest.
+}, [remindersOn, savedPlants, wateringReminders]);
+
 async function claimDailyBonus() {
   // A day key, not a timestamp: this was written as an ISO string and then read
   // back with `=== getTodayKey()` in three places, which never matched — so the

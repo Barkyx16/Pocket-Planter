@@ -259,3 +259,29 @@ describe("the haptics switch", () => {
     ok(/export function successHaptic[\s\S]{0,120}if \(!hapticsEnabled\) return;/.test(coreSrc));
   });
 });
+
+describe("the watering reminders switch", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  // Located by the effect's own guard rather than by matching a useEffect and a
+  // dependency array — a lazy match between those two spans whatever sits in
+  // between, and my first attempt happily matched the zip-persist effect.
+  const marker = app.indexOf("persistHydrated.current.remindersToggle");
+  const effect = marker < 0 ? "" : app.slice(marker, app.indexOf("}, [remindersOn", marker) + 40);
+
+  it("cancels what is already scheduled, not just what comes next", () => {
+    // A per-plant reminder is a DAILY repeat. Both schedulers check the switch on
+    // the way in, but nothing cancelled — so turning it off left every reminder
+    // firing every morning for ever, with no in-app way to stop them.
+    ok(marker > 0, "there should be an effect that reacts to the switch going off");
+    ok(/cancelReminder\(`plant-\$\{plantName\}`\)/.test(effect), "per-plant daily reminders must be cancelled");
+    ok(/cancelPlantWaterReminder\(plantName\)/.test(effect), "per-plant water reminders must be cancelled");
+    ok(/if \(remindersOn\) return;/.test(effect), "it must only act when the switch is off");
+  });
+  it("does not cancel everything on the first render", () => {
+    // remindersOn starts false and only turns true when the stored value lands,
+    // so acting on that initial false would wipe the reminders of everyone who
+    // had them on, on every single launch.
+    ok(/remindersToggle = true;\s*\n\s*return;/.test(effect),
+      "the first run must be skipped, the way the other hydrate-sensitive effects do");
+  });
+});
