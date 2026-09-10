@@ -308,3 +308,46 @@ describe("signing out", () => {
     ok(/event === "SIGNED_OUT"\) clearLocalAccountData\(\)/.test(app));
   });
 });
+
+describe("a backup carries the whole garden", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const start = app.indexOf("async function exportFullBackup");
+  const payload = app.slice(start, app.indexOf("backup._modules", start));
+  // Field names in the exported object. Several sit on a line together, so this
+  // strips comments and `key: value` entries and takes what is left — my first
+  // attempt anchored on one field per line and found six of them.
+  const exported = [...new Set(
+    payload
+      .replace(/\/\/[^\n]*/g, "")
+      .replace(/[a-zA-Z_][a-zA-Z0-9_]*\s*:\s*[^,\n]+/g, "")
+      .split(/[,\n{}]/)
+      .map((t) => t.trim())
+      .filter((t) => /^[a-zA-Z][a-zA-Z0-9]*$/.test(t))
+  )].filter((f) => !["const", "backup", "async", "function", "exportFullBackup", "await", "try", "return"].includes(f));
+
+  it("exports something worth restoring", () => {
+    ok(start > 0, "there should be a backup export");
+    ok(exported.length >= 25, `only ${exported.length} fields exported`);
+  });
+  it("restores every field it exports", () => {
+    // A field added to the export but not to the restore is progress that goes
+    // out and never comes back, and nothing would report it.
+    const restoreAt = app.indexOf("if (Array.isArray(data.savedPlants)) setSavedPlants");
+    const restore = app.slice(restoreAt, app.indexOf("applyModuleBackup", restoreAt));
+    const missing = exported.filter((f) => !restore.includes(`data.${f}`));
+    eq(missing, [], "exported but never restored");
+  });
+  it("carries the progress that only ever lived on the device", () => {
+    // These survive an app update, because AsyncStorage does — but a reinstall,
+    // a new phone or a restore used to take them.
+    for (const f of ["plantSaveDates", "harvestGoal", "monthlyChecklist", "frostChecklist",
+                     "badgeEarnedDates", "bannerEarnedDates", "streakFreeze", "pinnedPlants"]) {
+      ok(exported.includes(f), `${f} is missing from the backup`);
+    }
+  });
+  it("keeps the self-persisting cards in the same file", () => {
+    ok(/backup\._modules = await collectModuleBackup\(\)/.test(app));
+    ok(/if \(data\._modules\) applyModuleBackup\(data\._modules\)/.test(app));
+    ok(core.MODULE_STORAGE_KEYS.length >= 20, "every self-persisting card must be listed");
+  });
+});

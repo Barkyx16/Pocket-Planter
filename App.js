@@ -2855,6 +2855,14 @@ async function exportFullBackup() {
     harvestLog, careLog, plantNotes, harvestTrackers, fertilizerTrackers, sowLog,
     frostOverrides, streakData, followedPlants, plantFolders, suppliesSpent,
     bonusXP, questXP, completedQuestIds, wateringAmounts,
+    // Progress that lived only on the device until now. An app update keeps
+    // AsyncStorage, so none of this was ever lost to one — but a reinstall, a
+    // new phone or a restore took it, because it was in neither the backup file
+    // nor the cloud row. When each plant was saved is what "grown for 84 days"
+    // counts from; the earned dates are when the badges and banners happened;
+    // the rest are things the gardener set or ticked themselves.
+    plantSaveDates, harvestGoal, monthlyChecklist, frostChecklist,
+    badgeEarnedDates, bannerEarnedDates, streakFreeze, pinnedPlants,
   };
   // Fold in the self-persisting modules (compost, rain barrel, germination,
   // chores, seed inventory, etc.) so the backup is complete.
@@ -2915,6 +2923,16 @@ function restoreFromBackup(text) {
           if (typeof data.questXP === "number") setQuestXP(data.questXP);
           if (data.completedQuestIds && typeof data.completedQuestIds === "object") setCompletedQuestIds(data.completedQuestIds);
           if (Array.isArray(data.wateringAmounts)) setWateringAmounts(data.wateringAmounts);
+          // Restored under the same shape guards as everything above, so an
+          // older backup without these fields simply leaves them alone.
+          if (data.plantSaveDates && typeof data.plantSaveDates === "object") setPlantSaveDates(data.plantSaveDates);
+          if (data.harvestGoal && typeof data.harvestGoal === "object") setHarvestGoal(data.harvestGoal);
+          if (data.monthlyChecklist && typeof data.monthlyChecklist === "object") setMonthlyChecklist(data.monthlyChecklist);
+          if (data.frostChecklist && typeof data.frostChecklist === "object") setFrostChecklist(data.frostChecklist);
+          if (data.badgeEarnedDates && typeof data.badgeEarnedDates === "object") setBadgeEarnedDates(data.badgeEarnedDates);
+          if (data.bannerEarnedDates && typeof data.bannerEarnedDates === "object") setBannerEarnedDates(data.bannerEarnedDates);
+          if (data.streakFreeze && typeof data.streakFreeze === "object") setStreakFreeze(data.streakFreeze);
+          if (Array.isArray(data.pinnedPlants)) setPinnedPlants(data.pinnedPlants);
           // Restore self-persisting module data (compost, rain barrel,
           // germination, chores, seed inventory…). Those cards re-read their
           // key when their tab next mounts, so the data reappears on navigation.
@@ -3340,6 +3358,62 @@ useEffect(() => {
   // already-cancelled reminder does nothing. A plant saved while reminders are
   // off then gets the same treatment as the rest.
 }, [remindersOn, savedPlants, wateringReminders]);
+
+// Journal photos that never made it to storage.
+//
+// A photo is uploaded to Supabase and the entry keeps the public URL, which
+// survives anything. When the upload fails the entry is still saved, but with
+// the image picker's own file:// path and storagePath: null — and nothing ever
+// tried again. That path points inside the app's cache, which iOS empties under
+// storage pressure and does not carry across a reinstall or a restore, so the
+// journal entry outlived the photo it was about and the picture was in no backup
+// either.
+//
+// Retried whenever there is an account to upload to: on launch, and on sign-in.
+// A photo whose local file has already gone cannot be recovered, so this is a
+// narrowing of the window rather than a guarantee — but the window was "for ever"
+// and is now "until the next time the app opens".
+const retryingPhotos = useRef(false);
+async function retryPendingPhotoUploads(account) {
+  if (!account?.id || retryingPhotos.current) return;
+  const pending = journalEntries.filter(
+    (e) => e && !e.storagePath && typeof e.imageUri === "string" && e.imageUri.startsWith("file://")
+  );
+  if (!pending.length) return;
+  retryingPhotos.current = true;
+  try {
+    for (const entry of pending) {
+      try {
+        const response = await fetch(entry.imageUri);
+        const arrayBuffer = await response.arrayBuffer();
+        const filePath = `${account.id}/${entry.id || Date.now()}.jpg`;
+        const { error } = await supabase.storage
+          .from("journal-photos")
+          .upload(filePath, arrayBuffer, { contentType: "image/jpeg", upsert: true });
+        if (error) continue; // still offline, or still failing — try again next launch
+        const { data } = supabase.storage.from("journal-photos").getPublicUrl(filePath);
+        if (!data?.publicUrl) continue;
+        setJournalEntries((current) =>
+          current.map((e) => (e.id === entry.id ? { ...e, imageUri: data.publicUrl, storagePath: filePath } : e))
+        );
+      } catch {
+        // The local file is gone, or the network dropped mid-upload. Leave the
+        // entry as it is rather than losing the record of the photo.
+      }
+    }
+  } finally {
+    retryingPhotos.current = false;
+  }
+}
+
+useEffect(() => {
+  if (!user?.id) return;
+  retryPendingPhotoUploads(user);
+  // Deliberately keyed on the account alone: journalEntries changes every time a
+  // photo is added, and re-running then would race the upload that is already
+  // in flight. The ref guards the overlap; this keeps it to once per sign-in.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [user?.id]);
 
 async function claimDailyBonus() {
   // A day key, not a timestamp: this was written as an ISO string and then read
