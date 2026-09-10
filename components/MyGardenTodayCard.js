@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, WARM_DAY_THRESHOLD_F, formatTemp, getClimateBucket, getDateKey, getSeasonForDate, getSeedStartInfo, getTodayKey, isFertilizerDue, isHarvestReady, resolvePlantImageSource } from "../core";
+import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, WARM_DAY_THRESHOLD_F, formatTemp, getClimateBucket, getDateKey, getSeasonForDate, getSeedStartInfo, getTodayKey, getTomorrowKey, isFertilizerDue, isHarvestReady, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
@@ -13,7 +13,7 @@ export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weathe
 
   // Snoozing a plant should quiet it here too. This card used to ignore snoozes
   // entirely, so a plant you'd deliberately put off kept showing up as "needs water".
-  const tomorrowKey = getDateKey(new Date(Date.now() + 86400000));
+  const tomorrowKey = getTomorrowKey();
   const wateredToday = savedPlants.filter(p => wateredPlants?.[p] === today);
   const unwateredPlants = savedPlants.filter(
     p => wateredPlants?.[p] !== today && snoozedPlants?.[p] !== tomorrowKey

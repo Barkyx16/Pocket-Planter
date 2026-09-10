@@ -62,7 +62,7 @@ import {
 } from "./lib/zoneResolver";
 import produceData from "./data/produceData";
 import { styles } from "./styles";
-import { HEAT_THRESHOLD_F, PROFILE_THEMES, RARITY_STYLES, SCREEN_WIDTH, STORAGE_KEYS, WHATS_NEW_VERSION, applyModuleBackup, buildWidgetSnapshot, calculateGardenHealth, canPlantInArea, collectModuleBackup, formatTemp, getAchievementBadges, getActivationSteps, getBaseWaterInterval, getCompatibilityScore, getCompatiblePlants, getDailyQuests, getDateKey, getGardenXP, getHarvestDays, getNextWaterInfo, getPlantDetails, getPlantDifficulty, getPlantFamily, getPlantSeasonLabel, getProfileBanners, getRainSkipToday, getRarity, getSeasonForDate, getSmartWeatherRecommendation, getSuccessionInterval, getSuggestionsForMonth, getTodayKey, getTotalWaterings, getUpcomingFrost, getWateringRhythm, getWateringStreak, getZipRecord, hasPremiumEntitlement, isFlowerBedPlant, isHarvestReady, isPerennial, isSameDayKey, matchesType, migrateGardenToAreas, nextFreeSlotId, nextStreakState, normalizeType, resolveCompanionName, resolvePlantImageSource, setFrostOverrideRef, setHapticsEnabled, setHemisphereFromLatitude, successHaptic, tapHaptic, welcomeBuddyImage } from "./core";
+import { HEAT_THRESHOLD_F, PROFILE_THEMES, RARITY_STYLES, SCREEN_WIDTH, STORAGE_KEYS, WHATS_NEW_VERSION, applyModuleBackup, buildWidgetSnapshot, calculateGardenHealth, canPlantInArea, collectModuleBackup, formatTemp, getAchievementBadges, getActivationSteps, getBaseWaterInterval, getCompatibilityScore, getCompatiblePlants, getDailyQuests, getDateKey, getGardenXP, getHarvestDays, getNextWaterInfo, getPlantDetails, getPlantDifficulty, getPlantFamily, getPlantSeasonLabel, getProfileBanners, getRainSkipToday, getRarity, getSeasonForDate, getSmartWeatherRecommendation, getSuccessionInterval, getSuggestionsForMonth, getTodayKey, getTomorrowKey, getTotalWaterings, getUpcomingFrost, getWateringRhythm, getWateringStreak, getZipRecord, hasPremiumEntitlement, isFlowerBedPlant, isHarvestReady, isPerennial, isSameDayKey, matchesType, migrateGardenToAreas, nextFreeSlotId, nextStreakState, normalizeType, resolveCompanionName, resolvePlantImageSource, setFrostOverrideRef, setHapticsEnabled, setHemisphereFromLatitude, successHaptic, tapHaptic, welcomeBuddyImage } from "./core";
 import { BackgroundDecoration } from "./components/BackgroundDecoration";
 import { ConfettiBurst } from "./components/ConfettiBurst";
 import { getBadgeImage } from "./data/badgeImageMap";
@@ -2366,7 +2366,7 @@ useEffect(() => {
     if (!val) return;
     try {
       const parsed = JSON.parse(val);
-      const tomorrowKey = getDateKey(new Date(Date.now() + 86400000));
+      const tomorrowKey = getTomorrowKey();
       const todayKey = getTodayKey();
       // Keep only snoozes for today or tomorrow; drop anything already expired.
       const fresh = {};
@@ -3045,7 +3045,7 @@ async function togglePlantOfDay(value) {
 
 async function scheduleSnoozeSummary(snoozeMap) {
     // One combined morning notification for everything snoozed to tomorrow.
-    const tomorrowKey = getDateKey(new Date(Date.now() + 86400000));
+    const tomorrowKey = getTomorrowKey();
     const dueTomorrow = Object.entries(snoozeMap || {})
       .filter(([, key]) => key === tomorrowKey)
       .map(([name]) => name);
@@ -3477,9 +3477,7 @@ function useStreakFreeze() {
   Alert.alert(t("streak.frozenTitle"), "Your streak is protected for today. Even if you miss watering, it won't reset. Come back tomorrow!");
 }
 function snoozePlantWatering(plantName) {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const key = getDateKey(tomorrow);
+  const key = getTomorrowKey();
   tapHaptic("light");
   // Quiet the plant's own reminder too. Snoozing used to leave `water-<plant>`
   // scheduled, so the app would nag about the very plant it had just been told

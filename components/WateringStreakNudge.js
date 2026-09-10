@@ -1,13 +1,13 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { getDateKey, getStreakDaysLeft, getWateringStreak, resolvePlantImageSource } from "../core";
+import { getStreakDaysLeft, getTomorrowKey, getWateringStreak, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const WateringStreakNudge = memo(function WateringStreakNudge({ theme, savedPlants, wateringHistory, snoozedPlants, onOpenPlant, onWater }) {
   const { t } = useTranslation();
-  const tomorrowKey = getDateKey(new Date(Date.now() + 86400000));
+  const tomorrowKey = getTomorrowKey();
   const atRisk = (savedPlants || [])
     .filter((name) => snoozedPlants?.[name] !== tomorrowKey)
     .map((name) => {

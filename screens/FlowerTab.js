@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { getDateKey, isFlowerBedPlant } from "../core";
+import { getTomorrowKey, isFlowerBedPlant } from "../core";
 import { styles } from "../styles";
 import { CollapsibleCard } from "../components/CollapsibleCard";
 import { SegmentedCard } from "../components/SegmentedCard";
@@ -67,7 +67,7 @@ export function FlowerTab({
             isCompared={comparePlants.includes(item.name)}
             isFollowed={followedPlants.includes(item.name)}
             isInGarden={gardenPlantNames?.has(item.name)}
-            isSnoozed={snoozedPlants[item.name] === getDateKey(new Date(Date.now() + 86400000))}
+            isSnoozed={snoozedPlants[item.name] === getTomorrowKey()}
             wateredDate={wateredPlants[item.name]}
             wateredPlants={wateredPlants}
             wateringHistory={wateringHistory}

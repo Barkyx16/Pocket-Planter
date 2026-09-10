@@ -3339,6 +3339,19 @@ export function getDateKey(date) {
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
+// Tomorrow's date key, by the calendar rather than by adding 24 hours.
+//
+// Snoozing a plant stored the key this way while the badge that shows the snooze
+// compared against `Date.now() + 86400000`, and the two disagree on any day that
+// is not 24 hours long. Snooze a plant at half past eleven the night before the
+// clocks go forward and it was filed under the 8th while the badge looked for
+// the 9th, so the snooze took effect but never appeared to.
+export function getTomorrowKey(from = new Date()) {
+  const d = new Date(from);
+  d.setDate(d.getDate() + 1);
+  return getDateKey(d);
+}
+
 export function getTodayKey() {
   return getDateKey(new Date());
 }

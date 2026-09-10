@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Image, InteractionManager, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { getDateKey, MONTH_NAMES, PLANT_TYPES, SCREEN_WIDTH, getHarvestCountdown, getMonthEmoji, getPlantDifficulty, getPlantSeasonLabel, getSearchSuggestions, normalizeType, plantsBuddyImage, resolvePlantImageSource, tapHaptic } from "../core";
+import { MONTH_NAMES, PLANT_TYPES, SCREEN_WIDTH, getHarvestCountdown, getMonthEmoji, getPlantDifficulty, getPlantSeasonLabel, getSearchSuggestions, getTomorrowKey, normalizeType, plantsBuddyImage, resolvePlantImageSource, tapHaptic } from "../core";
 import { getMonthImage } from "../data/monthImageMap";
 import { CollapsibleCard } from "../components/CollapsibleCard";
 import { PremiumLockedCard } from "../components/PremiumLockedCard";
@@ -445,7 +445,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
           const sel = bulkSel.includes(item.name);
           return (
             <View key={item.name} style={{ position: "relative" }}>
-              <GlowPlantCard plant={item} weather={weather} zone={zone} theme={theme} isSaved={savedPlants.includes(item.name)} isCompared={comparePlants.includes(item.name)} isFollowed={followedPlants.includes(item.name)} isInGarden={gardenPlantNames?.has(item.name)} isSnoozed={snoozedPlants[item.name] === getDateKey(new Date(Date.now() + 86400000))} wateredDate={wateredPlants[item.name]} wateredPlants={wateredPlants} wateringHistory={wateringHistory} onOpen={() => selectMode ? toggleBulk(item.name) : openPlantFromList(item)} onSave={() => toggleSavedPlant(item.name)} onCompare={() => toggleComparePlant(item.name)} onFollow={() => toggleFollowPlant(item.name)} onAddToGarden={() => addPlantToGarden(item.name)} onWater={() => markPlantWatered(item.name)} onSnooze={() => snoozePlantWatering(item.name)} />
+              <GlowPlantCard plant={item} weather={weather} zone={zone} theme={theme} isSaved={savedPlants.includes(item.name)} isCompared={comparePlants.includes(item.name)} isFollowed={followedPlants.includes(item.name)} isInGarden={gardenPlantNames?.has(item.name)} isSnoozed={snoozedPlants[item.name] === getTomorrowKey()} wateredDate={wateredPlants[item.name]} wateredPlants={wateredPlants} wateringHistory={wateringHistory} onOpen={() => selectMode ? toggleBulk(item.name) : openPlantFromList(item)} onSave={() => toggleSavedPlant(item.name)} onCompare={() => toggleComparePlant(item.name)} onFollow={() => toggleFollowPlant(item.name)} onAddToGarden={() => addPlantToGarden(item.name)} onWater={() => markPlantWatered(item.name)} onSnooze={() => snoozePlantWatering(item.name)} />
               {selectMode ? (
                 <Pressable
                   onPress={() => toggleBulk(item.name)}

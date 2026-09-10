@@ -216,3 +216,45 @@ describe("daysBetweenKeys", () => {
     eq(offenders, []);
   });
 });
+
+describe("getTomorrowKey", () => {
+  const core4 = require(path.join(ROOT, "core.js"));
+  it("is the next calendar day", () => {
+    eq(core4.getTomorrowKey(new Date("2026-06-14T09:00:00")), "2026-06-15");
+    eq(core4.getTomorrowKey(new Date("2026-12-31T23:00:00")), "2027-01-01", "across the year");
+    eq(core4.getTomorrowKey(new Date("2026-02-28T09:00:00")), "2026-03-01", "non-leap February");
+  });
+  it("agrees with itself at every hour of a clock-change day", () => {
+    // Snooze stored the key one way and the badge compared it another, so a
+    // plant snoozed late on the night before a spring forward was filed under a
+    // day the badge never looked at. Both now come from here — this checks the
+    // helper is stable across the awkward hours rather than only at midday.
+    const wrong = [];
+    for (const day of ["2026-03-07", "2026-03-08", "2026-10-31", "2026-11-01"]) {
+      for (let h = 0; h < 24; h += 1) {
+        const at = new Date(`${day}T${String(h).padStart(2, "0")}:30:00`);
+        if (Number.isNaN(at.getTime())) continue; // a skipped hour in this zone
+        const viaHelper = core4.getTomorrowKey(at);
+        const byCalendar = (() => { const d = new Date(at); d.setDate(d.getDate() + 1); return core4.getDateKey(d); })();
+        if (viaHelper !== byCalendar) wrong.push(`${day} ${h}:30 -> ${viaHelper} vs ${byCalendar}`);
+      }
+    }
+    eq(wrong, []);
+  });
+  it("is always one day ahead of the key for the same moment", () => {
+    for (const day of ["2026-03-07", "2026-03-08", "2026-11-01", "2026-06-14"]) {
+      const at = new Date(`${day}T23:30:00`);
+      eq(core4.daysBetweenKeys(core4.getDateKey(at), core4.getTomorrowKey(at)), 1, `${day} 23:30`);
+    }
+  });
+  it("is what every caller uses, so store and compare cannot drift apart", () => {
+    const fs4 = require("fs");
+    const files = ["App.js"];
+    for (const d of ["components", "screens"]) {
+      for (const f of fs4.readdirSync(path.join(ROOT, d))) if (f.endsWith(".js")) files.push(path.join(d, f));
+    }
+    const offenders = files.filter((rel) =>
+      /Date\.now\(\)\s*\+\s*86400000/.test(fs4.readFileSync(path.join(ROOT, rel), "utf8")));
+    eq(offenders, []);
+  });
+});
