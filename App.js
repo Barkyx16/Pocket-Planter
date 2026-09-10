@@ -114,6 +114,7 @@ import {
   nextFreeSlotId,
   nextStreakState,
   normalizeType,
+  onlyKnownPlantKeys,
   resolveCompanionName,
   resolvePlantImageSource,
   setFrostOverrideRef,
@@ -1255,6 +1256,12 @@ setDailyBonusClaimed(isSameDayKey(data?.daily_bonus_date, getTodayKey()));
     return produceData.filter((item) => names.has(item.name));
   }, [savedPlants, gardenAreas]);
 
+  // What the gardener can actually act on. The stored trackers keep every key —
+  // see onlyKnownPlantKeys — but nothing on screen, in the widget or in a
+  // notification should count a plant that cannot be opened.
+  const visibleHarvestTrackers = useMemo(() => onlyKnownPlantKeys(harvestTrackers), [harvestTrackers]);
+  const visibleFertilizerTrackers = useMemo(() => onlyKnownPlantKeys(fertilizerTrackers), [fertilizerTrackers]);
+
   const monthlySuggestions = useMemo(() => {
     if (!zone) return [];
     return getSuggestionsForMonth(zone, selectedMonth);
@@ -1277,9 +1284,9 @@ setDailyBonusClaimed(isSameDayKey(data?.daily_bonus_date, getTodayKey()));
   useEffect(() => {
     syncWidgets(buildWidgetSnapshot({
       savedPlantObjs, wateredPlants, wateringHistory, weather,
-      harvestTrackers, streakData, plantPick: monthlySuggestions[0] || null, zone,
+      harvestTrackers: visibleHarvestTrackers, streakData, plantPick: monthlySuggestions[0] || null, zone,
     }));
-  }, [savedPlantObjs, wateredPlants, wateringHistory, weather, harvestTrackers, streakData, monthlySuggestions, zone]);
+  }, [savedPlantObjs, wateredPlants, wateringHistory, weather, visibleHarvestTrackers, streakData, monthlySuggestions, zone]);
 
   const filteredPlants = useMemo(() => {
   const DIFF_ORDER = { Easy: 0, Medium: 1, Hard: 2 };
@@ -1412,8 +1419,8 @@ const achievementBadges = useMemo(
       streakData,
       gardenXP,
       careLog,
-      harvestTrackers,
-      fertilizerTrackers,
+      harvestTrackers: visibleHarvestTrackers,
+      visibleFertilizerTrackers,
       harvestLog,
       wateringHistory,
     }),
@@ -1426,8 +1433,8 @@ const achievementBadges = useMemo(
     streakData,
     gardenXP,
    careLog,
-    harvestTrackers,
-    fertilizerTrackers,
+    visibleHarvestTrackers,
+    visibleFertilizerTrackers,
     harvestLog,
     wateringHistory,
   ]
@@ -1440,10 +1447,10 @@ const dailyQuests = useMemo(
       gardenMap: combinedGardenMap,
       wateredPlants,
       careLog,
-      harvestTrackers,
+      harvestTrackers: visibleHarvestTrackers,
       streakData,
       harvestLog,
-      fertilizerTrackers,
+      visibleFertilizerTrackers,
       comparePlants,
     }),
   [
@@ -1452,10 +1459,10 @@ const dailyQuests = useMemo(
     combinedGardenMap,
     wateredPlants,
     careLog,
-    harvestTrackers,
+    visibleHarvestTrackers,
     streakData,
     harvestLog,
-    fertilizerTrackers,
+    visibleFertilizerTrackers,
     comparePlants,
   ]
 );
@@ -1468,7 +1475,7 @@ const profileBanners = useMemo(
       gardenMap: combinedGardenMap,
       wateredPlants,
       streakData,
-      harvestTrackers,
+      harvestTrackers: visibleHarvestTrackers,
       careLog,
       comparePlants,
       premiumUnlocked,
@@ -1481,7 +1488,7 @@ const profileBanners = useMemo(
     combinedGardenMap,
     wateredPlants,
     streakData,
-    harvestTrackers,
+    visibleHarvestTrackers,
     careLog,
     comparePlants,
     premiumUnlocked,
@@ -3169,7 +3176,7 @@ async function scheduleFertilizerReminder(plantName, days) {
   }
 
   async function checkHarvestNotifications() {
-    const ready = Object.entries(harvestTrackers || {})
+    const ready = Object.entries(onlyKnownPlantKeys(harvestTrackers))
       // Ready-or-overdue: an exact `=== 0` meant that skipping a day of app
       // opens skipped the notification entirely.
       .filter(([, tracker]) => isHarvestReady(tracker))
@@ -4869,7 +4876,7 @@ const jumpToTab = useCallback((tab) => {
       <PlantDetailScreen
         createBedFromPlacementPrompt={createBedFromPlacementPrompt}
         fadeAnimation={fadeAnimation}
-        fertilizerTrackers={fertilizerTrackers}
+        fertilizerTrackers={visibleFertilizerTrackers}
         followedPlants={followedPlants}
         gardenPlacementPrompt={gardenPlacementPrompt}
         gardenXP={gardenXP}
@@ -4877,7 +4884,7 @@ const jumpToTab = useCallback((tab) => {
         getCompanionImage={getCompanionImage}
         glowOpacity={glowOpacity}
         handleBackFromPlant={handleBackFromPlant}
-        harvestTrackers={harvestTrackers}
+        harvestTrackers={visibleHarvestTrackers}
         isDark={isDark}
         journalEntries={journalEntries}
         jumpToTab={jumpToTab}
@@ -5446,13 +5453,13 @@ const jumpToTab = useCallback((tab) => {
   dailyBonusDate={dailyBonusDate}
   dailyQuests={dailyQuests}
   dismissPremiumIntro={dismissPremiumIntro}
-  fertilizerTrackers={fertilizerTrackers}
+  fertilizerTrackers={visibleFertilizerTrackers}
   frostChecklist={frostChecklist}
   frostDatesHidden={frostDatesHidden}
   frostOverrides={frostOverrides}
   gardenXP={gardenXP}
   harvestLog={harvestLog}
-  harvestTrackers={harvestTrackers}
+  harvestTrackers={visibleHarvestTrackers}
   homeBannerDismissedDate={homeBannerDismissedDate}
   plantPickDismissedDate={plantPickDismissedDate}
   setPlantPickDismissedDate={setPlantPickDismissedDate}
@@ -5517,11 +5524,11 @@ const jumpToTab = useCallback((tab) => {
   careLog={careLog}
   clearAreaSlot={clearAreaSlot}
   deleteGardenArea={deleteGardenArea}
-  fertilizerTrackers={fertilizerTrackers}
+  fertilizerTrackers={visibleFertilizerTrackers}
   gardenAreas={gardenAreas}
   gardenFocusAreaId={gardenFocusAreaId}
   gardenY={gardenY}
-  harvestTrackers={harvestTrackers}
+  harvestTrackers={visibleHarvestTrackers}
   onFocusConflict={focusGardenConflict}
   openPlantFromList={openPlantFromList}
   scheduleFertilizerReminder={scheduleFertilizerReminder}
@@ -5592,7 +5599,7 @@ const jumpToTab = useCallback((tab) => {
   <WeatherTab
   frostAlertsOn={frostAlertsOn}
   gardenMap={gardenMap}
-  harvestTrackers={harvestTrackers}
+  harvestTrackers={visibleHarvestTrackers}
   jumpToTab={jumpToTab}
   openPlantFromList={openPlantFromList}
   premiumUnlocked={premiumUnlocked}
@@ -5638,7 +5645,7 @@ const jumpToTab = useCallback((tab) => {
     deleteGardenArea={deleteGardenArea}
     waterArea={waterArea}
     pickAreaPhoto={pickAreaPhoto}
-    harvestTrackers={harvestTrackers}
+    harvestTrackers={visibleHarvestTrackers}
     wateredPlants={wateredPlants}
     weather={weather}
     zone={zone}
@@ -5710,7 +5717,7 @@ const jumpToTab = useCallback((tab) => {
   gardenXP={gardenXP}
   harvestGoal={harvestGoal}
   harvestLog={harvestLog}
-  harvestTrackers={harvestTrackers}
+  harvestTrackers={visibleHarvestTrackers}
   journalEntries={journalEntries}
   jumpToTab={jumpToTab}
   monthlyPlantingOn={monthlyPlantingOn}

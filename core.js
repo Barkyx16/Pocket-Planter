@@ -1480,6 +1480,25 @@ export function countKnownPlants(savedPlants) {
   return (savedPlants || []).filter((name) => catalogIndex().has(String(name || "").toLowerCase())).length;
 }
 
+// The entries of a plant-keyed map whose plant the catalog can still show.
+//
+// Harvest and fertiliser trackers are keyed by plant name, and every count of
+// them walks the keys. When a plant leaves the catalog its tracker stays behind,
+// invisible but still counted: a harvest tracker for a departed plant reads
+// "ready to harvest" for ever — in the badge, in the widget, and in a
+// notification that fires on every launch — and there is no way to clear it,
+// because ending a tracker means opening a plant that is no longer there.
+//
+// Filters a view rather than the stored object. The stored trackers keep every
+// key, so a plant that comes back in a later update finds its countdown intact.
+export function onlyKnownPlantKeys(byPlantName) {
+  const out = {};
+  for (const [name, value] of Object.entries(byPlantName || {})) {
+    if (catalogIndex().has(String(name || "").toLowerCase())) out[name] = value;
+  }
+  return out;
+}
+
 // The catalog name a companion refers to, or null when the app has no such plant
 // (the charts mention "Tansy" and "Grass", which are advice rather than entries).
 export function resolveCompanionName(name) {

@@ -160,3 +160,49 @@ describe("countKnownPlants", () => {
     ok(/countKnownPlants\(savedPlants\)\s*>=\s*5/.test(app), "cap should count known plants");
   });
 });
+
+describe("onlyKnownPlantKeys", () => {
+  const gone = "Rose Hip"; // removed from the catalog for having no artwork
+  it("drops entries for plants the catalog no longer has", () => {
+    const trackers = { [gone]: { days: 30, startedAt: "2026-06-01T00:00:00.000Z" }, Tomato: { days: 60, startedAt: "2026-09-01T00:00:00.000Z" } };
+    eq(Object.keys(core.onlyKnownPlantKeys(trackers)), ["Tomato"]);
+  });
+  it("keeps every real plant, whatever the case", () => {
+    eq(Object.keys(core.onlyKnownPlantKeys({ Tomato: 1, Basil: 2 })).sort(), ["Basil", "Tomato"]);
+    eq(Object.keys(core.onlyKnownPlantKeys({ tomato: 1 })), ["tomato"]);
+  });
+  it("survives nothing at all", () => {
+    eq(core.onlyKnownPlantKeys(null), {});
+    eq(core.onlyKnownPlantKeys({}), {});
+  });
+  it("stops a departed plant reading ready-to-harvest for ever", () => {
+    // The tracker is ready, and stays ready, and cannot be cleared — ending one
+    // means opening a plant that is not there any more.
+    const stuck = { [gone]: { days: 1, startedAt: "2026-01-01T00:00:00.000Z" } };
+    ok(core.isHarvestReady(stuck[gone]), "the tracker itself is ready");
+    const snapshot = core.buildWidgetSnapshot({
+      savedPlantObjs: [], wateredPlants: {}, wateringHistory: {}, weather: null,
+      harvestTrackers: core.onlyKnownPlantKeys(stuck), streakData: { count: 1 },
+      monthlySuggestions: [], zone: "7a",
+    });
+    eq(snapshot.harvestReady.count, 0, "the widget must not count it");
+    eq(snapshot.harvestReady.names, []);
+  });
+  it("is what the notification and the widget actually ask", () => {
+    // Checking the helper alone proves nothing about whether anything calls it.
+    const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+    ok(/const ready = Object\.entries\(onlyKnownPlantKeys\(harvestTrackers\)\)/.test(app),
+      "the harvest notification must filter before it counts");
+    ok(/harvestTrackers: visibleHarvestTrackers, streakData/.test(app),
+      "the widget snapshot must be given the filtered view");
+    ok(!/harvestTrackers=\{harvestTrackers\}/.test(app),
+      "no screen should be handed the unfiltered trackers");
+  });
+  it("filters what is shown without touching what is stored", () => {
+    const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+    // The backup, the cloud push and the local write must all keep every key: a
+    // plant that returns in a later update should find its countdown intact.
+    ok(/harvest_trackers: harvestTrackers/.test(app), "cloud sync keeps the raw trackers");
+    ok(/plantNotes, harvestTrackers, fertilizerTrackers/.test(app), "the backup keeps them");
+  });
+});
