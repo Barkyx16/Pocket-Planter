@@ -62,7 +62,67 @@ import {
 } from "./lib/zoneResolver";
 import produceData from "./data/produceData";
 import { styles } from "./styles";
-import { HEAT_THRESHOLD_F, PROFILE_THEMES, RARITY_STYLES, SCREEN_WIDTH, STORAGE_KEYS, WHATS_NEW_VERSION, applyModuleBackup, buildWidgetSnapshot, calculateGardenHealth, canPlantInArea, collectModuleBackup, formatTemp, getAchievementBadges, getActivationSteps, getBaseWaterInterval, getCompatibilityScore, getCompatiblePlants, getDailyQuests, getDateKey, getGardenXP, getHarvestDays, getNextWaterInfo, getPlantDetails, getPlantDifficulty, getPlantFamily, getPlantSeasonLabel, getProfileBanners, getRainSkipToday, getRarity, getSeasonForDate, getSmartWeatherRecommendation, getSuccessionInterval, getSuggestionsForMonth, getTodayKey, getTomorrowKey, getTotalWaterings, getUpcomingFrost, getWateringRhythm, getWateringStreak, getZipRecord, hasPremiumEntitlement, isFlowerBedPlant, isHarvestReady, isPerennial, isSameDayKey, matchesType, migrateGardenToAreas, nextFreeSlotId, nextStreakState, normalizeType, resolveCompanionName, resolvePlantImageSource, setFrostOverrideRef, setHapticsEnabled, setHemisphereFromLatitude, successHaptic, tapHaptic, welcomeBuddyImage } from "./core";
+import {
+  HEAT_THRESHOLD_F,
+  PROFILE_THEMES,
+  RARITY_STYLES,
+  SCREEN_WIDTH,
+  STORAGE_KEYS,
+  WHATS_NEW_VERSION,
+  applyModuleBackup,
+  buildWidgetSnapshot,
+  calculateGardenHealth,
+  canPlantInArea,
+  collectModuleBackup,
+  countKnownPlants,
+  formatTemp,
+  getAchievementBadges,
+  getActivationSteps,
+  getBaseWaterInterval,
+  getCompatibilityScore,
+  getCompatiblePlants,
+  getDailyQuests,
+  getDateKey,
+  getGardenXP,
+  getHarvestDays,
+  getNextWaterInfo,
+  getPlantDetails,
+  getPlantDifficulty,
+  getPlantFamily,
+  getPlantSeasonLabel,
+  getProfileBanners,
+  getRainSkipToday,
+  getRarity,
+  getSeasonForDate,
+  getSmartWeatherRecommendation,
+  getSuccessionInterval,
+  getSuggestionsForMonth,
+  getTodayKey,
+  getTomorrowKey,
+  getTotalWaterings,
+  getUpcomingFrost,
+  getWateringRhythm,
+  getWateringStreak,
+  getZipRecord,
+  hasPremiumEntitlement,
+  isFlowerBedPlant,
+  isHarvestReady,
+  isPerennial,
+  isSameDayKey,
+  matchesType,
+  migrateGardenToAreas,
+  nextFreeSlotId,
+  nextStreakState,
+  normalizeType,
+  resolveCompanionName,
+  resolvePlantImageSource,
+  setFrostOverrideRef,
+  setHapticsEnabled,
+  setHemisphereFromLatitude,
+  successHaptic,
+  tapHaptic,
+  welcomeBuddyImage,
+} from "./core";
 import { BackgroundDecoration } from "./components/BackgroundDecoration";
 import { ConfettiBurst } from "./components/ConfettiBurst";
 import { getBadgeImage } from "./data/badgeImageMap";
@@ -3957,7 +4017,7 @@ function addSetupToGarden(setupName, plantNames) {
   let added = toAdd;
   let capped = false;
   if (!premiumUnlocked) {
-    const room = Math.max(0, 5 - savedPlants.length);
+    const room = Math.max(0, 5 - countKnownPlants(savedPlants));
     if (toAdd.length > room) { added = toAdd.slice(0, room); capped = true; }
   }
   if (added.length) {
@@ -4474,7 +4534,9 @@ useEffect(() => {
       dropKey(setWateredPlants);
       return;
     }
-    if (!premiumUnlocked && savedPlants.length >= 5) {
+    // Counted by what the gardener can see: a name the catalog no longer has
+    // is invisible to them and must not eat an allowance.
+    if (!premiumUnlocked && countKnownPlants(savedPlants) >= 5) {
       Alert.alert(t("premium.savesLockedTitle"), t("premium.savesLockedBody"), [{ text: t("common.maybeLater"), style: "cancel" }, { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") }]);
       return;
     }
@@ -4530,7 +4592,7 @@ useEffect(() => {
     let added = toAdd;
     let capped = false;
     if (!premiumUnlocked) {
-      const room = Math.max(0, 5 - savedPlants.length);
+      const room = Math.max(0, 5 - countKnownPlants(savedPlants));
       if (toAdd.length > room) { added = toAdd.slice(0, room); capped = true; }
     }
     if (!added.length) {

@@ -134,3 +134,29 @@ describe("translations", () => {
     }
   });
 });
+
+describe("countKnownPlants", () => {
+  it("counts only plants the catalog can still show", () => {
+    // Six plants were dropped for having no artwork. Their names stay in the
+    // saved lists of anyone who had them, invisible everywhere — but the free
+    // tier caps on the length of that list, so they were eating the allowance.
+    const gone = ["Rose Hip", "Greengage", "Goumi Berry", "Strawberry Guava", "Charentais Melon", "Chilean Guava (Ugni)"];
+    eq(gone.filter((n) => nameSet.has(n)), [], "these should be gone from the catalog");
+    eq(core.countKnownPlants(gone), 0, "phantoms must not count");
+    eq(core.countKnownPlants([...gone.slice(0, 4), "Tomato", "Basil"]), 2, "only the two real ones");
+    eq(core.countKnownPlants(["Tomato", "Basil", "Kale"]), 3);
+  });
+  it("is case-insensitive and survives junk", () => {
+    eq(core.countKnownPlants(["tomato", "TOMATO"]), 2);
+    eq(core.countKnownPlants([]), 0);
+    eq(core.countKnownPlants(null), 0);
+    eq(core.countKnownPlants([null, undefined, "", 0, {}]), 0);
+  });
+  it("is what the free-tier cap actually counts", () => {
+    const fs5 = require("fs");
+    const app = fs5.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    eq((app.match(/savedPlants\.length\s*>=\s*5/g) || []), [], "cap must not count raw names");
+    eq((app.match(/5\s*-\s*savedPlants\.length/g) || []), [], "remaining room must not count raw names");
+    ok(/countKnownPlants\(savedPlants\)\s*>=\s*5/.test(app), "cap should count known plants");
+  });
+});

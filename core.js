@@ -1463,6 +1463,23 @@ function catalogIndex() {
   return _catalogByLowerName;
 }
 
+// How many of these saved names the app can actually show.
+//
+// The free tier is capped on the length of savedPlants, which counts names, not
+// plants. A catalog entry that goes away in an update leaves its name behind in
+// everyone's saved list — invisible everywhere, because every list is built by
+// filtering produceData, but still eating an allowance. Six plants were dropped
+// for having no artwork, so a free gardener who had four of them was left able
+// to see two plants and unable to save a third, with nothing on screen to
+// delete. Count what can be shown.
+//
+// Deliberately not a migration: pruning the stored list would mean deleting a
+// gardener's plants on the strength of the catalog having loaded correctly, and
+// a bad load would take the lot.
+export function countKnownPlants(savedPlants) {
+  return (savedPlants || []).filter((name) => catalogIndex().has(String(name || "").toLowerCase())).length;
+}
+
 // The catalog name a companion refers to, or null when the app has no such plant
 // (the charts mention "Tansy" and "Grass", which are advice rather than entries).
 export function resolveCompanionName(name) {
