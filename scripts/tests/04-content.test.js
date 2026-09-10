@@ -234,3 +234,28 @@ describe("reduced motion", () => {
     eq(offenders, [], "these loop forever without asking about reduced motion");
   });
 });
+
+describe("the haptics switch", () => {
+  const fs8 = require("fs");
+  it("is honoured by the vibration calls too, not just the haptics ones", () => {
+    // The setting reads "Vibration feedback on taps and actions", and
+    // Vibration.vibrate is a different API from Haptics that was never wired to
+    // it. Eighteen calls used it directly, most on the line after a
+    // successHaptic() that does check — so turning haptics off silenced the
+    // subtle feedback and left the loud buzz.
+    const files = ["App.js", "core.js"];
+    for (const d of ["components", "screens"]) {
+      for (const f of fs8.readdirSync(path.join(ROOT, d))) if (f.endsWith(".js")) files.push(path.join(d, f));
+    }
+    const offenders = files.filter((rel) =>
+      rel !== "core.js" && /Vibration\.vibrate\(/.test(fs8.readFileSync(path.join(ROOT, rel), "utf8")));
+    eq(offenders, [], "these vibrate without asking whether haptics are on");
+  });
+  it("routes every buzz through one place that checks", () => {
+    const coreSrc = fs8.readFileSync(path.join(ROOT, "core.js"), "utf8");
+    ok(/export function vibrate\(pattern\) \{\s*\n\s*if \(!hapticsEnabled\) return;/.test(coreSrc),
+      "vibrate() must return early when the switch is off");
+    ok(/export function tapHaptic[\s\S]{0,120}if \(!hapticsEnabled\) return;/.test(coreSrc));
+    ok(/export function successHaptic[\s\S]{0,120}if \(!hapticsEnabled\) return;/.test(coreSrc));
+  });
+});

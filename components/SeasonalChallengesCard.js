@@ -1,7 +1,11 @@
 import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Pressable, Text, Vibration, View } from "react-native";
-import { getSeasonForDate, successHaptic } from "../core";
+import { Pressable, Text, View } from "react-native";
+import {
+  getSeasonForDate,
+  successHaptic,
+  vibrate,
+} from "../core";
 import { useTranslation } from "../lib/i18n";
 
 const STORAGE_KEY = "pp_claimedChallenges";
@@ -58,7 +62,7 @@ export const SeasonalChallengesCard = memo(function SeasonalChallengesCard({ the
     const key = `${seasonKey}-${ch.id}`;
     if (claimed[key]) return;
     successHaptic();
-    Vibration.vibrate(60);
+    vibrate(60);
     persist({ ...claimed, [key]: true });
     if (onReward) onReward(ch.reward);
   };

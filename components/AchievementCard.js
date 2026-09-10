@@ -1,11 +1,12 @@
 import { memo, useState } from "react";
-import { Image, Pressable, Text, Vibration, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { ConfettiBurst } from "./ConfettiBurst";
 import { getBadgeImage } from "../data/badgeImageMap";
 import { IconText } from "./IconText";
 import { formatDate, useTranslation } from "../lib/i18n";
 import { EmptyState } from "./EmptyState";
+import { vibrate } from "../core";
 
 const fmtDate = (iso) => {
   if (!iso) return null;
@@ -32,10 +33,10 @@ export const AchievementCard = memo(function AchievementCard({ theme, badges, ea
     if (badge.id === "garden_gnome_ultimate" && !seenGardenGod) {
       setShowGardenGodCelebration(true);
       setSeenGardenGod(true);
-      Vibration.vibrate([0, 100, 80, 100, 80, 200]);
+      vibrate([0, 100, 80, 100, 80, 200]);
       return;
     }
-    Vibration.vibrate(25);
+    vibrate(25);
     setSelectedBadge(badge);
   };
 

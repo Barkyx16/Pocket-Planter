@@ -1,6 +1,9 @@
 import { memo, useState } from "react";
-import { Image, Pressable, Text, Vibration, View } from "react-native";
-import { successHaptic } from "../core";
+import { Image, Pressable, Text, View } from "react-native";
+import {
+  successHaptic,
+  vibrate,
+} from "../core";
 import { getBannerImage } from "../data/bannerImageMap";
 import { formatDate, useTranslation } from "../lib/i18n";
 
@@ -24,7 +27,7 @@ export const ProfileBannersCard = memo(function ProfileBannersCard({ theme, prof
       setActiveBannerId(null);
     } else {
       setActiveBannerId(banner.id);
-      Vibration.vibrate(60);
+      vibrate(60);
       successHaptic();
     }
   };

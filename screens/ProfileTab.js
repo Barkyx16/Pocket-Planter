@@ -1,6 +1,6 @@
-import { Pressable, Text, Vibration, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useState } from "react";
-import { SCREEN_WIDTH, getTodayKey, profileBuddyImage, successHaptic } from "../core";
+import { SCREEN_WIDTH, getTodayKey, profileBuddyImage, successHaptic, vibrate } from "../core";
 import { AchievementCard } from "../components/AchievementCard";
 import { TabHero } from "../components/TabHero";
 import { BudgetTrackerCard } from "../components/BudgetTrackerCard";
@@ -126,7 +126,7 @@ export function ProfileTab({ achievementBadges, badgeEarnedDates, bannerEarnedDa
     setTimeout(() => {
       setXpPopups(current => current.filter(item => item.id !== popup.id));
     }, 1600);
-    Vibration.vibrate(60);
+    vibrate(60);
     successHaptic();
   }}
 />

@@ -3,28 +3,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "./lib/supabase";
 import { isBiometricAvailable, getBiometricLabel, isBiometricEnabled, enableBiometricLogin, disableBiometricLogin, authenticateAndGetCredentials } from "./lib/biometricAuth";
 import { hydrateTabHeroes } from "./components/TabHero";
-import {
-  ActivityIndicator,
-  Alert,
-  Animated,
-  Appearance,
-  Vibration,
-  Image,
-  Keyboard,
-  Linking,
-  Modal,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  RefreshControl,
-  Share,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, Alert, Animated, Appearance, Image, Keyboard, Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, RefreshControl, Share, StatusBar, StyleSheet, Text, TextInput, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import * as Location from "expo-location";
@@ -122,6 +101,7 @@ import {
   setHemisphereFromLatitude,
   successHaptic,
   tapHaptic,
+  vibrate,
   welcomeBuddyImage,
 } from "./core";
 import { BackgroundDecoration } from "./components/BackgroundDecoration";
@@ -1697,7 +1677,7 @@ useEffect(() => {
       const alreadySeen = await AsyncStorage.getItem(seenKey);
       if (alreadySeen) return;
       await AsyncStorage.setItem(seenKey, "true");
-      Vibration.vibrate([0, 100, 80, 100]);
+      vibrate([0, 100, 80, 100]);
       successHaptic();
       setShowAnniversary(hit);
     } catch (error) {
@@ -2318,7 +2298,7 @@ useEffect(() => {
   const newlyHit = checks.find((c) => c.hit && !firedMilestones.includes(c.id));
   if (newlyHit && !milestoneCelebration && !showStreakCelebration) {
     successHaptic();
-    Vibration.vibrate([0, 80, 60, 120]);
+    vibrate([0, 80, 60, 120]);
     setMilestoneCelebration({ emoji: newlyHit.emoji, title: newlyHit.title, text: newlyHit.text });
     setFiredMilestones((current) => [...current, newlyHit.id]);
     setTimeout(() => setMilestoneCelebration(null), 4000);
@@ -2339,7 +2319,7 @@ useEffect(() => {
   if (milestoneCelebration || showStreakCelebration) return;
 
   successHaptic();
-  Vibration.vibrate([0, 80, 60, 120]);
+  vibrate([0, 80, 60, 120]);
   setMilestoneCelebration({
     emoji: "🎯",
     title: "GOAL REACHED!",
@@ -2651,7 +2631,7 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
       if (outcome.milestone) {
         const reached = outcome.milestone;
         celebrate = () => {
-          Vibration.vibrate([0, 80, 60, 120]);
+          vibrate([0, 80, 60, 120]);
           successHaptic();
           setShowStreakCelebration(reached);
           setTimeout(() => setShowStreakCelebration(null), 3000);
@@ -3399,7 +3379,7 @@ function markPlantWatered(plantName) {
     const newStreak = getWateringStreak(plantName, nextHistory);
     const milestones = [7, 14, 30, 60, 100];
     if (!alreadyLoggedToday && milestones.includes(newStreak)) {
-      Vibration.vibrate([0, 80, 60, 120]);
+      vibrate([0, 80, 60, 120]);
       successHaptic();
       const popup = { id: Date.now().toString(), amount: `🔥 ${newStreak}-day streak!` };
       setXpPopups((popups) => [...popups, popup]);
@@ -3424,7 +3404,7 @@ function markPlantWatered(plantName) {
       return;
     }
     successHaptic();
-    Vibration.vibrate(80);
+    vibrate(80);
     setWateredPlants((current) => {
       const next = { ...current };
       unwatered.forEach((name) => { next[name] = today; });
@@ -3454,7 +3434,7 @@ function markPlantWatered(plantName) {
     const today = getTodayKey();
     if (wateredPlants[plantName] === today) return;
     successHaptic();
-    Vibration.vibrate(60);
+    vibrate(60);
     setWateredPlants((current) => ({ ...current, [plantName]: today }));
     setWateringHistory((current) => {
       const existing = Array.isArray(current[plantName]) ? current[plantName] : [];
@@ -3492,7 +3472,7 @@ function logHarvest(plantName, amount, unit, note) {
   });
   logZoneActivity(user, zone, plantName, "harvested");
   successHaptic();
-  Vibration.vibrate([0, 80, 60, 120]);
+  vibrate([0, 80, 60, 120]);
   Alert.alert(t("garden.harvestLogged"), `${plantName} harvest saved to your garden record.`);
   // A logged harvest is the app's best moment to ask. Unconditional — every
   // harvest, not just the first; reviewPrompt owns all the gating. Delayed so
@@ -3577,7 +3557,7 @@ function waterArea(areaId) {
     return;
   }
   successHaptic();
-  Vibration.vibrate(80);
+  vibrate(80);
   setWateredPlants((current) => {
     const next = { ...current };
     unwatered.forEach((name) => { next[name] = today; });
@@ -3705,7 +3685,7 @@ function assignPlantToAreaSlot(areaId, slotId, plantName, opts = {}) {
     });
     if (conflicts.length > 0 && !opts.silent) {
       const conflictList = conflicts.slice(0, 3).join(", ");
-      Vibration.vibrate([0, 60, 40, 60]);
+      vibrate([0, 60, 40, 60]);
       setTimeout(() => {
         Alert.alert(
           t("garden.conflictTitle"),
@@ -3957,7 +3937,7 @@ function autoOptimizeGarden() {
         onPress: () => {
           setGardenAreas(areas);
           successHaptic();
-          Vibration.vibrate(60);
+          vibrate(60);
           Alert.alert(
             t("garden.optimizedTitle"),
             after > 0
@@ -4559,7 +4539,7 @@ useEffect(() => {
           if (!seen) {
             await AsyncStorage.setItem("pp_firstSaveSeen", "true");
             successHaptic();
-            Vibration.vibrate([0, 80, 60, 120]);
+            vibrate([0, 80, 60, 120]);
             setShowFirstSave(true);
             setTimeout(() => setShowFirstSave(false), 3200);
           }
@@ -4652,7 +4632,7 @@ useEffect(() => {
       return;
     }
     if (gardenXP.level > previousLevel) {
-      Vibration.vibrate(250);
+      vibrate(250);
       successHaptic();
       setShowLevelUp(true);
       setPreviousLevel(gardenXP.level);

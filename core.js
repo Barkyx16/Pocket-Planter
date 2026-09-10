@@ -1,4 +1,4 @@
-import { Dimensions, Alert } from "react-native";
+import { Alert, Dimensions, Vibration } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
 import produceData from "./data/produceData";
@@ -3361,6 +3361,18 @@ export function tapHaptic(style = "light") {
     heavy: Haptics.ImpactFeedbackStyle.Heavy,
   };
   Haptics.impactAsync(map[style] || map.light).catch(() => {});
+}
+
+// The Settings toggle reads "Vibration feedback on taps and actions", and this
+// is the call that does the vibrating — Vibration.vibrate, which is a different
+// API from Haptics and was never wired to the switch. Eighteen call sites used
+// it directly, most of them on the line after a successHaptic() that does check.
+// Turning haptics off silenced the subtle feedback and left the loud buzz, which
+// reads as a broken toggle rather than a quiet app.
+export function vibrate(pattern) {
+  if (!hapticsEnabled) return;
+  // Optional catch binding: no vibrator, or the OS refused. Nothing to report.
+  try { Vibration.vibrate(pattern); } catch { /* ignore */ }
 }
 
 export function successHaptic() {
