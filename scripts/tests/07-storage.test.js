@@ -71,3 +71,30 @@ describe("batched storage reads", () => {
     eq(storage.calls.multiGet, [["a"], ["b"]]);
   });
 });
+
+describe("fetchWithTimeout", () => {
+  const { fetchWithTimeout } = require(path.join(__dirname, "../../lib/net.js"));
+  it("aborts a request that never answers", async () => {
+    const realFetch = global.fetch;
+    global.fetch = (url, { signal }) => new Promise((_, reject) => {
+      signal.addEventListener("abort", () => reject(new Error("aborted")));
+    });
+    try {
+      let error = null;
+      await fetchWithTimeout("https://example.invalid", {}, 20).catch((e) => { error = e; });
+      eq(error && error.message, "aborted");
+    } finally {
+      global.fetch = realFetch;
+    }
+  });
+  it("passes a prompt response straight through", async () => {
+    const realFetch = global.fetch;
+    global.fetch = async (url, options) => ({ ok: true, url, hasSignal: !!options.signal });
+    try {
+      const res = await fetchWithTimeout("https://example.invalid/x", { headers: { A: "1" } }, 1000);
+      eq([res.ok, res.url, res.hasSignal], [true, "https://example.invalid/x", true]);
+    } finally {
+      global.fetch = realFetch;
+    }
+  });
+});

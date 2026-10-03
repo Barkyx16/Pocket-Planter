@@ -1335,3 +1335,14 @@ describe("returning to the app on a new day", () => {
     ok(/state === "active"\) onResumeRef\.current/.test(app), "resume handler is not wired to AppState");
   });
 });
+
+describe("a failed weather refresh", () => {
+  it("keeps the cached forecast instead of blanking it", () => {
+    const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    const at = app.indexOf("async function loadWeather()");
+    const body = app.slice(at, app.indexOf("loadWeather();", at));
+    ok(/if \(!weatherResponse\.ok\) throw/.test(body), "an error response is parsed as a forecast");
+    ok(/catch \(error\) \{[\s\S]*?!showingCached\) setWeather\(null\)/.test(body), "a failure wipes the cached forecast");
+    ok(/fetchWithTimeout\(/.test(body) && !/[^.\w]fetch\(/.test(body), "a weather request can hang forever");
+  });
+});

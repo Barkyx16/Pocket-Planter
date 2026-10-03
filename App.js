@@ -121,6 +121,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { PremiumLockedSection } from "./components/PremiumLockedSection";
 import { MAX_FONT_SCALE_COMPACT, touchSlop } from "./lib/a11y";
 import { readStored } from "./lib/storageRead";
+import { fetchWithTimeout } from "./lib/net";
 import { OnboardingCard } from "./components/OnboardingCard";
 import { PestDetailScreen } from "./components/PestDetailScreen";
 import { DiseaseDetailScreen } from "./components/DiseaseDetailScreen";
@@ -4460,11 +4461,18 @@ async function detectLocationAndZone() {
 
   // ── Weather ────────────────────────────────────────────────────────────────
   useEffect(() => {
+  // A newer run (pull to refresh, a ZIP edit) supersedes this one; a slow
+  // response from the old run must not land on top of the new one.
+  let cancelled = false;
   async function loadWeather() {
     if (!record || !isPostalComplete(zip, country)) {
       setWeather(null);
       return;
     }
+    // Whether the screen already shows a usable forecast from the cache. A
+    // failed refresh used to set weather to null and wipe it, so going offline
+    // blanked a forecast that was minutes old.
+    let showingCached = false;
     try {
       const cacheKey = `pp_weatherCache_${country}_${zip}`;
       // Climate-resolved records already carry coordinates from the geocoder, so
@@ -4482,51 +4490,61 @@ async function detectLocationAndZone() {
           // offline phone painted a days-old forecast as today's — and the frost
           // and heat effects below fired alerts off it.
           const age = Date.now() - (Number(cached?.ts) || 0);
-          if (cached?.weather && age < WEATHER_CACHE_MAX_AGE_MS) setWeather(cached.weather);
+          if (cached?.weather && age < WEATHER_CACHE_MAX_AGE_MS && !cancelled) {
+            setWeather(cached.weather);
+            showingCached = true;
+          }
           if (!coords && cached?.coords) coords = cached.coords;
         }
       } catch {}
-if (!coords) {
-  const zipResponse = await fetch(
-    `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(zip)}&countrycodes=${country.toLowerCase()}&format=json&limit=1`,
-    { headers: { "Accept": "application/json", "User-Agent": "PocketPlanter/1.0" } }
-  );
-  const zipText = await zipResponse.text();
-  let zipData;
-  try {
-    zipData = JSON.parse(zipText);
-  } catch {
-    setWeather(null);
-    return;
-  }
-  const zipPlace = zipData?.[0];
-  if (!zipPlace?.lat || !zipPlace?.lon) {
-    setWeather(null);
-    return;
-  }
-  coords = { lat: zipPlace.lat, lon: zipPlace.lon };
-  setZipCoords(coords);
-}
-if (coords?.lat != null) setLatitude(parseFloat(coords.lat));
-const weatherResponse = await fetch(
-  `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&forecast_days=7`
-);
-const weatherData = await weatherResponse.json();
-const forecast = parseForecast(weatherData?.daily);
-const freshWeather = {
-  maxTempF: forecast[0]?.maxTempF ?? null,
-  minTempF: forecast[0]?.minTempF ?? null,
-  precipChance: forecast[0]?.precipChance ?? 0,
-  forecast,
-};
-setWeather(freshWeather);
-AsyncStorage.setItem(cacheKey, JSON.stringify({ coords, weather: freshWeather, ts: Date.now() })).catch(() => {});
+      if (!coords) {
+        const zipResponse = await fetchWithTimeout(
+          `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(zip)}&countrycodes=${country.toLowerCase()}&format=json&limit=1`,
+          { headers: { "Accept": "application/json", "User-Agent": "PocketPlanter/1.0" } }
+        );
+        const zipText = await zipResponse.text();
+        let zipData;
+        try {
+          zipData = JSON.parse(zipText);
+        } catch {
+          if (!cancelled && !showingCached) setWeather(null);
+          return;
+        }
+        const zipPlace = zipData?.[0];
+        if (!zipPlace?.lat || !zipPlace?.lon) {
+          if (!cancelled && !showingCached) setWeather(null);
+          return;
+        }
+        coords = { lat: zipPlace.lat, lon: zipPlace.lon };
+        if (!cancelled) setZipCoords(coords);
+      }
+      if (cancelled) return;
+      if (coords?.lat != null) setLatitude(parseFloat(coords.lat));
+      const weatherResponse = await fetchWithTimeout(
+        `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&forecast_days=7`
+      );
+      // A rate limit or server error answers with an error body, which parsed
+      // into an empty forecast and replaced the cached one.
+      if (!weatherResponse.ok) throw new Error(`Weather HTTP ${weatherResponse.status}`);
+      const weatherData = await weatherResponse.json();
+      const forecast = parseForecast(weatherData?.daily);
+      if (!forecast.length) throw new Error("Weather response had no forecast");
+      if (cancelled) return;
+      const freshWeather = {
+        maxTempF: forecast[0]?.maxTempF ?? null,
+        minTempF: forecast[0]?.minTempF ?? null,
+        precipChance: forecast[0]?.precipChance ?? 0,
+        forecast,
+      };
+      setWeather(freshWeather);
+      AsyncStorage.setItem(cacheKey, JSON.stringify({ coords, weather: freshWeather, ts: Date.now() })).catch(() => {});
     } catch (error) {
-      console.log("Weather load error", error);
-      setWeather(null);
+      console.log("Weather load error", error?.message);
+      if (!cancelled && !showingCached) setWeather(null);
     }
   }
-loadWeather();
+  loadWeather();
+  return () => { cancelled = true; };
 }, [zip, country, record, weatherRefreshToken]);
 
 useEffect(() => {
