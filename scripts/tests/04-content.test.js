@@ -789,3 +789,30 @@ describe("sign-in errors in the gardener's language", () => {
     ok(/Alert\.alert\(t\("auth\.resetFailed"\), authErrorMessage\(error\)\)/.test(app));
   });
 });
+
+describe("notifications speak the gardener's language", () => {
+  const fs27 = require("fs");
+  const app = fs27.readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const rem = fs27.readFileSync(path.join(ROOT, "lib/reminders.js"), "utf8");
+  it("has no English notification text left", () => {
+    // Every frost alert, watering and fertilizer reminder, harvest notice,
+    // weekly recap and snooze summary arrived in English.
+    for (const phrase of ["Time to water ${", "Time to fertilize ${", "title: \"🎉 Harvest Ready\"", "Frost expected ${", "Extreme heat today —", "Your Garden Week\"", "off snooze", "Good morning! Check on your ${", "This week: ${"]) {
+      ok(!app.includes(phrase), `App.js still says "${phrase}"`);
+    }
+    for (const phrase of ["\"❄️ Frost Check\"", "Planting Guide`"]) ok(!rem.includes(phrase), `reminders.js still says ${phrase}`);
+  });
+  it("re-schedules repeating reminders when the language changes", () => {
+    for (const deps of ["[frostAlertsOn, zone, latitude, language]", "[monthlyPlantingOn, language]", "[plantOfDayOn, language]", "[remindersOn, wateringReminders, savedPlants, language]"]) {
+      ok(app.includes(`}, ${deps});`), deps);
+    }
+  });
+  it("counts with real plurals", () => {
+    const i18n = require(path.join(ROOT, "lib/i18n.js"));
+    eq(i18n.tn("notify.frostTitleInDays", 3), "❄️ Frost expected in 3 days");
+    eq(i18n.tn("notify.snoozeBody", 1, { plants: "Tomato" }), "Tomato is ready for water 🌱");
+    i18n.setLocale("es");
+    eq(i18n.tn("notify.fertilizeBody", 14, { plant: "Tomate" }), "Hace 14 días que abonaste Tomate. Comprueba si necesita otra dosis.");
+    i18n.setLocale("en");
+  });
+});

@@ -2482,7 +2482,7 @@ useEffect(() => {
   if (!weeklyRecapOn) return;
   scheduleWeeklyRecap({ silent: true });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [weeklyRecapOn, journalEntries.length, harvestLog.length, streakData?.count, getTotalWaterings(wateringHistory)]);
+}, [weeklyRecapOn, journalEntries.length, harvestLog.length, streakData?.count, getTotalWaterings(wateringHistory), language]);
 
 // Re-arm the repeating reminders a switch asked for. The switches sync with the
 // account; the notifications behind them live on the device and nowhere else.
@@ -2494,6 +2494,8 @@ useEffect(() => {
 // check already re-armed themselves; these now do the same. Silent: they act
 // only when permission is already granted, never prompt, and only for a switch
 // that is on — each is a cancel-then-set by fixed id, so repeating is free.
+// `language` is in each re-arm's dependencies because a repeating notification
+// keeps the words it was scheduled with: switching language re-schedules them.
 const notificationsAllowed = async () => {
   try { return (await Notifications.getPermissionsAsync()).granted === true; } catch { return false; }
 };
@@ -2501,11 +2503,11 @@ useEffect(() => {
   if (!frostAlertsOn || !zone) return;
   (async () => { if (await notificationsAllowed()) await armFrostSeasonChecks(zone).catch(() => {}); })();
   // latitude: the frost months flip with the hemisphere it sets.
-}, [frostAlertsOn, zone, latitude]);
+}, [frostAlertsOn, zone, latitude, language]);
 useEffect(() => {
   if (!monthlyPlantingOn) return;
   (async () => { if (await notificationsAllowed()) await armMonthlyPlantingGuides().catch(() => {}); })();
-}, [monthlyPlantingOn]);
+}, [monthlyPlantingOn, language]);
 useEffect(() => {
   if (!plantOfDayOn) return;
   (async () => {
@@ -2517,7 +2519,7 @@ useEffect(() => {
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: 8, minute: 30 },
     }).catch(() => {});
   })();
-}, [plantOfDayOn]);
+}, [plantOfDayOn, language]);
 useEffect(() => {
   if (!remindersOn) return;
   const entries = Object.entries(wateringReminders || {}).filter(
@@ -2532,15 +2534,15 @@ useEffect(() => {
       await Notifications.scheduleNotificationAsync({
         identifier: id,
         content: {
-          title: `🌱 Good morning! Check on your ${plantName}`,
-          body: `Time for your daily ${plantName} check-in. Water if the top inch of soil feels dry.`,
+          title: t("notify.plantCheckTitle", { plant: plantName }),
+          body: t("notify.plantCheckBody", { plant: plantName }),
           sound: true,
         },
         trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: r.hour, minute: r.minute },
       }).catch(() => {});
     }
   })();
-}, [remindersOn, wateringReminders, savedPlants]);
+}, [remindersOn, wateringReminders, savedPlants, language]);
 
 useEffect(() => {
   hydrate("pp_weeklyRecapOn", (val) => {
@@ -2574,7 +2576,7 @@ await scheduleDailyReminder({
       body: t("notify.dailyWaterBody"),
     });
   })();
-}, [wateringReminderTime, dailyWateringOn]);
+}, [wateringReminderTime, dailyWateringOn, language]);
 
 useEffect(() => {
   hydrate("pp_snoozedPlants", (val) => {
@@ -3177,31 +3179,31 @@ function buildWeeklyRecapBody() {
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
     const photosThisWeek = (journalEntries || []).filter((e) => {
-      const t = new Date(e.createdAt).getTime();
-      return !Number.isNaN(t) && t >= weekAgo;
+      const ts = new Date(e.createdAt).getTime();
+      return !Number.isNaN(ts) && ts >= weekAgo;
     }).length;
 
     const wateringsThisWeek = Object.values(wateringHistory || {}).reduce((sum, dates) => {
       if (!Array.isArray(dates)) return sum;
       return sum + dates.filter((d) => {
-        const t = new Date(`${String(d).slice(0, 10)}T12:00:00`).getTime();
-        return !Number.isNaN(t) && t >= weekAgo;
+        const ts = new Date(`${String(d).slice(0, 10)}T12:00:00`).getTime();
+        return !Number.isNaN(ts) && ts >= weekAgo;
       }).length;
     }, 0);
 
     const streak = streakData?.count || 0;
 
     const parts = [
-      wateringsThisWeek > 0 ? `💧 ${wateringsThisWeek} watering${wateringsThisWeek === 1 ? "" : "s"}` : null,
-      photosThisWeek > 0 ? `📸 ${photosThisWeek} photo${photosThisWeek === 1 ? "" : "s"}` : null,
-      streak > 0 ? `🔥 ${streak}-day streak` : null,
+      wateringsThisWeek > 0 ? tn("notify.recapWaterings", wateringsThisWeek) : null,
+      photosThisWeek > 0 ? tn("notify.recapPhotos", photosThisWeek) : null,
+      streak > 0 ? tn("notify.recapStreak", streak) : null,
     ].filter(Boolean);
 
     // If they did nothing this week, nudge gently instead of showing zeros.
     if (!parts.length) {
-      return "A fresh week in the garden starts today 🌱 Open Pocket Planter to check on your plants.";
+      return t("notify.recapEmpty");
     }
-    return `This week: ${parts.join("  •  ")}. Tap to see your full garden recap 🌿`;
+    return t("notify.recapBody", { parts: parts.join("  •  ") });
   }
 
   // `silent` is for the refresh below: it must never trigger the permission
@@ -3215,7 +3217,7 @@ function buildWeeklyRecapBody() {
     await Notifications.scheduleNotificationAsync({
       identifier: "weekly-recap",
       content: {
-        title: "🌻 Your Garden Week",
+        title: t("notify.recapTitle"),
         body: buildWeeklyRecapBody(),
         sound: true,
       },
@@ -3293,8 +3295,8 @@ async function scheduleSnoozeSummary(snoozeMap) {
     const count = dueTomorrow.length;
     const preview = dueTomorrow.slice(0, 3).join(", ");
     const body = count <= 3
-      ? `${preview} ${count === 1 ? "is" : "are"} ready for water 🌱`
-      : `${preview}, and ${count - 3} more are ready for water 🌱`;
+      ? tn("notify.snoozeBody", count, { plants: preview })
+      : t("notify.snoozeBodyMore", { plants: preview, more: count - 3 });
 
     const fireDate = new Date();
     fireDate.setDate(fireDate.getDate() + 1);
@@ -3303,7 +3305,7 @@ async function scheduleSnoozeSummary(snoozeMap) {
     await Notifications.scheduleNotificationAsync({
       identifier: "snooze-summary",
       content: {
-        title: count === 1 ? "🌱 A plant is off snooze" : `🌱 ${count} plants are off snooze`,
+        title: tn("notify.snoozeTitle", count),
         body,
         sound: true,
       },
@@ -3330,8 +3332,8 @@ async function scheduleFertilizerReminder(plantName, days) {
     await Notifications.scheduleNotificationAsync({
       identifier: id,
       content: {
-        title: `🌾 Time to fertilize ${plantName}`,
-        body: `It's been ${days} days since you last fed ${plantName}. Check if it's ready for another feeding.`,
+        title: t("notify.fertilizeTitle", { plant: plantName }),
+        body: tn("notify.fertilizeBody", days, { plant: plantName }),
         sound: true,
       },
       trigger: {
@@ -3365,7 +3367,7 @@ async function scheduleFertilizerReminder(plantName, days) {
 
     for (const plantName of fresh) {
       await Notifications.scheduleNotificationAsync({
-        content: { title: "🎉 Harvest Ready", body: `${plantName} should be ready to harvest today.` },
+        content: { title: t("notify.harvestTitle"), body: t("notify.harvestBody", { plant: plantName }) },
         trigger: null,
       }).catch(() => {});
       sent[plantName] = today;
@@ -3420,8 +3422,8 @@ async function scheduleReminder(plantName, hour, minute) {
       id: `plant-${plantName}`,
       hour,
       minute,
-      title: `🌱 Good morning! Check on your ${plantName}`,
-      body: `Time for your daily ${plantName} check-in. Water if the top inch of soil feels dry.`,
+      title: t("notify.plantCheckTitle", { plant: plantName }),
+      body: t("notify.plantCheckBody", { plant: plantName }),
     });
 
     if (!ok) {
@@ -3467,10 +3469,10 @@ async function schedulePlantWaterReminder(plantName) {
     await Notifications.scheduleNotificationAsync({
       identifier: id,
       content: {
-        title: `💧 Time to water ${plantName}`,
+        title: t("notify.waterTitle", { plant: plantName }),
         body: rhythm
-          ? `Based on your rhythm, ${plantName} is about due for a drink.`
-          : `${plantName} is likely ready for water — check if the top inch of soil feels dry.`,
+          ? t("notify.waterBodyRhythm", { plant: plantName })
+          : t("notify.waterBodyDefault", { plant: plantName }),
         sound: true,
       },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: fireDate },
@@ -4567,10 +4569,10 @@ useEffect(() => {
     const frost = getUpcomingFrost(weather);
     if (!frost) return;
     if (lastFrostAlertDate.current === frost.date) return;
-    const whenText =
-      frost.daysOut === 0 ? "tonight"
-      : frost.daysOut === 1 ? "tomorrow night"
-      : `in ${frost.daysOut} days`;
+    const frostTitle =
+      frost.daysOut === 0 ? t("notify.frostTitleTonight")
+      : frost.daysOut === 1 ? t("notify.frostTitleTomorrow")
+      : tn("notify.frostTitleInDays", frost.daysOut);
     (async () => {
       // Persist the guard, the way the heat alert below does: the in-memory ref
       // resets on every app start, and the cached forecast repaints immediately,
@@ -4588,8 +4590,8 @@ useEffect(() => {
       await Notifications.scheduleNotificationAsync({
         identifier: "frost-detected",
         content: {
-          title: `❄️ Frost expected ${whenText}`,
-          body: `Low of ${formatTemp(frost.minTempF, unitSystem, true)} coming — cover tender plants and move containers to shelter before dark.`,
+          title: frostTitle,
+          body: t("notify.frostBody", { temp: formatTemp(frost.minTempF, unitSystem, true) }),
           sound: true,
         },
         trigger: null,
@@ -4631,8 +4633,8 @@ useEffect(() => {
       await Notifications.scheduleNotificationAsync({
         identifier: "heat-detected",
         content: {
-          title: `🔥 Extreme heat today — ${formatTemp(day.maxTempF, unitSystem, true)}`,
-          body: "Water deeply before 9 AM, shade young transplants, and hold off on planting until it cools.",
+          title: t("notify.heatTitle", { temp: formatTemp(day.maxTempF, unitSystem, true) }),
+          body: t("notify.heatBody"),
           sound: true,
         },
         trigger: sendNow ? null : { type: Notifications.SchedulableTriggerInputTypes.DATE, date: midnight },

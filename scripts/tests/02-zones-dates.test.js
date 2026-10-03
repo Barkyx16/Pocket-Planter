@@ -426,7 +426,9 @@ describe("repeating reminders", () => {
     // with nothing scheduled.
     const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
     const at = app.indexOf("const notificationsAllowed = async");
-    const block = app.slice(at, app.indexOf("}, [remindersOn, wateringReminders, savedPlants]);", at));
+    const end = app.indexOf("}, [remindersOn, wateringReminders, savedPlants", at);
+    ok(end > at, "the per-plant re-arm should close the block");
+    const block = app.slice(at, end);
     ok(at > 0, "there should be a re-arm on launch");
     ok(/armFrostSeasonChecks\(zone\)/.test(block), "frost checks");
     ok(/armMonthlyPlantingGuides\(\)/.test(block), "monthly guides");
