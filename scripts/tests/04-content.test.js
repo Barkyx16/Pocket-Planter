@@ -1025,7 +1025,7 @@ describe("accessibility labels and alert buttons", () => {
       const src = fs.readFileSync(f, "utf8");
       const m = src.match(/accessibilityLabel=("[^"]*[A-Za-z]{3,}[^"]*"|\{`[^`$]*[A-Za-z]{3,} [a-z]+[^`]*`\})/);
       if (m) offenders.push(`${path.relative(ROOT, f)}: ${m[1].slice(0, 50)}`);
-      const button = src.match(/(?:\{ |^\s*)text: "[A-Z][^"]*"/m);
+      const button = src.match(/(?:\{ |^\s*)text: "(?!#)[^"]*[A-Za-z]{3,}[^"]*"/m);
       if (button) offenders.push(`${path.relative(ROOT, f)}: ${button[0]}`);
     }
     eq(offenders, []);
@@ -1257,5 +1257,36 @@ describe("translated sentences", () => {
       if (m) offenders.push(`${path.relative(ROOT, f)}: ${m[0].slice(0, 60)}`);
     }
     eq(offenders, []);
+  });
+});
+
+describe("English translation keys", () => {
+  it("are all referenced somewhere in the app", () => {
+    // A key nothing reads is dead weight translated ten times over, and usually
+    // the leftover half of a string that was rewritten. Namespaces read through
+    // a template literal (t(`badges.${id}`)) are skipped: their keys are built.
+    const en = require(path.join(ROOT, "lib/locales/en.js"));
+    const dict = en.default || en;
+    const files = [];
+    const walk = (dir) => {
+      for (const f of fs.readdirSync(dir)) {
+        const fp = path.join(dir, f);
+        if (fs.statSync(fp).isDirectory()) {
+          if (!["node_modules", ".git", "locales", "scripts", ".expo"].includes(f)) walk(fp);
+        } else if (/\.(js|ts|tsx)$/.test(f)) files.push(fp);
+      }
+    };
+    walk(ROOT);
+    const src = files.map((f) => fs.readFileSync(f, "utf8")).join("\n");
+    const built = new Set([...src.matchAll(/[`"']([a-zA-Z0-9]+)\.[a-zA-Z0-9]*\$\{/g)].map((m) => m[1]));
+    const unused = [];
+    for (const [ns, entries] of Object.entries(dict)) {
+      if (!entries || typeof entries !== "object" || built.has(ns)) continue;
+      for (const k of Object.keys(entries)) {
+        const key = `${ns}.${k}`;
+        if (!src.includes(`"${key}"`) && !src.includes(`'${key}'`) && !src.includes(`\`${key}\``)) unused.push(key);
+      }
+    }
+    eq(unused, []);
   });
 });

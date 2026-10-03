@@ -6069,8 +6069,8 @@ const jumpToTab = useCallback((tab) => {
 {record && (activeTab === "home" || activeTab === "plants") && savedPlants.some((p) => wateredPlants[p] !== getTodayKey()) ? (
   <Pressable
     onPress={() => Alert.alert(t("alerts.quickLogTitle"), t("alerts.quickLogBody"), [
-      { text: "💧 Water all due plants", onPress: () => waterAllPlants() },
-      { text: "📸 Add garden photo", onPress: () => pickJournalPhoto("Garden") },
+      { text: t("ui8.quickWaterAll"), onPress: () => waterAllPlants() },
+      { text: t("ui8.quickAddPhoto"), onPress: () => pickJournalPhoto("Garden") },
       { text: t("common.cancel"), style: "cancel" },
     ])}
     accessibilityRole="button"
