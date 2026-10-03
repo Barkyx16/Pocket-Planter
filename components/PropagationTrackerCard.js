@@ -95,7 +95,7 @@ export const PropagationTrackerCard = memo(function PropagationTrackerCard({ the
             const d = daysSince(i.date);
             return (
               <View key={i.id} style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: i.rooted ? "rgba(92,255,137,0.08)" : "rgba(255,255,255,0.04)", borderRadius: 12, paddingVertical: 9, paddingHorizontal: 10, borderWidth: 1, borderColor: i.rooted ? "rgba(92,255,137,0.28)" : "rgba(255,255,255,0.08)" }}>
-                <Pressable onPress={() => toggleRooted(i.id)} accessibilityRole="checkbox" accessibilityState={{ checked: i.rooted }} hitSlop={touchSlop(26)} style={{ width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center", backgroundColor: i.rooted ? "#5cff89" : "transparent", borderWidth: 2, borderColor: i.rooted ? "#5cff89" : "rgba(255,255,255,0.3)" }}>
+                <Pressable onPress={() => toggleRooted(i.id)} accessibilityRole="checkbox" accessibilityLabel={t("a11y.rooted", { name: i.name })} accessibilityState={{ checked: i.rooted }} hitSlop={touchSlop(26)} style={{ width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center", backgroundColor: i.rooted ? "#5cff89" : "transparent", borderWidth: 2, borderColor: i.rooted ? "#5cff89" : "rgba(255,255,255,0.3)" }}>
                   {i.rooted ? <Text style={{ color: "#07120b", fontSize: 13, fontWeight: "900" }}>🌱</Text> : null}
                 </Pressable>
                 <View style={{ flex: 1 }}>

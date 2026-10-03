@@ -68,10 +68,10 @@ export const HouseplantCareLogSection = memo(function HouseplantCareLogSection({
                       💧 {wSince == null ? t("tools.careNotLogged") : waterDue ? t("tools.careWaterDue") : t("tools.careInDays", { count: wLeft })}{repotDue ? ` · ${t("tools.careRepotDue")}` : ""}
                     </Text>
                   </View>
-                  <Pressable accessibilityRole="button" onPress={() => mark(item.name, "watered")} style={{ backgroundColor: waterDue ? "#6bc7ff" : "rgba(255,255,255,0.08)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}>
+                  <Pressable accessibilityRole="button" onPress={() => mark(item.name, "watered")} accessibilityLabel={t("a11y.logWater", { name: item.name })} style={{ backgroundColor: waterDue ? "#6bc7ff" : "rgba(255,255,255,0.08)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}>
                     <Text style={{ color: waterDue ? "#07120b" : theme.secondaryText, fontSize: 11, fontWeight: "900" }}>💧</Text>
                   </Pressable>
-                  <Pressable accessibilityRole="button" onPress={() => mark(item.name, "repot")} style={{ backgroundColor: repotDue ? "#ffd86b" : "rgba(255,255,255,0.08)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}>
+                  <Pressable accessibilityRole="button" onPress={() => mark(item.name, "repot")} accessibilityLabel={t("a11y.logRepot", { name: item.name })} style={{ backgroundColor: repotDue ? "#ffd86b" : "rgba(255,255,255,0.08)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}>
                     <Text style={{ color: repotDue ? "#07120b" : theme.secondaryText, fontSize: 11, fontWeight: "900" }}>🪴</Text>
                   </Pressable>
                 </View>

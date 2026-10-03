@@ -133,7 +133,7 @@ export function PlantDetailScreen({
           <View style={styles.detailQuickActions}>
             <Pressable accessibilityRole="button" onPress={() => toggleSavedPlant(selectedPlant.name)} style={[styles.quickActionButton, isSaved && styles.quickActionButtonActive]}>
               <Ionicons name={isSaved ? "heart" : "heart-outline"} size={21} color={isSaved ? "#07120b" : "#ffffff"} />
-              <Text style={[styles.quickActionText, isSaved && styles.quickActionTextActive]}>{isSaved ? "Saved" : "Save"}</Text>
+              <Text style={[styles.quickActionText, isSaved && styles.quickActionTextActive]}>{isSaved ? t("a11y.saved") : t("common.save")}</Text>
             </Pressable>
           </View>
 <View style={styles.card}>

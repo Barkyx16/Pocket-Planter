@@ -44,9 +44,9 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
           <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18, marginBottom: 12 }}>
             <View style={{ flex: 1 }}>
               <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900" }}>{t("plantPicker.addAPlant")}</Text>
-              {bedName ? <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>to {bedName}</Text> : null}
+              {bedName ? <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>{t("a11y.toBed", { bed: bedName })}</Text> : null}
             </View>
-            <Pressable accessibilityRole="button" onPress={close} hitSlop={12} style={{ padding: 4 }}>
+            <Pressable accessibilityRole="button" onPress={close} accessibilityLabel={t("a11y.close")} hitSlop={12} style={{ padding: 4 }}>
               <Text style={{ color: theme.secondaryText, fontSize: 20, fontWeight: "900" }}>✕</Text>
             </Pressable>
           </View>
@@ -62,7 +62,7 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
               style={{ flex: 1, color: theme.text, fontSize: 14, fontWeight: "700", paddingVertical: 11 }}
             />
             {search ? (
-              <Pressable accessibilityRole="button" onPress={() => setSearch("")} hitSlop={touchSlop(14)}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
+              <Pressable accessibilityRole="button" onPress={() => setSearch("")} accessibilityLabel={t("a11y.clearSearch")} hitSlop={touchSlop(14)}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
             ) : null}
           </View>
 

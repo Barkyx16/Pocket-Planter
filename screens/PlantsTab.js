@@ -455,6 +455,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
                 <Pressable
                   onPress={() => toggleBulk(item.name)}
                   accessibilityRole="checkbox"
+                  accessibilityLabel={t("a11y.select", { name: item.name })}
                   accessibilityState={{ checked: sel }}
                   style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderRadius: 24, borderWidth: sel ? 2.5 : 0, borderColor: "#5cff89", backgroundColor: sel ? "rgba(92, 255, 137, 0.12)" : "rgba(4, 20, 12, 0.16)", alignItems: "flex-end", padding: 12 }}
                 >

@@ -291,7 +291,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
          <View key={area.id}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10, flex: 1 }}>
-                <Pressable accessibilityRole="button" onPress={() => onPickPhoto && onPickPhoto(area.id)}>
+                <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.areaPhoto", { area: area.name })} onPress={() => onPickPhoto && onPickPhoto(area.id)}>
                   {area.photo ? (
                     <Image source={{ uri: area.photo }} style={{ width: 40, height: 40, borderRadius: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.2)" }} />
                   ) : (
