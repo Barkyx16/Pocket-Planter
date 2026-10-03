@@ -5,7 +5,7 @@ import * as Notifications from "expo-notifications";
 import Purchases from "react-native-purchases";
 import { useTranslation } from "../lib/i18n";
 import { styles } from "../styles";
-import { hasPremiumEntitlement, PREMIUM_FEATURES } from "../core";
+import { hasPremiumEntitlement, planFromCustomerInfo, PREMIUM_FEATURES, PRODUCT_IDS } from "../core";
 import { IconText } from "./IconText";
 
 export const SettingsCard = memo(function SettingsCard({ theme, premiumUnlocked, setPremiumUnlocked, subscriptionPlan, setSubscriptionPlan, onUnlockPremium }) {
@@ -26,7 +26,8 @@ async function restorePurchases() {
     try {
       const customerInfo = await Purchases.restorePurchases();
       if (hasPremiumEntitlement(customerInfo)) {
-        onUnlockPremium(selectedPlan);
+        // The plan the store says they own, not whichever chip was selected.
+        onUnlockPremium(planFromCustomerInfo(customerInfo) || selectedPlan, { quiet: true });
         Alert.alert(t("purchases.restoredTitle"), t("purchases.restoredBody"));
       } else {
         Alert.alert(t("purchases.noneTitle"), t("purchases.noneBody"));
@@ -49,11 +50,18 @@ async function choosePlan(plan) {
         Alert.alert(t("purchases.storeUnavailable"), t("purchases.storeUnavailableBody"));
         return;
       }
+      // Exactly the plan that was tapped. This used to fall back to the first
+      // package on offer, which could be the other plan: tap Monthly, get
+      // offered Yearly.
       const targetPackage = packages.find(pkg =>
         plan === "Monthly"
-          ? pkg.product.identifier === "com.pocketplanter.monthly"
-          : pkg.product.identifier === "com.pocketplanter.yearly"
-      ) || packages[0];
+          ? pkg.product.identifier === PRODUCT_IDS.Monthly
+          : pkg.product.identifier === PRODUCT_IDS.Yearly
+      );
+      if (!targetPackage) {
+        Alert.alert(t("purchases.storeUnavailable"), t("purchases.storeUnavailableBody"));
+        return;
+      }
       const { customerInfo } = await Purchases.purchasePackage(targetPackage);
       if (hasPremiumEntitlement(customerInfo)) {
         onUnlockPremium(plan);

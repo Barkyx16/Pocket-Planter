@@ -5499,6 +5499,16 @@ export function getPlantFamily(plantName) {
 
 // Robust premium check: RevenueCat entitlement identifiers are easy to mismatch, so
 // treat the user as premium if our named entitlement is active OR any entitlement is.
+export const PRODUCT_IDS = { Monthly: "com.pocketplanter.monthly", Yearly: "com.pocketplanter.yearly" };
+
+// "Monthly" or "Yearly" from what the store says is active, or null.
+export function planFromCustomerInfo(customerInfo) {
+  const active = customerInfo?.activeSubscriptions || [];
+  if (active.includes(PRODUCT_IDS.Yearly)) return "Yearly";
+  if (active.includes(PRODUCT_IDS.Monthly)) return "Monthly";
+  return null;
+}
+
 export function hasPremiumEntitlement(customerInfo) {
   const active = customerInfo?.entitlements?.active || {};
   return !!active["Pocket Planter Pro"] || Object.keys(active).length > 0;

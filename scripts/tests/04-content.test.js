@@ -733,3 +733,18 @@ describe("checking Premium after a purchase", () => {
     ok(/await reconcileFromStore\(\);/.test(rowBranch));
   });
 });
+
+describe("buying and restoring Premium", () => {
+  const src = require("fs").readFileSync(path.join(ROOT, "components/SettingsCard.js"), "utf8");
+  it("never buys a different plan from the one tapped", () => {
+    ok(!/\|\| packages\[0\]/.test(src), "no fallback to the first package on offer");
+    ok(/if \(!targetPackage\) \{/.test(src));
+  });
+  it("names the plan the store says was restored, in one alert", () => {
+    const card = require(path.join(ROOT, "core.js"));
+    eq(card.planFromCustomerInfo({ activeSubscriptions: ["com.pocketplanter.monthly"] }), "Monthly");
+    eq(card.planFromCustomerInfo({ activeSubscriptions: ["com.pocketplanter.yearly"] }), "Yearly");
+    eq(card.planFromCustomerInfo({}), null);
+    ok(/onUnlockPremium\(planFromCustomerInfo\(customerInfo\) \|\| selectedPlan, \{ quiet: true \}\)/.test(src));
+  });
+});

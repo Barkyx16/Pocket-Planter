@@ -4707,7 +4707,9 @@ useEffect(() => {
     }
   }
 
-  async function unlockPremium(plan) {
+  // `quiet` for callers that say something themselves (restoring purchases),
+  // so the gardener does not get two alerts back to back.
+  async function unlockPremium(plan, { quiet = false } = {}) {
     // Optimistic so the paywall clears instantly; the webhook is the real record,
     // so re-check the server once it's had a moment to land.
     setPremiumUnlocked(true);
@@ -4718,7 +4720,7 @@ useEffect(() => {
     // where they can now manage or cancel their plan.
     if (activeTab === "premium") setActiveTab("settings");
     await AsyncStorage.setItem(STORAGE_KEYS.seenPremiumIntro, JSON.stringify(true));
-    Alert.alert(t("premium.unlocked"), `Pocket Planter ${plan} activated successfully.`);
+    if (!quiet) Alert.alert(t("premium.unlocked"), `Pocket Planter ${plan} activated successfully.`);
   }
   function dismissPremiumIntro() {
     setShowPremiumIntro(false);
