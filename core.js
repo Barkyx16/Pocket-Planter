@@ -1129,7 +1129,9 @@ export const COMPANION_PLANTING_DATA = {
   Pea: {
     excellent: ["Carrot", "Radish", "Spinach", "Lettuce", "Corn"],
     neutral: ["Bean", "Cucumber"],
-    avoid: ["Onion", "Garlic", "Leek", "Potato"],
+    // Not Potato: the common references pair peas with potatoes, and Potato's own
+    // chart names Pea as excellent — so the two charts contradicted each other.
+    avoid: ["Onion", "Garlic", "Leek"],
     pests: "Peas fix nitrogen in the soil which benefits nearby plants after harvest.",
   },
   Bean: {
@@ -1550,13 +1552,20 @@ function computeCompanionInfo(plantName) {
   const match = alias || Object.keys(COMPANION_PLANTING_DATA)
     .filter((key) => plantNameMatchesKey(name, key))
     .sort((a, b) => b.length - a.length)[0];
-  return COMPANION_PLANTING_DATA[match] || {
+  if (COMPANION_PLANTING_DATA[match]) return COMPANION_PLANTING_DATA[match];
+  const generic = {
     excellent: ["Basil", "Marigold", "Nasturtium"],
     neutral: ["Lettuce", "Spinach"],
     avoid: ["Fennel"],
     pests: "Companion planting can improve pollination, reduce pests, and increase garden health.",
   };
+  GENERIC_COMPANION_INFO.add(generic);
+  return generic;
 }
+
+// Marks the catch-all chart handed to a plant that has none of its own, so a
+// pairing check can tell general advice from a plant's real chart.
+const GENERIC_COMPANION_INFO = new WeakSet();
 
 export const PAIR_REASONS = {
   "basil|tomato": "Basil repels aphids and hornworms, and many gardeners say it improves tomato flavor.",
@@ -1802,7 +1811,44 @@ export function findGardenConflicts(gardenAreas) {
   return conflicts;
 }
 
+// How two plants get on, the same whichever is named first.
+//
+// This used to read only the first plant's chart, so the answer depended on the
+// order of the question. Broccoli→Tomato said Avoid and Tomato→Broccoli said
+// Neutral, so on the garden map the broccoli plot wore a red conflict and the
+// tomato beside it did not. Sage has no chart of its own and fell back to
+// general advice that calls Basil excellent, while Basil's own chart says keep
+// Sage away: Sage→Basil was an Excellent Pair and Basil→Sage was Avoid.
+//
+// Both charts are read now. A plant's own chart outranks the general fallback;
+// between two real charts, a warning outranks a recommendation.
+const PAIR_LABELS = {
+  excellent: Object.freeze({ label: "Excellent Pair", color: "#5cff89", icon: "🟢" }),
+  avoid: Object.freeze({ label: "Avoid", color: "#ff7b7b", icon: "🔴" }),
+  neutral: Object.freeze({ label: "Neutral", color: "#ffd86b", icon: "🟡" }),
+};
+// The charts are fixed for the life of the app, and the map and the health score
+// ask about the same pairs over and over, so each answer is kept.
+const _pairVerdictCache = new Map();
 export function getCompatibilityScore(plantName, comparePlant) {
+  const cacheKey = `${plantName}\u0000${comparePlant}`;
+  const cached = _pairVerdictCache.get(cacheKey);
+  if (cached) return cached;
+  const ab = chartVerdict(plantName, comparePlant);
+  const ba = chartVerdict(comparePlant, plantName);
+  const pick = (generic) => {
+    const said = [ab, ba].filter((v) => v.generic === generic).map((v) => v.verdict);
+    if (said.includes("avoid")) return "avoid";
+    if (said.includes("excellent")) return "excellent";
+    return null;
+  };
+  const result = PAIR_LABELS[pick(false) || pick(true) || "neutral"];
+  _pairVerdictCache.set(cacheKey, result);
+  return result;
+}
+
+// What one plant's chart says about another: "excellent", "avoid" or null.
+function chartVerdict(plantName, comparePlant) {
   const info = getCompanionInfo(plantName);
   // The charts name some companions generically ("Bean", "Squash"), so compare
   // the catalog plant each entry resolves to rather than the raw word. Corn lists
@@ -1815,9 +1861,10 @@ export function getCompatibilityScore(plantName, comparePlant) {
       const entry = resolveCompanionName(item) || String(item || "");
       return entry.toLowerCase() === target.toLowerCase();
     });
-  if (matches(info.excellent)) return { label: "Excellent Pair", color: "#5cff89", icon: "🟢" };
-  if (matches(info.avoid)) return { label: "Avoid", color: "#ff7b7b", icon: "🔴" };
-  return { label: "Neutral", color: "#ffd86b", icon: "🟡" };
+  const generic = GENERIC_COMPANION_INFO.has(info);
+  if (matches(info.excellent)) return { verdict: "excellent", generic };
+  if (matches(info.avoid)) return { verdict: "avoid", generic };
+  return { verdict: null, generic };
 }
 
 export function calculateGardenHealth(gardenMap) {
@@ -1832,42 +1879,39 @@ export function calculateGardenHealth(gardenMap) {
   // each are planted gives exactly the same score — duplicates still amplify it
   // the way they always did, which is why this counts rather than de-duplicates
   // — while comparing each pair of names once instead of once per plot pair.
-  // Two changes, both of which keep the number identical.
   //
-  // The pairs repeat: what a plot contributes depends only on its plant name, so
-  // counting the names and weighting each pair by how many of each are planted
-  // gives the same total. Duplicates still amplify the score exactly as before,
-  // which is why this counts rather than de-duplicates.
-  //
-  // And the comparison runs the other way round. A pair only scores when the
-  // first plant's chart names the second, and a chart lists a handful of
+  // And the candidates come from the charts. A pair only scores when one of the
+  // two plants' charts names the other, and a chart lists a handful of
   // companions — so instead of asking about every other plant in the garden,
-  // walk the chart and look up whether those few are planted. Turns roughly
+  // walk the charts and look up whether those few are planted. Turns roughly
   // 57,000 lookups on a 240-plot garden into a couple of thousand.
   const counts = new Map();
   plants.forEach((name) => counts.set(name, (counts.get(name) || 0) + 1));
   const planted = new Map();
   counts.forEach((_, name) => planted.set(String(name).toLowerCase(), name));
 
-  let score = 100;
-  counts.forEach((plantCount, plant) => {
+  // Only a pair that some chart mentions can score, so walk the charts to find
+  // the candidates, then score each pair once with getCompatibilityScore — which
+  // reads both plants' charts, so the score agrees with the pair badges. The
+  // reference counts both orders of every plot pair, hence the 2.
+  const pairs = new Map();
+  counts.forEach((_, plant) => {
     const info = getCompanionInfo(plant) || {};
-    // getCompatibilityScore answers "Excellent" before it answers "Avoid", and
-    // scores a given companion once however many times the chart names it.
-    const scored = new Set();
-    const apply = (list, delta) => {
+    [info.excellent, info.avoid].forEach((list) => {
       (list || []).forEach((entry) => {
         const canonical = resolveCompanionName(entry) || String(entry || "");
-        const key = canonical.toLowerCase();
-        if (scored.has(key)) return;
-        const match = planted.get(key);
+        const match = planted.get(canonical.toLowerCase());
         if (!match || match === plant) return;
-        scored.add(key);
-        score += delta * plantCount * counts.get(match);
+        const pair = [plant, match].sort();
+        pairs.set(pair.join("\u0000"), pair);
       });
-    };
-    apply(info.excellent, 3);
-    apply(info.avoid, -8);
+    });
+  });
+  let score = 100;
+  pairs.forEach(([a, b]) => {
+    const label = getCompatibilityScore(a, b).label;
+    const delta = label === "Avoid" ? -8 : label === "Excellent Pair" ? 3 : 0;
+    score += delta * 2 * counts.get(a) * counts.get(b);
   });
   score = Math.max(35, Math.min(100, score));
   let label = "Healthy";

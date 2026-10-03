@@ -121,3 +121,30 @@ describe("getCompanionInfo", () => {
     eq(unstable, []);
   });
 });
+
+describe("a pairing reads the same both ways", () => {
+  const label = (a, b) => core.getCompatibilityScore(a, b).label;
+  it("for every pair any chart mentions", () => {
+    // Only the first plant's chart was read: Broccoli→Tomato was Avoid and
+    // Tomato→Broccoli Neutral, so one plot on the map showed a conflict and its
+    // neighbour did not.
+    const bad = [];
+    for (const [a, info] of Object.entries(core.COMPANION_PLANTING_DATA)) {
+      for (const b of [...(info.excellent || []), ...(info.avoid || [])]) {
+        if (label(a, b) !== label(b, a)) bad.push(`${a}/${b}: ${label(a, b)} vs ${label(b, a)}`);
+      }
+    }
+    eq(bad, []);
+  });
+  it("lets a plant's own warning beat general advice", () => {
+    // Sage has no chart, and the general fallback calls Basil excellent; Basil's
+    // own chart says to keep Sage away.
+    eq(label("Sage", "Basil"), "Avoid");
+    eq(label("Basil", "Sage"), "Avoid");
+    eq(label("Tomato", "Broccoli"), "Avoid");
+  });
+  it("no longer has peas and potatoes contradicting each other", () => {
+    eq(label("Pea", "Potato"), "Excellent Pair");
+    eq(label("Potato", "Pea"), "Excellent Pair");
+  });
+});
