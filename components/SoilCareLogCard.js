@@ -9,7 +9,7 @@ import { CompostTrackerSection } from "./CompostTrackerSection";
 import { PruningScheduleSection } from "./PruningScheduleSection";
 
 export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlants, careLog, setCareLog, onFertilizerLogged, onFertilized, onUndoToast }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const [selectedPlant, setSelectedPlant] = useState("Garden");
   const [customNote, setCustomNote] = useState("");
   const [showAddPanel, setShowAddPanel] = useState(false);
@@ -66,10 +66,10 @@ export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlant
         t("alerts.fertilizedTitle"),
         t("alerts.fertilizedBody", { plant: selectedPlant }),
         [
-          { text: "No thanks", style: "cancel" },
-          { text: "In 7 days", onPress: () => onFertilizerLogged(selectedPlant, 7) },
-          { text: "In 14 days", onPress: () => onFertilizerLogged(selectedPlant, 14) },
-          { text: "In 30 days", onPress: () => onFertilizerLogged(selectedPlant, 30) },
+          { text: t("common.noThanks"), style: "cancel" },
+          { text: tn("extra.inDays", 7), onPress: () => onFertilizerLogged(selectedPlant, 7) },
+          { text: tn("extra.inDays", 14), onPress: () => onFertilizerLogged(selectedPlant, 14) },
+          { text: tn("extra.inDays", 30), onPress: () => onFertilizerLogged(selectedPlant, 30) },
         ]
       );
     } else {

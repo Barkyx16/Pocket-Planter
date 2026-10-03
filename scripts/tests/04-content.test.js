@@ -1012,7 +1012,7 @@ describe("memo components and the language", () => {
   });
 });
 
-describe("accessibility labels", () => {
+describe("accessibility labels and alert buttons", () => {
   it("are translated, not English literals", () => {
     // Screen-reader users hear these; an English literal reads English in every language.
     const offenders = [];
@@ -1024,6 +1024,8 @@ describe("accessibility labels", () => {
       const src = fs.readFileSync(f, "utf8");
       const m = src.match(/accessibilityLabel=("[^"]*[A-Za-z]{3,}[^"]*"|\{`[^`$]*[A-Za-z]{3,} [a-z]+[^`]*`\})/);
       if (m) offenders.push(`${path.relative(ROOT, f)}: ${m[1].slice(0, 50)}`);
+      const button = src.match(/\{ text: "[A-Z][^"]*"/);
+      if (button) offenders.push(`${path.relative(ROOT, f)}: ${button[0]}`);
     }
     eq(offenders, []);
   });
