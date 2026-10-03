@@ -6,7 +6,7 @@ import zipZoneData from "./data/zipZoneData";
 import { PLANT_DETAILS } from "./data/plantDetails";
 import { PLANT_HEALTH } from "./data/plantHealth";
 import { DISEASE_LIBRARY } from "./data/diseaseData";
-import { formatDate, t, tn } from "./lib/i18n";
+import { formatDate, formatTime, getLocale, t, tn } from "./lib/i18n";
 
 export const loadingScreenImage = require("./assets/loading-screen.png");
 
@@ -3733,11 +3733,17 @@ export function getAreaTag(area) {
   };
 }
 
+// A reminder's time of day in the app language's clock: "7:00 AM" in English,
+// "07:00" in German or French, "7:00" in Japanese.
 export function formatReminderTime({ hour, minute }) {
+  if (getLocale() !== "en") {
+    const text = formatTime(new Date(2026, 0, 1, hour, minute));
+    if (text) return text;
+  }
   const h12 = hour % 12 === 0 ? 12 : hour % 12;
   const ampm = hour < 12 ? "AM" : "PM";
-  const mm = minute === 0 ? "00" : String(minute).padStart(2, "0");
-return `${h12}:${mm} ${ampm}`;
+  const mm = String(minute).padStart(2, "0");
+  return `${h12}:${mm} ${ampm}`;
 }
 
 export function formatRelativeDate(ts) {
@@ -3746,12 +3752,12 @@ export function formatRelativeDate(ts) {
   if (Number.isNaN(then)) return "";
   const diff = Date.now() - then;
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t("accountCloud.syncJustNow");
+  if (mins < 60) return t("accountCloud.syncMinutesAgo", { count: mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t("accountCloud.syncHoursAgo", { count: hours });
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
+  if (days < 7) return tn("harvestLog.daysAgo", days);
   return formatDate(new Date(ts));
 }
 

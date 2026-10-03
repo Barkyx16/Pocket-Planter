@@ -843,3 +843,31 @@ describe("the plant page speaks the gardener's language", () => {
     }
   });
 });
+
+describe("times in the app language", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("shows reminder times in each language's clock", () => {
+    eq(core.formatReminderTime({ hour: 7, minute: 0 }), "7:00 AM");
+    eq(core.formatReminderTime({ hour: 19, minute: 5 }), "7:05 PM");
+    try {
+      i18n.setLocale("de");
+      eq(core.formatReminderTime({ hour: 19, minute: 5 }), "19:05");
+      i18n.setLocale("fr");
+      eq(core.formatReminderTime({ hour: 21, minute: 30 }), "21:30");
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+  it("translates how long ago a harvest was logged", () => {
+    const hoursAgo = (h) => new Date(Date.now() - h * 3600000).toISOString();
+    eq(core.formatRelativeDate(hoursAgo(0)), "Just now");
+    eq(core.formatRelativeDate(hoursAgo(72)), "3 days ago");
+    try {
+      i18n.setLocale("es");
+      eq(core.formatRelativeDate(hoursAgo(72)), "hace 3 días");
+      eq(core.formatRelativeDate(hoursAgo(24)), "hace 1 día");
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});
