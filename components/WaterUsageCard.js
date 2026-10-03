@@ -54,7 +54,7 @@ export const WaterUsageCard = memo(function WaterUsageCard({ theme, savedPlants,
     tapHaptic("light");
     setWateringAmounts((current) => current.filter((e) => e.id !== id));
     if (onUndoToast) {
-      onUndoToast("Watering entry deleted", () => {
+      onUndoToast(t("a11y.wateringDeleted"), () => {
         setWateringAmounts((current) => [removed, ...current].sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         ));
