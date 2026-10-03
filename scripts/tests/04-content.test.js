@@ -1442,3 +1442,15 @@ describe("bundled images", () => {
     eq(big, []);
   });
 });
+
+describe("Android back button", () => {
+  it("closes the open page, then goes Home, before leaving the app", () => {
+    const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    ok(/BackHandler\.addEventListener\("hardwareBackPress"/.test(app), "back button is not handled");
+    const at = app.indexOf("backRef.current = () => {");
+    const body = app.slice(at, app.indexOf("\n  };", at));
+    const order = ["handleBackFromPest", "handleBackFromDisease", "handleBackFromPlant", 'jumpToTab("home")'].map((s) => body.indexOf(s));
+    ok(order.every((i) => i > 0), "a page is missing from the back handler");
+    eq(order, [...order].sort((a, b) => a - b));
+  });
+});

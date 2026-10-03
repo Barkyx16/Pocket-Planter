@@ -3,7 +3,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "./lib/supabase";
 import { isBiometricAvailable, getBiometricLabel, isBiometricEnabled, enableBiometricLogin, disableBiometricLogin, authenticateAndGetCredentials, getBiometricEmail } from "./lib/biometricAuth";
 import { hydrateTabHeroes } from "./components/TabHero";
-import { ActivityIndicator, Alert, Animated, AppState, Appearance, Image, Keyboard, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, RefreshControl, Share, StatusBar, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Animated, AppState, Appearance, BackHandler, Image, Keyboard, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, RefreshControl, Share, StatusBar, StyleSheet, Text, TextInput, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import * as Location from "expo-location";
@@ -1769,6 +1769,23 @@ const theme = useMemo(
     setSelectedDisease(null);
     setTimeout(() => { scrollRef.current?.scrollTo({ y: diseaseReturnY.current, animated: false }); }, 80);
   }
+
+  // Android's back button. Nothing handled it, so on a plant, pest or disease
+  // page, or on any tab but Home, it closed the app instead of going back. It
+  // now closes the open page (in the order they are drawn), then returns to
+  // Home, and only from Home leaves the app. Modals handle back themselves.
+  const backRef = useRef(null);
+  backRef.current = () => {
+    if (selectedPest) { handleBackFromPest(); return true; }
+    if (selectedDisease) { handleBackFromDisease(); return true; }
+    if (selectedPlant) { handleBackFromPlant(); return true; }
+    if (user && activeTab !== "home") { jumpToTab("home"); return true; }
+    return false;
+  };
+  useEffect(() => {
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => backRef.current?.() ?? false);
+    return () => sub.remove();
+  }, []);
 
   // Honour the OS reduced-motion setting for every animation in the app.
   useEffect(() => initReducedMotion(), []);
