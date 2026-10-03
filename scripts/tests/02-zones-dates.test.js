@@ -328,3 +328,18 @@ describe("day keys come from the local calendar", () => {
     eq(offenders, []);
   });
 });
+
+describe("the daily bonus card", () => {
+  const src = require("fs").readFileSync(path.join(ROOT, "components/DailyBonusCard.js"), "utf8");
+  it("hides by calendar day, not by 24 hours from a parsed day key", () => {
+    // dailyBonusDate is a "YYYY-MM-DD" key, and new Date() of a bare date is UTC
+    // midnight. The card came back at 5pm in California on the day it was
+    // claimed, and kept the next day's bonus hidden until 9am in Tokyo.
+    ok(!/new Date\(dailyBonusDate\)/.test(src), "the day key must not be parsed as a moment");
+    ok(/isSameDayKey\(dailyBonusDate, getTodayKey\(\)\)/.test(src), "compare it with today's key");
+  });
+  it("a bare day key really is UTC midnight, which is why", () => {
+    const parsed = new Date("2026-07-01");
+    eq(parsed.toISOString(), "2026-07-01T00:00:00.000Z");
+  });
+});

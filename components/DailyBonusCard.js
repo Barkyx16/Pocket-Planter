@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { IconText } from "./IconText";
+import { getTodayKey, isSameDayKey } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const DailyBonusCard = memo(function DailyBonusCard({
@@ -12,13 +13,14 @@ export const DailyBonusCard = memo(function DailyBonusCard({
   streakData,
 }) {
   const { t } = useTranslation();
-const claimedRecently =
-    dailyBonusDate &&
-    (Date.now() - new Date(dailyBonusDate).getTime()) < 24 * 60 * 60 * 1000;
+  // Claimed means claimed on today's calendar day. This used to be "within 24
+  // hours of the parsed date", but the date is a day key and a bare
+  // "YYYY-MM-DD" parses as UTC midnight — so in California the card came back at
+  // 5pm on the day it was claimed (and then refused the claim), and in Tokyo the
+  // next day's bonus stayed hidden until 9am.
+  const claimedToday = isSameDayKey(dailyBonusDate, getTodayKey());
 
-  if (claimedRecently) return null;
-
-  const claimedToday = claimedRecently;
+  if (claimedToday) return null;
 
   return (
     <View
