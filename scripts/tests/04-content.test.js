@@ -555,3 +555,37 @@ describe("every way of watering schedules the next reminder", () => {
     }
   });
 });
+
+describe("the companion quiz", () => {
+  const core16 = require(path.join(ROOT, "core.js"));
+  const games = require(path.join(ROOT, "screens/GamesTab.js"));
+  const produce16 = require(path.join(ROOT, "data/produceData.js"));
+  const catalog = produce16.default || produce16;
+  const excellent = (a, b) => core16.getCompatibilityScore(a, b).label === "Excellent Pair";
+  it("only accepts answers the pair check calls excellent", () => {
+    // Sage's general-advice chart names Basil, and the quiz marked Basil right
+    // while the garden map calls the pair one to avoid.
+    ok(!games.companionAnswers("Sage").some((p) => p.name === "Basil"), "Basil is not Sage's companion");
+    const wrong = [];
+    for (const p of catalog) {
+      for (const a of games.companionAnswers(p.name)) if (!excellent(p.name, a.name)) wrong.push(`${p.name}/${a.name}`);
+    }
+    eq(wrong, []);
+    ok(games.companionAnswers("Tomato").some((p) => p.name === "Basil"), "the classic pair is still asked");
+  });
+  it("never offers a second right answer as a distractor", () => {
+    const wrong = [];
+    for (const name of ["Tomato", "Corn", "Carrot", "Sage", "Potato", "Pea", "Cabbage", "Basil", "Cucumber", "Lettuce"]) {
+      const answers = games.companionAnswers(name);
+      if (!answers.length) continue;
+      for (const d of games.companionDistractors(name, answers[0].name)) if (excellent(name, d.name)) wrong.push(`${name}/${d.name}`);
+    }
+    eq(wrong.slice(0, 3), []);
+  });
+  it("puts plants to avoid first", () => {
+    const pool = games.companionDistractors("Tomato", "Basil");
+    const firstNotAvoid = pool.findIndex((p) => core16.getCompatibilityScore("Tomato", p.name).label !== "Avoid");
+    ok(firstNotAvoid > 0, "Tomato has plants to avoid, and they should lead");
+    ok(pool.slice(firstNotAvoid).every((p) => core16.getCompatibilityScore("Tomato", p.name).label !== "Avoid"));
+  });
+});

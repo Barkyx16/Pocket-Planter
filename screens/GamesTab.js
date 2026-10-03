@@ -37,24 +37,41 @@ function makeSunQuestion() {
 }
 
 // ── Game 2: Companion Match (pick the best companion) ─────────────────────────
-function makeCompanionQuestion() {
+// The right answers for a plant: its chart's recommendations that the app's own
+// pair check also calls excellent. The chart alone could disagree with it —
+// Sage's general-advice chart names Basil, while Basil's own chart says keep
+// Sage away — and the quiz then taught the opposite of what the garden map shows.
+export function companionAnswers(plantName) {
+  const info = getCompanionInfo(plantName) || {};
+  return (info.excellent || []).map(findPlant).filter(Boolean)
+    .filter((p) => p.name !== plantName && getCompatibilityScore(plantName, p.name).label === "Excellent Pair");
+}
+
+// Wrong answers for a question about `targetName`: never another right answer,
+// by name or by the pair check. "Avoid" plants come first, so the right answer
+// stands out clearly; the order within each group is shuffled.
+export function companionDistractors(targetName, correctName) {
+  const goodSet = new Set(((getCompanionInfo(targetName) || {}).excellent || []).map((x) => String(x).toLowerCase()));
+  const avoid = [], other = [];
+  produceData.forEach((p) => {
+    if (p.name === targetName || p.name === correctName || goodSet.has(p.name.toLowerCase())) return;
+    const label = getCompatibilityScore(targetName, p.name).label;
+    if (label === "Excellent Pair") return;
+    (label === "Avoid" ? avoid : other).push(p);
+  });
+  return [...shuffle(avoid), ...shuffle(other)];
+}
+
+export function makeCompanionQuestion() {
   let target = null, correct = null;
   for (let tries = 0; tries < 60; tries++) {
     const cand = pick(produceData);
-    const info = getCompanionInfo(cand.name) || {};
-    const goods = (info.excellent || []).map(findPlant).filter(Boolean).filter((p) => p.name !== cand.name);
+    const goods = companionAnswers(cand.name);
     if (goods.length) { target = cand; correct = pick(goods); break; }
   }
   if (!target) { target = findPlant("Tomato") || produceData[0]; correct = findPlant("Basil") || produceData[1]; }
-  const goodSet = new Set(((getCompanionInfo(target.name) || {}).excellent || []).map((s) => String(s).toLowerCase()));
-  const badCandidates = produceData.filter((p) => p.name !== target.name && p.name !== correct.name && !goodSet.has(p.name.toLowerCase()));
-  // Prefer "Avoid" plants as distractors so the right answer stands out clearly.
-  const ranked = shuffle(badCandidates).sort((a, b) => {
-    const av = getCompatibilityScore(target.name, a.name).label === "Avoid" ? 0 : 1;
-    const bv = getCompatibilityScore(target.name, b.name).label === "Avoid" ? 0 : 1;
-    return av - bv;
-  });
-  const options = shuffle([correct, ...ranked.slice(0, 3)]).map((p) => ({ label: p.name, correct: p.name === correct.name }));
+  const options = shuffle([correct, ...companionDistractors(target.name, correct.name).slice(0, 3)])
+    .map((p) => ({ label: p.name, correct: p.name === correct.name }));
   return { prompt: `Which is the best companion for ${target.name}?`, options, reveal: getPairReason(target.name, correct.name) };
 }
 
