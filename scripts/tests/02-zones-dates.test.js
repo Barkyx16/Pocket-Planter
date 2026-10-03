@@ -343,3 +343,35 @@ describe("the daily bonus card", () => {
     eq(parsed.toISOString(), "2026-07-01T00:00:00.000Z");
   });
 });
+
+describe("the garden timeline", () => {
+  const core7 = require(path.join(ROOT, "core.js"));
+  it("files a day key under its own day, in every zone", () => {
+    // keyOf(new Date("2026-07-01")) is UTC midnight read back as a local day:
+    // June 30th anywhere west of Greenwich. Every watering, save and sowing in
+    // the Journal timeline sat one day early for gardeners in the Americas.
+    const events = core7.buildGardenTimeline({
+      wateringHistory: { Tomato: ["2026-07-01"], Basil: ["2026-07-01"] },
+      plantSaveDates: { Basil: "2026-07-01" },
+      sowLog: { Lettuce: "2026-07-01" },
+    });
+    eq(events.length, 3);
+    for (const e of events) eq(e.dateKey, "2026-07-01", `${e.kind} event`);
+    for (const e of events) eq(core7.getDateKey(new Date(e.ts)), "2026-07-01", `${e.kind} timestamp`);
+  });
+  it("still reads a full timestamp as the moment it was", () => {
+    const at = new Date(2026, 6, 1, 21, 30);
+    const [e] = core7.buildGardenTimeline({ journalEntries: [{ createdAt: at.toISOString(), plantName: "Tomato" }] });
+    eq(e.dateKey, "2026-07-01");
+    eq(e.ts, at.getTime());
+  });
+  it("parseStoredDate reads a day key as local midday", () => {
+    const d = core7.parseStoredDate("2026-03-08");
+    eq([d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()], [2026, 2, 8, 12]);
+    ok(Number.isNaN(core7.parseStoredDate("nonsense").getTime()));
+  });
+  it("seasonal challenges count day keys through it too", () => {
+    const src = require("fs").readFileSync(path.join(ROOT, "components/SeasonalChallengesCard.js"), "utf8");
+    ok(/const raw = parseStoredDate\(dateVal\)/.test(src));
+  });
+});

@@ -3394,6 +3394,17 @@ export function getDateKey(date) {
 // is not 24 hours long. Snooze a plant at half past eleven the night before the
 // clocks go forward and it was filed under the 8th while the badge looked for
 // the 9th, so the snooze took effect but never appeared to.
+// Stored dates are a mix of day keys ("2026-07-01") and full ISO timestamps.
+// new Date() reads a bare day key as UTC midnight, which west of Greenwich is the
+// evening before — so anything that parsed a key that way and then asked for its
+// local day got yesterday. A day key is read here as local midday, the convention
+// daysBetweenKeys uses; anything else is parsed as the moment it is.
+export function parseStoredDate(value) {
+  if (value instanceof Date) return new Date(value.getTime());
+  const s = String(value ?? "");
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(`${s}T12:00:00`);
+  return new Date(value);
+}
 export function getTomorrowKey(from = new Date()) {
   const d = new Date(from);
   d.setDate(d.getDate() + 1);
@@ -4821,8 +4832,10 @@ export function buildGardenTimeline({
   sowLog = {}, plantSaveDates = {}, badgeEarnedDates = {}, achievementBadges = [],
 } = {}) {
   const events = [];
-  const tsOf = (v) => { const t = new Date(v).getTime(); return Number.isNaN(t) ? 0 : t; };
-  const keyOf = (v) => { const d = new Date(v); return Number.isNaN(d.getTime()) ? "" : getDateKey(d); };
+  // Day keys are read as local midday. new Date("2026-07-01") is UTC midnight, so
+  // in the Americas every watering, save and sowing was filed under the day before.
+  const tsOf = (v) => { const t = parseStoredDate(v).getTime(); return Number.isNaN(t) ? 0 : t; };
+  const keyOf = (v) => { const d = parseStoredDate(v); return Number.isNaN(d.getTime()) ? "" : getDateKey(d); };
 
   Object.entries(plantSaveDates || {}).forEach(([plant, dk]) => {
     if (!dk) return;
@@ -4859,7 +4872,7 @@ export function buildGardenTimeline({
   });
   Object.entries(waterByDay).forEach(([dk, set]) => {
     const n = set.size;
-    events.push({ ts: new Date(dk).getTime(), dateKey: dk, kind: "water", icon: "💧", color: "#6bc7ff", title: `Watered ${n} plant${n === 1 ? "" : "s"}`, subtitle: Array.from(set).slice(0, 3).join(", ") + (n > 3 ? ` +${n - 3}` : "") });
+    events.push({ ts: tsOf(dk), dateKey: dk, kind: "water", icon: "💧", color: "#6bc7ff", title: `Watered ${n} plant${n === 1 ? "" : "s"}`, subtitle: Array.from(set).slice(0, 3).join(", ") + (n > 3 ? ` +${n - 3}` : "") });
   });
   const badgeById = {};
   (achievementBadges || []).forEach((b) => { if (b && b.id) badgeById[b.id] = b; });
