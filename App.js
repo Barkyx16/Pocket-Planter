@@ -5371,13 +5371,13 @@ const jumpToTab = useCallback((tab) => {
     <Modal visible={!!harvestLogPlant} animationType="fade" transparent onRequestClose={() => setHarvestLogPlant(null)}>
       <Pressable style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", alignItems: "center", justifyContent: "center", padding: 24 }} onPress={() => setHarvestLogPlant(null)}>
         <Pressable onPress={(e) => e.stopPropagation?.()} style={{ width: "100%", maxWidth: 420, backgroundColor: theme.card, borderRadius: 24, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", padding: 22 }}>
-          <IconText label={"🎉 LOG A HARVEST"} style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 10 }} />
+          <IconText label={t("harvestLog.modalTitle")} style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 10 }} />
           <Text style={{ color: theme.text, fontSize: 16, fontWeight: "900" }}>{harvestLogPlant}</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "600", marginTop: 4, marginBottom: 12 }}>How much did you harvest?</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "600", marginTop: 4, marginBottom: 12 }}>{t("harvestLog.howMuch")}</Text>
           <TextInput
             value={harvestLogText}
             onChangeText={setHarvestLogText}
-            placeholder={'e.g. "6 tomatoes" or "2 lbs"'}
+            placeholder={t("harvestLog.placeholder")}
             placeholderTextColor="#8fbf9d"
             autoFocus
             returnKeyType="done"
@@ -5386,10 +5386,10 @@ const jumpToTab = useCallback((tab) => {
           />
           <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
             <Pressable onPress={() => setHarvestLogPlant(null)} style={{ flex: 1, borderRadius: 14, paddingVertical: 13, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.12)" }}>
-              <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>Cancel</Text>
+              <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>{t("common.cancel")}</Text>
             </Pressable>
             <Pressable onPress={() => { if (harvestLogPlant) { logHarvest(harvestLogPlant, harvestLogText.trim(), "", ""); setHarvestLogPlant(null); } }} style={{ flex: 1, borderRadius: 14, paddingVertical: 13, alignItems: "center", backgroundColor: "#5cff89" }}>
-              <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>Log it</Text>
+              <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{t("harvestLog.logIt")}</Text>
             </Pressable>
           </View>
         </Pressable>
