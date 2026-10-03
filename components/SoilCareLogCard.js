@@ -8,7 +8,7 @@ import { IconText } from "./IconText";
 import { CompostTrackerSection } from "./CompostTrackerSection";
 import { PruningScheduleSection } from "./PruningScheduleSection";
 
-export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlants, careLog, setCareLog, onFertilizerLogged, onUndoToast }) {
+export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlants, careLog, setCareLog, onFertilizerLogged, onFertilized, onUndoToast }) {
   const { t } = useTranslation();
   const [selectedPlant, setSelectedPlant] = useState("Garden");
   const [customNote, setCustomNote] = useState("");
@@ -58,6 +58,9 @@ export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlant
     setCustomNote("");
     setShowAddPanel(false);
 
+    // Record the feeding on the plant's tracker whatever the reminder choice —
+    // "No thanks" to a reminder is not "I did not feed it".
+    if (selectedAction === "fertilize" && selectedPlant !== "Garden" && onFertilized) onFertilized(selectedPlant);
     if (selectedAction === "fertilize" && selectedPlant !== "Garden" && onFertilizerLogged) {
       Alert.alert(
         t("alerts.fertilizedTitle"),

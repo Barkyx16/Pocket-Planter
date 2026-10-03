@@ -3716,6 +3716,19 @@ function cancelFertilizerReminder(plantName) {
   Notifications.cancelScheduledNotificationAsync(`fertilize-${plantName}`).catch(() => {});
 }
 
+// A feeding logged in the Care Log is a feeding. Nothing used to tell the
+// tracker: lastFertilized was written once, when tracking started, so after one
+// interval the plant read "fertilizer due" for good and "Last fed" never moved,
+// however many feedings were logged. The only reset was switching tracking off
+// and on. Logging one now records it, and starts a tracker if there was none.
+function recordFertilized(plantName) {
+  if (!plantName || plantName === "Garden") return;
+  setFertilizerTrackers((current) => ({
+    ...current,
+    [plantName]: { ...(current[plantName] || {}), enabled: true, lastFertilized: new Date().toISOString() },
+  }));
+}
+
 function toggleFertilizerTracker(plantName) {
   // Turning the tracker off should also silence its pending reminder.
   if (fertilizerTrackers[plantName]) cancelFertilizerReminder(plantName);
@@ -5731,6 +5744,7 @@ const jumpToTab = useCallback((tab) => {
           {record && activeTab === "garden" && premiumUnlocked ? (
   <GardenTab
   unitSystem={unitSystem}
+  recordFertilized={recordFertilized}
   onAutoOptimize={autoOptimizeGarden}
   onSavePlant={toggleSavedPlant}
   onSaveMany={saveManyPlants}

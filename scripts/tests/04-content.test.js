@@ -435,3 +435,29 @@ describe("settings reach a new device without the optional columns", () => {
     for (const f of ["unitSystem", "weeklyRecapOn"]) ok(new RegExp(`\\n\\s*${f},`).test(deps), `${f} never triggers a sync`);
   });
 });
+
+describe("logging a feeding", () => {
+  const fs12 = require("fs");
+  const app = fs12.readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const card = fs12.readFileSync(path.join(ROOT, "components/SoilCareLogCard.js"), "utf8");
+  const tab = fs12.readFileSync(path.join(ROOT, "screens/GardenTab.js"), "utf8");
+  it("moves the plant's fertilizer tracker on", () => {
+    // lastFertilized was only ever written when tracking started, so a plant
+    // read "fertilizer due" for good once the first interval had passed.
+    const at = app.indexOf("function recordFertilized(");
+    ok(at > 0, "there should be a way to record a feeding");
+    ok(/lastFertilized: new Date\(\)\.toISOString\(\)/.test(app.slice(at, at + 600)));
+  });
+  it("is wired from the Care Log, whatever the reminder choice", () => {
+    ok(/recordFertilized=\{recordFertilized\}/.test(app), "App passes it to the Garden tab");
+    ok(/onFertilized=\{recordFertilized\}/.test(tab), "the Garden tab passes it to the Care Log");
+    const add = card.slice(card.indexOf("const addCareEntry"), card.indexOf("const deleteCareEntry"));
+    const recordAt = add.search(/onFertilized\(selectedPlant\)/);
+    const alertAt = add.indexOf("t(\"alerts.fertilizedTitle\")");
+    ok(recordAt > 0 && recordAt < alertAt, "recorded before, and regardless of, the reminder prompt");
+  });
+  it("then reads as not due", () => {
+    const core12 = require(path.join(ROOT, "core.js"));
+    eq(core12.isFertilizerDue("Tomato", { enabled: true, lastFertilized: new Date().toISOString() }), false);
+  });
+});

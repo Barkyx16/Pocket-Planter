@@ -31,7 +31,7 @@ import { SunlightMismatchCard } from "../components/SunlightMismatchCard";
 import { IconText } from "../components/IconText";
 import { t } from "../lib/i18n";
 
-export function GardenTab({ addGardenArea, assignPlantToAreaSlot, careLog, clearAreaSlot, deleteGardenArea, fertilizerTrackers, gardenAreas, gardenFocusAreaId, gardenY, harvestTrackers, onAddSetupToGarden, onAutoOptimize, onFocusConflict, onSavePlant, onSaveMany, openPlantFromList, pickAreaPhoto, renameGardenArea, savedPlants, scheduleFertilizerReminder, setAreaStyle, setCareLog, showUndoToast, theme, unitSystem, waterArea, wateredPlants, weather, zip, zone }) {
+export function GardenTab({ addGardenArea, assignPlantToAreaSlot, careLog, clearAreaSlot, deleteGardenArea, fertilizerTrackers, gardenAreas, gardenFocusAreaId, gardenY, harvestTrackers, onAddSetupToGarden, onAutoOptimize, onFocusConflict, onSavePlant, onSaveMany, openPlantFromList, pickAreaPhoto, recordFertilized, renameGardenArea, savedPlants, scheduleFertilizerReminder, setAreaStyle, setCareLog, showUndoToast, theme, unitSystem, waterArea, wateredPlants, weather, zip, zone }) {
   // The Garden tab is edibles-only — flower beds live on the Flowers tab.
   //
   // Memoised because its identity matters twice over: the two companion passes
@@ -151,6 +151,7 @@ export function GardenTab({ addGardenArea, assignPlantToAreaSlot, careLog, clear
             careLog={careLog}
             setCareLog={setCareLog}
             onFertilizerLogged={scheduleFertilizerReminder}
+            onFertilized={recordFertilized}
             onUndoToast={showUndoToast}
           />
         ) },
