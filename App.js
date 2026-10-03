@@ -50,7 +50,6 @@ import {
   WHATS_NEW_VERSION,
   applyModuleBackup,
   buildWidgetSnapshot,
-  calculateGardenHealth,
   canPlantInArea,
   collectModuleBackup,
   countKnownPlants,
@@ -617,7 +616,6 @@ const [firedMilestones, setFiredMilestones] = useState([]); // ids already celeb
 const [showWhatsNew, setShowWhatsNew] = useState(false);
 const [showAnniversary, setShowAnniversary] = useState(null);
 const [showFirstSave, setShowFirstSave] = useState(false);
-const [showCareLogModal, setShowCareLogModal] = useState(false);
 const [undoToast, setUndoToast] = useState(null); // { message, onUndo }
 const [syncFailed, setSyncFailed] = useState(false); // cloud save failed → show banner
 const [lastSyncedAt, setLastSyncedAt] = useState(null); // ms timestamp of the last successful cloud save
@@ -801,11 +799,6 @@ const clearLocalAccountData = async () => {
   } catch (err) {
     console.log("CLEAR STORAGE ERROR:", err);
   }
-};
-
-const handleLogout = async () => {
-  await supabase.auth.signOut();
-  setUser(null);
 };
 
 const handleForgotPassword = async () => {
@@ -1320,7 +1313,6 @@ setDailyBonusClaimed(isSameDayKey(data?.daily_bonus_date, getTodayKey()));
   const lastFrostAlertDate = useRef(null);
   const lastHeatAlertDate = useRef(null);
   const avatarGlow = useRef(new Animated.Value(0)).current;
-  const profileGlow = useRef(new Animated.Value(0)).current;
   const glowAnimation = useRef(new Animated.Value(0)).current;
   const fadeAnimation = useRef(new Animated.Value(0)).current;
   const heroFloat = useRef(new Animated.Value(0)).current;
@@ -1434,23 +1426,6 @@ setDailyBonusClaimed(isSameDayKey(data?.daily_bonus_date, getTodayKey()));
     return s;
   }, [gardenAreas]);
 
-const searchableGalleryPlants = useMemo(() => {
-  const plantToday =
-    monthlySuggestions?.[0] ||
-    compatiblePlants?.[0];
-return compatiblePlants
-  .filter(
-    (item) =>
-      item.name !== plantToday?.name
-  )
-  .sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
-}, [
-  compatiblePlants,
-  monthlySuggestions,
-]);
-
 const smartRecommendation = useMemo(
   () => {
     void language; // the recommendation is translated text
@@ -1463,10 +1438,6 @@ const rarityStyle = selectedPlant
   ? RARITY_STYLES[getRarity(selectedPlant)]
   : null;
 
-const gardenHealth = useMemo(
-  () => calculateGardenHealth(combinedGardenMap),
-  [combinedGardenMap]
-);
 
 const gardenXP = useMemo(
   () => {
@@ -5128,12 +5099,6 @@ const jumpToTab = useCallback((tab) => {
     useNativeDriver: true,
   }).start(swap);
 }, []);
-  const jumpToSmartReminders = useCallback(() => {
-    // Was the last path with its own copy of the paywall — it alerted and
-    // refused while every other route now lands on the upsell wall. It also
-    // bypassed jumpToTab's fade. Both fixed by just going through jumpToTab.
-    jumpToTab("garden");
-  }, [jumpToTab]);
 
   // ── Early returns ──────────────────────────────────────────────────────────
   if (loading || !fontsReady) return <LoadingScreen />;
