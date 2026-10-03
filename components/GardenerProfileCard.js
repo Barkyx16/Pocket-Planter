@@ -23,7 +23,7 @@ export const GardenerProfileCard = memo(function GardenerProfileCard({ theme, se
     { value: harvestCount, label: t("stats.harvests"), color: "#ffd86b" },
     { value: wateringTotal, label: t("share.waterings"), color: "#6bc7ff" },
     { value: gardenPlotCount, label: t("ui7.plots"), color: "#8effab" },
-    { value: streakData?.count || 0, label: "Day Streak", color: "#ff9f43" },
+    { value: streakData?.count || 0, label: t("share.dayStreak"), color: "#ff9f43" },
   ];
 return (
     <View>

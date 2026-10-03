@@ -50,10 +50,10 @@ export const GardenStatsPreview = memo(function GardenStatsPreview({
   const nextLevelXP = gardenXP?.nextLevelXP ?? 100;
 
   const weatherStatus = !weather ? null
-    : weather.minTempF <= FROST_THRESHOLD_F ? { icon: "❄️", label: "Frost Risk", color: "#6bc7ff" }
-    : weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F ? { icon: "🔥", label: "Heat Alert", color: "#ff7b7b" }
-    : weather.precipChance >= 70 ? { icon: "🌧️", label: "Rain Today", color: "#6bc7ff" }
-    : { icon: "☀️", label: "Good Day", color: "#5cff89" };
+    : weather.minTempF <= FROST_THRESHOLD_F ? { icon: "❄️", label: t("ui8.frostRisk"), color: "#6bc7ff" }
+    : weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F ? { icon: "🔥", label: t("ui8.heatAlert"), color: "#ff7b7b" }
+    : weather.precipChance >= 70 ? { icon: "🌧️", label: t("ui8.rainToday"), color: "#6bc7ff" }
+    : { icon: "☀️", label: t("ui8.goodDay"), color: "#5cff89" };
 
   return (
     <View>

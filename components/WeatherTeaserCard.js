@@ -11,7 +11,7 @@ export const WeatherTeaserCard = memo(function WeatherTeaserCard({ theme, weathe
   const currentMonth = new Date().getMonth() + 1;
 
   const getConditionPreview = () => {
-    if (!weather) return { icon: "🌤️", label: "Loading forecast...", color: "#8effab" };
+    if (!weather) return { icon: "🌤️", label: t("ui8.loadingForecast"), color: "#8effab" };
     if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", label: t("ui3.tFrost"), color: "#6bc7ff" };
     if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", label: t("ui3.tHeat"), color: "#ff7b7b" };
     if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) return { icon: "☀️", label: t("ui3.tHot"), color: "#ffd86b" };

@@ -190,7 +190,7 @@ return (
         {[
           { icon: "🧪", label: t("fertilizerIntelligence.fertilizerType"), value: tip.type, tint: "#8effab" },
           { icon: "⏰", label: t("fertilizerIntelligence.bestTime"), value: tip.bestTime, tint: "#6bc7ff" },
-          { icon: "📅", label: "Frequency", value: tip.frequency, tint: "#ffd86b" },
+          { icon: "📅", label: t("ui8.frequency"), value: tip.frequency, tint: "#ffd86b" },
           { icon: "🛒", label: t("fertilizerIntelligence.whatToBuy"), value: tip.product, tint: "#ff9f43" },
         ].map((t) => (
           <View key={t.label} style={styles.fertilizerTile}>

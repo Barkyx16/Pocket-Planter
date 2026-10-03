@@ -328,9 +328,9 @@ const WEATHER_CACHE_MAX_AGE_MS = 3 * 60 * 60 * 1000; // 3 hours
 
 // Everything behind the "More" sheet, in the order it appears there.
 const MORE_ITEMS = [
-  { id: "flowers", label: "Flowers & Home", icon: "flower" },
-  { id: "games", label: "Garden Games", icon: "game-controller" },
-  { id: "pests", label: "Pest Watch", icon: "bug" },
+  { id: "flowers", labelKey: "ui8.moreFlowers", icon: "flower" },
+  { id: "games", labelKey: "ui8.moreGames", icon: "game-controller" },
+  { id: "pests", labelKey: "ui8.morePests", icon: "bug" },
   { id: "journal", labelKey: "tabs.journal", icon: "book" },
   { id: "profile", labelKey: "tabs.quests", icon: "flash" },
   { id: "settings", labelKey: "tabs.settings", icon: "settings" },
@@ -4092,7 +4092,7 @@ function createBedFromPlacementPrompt() {
   const id = `area-${Date.now()}`;
   setGardenAreas((current) => {
     const sameKind = (current || []).filter((a) => (flowerKind ? a.kind === "flower" : a.kind !== "flower"));
-    const baseName = flowerKind ? "Flowers & Home" : "My Garden";
+    const baseName = t(flowerKind ? "ui8.moreFlowers" : "ui8.myGarden");
     const areaName = sameKind.length ? `${baseName} ${sameKind.length + 1}` : baseName;
     return [
       ...current,

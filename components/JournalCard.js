@@ -83,7 +83,7 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
     { icon: "📸", title: t("journal.badgePhotoKeeper"), unlocked: journalEntries.length >= 3 },
     { icon: "📖", title: t("journal.badgeGardenStory"), unlocked: journalEntries.length >= 5 },
     { icon: "🍅", title: t("journal.badgeHarvestHero"), unlocked: harvestEntries > 0 },
-    { icon: "🌿", title: "Botanist", unlocked: plantsDocumented >= 5 },
+    { icon: "🌿", title: t("ui8.botanist"), unlocked: plantsDocumented >= 5 },
     { icon: "📅", title: t("journal.badgeMonthlyGrower"), unlocked: thisMonthEntries >= 3 },
   ];
 
