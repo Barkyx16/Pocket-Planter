@@ -5319,7 +5319,12 @@ export function getWaterTriage(savedPlants, wateringHistory, wateredPlants, weat
       // with the rest of the app: without them it never saw rain or heat, and it
       // lost any plant whose only record was the watered-today marker.
       const info = getNextWaterInfo(name, item, wateringHistory, wateredPlants, weather);
-      if (!info) return null;
+      // Never watered: no schedule yet, but due — the same answer isWaterDue
+      // gives. The queue used to leave new plants out until their first
+      // watering, which is the one the queue exists to prompt.
+      if (!info) return isWaterDue(name, item, wateredPlants, wateringHistory, weather)
+        ? { name, item, info: null, daysUntil: 0, bucket: "today" }
+        : null;
       const d = typeof info.daysUntil === "number" ? info.daysUntil : null;
       if (d === null) return null;
       let bucket;

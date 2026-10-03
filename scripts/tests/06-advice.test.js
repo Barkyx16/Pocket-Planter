@@ -585,3 +585,19 @@ describe("every 'need water' count uses the shared rule", () => {
     eq((tab.match(/wateringHistory=\{wateringHistory\}/g) || []).length >= 3, true, "the Weather tab passes the history down");
   });
 });
+
+describe("the watering queue", () => {
+  it("includes a plant that has never been watered, as due today", () => {
+    // It needed a first watering before it could join the queue.
+    const rows = core.getWaterTriage(["Tomato"], {}, {}, null);
+    eq(rows.map((r) => [r.name, r.bucket]), [["Tomato", "today"]]);
+    eq(core.getWaterTriage(["Tomato"], {}, { Tomato: core.getTodayKey() }, null), [], "watered today is not queued");
+  });
+  it("agrees with isWaterDue for every plant it lists as overdue or today", () => {
+    const names = ["Tomato", "Basil", "Rosemary", "Lettuce"];
+    const history = { Tomato: [ago(9)], Basil: [ago(1)], Rosemary: [ago(30)] };
+    for (const r of core.getWaterTriage(names, history, {}, null)) {
+      if (r.bucket !== "tomorrow") eq(core.isWaterDue(r.name, plant(r.name), {}, history, null), true, r.name);
+    }
+  });
+});

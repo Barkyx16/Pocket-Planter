@@ -6,7 +6,7 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const WaterTriageCard = memo(function WaterTriageCard({ theme, savedPlants, wateringHistory, wateredPlants, weather, onWater, onOpenPlant }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const rows = getWaterTriage(savedPlants, wateringHistory, wateredPlants, weather);
   if (!rows.length) return null;
 
@@ -36,7 +36,7 @@ export const WaterTriageCard = memo(function WaterTriageCard({ theme, savedPlant
           const img = resolvePlantImageSource(item);
           const detail =
             bucket === "overdue"
-              ? `${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? "" : "s"} overdue`
+              ? tn("waterTriage.daysOverdue", Math.abs(daysUntil))
               : bucket === "today"
               ? t("waterTriage.dueToday")
               : t("waterTriage.dueTomorrow");
