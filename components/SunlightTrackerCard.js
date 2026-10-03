@@ -65,7 +65,7 @@ export const SunlightTrackerCard = memo(function SunlightTrackerCard({ theme, ga
                 {[2, 4, 6, 8].map((h) => {
                   const active = hours === h;
                   return (
-                    <Pressable key={h} onPress={() => setHours(area.id, h)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 8, backgroundColor: active ? "#ffd86b" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#ffd86b" : "rgba(255, 255, 255, 0.1)" }}>
+                    <Pressable accessibilityRole="button" key={h} onPress={() => setHours(area.id, h)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 8, backgroundColor: active ? "#ffd86b" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#ffd86b" : "rgba(255, 255, 255, 0.1)" }}>
                       <Text style={{ color: active ? "#3d2c00" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{h === 8 ? "8+" : h}h</Text>
                     </Pressable>
                   );

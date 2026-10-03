@@ -51,7 +51,7 @@ export const PestWatchCard = memo(function PestWatchCard({ theme, savedPlantObjs
       </View>
 
       {pests.length > visible ? (
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => setVisible((c) => c + 6)}
           style={{ marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
         >

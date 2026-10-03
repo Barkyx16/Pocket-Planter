@@ -131,7 +131,7 @@ export const GardenTimelineCard = memo(function GardenTimelineCard({ theme, jour
       ))}
 
       {events.length > visible ? (
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => setVisible((c) => c + 12)}
           style={{ marginTop: 4, backgroundColor: "rgba(107, 199, 255, 0.1)", borderRadius: 16, paddingVertical: 13, alignItems: "center", borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.24)" }}
         >

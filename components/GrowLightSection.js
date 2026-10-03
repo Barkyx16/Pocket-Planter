@@ -85,7 +85,7 @@ export const GrowLightSection = memo(function GrowLightSection({ theme }) {
         {HOUR_OPTS.map((h) => {
           const active = hours === h;
           return (
-            <Pressable key={h} onPress={() => setHours(h)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 10, backgroundColor: active ? "#ffd86b" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#ffd86b" : "rgba(255,255,255,0.1)" }}>
+            <Pressable accessibilityRole="button" key={h} onPress={() => setHours(h)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 10, backgroundColor: active ? "#ffd86b" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#ffd86b" : "rgba(255,255,255,0.1)" }}>
               <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{t("tools.growHoursChip", { h })}</Text>
             </Pressable>
           );

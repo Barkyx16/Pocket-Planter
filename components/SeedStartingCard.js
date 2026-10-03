@@ -33,7 +33,7 @@ export const SeedStartingCard = memo(function SeedStartingCard({ theme, plants, 
         {startNow.map(({ item, info }) => {
           const img = resolvePlantImageSource(item);
           return (
-            <Pressable key={`start-${item.name}`} onPress={() => onOpenPlant(item)}
+            <Pressable accessibilityRole="button" key={`start-${item.name}`} onPress={() => onOpenPlant(item)}
               style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(142, 255, 171, 0.2)" }}>
               <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                 {img ? <Image source={img} style={{ width: 36, height: 36 }} resizeMode="contain" /> : <Text style={{ fontSize: 20 }}>🌱</Text>}

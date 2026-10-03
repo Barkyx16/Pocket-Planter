@@ -63,11 +63,11 @@ export function DatePickerModal({ visible, initialDate, title, confirmLabel, onC
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <Pressable
+      <Pressable accessible={false}
         onPress={onClose}
         style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", justifyContent: "flex-end" }}
       >
-        <Pressable
+        <Pressable accessible={false}
           onPress={(e) => e.stopPropagation()}
           style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 18, paddingBottom: 34, paddingHorizontal: 20 }}
         >

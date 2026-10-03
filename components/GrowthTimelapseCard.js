@@ -57,7 +57,7 @@ export const GrowthTimelapseCard = memo(function GrowthTimelapseCard({ theme, jo
         {playable.map(([name, entries]) => {
           const active = selected === name;
           return (
-            <Pressable key={name} onPress={() => setSelected(name)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}>
+            <Pressable accessibilityRole="button" key={name} onPress={() => setSelected(name)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}>
               <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{name} · {entries.length}</Text>
             </Pressable>
           );
@@ -91,7 +91,7 @@ export const GrowthTimelapseCard = memo(function GrowthTimelapseCard({ theme, jo
         <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.previousFrame")} onPress={() => { setPlaying(false); setIndex((i) => Math.max(0, i - 1)); }} style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.1)" }}>
           <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>‹</Text>
         </Pressable>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => { if (index >= frames.length - 1) setIndex(0); setPlaying((p) => !p); }}
           style={{ flex: 1, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 12, alignItems: "center" }}
         >

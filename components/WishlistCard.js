@@ -63,7 +63,7 @@ export const WishlistCard = memo(function WishlistCard({ theme, savedPlants, onO
       {suggestions.length ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
           {suggestions.map((p) => (
-            <Pressable key={p.name} onPress={() => add(p.name)} style={{ backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}>
+            <Pressable accessibilityRole="button" key={p.name} onPress={() => add(p.name)} style={{ backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}>
               <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "800" }}>+ {p.name}</Text>
             </Pressable>
           ))}
@@ -82,7 +82,7 @@ export const WishlistCard = memo(function WishlistCard({ theme, savedPlants, onO
             return (
               <View key={item.id} style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 12, paddingVertical: 8, paddingHorizontal: 10, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
                 <Text style={{ fontSize: 14 }}>⭐</Text>
-                <Pressable style={{ flex: 1 }} onPress={() => { if (known && onOpenPlant) onOpenPlant(known); }}>
+                <Pressable accessibilityRole="button" style={{ flex: 1 }} onPress={() => { if (known && onOpenPlant) onOpenPlant(known); }}>
                   <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }} numberOfLines={1}>{item.name}{known ? " ›" : ""}</Text>
                 </Pressable>
                 {alreadyGrowing ? <Text style={{ color: "#8effab", fontSize: 10, fontWeight: "900" }}>{t("wishlist.growing")}</Text> : null}

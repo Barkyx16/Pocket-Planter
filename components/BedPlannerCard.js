@@ -67,7 +67,7 @@ export const BedPlannerCard = memo(function BedPlannerCard({ theme, savedPlants,
         {options.map((p) => {
           const active = selected === p.name;
           return (
-            <Pressable key={p.name} onPress={() => setSelected(p.name)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}>
+            <Pressable accessibilityRole="button" key={p.name} onPress={() => setSelected(p.name)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}>
               <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{p.name}</Text>
             </Pressable>
           );

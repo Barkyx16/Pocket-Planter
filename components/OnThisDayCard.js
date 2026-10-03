@@ -89,7 +89,7 @@ export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries
           if (m.type === "photo") {
             const plant = produceData.find((p) => p.name === m.entry.plantName);
             return (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={`otd-photo-${m.entry.id || m.entry.createdAt || i}`}
                 onPress={() => plant && onOpenPlant(plant)}
                 style={{ borderRadius: 16, overflow: "hidden", backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(216, 200, 255, 0.2)" }}
@@ -110,7 +110,7 @@ export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries
           const plant = produceData.find((p) => p.name === m.entry.plantName);
           const img = plant ? resolvePlantImageSource(plant) : null;
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={`otd-harvest-${m.entry.id || m.entry.createdAt || i}`}
               onPress={() => plant && onOpenPlant(plant)}
               style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(216, 200, 255, 0.2)" }}

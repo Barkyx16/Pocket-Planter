@@ -37,10 +37,10 @@ function ScannerBody({ onScanned, onClose }) {
         <Text style={{ color: "#8fbf9d", fontSize: 13, fontWeight: "700", textAlign: "center", lineHeight: 19, marginTop: 8 }}>
           {t("barcodeScanner.cameraNeededBody")}
         </Text>
-        <Pressable onPress={requestPermission} style={{ marginTop: 20, backgroundColor: "#5cff89", borderRadius: 14, paddingHorizontal: 24, paddingVertical: 13 }}>
+        <Pressable accessibilityRole="button" onPress={requestPermission} style={{ marginTop: 20, backgroundColor: "#5cff89", borderRadius: 14, paddingHorizontal: 24, paddingVertical: 13 }}>
           <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{t("barcodeScanner.allowCamera")}</Text>
         </Pressable>
-        <Pressable onPress={onClose} style={{ marginTop: 12 }}>
+        <Pressable accessibilityRole="button" onPress={onClose} style={{ marginTop: 12 }}>
           <Text style={{ color: "#8fbf9d", fontSize: 13, fontWeight: "800" }}>{t("common.cancel")}</Text>
         </Pressable>
       </View>
@@ -82,7 +82,7 @@ export function BarcodeScannerModal({ visible, onScanned, onClose, theme }) {
             <Text style={{ color: "#8fbf9d", fontSize: 13, fontWeight: "700", textAlign: "center", lineHeight: 19, marginTop: 8 }}>
               {t("barcodeScanner.needsNewBuildBody")}
             </Text>
-            <Pressable onPress={onClose} style={{ marginTop: 20, backgroundColor: "#5cff89", borderRadius: 14, paddingHorizontal: 24, paddingVertical: 13 }}>
+            <Pressable accessibilityRole="button" onPress={onClose} style={{ marginTop: 20, backgroundColor: "#5cff89", borderRadius: 14, paddingHorizontal: 24, paddingVertical: 13 }}>
               <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{t("common.gotIt")}</Text>
             </Pressable>
           </View>

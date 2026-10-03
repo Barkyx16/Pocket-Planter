@@ -45,7 +45,7 @@ export const WaterTriageCard = memo(function WaterTriageCard({ theme, savedPlant
               key={`triage-${name}`}
               style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: `${b.color}30` }}
             >
-              <Pressable onPress={() => onOpenPlant(item)} style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}>
+              <Pressable accessibilityRole="button" onPress={() => onOpenPlant(item)} style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}>
                 <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                   {img ? <Image source={img} style={{ width: 32, height: 32 }} resizeMode="contain" /> : <Text style={{ fontSize: 20 }}>🌱</Text>}
                 </View>
@@ -57,7 +57,7 @@ export const WaterTriageCard = memo(function WaterTriageCard({ theme, savedPlant
                   <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>{detail}</Text>
                 </View>
               </Pressable>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => onWater(name)}
                 style={{ backgroundColor: `${b.color}22`, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10, borderWidth: 1, borderColor: `${b.color}44` }}
               >

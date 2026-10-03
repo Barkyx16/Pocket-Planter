@@ -95,7 +95,7 @@ return (
             {plantOptions.map((p) => {
               const active = plant === p;
               return (
-                <Pressable key={p} onPress={() => setPlant(p)}
+                <Pressable accessibilityRole="button" key={p} onPress={() => setPlant(p)}
                   style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: active ? "#6bc7ff" : "rgba(255, 255, 255, 0.08)", borderWidth: 1, borderColor: active ? "#6bc7ff" : "rgba(255, 255, 255, 0.1)" }}>
                   <Text style={{ color: active ? "#07120b" : "#ffffff", fontSize: 12, fontWeight: "800" }}>
                     {p === "Garden" ? t("waterUsage.wholeGarden") : p}
@@ -119,7 +119,7 @@ return (
               {WATER_UNITS.map((u) => {
                 const active = unit === u.id;
                 return (
-                  <Pressable key={u.id} onPress={() => setUnit(u.id)}
+                  <Pressable accessibilityRole="button" key={u.id} onPress={() => setUnit(u.id)}
                     style={{ borderRadius: 12, paddingHorizontal: 12, justifyContent: "center", backgroundColor: active ? "#6bc7ff" : "rgba(255, 255, 255, 0.08)", borderWidth: 1, borderColor: active ? "#6bc7ff" : "rgba(255, 255, 255, 0.1)" }}>
                     <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{u.id}</Text>
                   </Pressable>
@@ -128,7 +128,7 @@ return (
             </View>
           </View>
 
-          <Pressable onPress={addEntry} style={{ marginTop: 12, backgroundColor: "#6bc7ff", borderRadius: 12, paddingVertical: 14, alignItems: "center" }}>
+          <Pressable accessibilityRole="button" onPress={addEntry} style={{ marginTop: 12, backgroundColor: "#6bc7ff", borderRadius: 12, paddingVertical: 14, alignItems: "center" }}>
             <IconText label={t("waterUsage.logWatering")} style={{
   color: "#07120b",
   fontSize: 14,
@@ -137,7 +137,7 @@ return (
           </Pressable>
         </View>
       ) : (
-        <Pressable onPress={() => setShowPanel(true)}
+        <Pressable accessibilityRole="button" onPress={() => setShowPanel(true)}
           style={{ marginTop: 16, backgroundColor: "#6bc7ff", borderRadius: 16, paddingVertical: 14, alignItems: "center" }}>
           <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{t("waterUsage.logAWateringAmount")}</Text>
         </Pressable>

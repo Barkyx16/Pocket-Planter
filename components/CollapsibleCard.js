@@ -37,7 +37,7 @@ export const CollapsibleCard = memo(function CollapsibleCard({ theme, storageKey
 
   return (
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={toggle}
         style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, pressed && { opacity: 0.6 }]}
       >

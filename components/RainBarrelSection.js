@@ -101,11 +101,11 @@ export const RainBarrelSection = memo(function RainBarrelSection({ theme, unitSy
       <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("tools.rainAdd")}</Text>
       <View style={{ flexDirection: "row", gap: 6 }}>
         {fillOpts.map((amt) => (
-          <Pressable key={amt} onPress={() => changeLevel(toL(amt))} style={{ flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12, backgroundColor: "rgba(107,199,255,0.12)", borderWidth: 1, borderColor: "rgba(107,199,255,0.26)" }}>
+          <Pressable accessibilityRole="button" key={amt} onPress={() => changeLevel(toL(amt))} style={{ flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12, backgroundColor: "rgba(107,199,255,0.12)", borderWidth: 1, borderColor: "rgba(107,199,255,0.26)" }}>
             <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900" }}>+{amt}{metric ? "L" : "gal"}</Text>
           </Pressable>
         ))}
-        <Pressable onPress={topUp} style={{ alignItems: "center", justifyContent: "center", paddingHorizontal: 12, borderRadius: 12, backgroundColor: "rgba(107,199,255,0.12)", borderWidth: 1, borderColor: "rgba(107,199,255,0.26)" }}>
+        <Pressable accessibilityRole="button" onPress={topUp} style={{ alignItems: "center", justifyContent: "center", paddingHorizontal: 12, borderRadius: 12, backgroundColor: "rgba(107,199,255,0.12)", borderWidth: 1, borderColor: "rgba(107,199,255,0.26)" }}>
           <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900" }}>{t("tools.rainFull")}</Text>
         </Pressable>
       </View>
@@ -114,11 +114,11 @@ export const RainBarrelSection = memo(function RainBarrelSection({ theme, unitSy
       <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 10, marginBottom: 6 }}>{t("tools.rainUsed")}</Text>
       <View style={{ flexDirection: "row", gap: 6 }}>
         {drawOpts.map((amt) => (
-          <Pressable key={amt} onPress={() => changeLevel(-toL(amt))} style={{ flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12, backgroundColor: "rgba(255,159,67,0.1)", borderWidth: 1, borderColor: "rgba(255,159,67,0.24)" }}>
+          <Pressable accessibilityRole="button" key={amt} onPress={() => changeLevel(-toL(amt))} style={{ flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12, backgroundColor: "rgba(255,159,67,0.1)", borderWidth: 1, borderColor: "rgba(255,159,67,0.24)" }}>
             <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "900" }}>−{amt}{metric ? "L" : "gal"}</Text>
           </Pressable>
         ))}
-        <Pressable onPress={empty} style={{ alignItems: "center", justifyContent: "center", paddingHorizontal: 12, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
+        <Pressable accessibilityRole="button" onPress={empty} style={{ alignItems: "center", justifyContent: "center", paddingHorizontal: 12, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
           <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{t("tools.rainEmptyBtn")}</Text>
         </Pressable>
       </View>
@@ -129,7 +129,7 @@ export const RainBarrelSection = memo(function RainBarrelSection({ theme, unitSy
         {capacityOpts.map((opt) => {
           const active = Math.round(data.capacityL) === Math.round(opt.l);
           return (
-            <Pressable key={opt.label} onPress={() => setCapacity(Math.round(opt.l))} style={{ flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 10, backgroundColor: active ? "#6bc7ff" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#6bc7ff" : "rgba(255,255,255,0.1)" }}>
+            <Pressable accessibilityRole="button" key={opt.label} onPress={() => setCapacity(Math.round(opt.l))} style={{ flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 10, backgroundColor: active ? "#6bc7ff" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#6bc7ff" : "rgba(255,255,255,0.1)" }}>
               <Text style={{ color: active ? "#07120b" : theme.secondaryText, fontSize: 11, fontWeight: "900" }}>{opt.label}</Text>
             </Pressable>
           );

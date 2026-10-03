@@ -213,7 +213,7 @@ return (
           style={styles.accountInput}
         />
 
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={changeEmail}
           style={styles.accountActionButton}
         >
@@ -223,7 +223,7 @@ return (
         </Pressable>
       </View>
 
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={resetPassword}
         style={styles.accountSecondaryButton}
       >
@@ -232,14 +232,14 @@ return (
         </Text>
       </Pressable>
 
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={handleLogout}
         style={styles.accountLogoutButton}
       >
         <IconText label={t("accountCloud.logOut")} style={styles.accountLogoutButtonText} />
       </Pressable>
 
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={async () => {
           Alert.alert(
             t("accountCloud.deleteAccountTitle"),

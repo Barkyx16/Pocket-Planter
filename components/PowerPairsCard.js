@@ -71,10 +71,10 @@ export const PowerPairsCard = memo(function PowerPairsCard({ theme, gardenAreas,
             >
               <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Pressable onPress={() => itemA && onOpenPlant(itemA)} style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden", zIndex: 2 }}>
+                  <Pressable accessibilityRole="button" onPress={() => itemA && onOpenPlant(itemA)} style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden", zIndex: 2 }}>
                     {imgA ? <Image source={imgA} style={{ width: 30, height: 30 }} resizeMode="contain" /> : <Text style={{ fontSize: 18 }}>🌱</Text>}
                   </Pressable>
-                  <Pressable onPress={() => itemB && onOpenPlant(itemB)} style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden", marginLeft: -10, borderWidth: 2, borderColor: theme.card }}>
+                  <Pressable accessibilityRole="button" onPress={() => itemB && onOpenPlant(itemB)} style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden", marginLeft: -10, borderWidth: 2, borderColor: theme.card }}>
                     {imgB ? <Image source={imgB} style={{ width: 30, height: 30 }} resizeMode="contain" /> : <Text style={{ fontSize: 18 }}>🌱</Text>}
                   </Pressable>
                 </View>

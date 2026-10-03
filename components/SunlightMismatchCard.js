@@ -50,7 +50,7 @@ export const SunlightMismatchCard = memo(function SunlightMismatchCard({ theme, 
         {mismatches.map((m) => {
           const img = resolvePlantImageSource(m.plant);
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={`sun-${m.areaName}-${m.plant.name}`}
               onPress={() => onOpenPlant && onOpenPlant(m.plant)}
               style={{ flexDirection: "row", alignItems: "flex-start", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: `${levelColor[m.level]}30` }}

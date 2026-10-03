@@ -151,7 +151,7 @@ return (
 
         {/* WATERING TASK */}
         {savedPlants.length > 0 ? (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => !allWatered ? onNavigate("plants") : null}
             style={[styles.myGardenTaskRowV2, {
               backgroundColor: allWatered ? "rgba(92, 255, 137, 0.1)" : "rgba(107, 199, 255, 0.08)",
@@ -177,7 +177,7 @@ return (
                   {unwateredPlants.slice(0, 4).map(p => {
                     const plant = produceData.find(item => item.name === p);
                     return (
-                      <Pressable key={p} onPress={() => plant && onOpenPlant(plant)} style={styles.myGardenPlantPill}>
+                      <Pressable accessibilityRole="button" key={p} onPress={() => plant && onOpenPlant(plant)} style={styles.myGardenPlantPill}>
                         <Text style={styles.myGardenPlantPillText}>{p} →</Text>
                       </Pressable>
                     );
@@ -201,7 +201,7 @@ return (
 
         {/* HARVEST TASK */}
         {harvestsReady.length > 0 ? (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => onNavigate("garden")}
             style={[styles.myGardenTaskRowV2, { backgroundColor: "rgba(255, 216, 107, 0.1)", borderColor: "rgba(255, 216, 107, 0.3)" }]}
           >
@@ -219,7 +219,7 @@ return (
                 {harvestsReady.map(p => {
                   const plant = produceData.find(item => item.name === p);
                   return (
-                    <Pressable key={p} onPress={() => plant && onOpenPlant(plant)} style={[styles.myGardenPlantPill, { backgroundColor: "rgba(255, 216, 107, 0.16)", borderColor: "rgba(255, 216, 107, 0.3)" }]}>
+                    <Pressable accessibilityRole="button" key={p} onPress={() => plant && onOpenPlant(plant)} style={[styles.myGardenPlantPill, { backgroundColor: "rgba(255, 216, 107, 0.16)", borderColor: "rgba(255, 216, 107, 0.3)" }]}>
                       <Text style={[styles.myGardenPlantPillText, { color: "#ffd86b" }]}>{p} →</Text>
                     </Pressable>
                   );
@@ -234,7 +234,7 @@ return (
 
         {/* FERTILIZER TASK */}
         {fertDuePlants.length > 0 ? (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => onNavigate("garden")}
             style={[styles.myGardenTaskRowV2, { backgroundColor: "rgba(142, 255, 171, 0.08)", borderColor: "rgba(142, 255, 171, 0.2)" }]}
           >
@@ -252,7 +252,7 @@ return (
                 {fertDuePlants.slice(0, 3).map(p => {
                   const plant = produceData.find(item => item.name === p);
                   return (
-                    <Pressable key={p} onPress={() => plant && onOpenPlant(plant)} style={[styles.myGardenPlantPill, { backgroundColor: "rgba(142, 255, 171, 0.16)", borderColor: "rgba(142, 255, 171, 0.3)" }]}>
+                    <Pressable accessibilityRole="button" key={p} onPress={() => plant && onOpenPlant(plant)} style={[styles.myGardenPlantPill, { backgroundColor: "rgba(142, 255, 171, 0.16)", borderColor: "rgba(142, 255, 171, 0.3)" }]}>
                       <Text style={[styles.myGardenPlantPillText, { color: "#8effab" }]}>{p} →</Text>
                     </Pressable>
                   );
@@ -267,7 +267,7 @@ return (
 
         {/* SEEDS TO START INDOORS — seasonal, not a counted daily task */}
         {seedsToStart.length > 0 ? (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => onOpenPlant && onOpenPlant(seedsToStart[0])}
             style={[styles.myGardenTaskRowV2, { backgroundColor: "rgba(142, 255, 171, 0.08)", borderColor: "rgba(142, 255, 171, 0.2)" }]}
           >
@@ -287,7 +287,7 @@ return (
         ) : null}
 
         {/* JOURNAL PHOTO TASK */}
-        <Pressable disabled={uploadingPhoto} onPress={onAddPhoto} style={[styles.myGardenTaskRowV2, {
+        <Pressable accessibilityRole="button" disabled={uploadingPhoto} onPress={onAddPhoto} style={[styles.myGardenTaskRowV2, {
           backgroundColor: todayPhotos > 0 ? "rgba(92, 255, 137, 0.08)" : "rgba(255, 255, 255, 0.06)",
           borderColor: todayPhotos > 0 ? "rgba(92, 255, 137, 0.2)" : "rgba(255, 255, 255, 0.1)",
         }]}>
@@ -318,7 +318,7 @@ return (
 
         {/* EMPTY STATE */}
         {savedPlants.length === 0 ? (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => onNavigate("plants")}
             style={[styles.myGardenTaskRowV2, { backgroundColor: "rgba(255, 255, 255, 0.04)", borderColor: "rgba(255, 255, 255, 0.08)" }]}
           >
@@ -339,7 +339,7 @@ return (
 
         {/* MONTHLY SUGGESTION */}
         {monthlySuggestions.length > 0 && savedPlants.length > 0 ? (
-          <Pressable onPress={() => onOpenPlant(monthlySuggestions[0])} style={[styles.myGardenTaskRowV2, { backgroundColor: "rgba(92, 255, 137, 0.08)", borderColor: "rgba(92, 255, 137, 0.2)" }]}>
+          <Pressable accessibilityRole="button" onPress={() => onOpenPlant(monthlySuggestions[0])} style={[styles.myGardenTaskRowV2, { backgroundColor: "rgba(92, 255, 137, 0.08)", borderColor: "rgba(92, 255, 137, 0.2)" }]}>
             <View style={[styles.myGardenTaskIconWrap, { backgroundColor: "rgba(92, 255, 137, 0.16)" }]}>
               {(() => {
                 const img = resolvePlantImageSource(monthlySuggestions[0]);

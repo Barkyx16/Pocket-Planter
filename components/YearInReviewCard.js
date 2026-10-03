@@ -82,7 +82,7 @@ return (
         ))}
       </View>
 
-      <Pressable onPress={shareReview} style={{ marginTop: 16, backgroundColor: "#ffd86b", borderRadius: 16, paddingVertical: 16, alignItems: "center" }}>
+      <Pressable accessibilityRole="button" onPress={shareReview} style={{ marginTop: 16, backgroundColor: "#ffd86b", borderRadius: 16, paddingVertical: 16, alignItems: "center" }}>
         <IconText label={t("yearInReview.shareMyYearInReview")} style={{
   color: "#3d2c00",
   fontWeight: "900",

@@ -72,7 +72,7 @@ export const BudgetTrackerCard = memo(function BudgetTrackerCard({ theme }) {
         {CATS.map((c) => {
           const active = cat === c.id;
           return (
-            <Pressable key={c.id} onPress={() => setCat(c.id)} style={{ borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: active ? c.color + "22" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? c.color : "rgba(255, 255, 255, 0.1)" }}>
+            <Pressable accessibilityRole="button" key={c.id} onPress={() => setCat(c.id)} style={{ borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: active ? c.color + "22" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? c.color : "rgba(255, 255, 255, 0.1)" }}>
               <Text style={{ color: active ? c.color : theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{c.label}</Text>
             </Pressable>
           );

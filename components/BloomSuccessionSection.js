@@ -115,7 +115,7 @@ export const BloomSuccessionSection = memo(function BloomSuccessionSection({ the
             const item = findItem(b.name);
             const img = item ? resolvePlantImageSource(item) : null;
             return (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={b.name}
                 onPress={() => { if (item && onOpenPlant) onOpenPlant(item); }}
                 style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 8 }}

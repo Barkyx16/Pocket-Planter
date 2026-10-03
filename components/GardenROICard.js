@@ -83,12 +83,12 @@ return (
             autoFocus
             style={{ flex: 1, backgroundColor: "rgba(255, 255, 255, 0.08)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)", color: "#ffffff", fontSize: 16, fontWeight: "800", paddingHorizontal: 16, paddingVertical: 14 }}
           />
-          <Pressable onPress={saveSpent} style={{ backgroundColor: "#5cff89", borderRadius: 12, paddingHorizontal: 22, alignItems: "center", justifyContent: "center" }}>
+          <Pressable accessibilityRole="button" onPress={saveSpent} style={{ backgroundColor: "#5cff89", borderRadius: 12, paddingHorizontal: 22, alignItems: "center", justifyContent: "center" }}>
             <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{t("common.save")}</Text>
           </Pressable>
         </View>
       ) : (
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => { setDraft(spent > 0 ? String(spent) : ""); setEditing(true); }}
           style={{ marginTop: 16, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
         >

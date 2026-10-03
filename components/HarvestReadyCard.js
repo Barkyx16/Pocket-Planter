@@ -41,7 +41,7 @@ export const HarvestReadyCard = memo(function HarvestReadyCard({ theme, harvestT
           const img = plant ? resolvePlantImageSource(plant) : null;
           const isReady = e.daysLeft === 0;
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={`harvest-${e.name}`}
               onPress={() => plant && onOpenPlant(plant)}
               style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: isReady ? "rgba(255, 216, 107, 0.3)" : "rgba(142, 255, 171, 0.2)" }}

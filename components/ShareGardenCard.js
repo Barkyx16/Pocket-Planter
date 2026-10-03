@@ -99,7 +99,7 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
         </Text>
       </View>
 
-      <Pressable onPress={shareGarden} style={{ marginTop: 14, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 14, alignItems: "center" }}>
+      <Pressable accessibilityRole="button" onPress={shareGarden} style={{ marginTop: 14, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 14, alignItems: "center" }}>
         <IconText label={t("shareGarden.shareMyGarden")} style={{
   color: "#07120b",
   fontSize: 14,

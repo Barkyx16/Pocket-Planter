@@ -95,7 +95,7 @@ export const WeatherTeaserCard = memo(function WeatherTeaserCard({ theme, weathe
       </View>
 
       {/* UNLOCK BUTTON */}
-      <Pressable onPress={onUnlock} style={styles.weatherTeaserUnlockBtn}>
+      <Pressable accessibilityRole="button" onPress={onUnlock} style={styles.weatherTeaserUnlockBtn}>
         <IconText label={t("weatherTeaser.unlockPremiumWeatherIntelligence")} style={styles.weatherTeaserUnlockBtnText} />
       </Pressable>
 

@@ -41,7 +41,7 @@ export const GlobalSearchModal = memo(function GlobalSearchModal({ visible, onCl
   const close = () => { setQ(""); onClose(); };
 
   const Row = ({ img, emoji, title, subtitle, accent, onPress }) => (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={() => { tapHaptic("light"); onPress(); }}
       style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10, paddingHorizontal: 12, backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}
     >

@@ -92,7 +92,7 @@ export function FlowerTab({
             </Text>
           </Pressable>
         ) : premiumUnlocked && flowerCatalog.length > flowerVisible ? (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => setFlowerVisible((c) => c + 20)}
             style={{ marginTop: 14, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
           >

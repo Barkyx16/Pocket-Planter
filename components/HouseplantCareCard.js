@@ -81,7 +81,7 @@ export const HouseplantCareCard = memo(function HouseplantCareCard({ theme, save
         {LEVELS.map((l) => {
           const active = room === l.v;
           return (
-            <Pressable key={l.v} onPress={() => { tapHaptic("light"); setRoom(l.v); }} style={{ flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 10, backgroundColor: active ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#8effab" : "rgba(255,255,255,0.1)" }}>
+            <Pressable accessibilityRole="button" key={l.v} onPress={() => { tapHaptic("light"); setRoom(l.v); }} style={{ flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 10, backgroundColor: active ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#8effab" : "rgba(255,255,255,0.1)" }}>
               <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{t(`care.${l.label}`)}</Text>
             </Pressable>
           );
@@ -98,7 +98,7 @@ export const HouseplantCareCard = memo(function HouseplantCareCard({ theme, save
             const [light, waterDays, humidity, repot, note] = care(item.name);
             const img = resolvePlantImageSource(item);
             return (
-              <Pressable key={item.name} onPress={() => onOpenPlant && onOpenPlant(item)} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
+              <Pressable accessibilityRole="button" key={item.name} onPress={() => onOpenPlant && onOpenPlant(item)} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
                   <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                     {img ? <Image source={img} style={{ width: 32, height: 32 }} resizeMode="contain" /> : <Text style={{ fontSize: 18 }}>🪴</Text>}
@@ -125,7 +125,7 @@ export const HouseplantCareCard = memo(function HouseplantCareCard({ theme, save
       )}
 
       {/* Common houseplant pests — quick reference */}
-      <Pressable onPress={() => setShowPests((v) => !v)} style={{ marginTop: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 8 }}>
+      <Pressable accessibilityRole="button" onPress={() => setShowPests((v) => !v)} style={{ marginTop: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 8 }}>
         <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "900" }}>{showPests ? "▾" : "▸"} 🫧 {t("care.hpPests")}</Text>
       </Pressable>
       {showPests ? (

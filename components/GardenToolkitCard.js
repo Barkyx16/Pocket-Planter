@@ -160,7 +160,7 @@ export const GardenToolkitCard = memo(function GardenToolkitCard({ theme, onComp
       {/* ── OWNED (collapsible) ── */}
       {ownedCount > 0 ? (
         <View style={{ marginTop: 14 }}>
-          <Pressable onPress={() => setShowOwned((v) => !v)} style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 8 }}>
+          <Pressable accessibilityRole="button" onPress={() => setShowOwned((v) => !v)} style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 8 }}>
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800" }}>
               {showOwned ? "▾" : "▸"} ✓ {tn("counts.itemsHave", ownedCount)}
             </Text>

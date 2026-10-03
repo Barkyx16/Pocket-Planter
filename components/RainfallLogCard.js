@@ -63,12 +63,12 @@ export const RainfallLogCard = memo(function RainfallLogCard({ theme, weather, u
       </Text>
       <View style={{ flexDirection: "row", gap: 6 }}>
         {[0.1, 0.25, 0.5, 1].map((v) => (
-          <Pressable key={v} onPress={() => addRain(v)} style={{ flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12, backgroundColor: "rgba(107, 199, 255, 0.12)", borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.24)" }}>
+          <Pressable accessibilityRole="button" key={v} onPress={() => addRain(v)} style={{ flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12, backgroundColor: "rgba(107, 199, 255, 0.12)", borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.24)" }}>
             <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900" }}>{unitSystem === "metric" ? `+${Math.round(v * 25.4)}mm` : `+${v}″`}</Text>
           </Pressable>
         ))}
         {log[today] ? (
-          <Pressable onPress={clearToday} style={{ alignItems: "center", justifyContent: "center", paddingHorizontal: 12, borderRadius: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.12)" }}>
+          <Pressable accessibilityRole="button" onPress={clearToday} style={{ alignItems: "center", justifyContent: "center", paddingHorizontal: 12, borderRadius: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.12)" }}>
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{t("misc.rainClear")}</Text>
           </Pressable>
         ) : null}

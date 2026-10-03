@@ -54,7 +54,7 @@ export const PollinatorPlannerCard = memo(function PollinatorPlannerCard({ theme
           const item = findItem(p.name);
           const img = item ? resolvePlantImageSource(item) : null;
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={p.name}
               onPress={() => { if (item && onOpenPlant) onOpenPlant(item); }}
               style={{ flexDirection: "row", alignItems: "flex-start", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}

@@ -39,7 +39,7 @@ export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, on
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 140 }}>
       {/* BACK */}
       <View style={styles.detailHeader}>
-        <Pressable onPress={onBack} style={styles.backButton}>
+        <Pressable accessibilityRole="button" onPress={onBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={22} color="#ffffff" />
           <Text style={styles.backButtonText}>{t("common.back")}</Text>
         </Pressable>
@@ -77,7 +77,7 @@ export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, on
             </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
               {affected.slice(0, 6).map((name) => (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={name}
                   onPress={() => onOpenPlant && onOpenPlant(name)}
                   style={{ backgroundColor: "rgba(255, 123, 123, 0.1)", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: "rgba(255, 123, 123, 0.3)" }}
@@ -121,7 +121,7 @@ export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, on
 
       {/* BOTTOM BACK */}
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-        <Pressable onPress={onBack} style={styles.bottomBackButton}>
+        <Pressable accessibilityRole="button" onPress={onBack} style={styles.bottomBackButton}>
           <Ionicons name="chevron-back" size={22} color="#07120b" />
           <Text style={styles.bottomBackButtonText}>{t("pestDetailScreen.backToPestWatch")}</Text>
         </Pressable>

@@ -95,7 +95,7 @@ export const GerminationTestSection = memo(function GerminationTestSection({ the
         {[5, 10, 20].map((n) => {
           const active = sown === n;
           return (
-            <Pressable key={n} onPress={() => setSown(n)} style={{ flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 10, backgroundColor: active ? "#5cff89" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255,255,255,0.1)" }}>
+            <Pressable accessibilityRole="button" key={n} onPress={() => setSown(n)} style={{ flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 10, backgroundColor: active ? "#5cff89" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255,255,255,0.1)" }}>
               <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{n}</Text>
             </Pressable>
           );
@@ -126,7 +126,7 @@ export const GerminationTestSection = memo(function GerminationTestSection({ the
         </View>
       ) : null}
 
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={save}
         disabled={!name.trim() || !sprouted}
         style={{ marginTop: 10, backgroundColor: name.trim() && sprouted ? "#5cff89" : "rgba(255,255,255,0.08)", borderRadius: 12, paddingVertical: 12, alignItems: "center" }}

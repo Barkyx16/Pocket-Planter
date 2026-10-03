@@ -95,7 +95,7 @@ export const ProfileBannersCard = memo(function ProfileBannersCard({ theme, prof
           </View>
 
           {unlockedBanners.length > visible ? (
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => setVisible((c) => c + 3)}
               style={{ marginTop: 12, backgroundColor: "rgba(107, 199, 255, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.24)" }}
             >
@@ -104,7 +104,7 @@ export const ProfileBannersCard = memo(function ProfileBannersCard({ theme, prof
           ) : null}
 
           {activeBanner ? (
-            <Pressable onPress={() => setActiveBannerId(null)} style={{ marginTop: 10, alignItems: "center", paddingVertical: 8 }}>
+            <Pressable accessibilityRole="button" onPress={() => setActiveBannerId(null)} style={{ marginTop: 10, alignItems: "center", paddingVertical: 8 }}>
               <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{t("profileBanners.removeActiveBanner")}</Text>
             </Pressable>
           ) : null}

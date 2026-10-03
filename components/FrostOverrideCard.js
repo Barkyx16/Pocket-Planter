@@ -129,7 +129,7 @@ export const FrostOverrideCard = memo(function FrostOverrideCard({ theme, zone, 
 
       {/* ── CUSTOMIZE ── */}
       {!editing ? (
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => setEditing(true)}
           style={{ marginTop: 18, backgroundColor: "rgba(107, 199, 255, 0.12)", borderRadius: 999, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.3)" }}
         >
@@ -170,14 +170,14 @@ export const FrostOverrideCard = memo(function FrostOverrideCard({ theme, zone, 
           )}
 
           <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={handleSave}
               disabled={!bothValid}
               style={{ flex: 1, backgroundColor: bothValid ? "rgba(107, 199, 255, 0.2)" : "rgba(255, 255, 255, 0.06)", borderRadius: 999, paddingVertical: 12, alignItems: "center", borderWidth: 1, borderColor: bothValid ? "rgba(107, 199, 255, 0.4)" : "rgba(255, 255, 255, 0.12)" }}
             >
               <Text style={{ color: bothValid ? SPRING : theme.secondaryText, fontSize: 14, fontWeight: "900" }}>{t("frostOverride.saveFrostDates")}</Text>
             </Pressable>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={handleClear}
               style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 999, paddingVertical: 12, paddingHorizontal: 18, alignItems: "center", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.12)" }}
             >
@@ -187,7 +187,7 @@ export const FrostOverrideCard = memo(function FrostOverrideCard({ theme, zone, 
         </View>
       )}
 
-      <Pressable onPress={onHide} style={{ marginTop: 12, alignItems: "center", paddingVertical: 10 }}>
+      <Pressable accessibilityRole="button" onPress={onHide} style={{ marginTop: 12, alignItems: "center", paddingVertical: 10 }}>
         <IconText label={t("frostOverride.noFrostInMyArea")} style={{
   color: theme.secondaryText,
   fontSize: 12,

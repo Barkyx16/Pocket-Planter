@@ -112,7 +112,7 @@ return (
               ) : (
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                   {active.plants.map((p) => (
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       key={p.name}
                       onPress={() => {
                         const item = produceData.find((pd) => pd.name === p.name);

@@ -84,7 +84,7 @@ export const GardenShoppingListCard = memo(function GardenShoppingListCard({ the
       </View>
 
       {plantNames.length > visible ? (
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => setVisible((c) => c + 8)}
           style={{ marginTop: 10, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
         >

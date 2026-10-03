@@ -78,8 +78,8 @@ export const GardenAreaManager = memo(function GardenAreaManager({ theme, garden
       </Pressable>
 
       <Modal visible={open} transparent animationType="slide" onRequestClose={close}>
-        <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" }} onPress={close}>
-          <Pressable
+        <Pressable accessible={false} style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" }} onPress={close}>
+          <Pressable accessible={false}
             onPress={(e) => e.stopPropagation()}
             style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 30, maxHeight: "85%" }}
           >
@@ -140,7 +140,7 @@ export const GardenAreaManager = memo(function GardenAreaManager({ theme, garden
               >
                 <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 15 }}>{label}</Text>
               </Pressable>
-              <Pressable onPress={close} style={{ paddingVertical: 14, alignItems: "center" }}>
+              <Pressable accessibilityRole="button" onPress={close} style={{ paddingVertical: 14, alignItems: "center" }}>
                 <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "800" }}>{t("common.cancel")}</Text>
               </Pressable>
             </ScrollView>

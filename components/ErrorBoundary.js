@@ -29,7 +29,7 @@ export class ErrorBoundary extends React.Component {
           <Text style={{ color: "#d7ebdc", fontSize: 14, textAlign: "center", lineHeight: 20, marginBottom: 24 }}>
             {t("errorBoundary.pocketPlanterHitAnUnexpected")}
           </Text>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => this.setState({ hasError: false })}
             style={{ backgroundColor: "#5cff89", borderRadius: 16, paddingHorizontal: 24, paddingVertical: 14 }}
           >

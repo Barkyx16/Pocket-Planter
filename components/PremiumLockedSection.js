@@ -19,7 +19,7 @@ export const PremiumLockedSection = memo(function PremiumLockedSection({ title, 
       </View>
       <Text style={styles.premiumLockedSectionTitle}>{title}</Text>
       <Text style={styles.premiumLockedSectionDesc}>{description}</Text>
-      <Pressable onPress={onUnlock} style={styles.premiumLockedSectionButton}>
+      <Pressable accessibilityRole="button" onPress={onUnlock} style={styles.premiumLockedSectionButton}>
         <Text style={styles.premiumLockedSectionButtonText}>{t("premiumLockedSection.unlockPremium")}</Text>
       </Pressable>
     </View>

@@ -83,7 +83,7 @@ export const PlantLabelsSection = memo(function PlantLabelsSection({ theme, save
           <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 10 }}>
             {tn("tools.labelsReady", names.length)}
           </Text>
-          <Pressable onPress={share} style={{ marginTop: 10, backgroundColor: "#ffd86b", borderRadius: 12, paddingVertical: 13, alignItems: "center" }}>
+          <Pressable accessibilityRole="button" onPress={share} style={{ marginTop: 10, backgroundColor: "#ffd86b", borderRadius: 12, paddingVertical: 13, alignItems: "center" }}>
             <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{t("tools.labelsExport")}</Text>
           </Pressable>
 
@@ -95,7 +95,7 @@ export const PlantLabelsSection = memo(function PlantLabelsSection({ theme, save
             {names.map((n) => {
               const active = qrPlant === n;
               return (
-                <Pressable key={n} onPress={() => { tapHaptic("light"); setQrPlant(active ? null : n); }} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: active ? "#ffd86b" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#ffd86b" : "rgba(255,255,255,0.12)" }}>
+                <Pressable accessibilityRole="button" key={n} onPress={() => { tapHaptic("light"); setQrPlant(active ? null : n); }} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: active ? "#ffd86b" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#ffd86b" : "rgba(255,255,255,0.12)" }}>
                   <Text style={{ color: active ? "#07120b" : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{n}</Text>
                 </Pressable>
               );

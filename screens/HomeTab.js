@@ -181,7 +181,7 @@ export function HomeTab({ activationSteps, claimDailyBonus, combinedGardenMap, c
             <Text key={item} style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "700", lineHeight: 20 }}>{t(`whatsNew.${item}`)}</Text>
           ))}
         </View>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => { setShowWhatsNew(false); AsyncStorage.setItem("pp_whatsNewSeen", WHATS_NEW_VERSION).catch(() => {}); }}
           style={{ marginTop: 14, backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 14, alignItems: "center" }}
         >
@@ -520,7 +520,7 @@ zone={zone}
         <Text style={{ color: "#ffffff", fontSize: 28, fontWeight: "900", marginTop: 2 }}>{t("zone.zoneN", { zone: record.zone })}</Text>
         <Text style={{ color: "#d7ebdc", fontSize: 12, fontWeight: "700", marginTop: 2 }}>{record.zonetitle}</Text>
       </View>
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={() => {
           Alert.alert(
             t("zone.changeTitle"),

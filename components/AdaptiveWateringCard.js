@@ -43,7 +43,7 @@ export const AdaptiveWateringCard = memo(function AdaptiveWateringCard({ theme, 
           const img = resolvePlantImageSource(item);
           const accent = next.urgency === "due" ? "#6bc7ff" : next.urgency === "soon" ? "#ffd86b" : "#8effab";
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={name}
               onPress={() => onOpenPlant && onOpenPlant(item)}
               style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: `${accent}22` }}
@@ -72,7 +72,7 @@ export const AdaptiveWateringCard = memo(function AdaptiveWateringCard({ theme, 
       </View>
 
       {rows.length > visible ? (
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => setVisible((c) => c + 8)}
           style={{ marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
         >

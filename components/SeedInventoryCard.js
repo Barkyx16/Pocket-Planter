@@ -101,7 +101,7 @@ export const SeedInventoryCard = memo(function SeedInventoryCard({ theme }) {
         {CATEGORIES.map((c) => {
           const active = draftCat === c.id;
           return (
-            <Pressable key={c.id} onPress={() => setDraftCat(c.id)} style={{ borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: active ? c.color + "22" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? c.color : "rgba(255, 255, 255, 0.1)" }}>
+            <Pressable accessibilityRole="button" key={c.id} onPress={() => setDraftCat(c.id)} style={{ borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: active ? c.color + "22" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? c.color : "rgba(255, 255, 255, 0.1)" }}>
               <Text style={{ color: active ? c.color : theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{c.label}</Text>
             </Pressable>
           );
@@ -141,7 +141,7 @@ export const SeedInventoryCard = memo(function SeedInventoryCard({ theme }) {
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.color }} />
                 <Text numberOfLines={1} style={{ flex: 1, color: theme.text, fontSize: 14, fontWeight: "800" }}>{item.name}</Text>
                 {item.low ? (
-                  <Pressable onPress={() => shopFor(item.name)} hitSlop={touchSlop(10)} style={{ backgroundColor: "rgba(255, 159, 67, 0.16)", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: "rgba(255, 159, 67, 0.3)" }}>
+                  <Pressable accessibilityRole="button" onPress={() => shopFor(item.name)} hitSlop={touchSlop(10)} style={{ backgroundColor: "rgba(255, 159, 67, 0.16)", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: "rgba(255, 159, 67, 0.3)" }}>
                     <IconText label={t("seedInventory.reorder")} style={{
   color: "#ff9f43",
   fontSize: 10,
@@ -163,7 +163,7 @@ export const SeedInventoryCard = memo(function SeedInventoryCard({ theme }) {
         </View>
       )}
 
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={() => Linking.openURL("https://www.amazon.com/s?k=vegetable+garden+seeds")}
         style={{ marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 12, paddingVertical: 12, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
       >

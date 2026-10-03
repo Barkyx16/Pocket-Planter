@@ -135,7 +135,7 @@ export const PlantingCalendarCard = memo(function PlantingCalendarCard({ theme, 
         {rows.slice(0, visible).map(({ item, sow, plantOut, harvest, beatsFrost }) => {
           const img = resolvePlantImageSource(item);
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={item.name}
               onPress={() => onOpenPlant && onOpenPlant(item)}
               style={{ backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}
@@ -174,7 +174,7 @@ export const PlantingCalendarCard = memo(function PlantingCalendarCard({ theme, 
       </View>
 
       {rows.length > visible ? (
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => setVisible((c) => c + 6)}
           style={{ marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
         >

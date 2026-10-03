@@ -33,7 +33,7 @@ return (
           const img = resolvePlantImageSource(item);
           const detail = t("share.rhythmDetail", { avg: rhythm.avgGap, target: rhythm.target });
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={`rhythm-${name}`}
               onPress={() => onOpenPlant(item)}
               style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, padding: 10, borderWidth: 1, borderColor: `${s.color}30` }}

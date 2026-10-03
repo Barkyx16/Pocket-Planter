@@ -41,7 +41,7 @@ export const PlantTodayHero = memo(function PlantTodayHero({ theme, monthlySugge
   };
 
 return (
-    <Pressable onPress={() => onOpen(plant)} style={styles.plantTodayHero}>
+    <Pressable accessibilityRole="button" onPress={() => onOpen(plant)} style={styles.plantTodayHero}>
       <View style={styles.plantTodayGlow} />
     <View style={{ flex: 1 }}>
         <Text style={[styles.plantTodayTitle, { color: theme.text }]}>{plant.name}</Text>

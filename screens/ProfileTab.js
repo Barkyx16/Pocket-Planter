@@ -46,7 +46,7 @@ export function ProfileTab({ achievementBadges, badgeEarnedDates, bannerEarnedDa
 <CollapsibleCard theme={theme} storageKey="gardenerprofile" title="🧑‍🌾" defaultOpen={true}>
 <GardenerProfileCard theme={theme} setAppearanceMode={setAppearanceMode} avatarGlow={avatarGlow} gardenXP={gardenXP} savedPlants={savedPlants} journalEntries={journalEntries} gardenMap={gardenMap} streakData={streakData} profileBanners={profileBanners} activeBannerId={activeBannerId} selectedProfileTheme={selectedProfileTheme} setSelectedProfileTheme={setSelectedProfileTheme} profileName={profileName} setProfileName={setProfileName} profilePhoto={profilePhoto} setProfilePhoto={setProfilePhoto} harvestLog={harvestLog} wateringHistory={wateringHistory} />
 {/* ACHIEVEMENTS — tap the button to reveal */}
-<Pressable
+<Pressable accessibilityRole="button"
   onPress={() => setShowAchievements((v) => !v)}
   style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 16, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 12, paddingVertical: 14, paddingHorizontal: 14, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)" }}
 >
@@ -73,7 +73,7 @@ export function ProfileTab({ achievementBadges, badgeEarnedDates, bannerEarnedDa
 ) : null}
 
 {/* COLLECTIBLE BANNERS — tap the button to reveal */}
-<Pressable
+<Pressable accessibilityRole="button"
   onPress={() => setShowBanners((v) => !v)}
   style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 12, backgroundColor: "rgba(107, 199, 255, 0.1)", borderRadius: 12, paddingVertical: 14, paddingHorizontal: 14, borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.3)" }}
 >

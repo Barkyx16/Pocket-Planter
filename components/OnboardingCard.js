@@ -123,7 +123,7 @@ export const OnboardingCard = memo(function OnboardingCard({ onFinish, isDark = 
           ))}
         </View>
 
-        <Pressable
+        <Pressable accessibilityRole="button"
           style={styles.onboardingButton}
           onPress={() => {
             if (isLast) {
@@ -139,7 +139,7 @@ export const OnboardingCard = memo(function OnboardingCard({ onFinish, isDark = 
         </Pressable>
 
         {!isLast ? (
-          <Pressable onPress={onFinish} style={styles.onboardingSkipButton}>
+          <Pressable accessibilityRole="button" onPress={onFinish} style={styles.onboardingSkipButton}>
             <Text style={styles.onboardingSkipText}>{t("onboarding.skipForNow")}</Text>
           </Pressable>
         ) : null}

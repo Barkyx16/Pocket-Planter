@@ -270,16 +270,16 @@ function WateringTimer({ theme }) {
 
       {/* +/- adjust */}
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 12 }}>
-        <Pressable onPress={() => adjust(-30)} disabled={running} style={{ width: 44, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", opacity: running ? 0.4 : 1 }}>
+        <Pressable accessibilityRole="button" onPress={() => adjust(-30)} disabled={running} style={{ width: 44, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", opacity: running ? 0.4 : 1 }}>
           <Text style={{ color: theme.text, fontSize: 16, fontWeight: "900" }}>−30s</Text>
         </Pressable>
-        <Pressable onPress={toggle} style={{ flex: 1, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: running ? "rgba(255,159,67,0.9)" : "#6bc7ff" }}>
+        <Pressable accessibilityRole="button" onPress={toggle} style={{ flex: 1, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: running ? "rgba(255,159,67,0.9)" : "#6bc7ff" }}>
           <Text style={{ color: "#07120b", fontSize: 15, fontWeight: "900" }}>{running ? t("calc.pause") : left <= 0 ? t("calc.restart") : t("calc.start")}</Text>
         </Pressable>
-        <Pressable onPress={reset} style={{ width: 44, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
+        <Pressable accessibilityRole="button" onPress={reset} style={{ width: 44, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
           <Text style={{ color: theme.text, fontSize: 16, fontWeight: "900" }}>↺</Text>
         </Pressable>
-        <Pressable onPress={() => adjust(30)} disabled={running} style={{ width: 44, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", opacity: running ? 0.4 : 1 }}>
+        <Pressable accessibilityRole="button" onPress={() => adjust(30)} disabled={running} style={{ width: 44, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", opacity: running ? 0.4 : 1 }}>
           <Text style={{ color: theme.text, fontSize: 16, fontWeight: "900" }}>+30s</Text>
         </Pressable>
       </View>
@@ -328,7 +328,7 @@ function PottingMixCalc({ theme, metric }) {
       <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("calc.recipe")}</Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
         {MIX_RECIPES.map((r) => (
-          <Pressable key={r.id} onPress={() => setRecipeId(r.id)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: recipeId === r.id ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: recipeId === r.id ? "#8effab" : "rgba(255,255,255,0.1)" }}>
+          <Pressable accessibilityRole="button" key={r.id} onPress={() => setRecipeId(r.id)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: recipeId === r.id ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: recipeId === r.id ? "#8effab" : "rgba(255,255,255,0.1)" }}>
             <Text style={{ color: recipeId === r.id ? "#07120b" : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{t(`calc.${r.label}`)}</Text>
           </Pressable>
         ))}

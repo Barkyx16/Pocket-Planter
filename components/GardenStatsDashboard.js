@@ -220,7 +220,7 @@ return (
 
         {plantsNeedingWater > 0 ? (
           <View style={[styles.dashActionRow, { backgroundColor: "rgba(107, 199, 255, 0.1)", borderColor: "rgba(107, 199, 255, 0.24)", flexDirection: "column", alignItems: "stretch", gap: 12 }]}>
-            <Pressable onPress={() => onNavigate && onNavigate("plants")} style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <Pressable accessibilityRole="button" onPress={() => onNavigate && onNavigate("plants")} style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
               <Text style={styles.dashActionIcon}>💧</Text>
               <View style={{ flex: 1 }}>
                 <Text style={styles.dashActionLabel}>{tn("gardenStatsDashboard.dashPlantsNeedWater", plantsNeedingWater)}</Text>

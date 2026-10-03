@@ -44,7 +44,7 @@ export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, 
             const img = resolvePlantImageSource(item);
             const diff = getPlantDifficulty(item);
             return (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={`season-${item.name}`}
                 onPress={() => onOpenPlant(item)}
                 style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(255, 159, 67, 0.2)" }}
@@ -70,7 +70,7 @@ export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, 
       )}
 
       {onBrowse ? (
-        <Pressable onPress={onBrowse} style={{ marginTop: 14, backgroundColor: "#ff9f43", borderRadius: 16, paddingVertical: 14, alignItems: "center" }}>
+        <Pressable accessibilityRole="button" onPress={onBrowse} style={{ marginTop: 14, backgroundColor: "#ff9f43", borderRadius: 16, paddingVertical: 14, alignItems: "center" }}>
           <Text style={{ color: "#3d2c00", fontWeight: "900", fontSize: 14 }}>{t("seasonTransition.planMy")} {seasonLabel.toLowerCase()} {t("seasonTransition.garden")}</Text>
         </Pressable>
       ) : null}

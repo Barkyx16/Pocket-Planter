@@ -225,7 +225,7 @@ return (
             {plantsDue.map((plantName) => {
   const plant = produceData.find((item) => item.name === plantName);
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       key={plantName}
       onPress={() => plant && onOpenPlant(plant)}
       style={styles.fertilizerDuePill}

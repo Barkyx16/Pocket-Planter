@@ -1199,3 +1199,30 @@ describe("feature search", () => {
     }
   });
 });
+
+describe("pressables", () => {
+  it("each declare a role, or opt out of accessibility as a sheet container", () => {
+    // Without a role a screen reader announces a Pressable as plain text, so the
+    // user can't tell it does anything. Sheet containers and backdrops opt out
+    // instead: an accessible parent hides its children from VoiceOver.
+    const offenders = [];
+    const files = [path.join(ROOT, "App.js")];
+    for (const dir of ["components", "screens"]) {
+      for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith(".js"))) files.push(path.join(ROOT, dir, f));
+    }
+    for (const f of files) {
+      const src = fs.readFileSync(f, "utf8");
+      const re = /<Pressable(?=[\s>])/g;
+      let m;
+      while ((m = re.exec(src))) {
+        const head = src.slice(m.index, m.index + 2000);
+        const end = head.search(/\n\s*>|\/?>\s*\n|>\s*</);
+        const tag = end === -1 ? head : head.slice(0, end);
+        if (!/accessibilityRole=|accessible=\{false\}/.test(tag)) {
+          offenders.push(`${path.relative(ROOT, f)}:${src.slice(0, m.index).split("\n").length}`);
+        }
+      }
+    }
+    eq(offenders, []);
+  });
+});

@@ -44,7 +44,7 @@ export const RescueModeCard = memo(function RescueModeCard({ theme, savedPlants,
               key={`rescue-${p.name}`}
               style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(255, 159, 67, 0.24)" }}
             >
-              <Pressable onPress={() => plant && onOpenPlant(plant)} style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}>
+              <Pressable accessibilityRole="button" onPress={() => plant && onOpenPlant(plant)} style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}>
                 <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                   {img ? <Image source={img} style={{ width: 36, height: 36 }} resizeMode="contain" /> : <Text style={{ fontSize: 20 }}>🌱</Text>}
                 </View>

@@ -190,7 +190,7 @@ async function choosePlan(plan) {
           ].map(({ plan, badge, badgeBg, badgeColor, price, per, savings }) => {
             const isSelected = selectedPlan === plan;
             return (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={plan}
                 onPress={() => choosePlan(plan)}
                 style={[
@@ -258,13 +258,13 @@ async function choosePlan(plan) {
 
         {/* LEGAL LINKS */}
         <View style={{ flexDirection: "row", justifyContent: "center", gap: 16, marginTop: 10, marginBottom: 4 }}>
-          <Pressable onPress={() => Linking.openURL("https://pocketplanter.green/privacy")}>
+          <Pressable accessibilityRole="button" onPress={() => Linking.openURL("https://pocketplanter.green/privacy")}>
             <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "700", textDecorationLine: "underline" }}>
               {t("settings.privacyPolicy")}
             </Text>
           </Pressable>
           <Text style={{ color: "#8effab", fontSize: 12 }}>•</Text>
-          <Pressable onPress={() => Linking.openURL("https://pocketplanter.green/terms")}>
+          <Pressable accessibilityRole="button" onPress={() => Linking.openURL("https://pocketplanter.green/terms")}>
             <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "700", textDecorationLine: "underline" }}>
               {t("settings.termsOfUse")}
             </Text>
@@ -316,7 +316,7 @@ async function choosePlan(plan) {
       <Text style={styles.premiumDevSectionSub}>{t("settings.removeBeforeAppStoreSubmission")}</Text>
     </View>
 
-  <Pressable
+  <Pressable accessibilityRole="button"
       style={styles.premiumDevButton}
       onPress={async () => {
         const scheduled = await Notifications.getAllScheduledNotificationsAsync();
@@ -341,7 +341,7 @@ async function choosePlan(plan) {
       </View>
     </Pressable>
 
-    <Pressable
+    <Pressable accessibilityRole="button"
       style={styles.premiumDevButton}
       onPress={async () => {
         const settings = await Notifications.getPermissionsAsync();
@@ -367,7 +367,7 @@ async function choosePlan(plan) {
       </View>
     </Pressable>
 
-    <Pressable
+    <Pressable accessibilityRole="button"
       style={styles.premiumDevButton}
       onPress={async () => {
         await Notifications.cancelAllScheduledNotificationsAsync();
@@ -385,7 +385,7 @@ async function choosePlan(plan) {
         </Text>
       </View>
     </Pressable>
-    <Pressable
+    <Pressable accessibilityRole="button"
       style={[
         styles.premiumDevButton,
         premiumUnlocked && styles.premiumDevButtonActive,

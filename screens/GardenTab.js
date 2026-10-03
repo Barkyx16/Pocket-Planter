@@ -114,7 +114,7 @@ export function GardenTab({ addGardenArea, assignPlantToAreaSlot, careLog, clear
           <>
             <FixMyGardenCard theme={theme} gardenAreas={edibleAreas} onOpenPlant={openPlantFromList} onFocusConflict={onFocusConflict} />
             {onAutoOptimize ? (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={onAutoOptimize}
                 style={{ marginTop: 14, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 14, alignItems: "center" }}
               >

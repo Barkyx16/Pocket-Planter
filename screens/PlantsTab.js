@@ -87,7 +87,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
       <View style={styles.primaryFeatureAccentBar} />
       <View style={styles.cardHeaderRow}>
         <View style={{ flex: 1 }} />
-        <Pressable style={styles.smallJumpButton} onPress={() => { scrollRef.current?.scrollTo({ y: plantsListY.current, animated: true }); }}>
+        <Pressable accessibilityRole="button" style={styles.smallJumpButton} onPress={() => { scrollRef.current?.scrollTo({ y: plantsListY.current, animated: true }); }}>
           <Text style={styles.smallJumpButtonText}>{t("plants.allPlants")}</Text>
         </Pressable>
       </View>
@@ -96,7 +96,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
           const monthNumber = index + 1;
           const active = selectedMonth === monthNumber;
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={month}
               onPress={() => { tapHaptic("light"); setSelectedMonth(monthNumber); }}
               onLayout={(e) => {
@@ -123,7 +123,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
           {(showAllMonthly ? monthlySuggestions : monthlySuggestions.slice(0, MONTHLY_PREVIEW)).map((item) => {
             const imageSource = resolvePlantImageSource(item);
             return (
-              <Pressable key={`monthly-${item.name}`} style={styles.cleanPlantRow} onPress={() => openPlantFromMonthly(item)}>
+              <Pressable accessibilityRole="button" key={`monthly-${item.name}`} style={styles.cleanPlantRow} onPress={() => openPlantFromMonthly(item)}>
                 <View style={styles.cleanPlantImageWrap}>
                   {imageSource ? (<Image source={imageSource} style={styles.cleanPlantImage} />) : (<Text style={styles.cleanPlantEmoji}>🌱</Text>)}
                 </View>
@@ -181,7 +181,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
         <View style={{ flex: 1 }}>
           <Text style={[styles.cardTitle, { color: theme.text }]}>{t("stats.plants")}</Text>
         </View>
-        <Pressable
+        <Pressable accessibilityRole="button"
           style={styles.smallJumpButton}
           onPress={() => {
             setSelectedType("All");
@@ -233,7 +233,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
               if (!item) return null;
               const img = resolvePlantImageSource(item);
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={`recent-${name}`}
                   onPress={() => openPlantFromList(item)}
                   style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 999, paddingLeft: 6, paddingRight: 14, paddingVertical: 6, borderWidth: 1, borderColor: "rgba(142, 255, 171, 0.16)" }}
@@ -266,7 +266,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
       </View>
       {/* Plant-now quick filter */}
       {zone ? (
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => { tapHaptic("light"); setPlantNowOnly((v) => !v); }}
           style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 12, borderRadius: 999, paddingVertical: 10, backgroundColor: plantNowOnly ? "#5cff89" : "rgba(92, 255, 137, 0.1)", borderWidth: 1, borderColor: plantNowOnly ? "#5cff89" : "rgba(92, 255, 137, 0.3)" }}
         >
@@ -361,7 +361,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
                     <Text style={styles.compareValue}>{rv}</Text>
                   </View>
                 ))}
-                <Pressable onPress={() => setComparePlants([])} style={styles.compareClearButton}>
+                <Pressable accessibilityRole="button" onPress={() => setComparePlants([])} style={styles.compareClearButton}>
                   <Text style={styles.compareClearText}>{t("plants.clearComparison")}</Text>
                 </Pressable>
               </>
@@ -381,13 +381,13 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
       {selectMode ? (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, padding: 10, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", marginBottom: 8 }}>
           <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", flex: 1, paddingLeft: 4 }}>{bulkSel.length} selected</Text>
-          <Pressable onPress={bulkSave} disabled={!bulkSel.length} style={{ backgroundColor: bulkSel.length ? "#5cff89" : "rgba(255, 255, 255, 0.08)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 }}>
+          <Pressable accessibilityRole="button" onPress={bulkSave} disabled={!bulkSel.length} style={{ backgroundColor: bulkSel.length ? "#5cff89" : "rgba(255, 255, 255, 0.08)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 }}>
             <Text style={{ color: bulkSel.length ? "#07120b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>Save {bulkSel.length || ""}</Text>
           </Pressable>
-          <Pressable onPress={bulkCompare} disabled={bulkSel.length !== 2} style={{ backgroundColor: bulkSel.length === 2 ? "rgba(255, 216, 107, 0.16)" : "rgba(255, 255, 255, 0.08)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: bulkSel.length === 2 ? "#ffd86b" : "transparent" }}>
+          <Pressable accessibilityRole="button" onPress={bulkCompare} disabled={bulkSel.length !== 2} style={{ backgroundColor: bulkSel.length === 2 ? "rgba(255, 216, 107, 0.16)" : "rgba(255, 255, 255, 0.08)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: bulkSel.length === 2 ? "#ffd86b" : "transparent" }}>
             <Text style={{ color: bulkSel.length === 2 ? "#ffd86b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>{t("common.compare")}</Text>
           </Pressable>
-          <Pressable onPress={exitSelect} style={{ paddingHorizontal: 6, paddingVertical: 10 }}>
+          <Pressable accessibilityRole="button" onPress={exitSelect} style={{ paddingHorizontal: 6, paddingVertical: 10 }}>
             <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "900" }}>{t("common.cancel")}</Text>
           </Pressable>
         </View>
@@ -420,7 +420,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
                   {getSearchSuggestions(plantSearch).map((item) => {
                     const img = resolvePlantImageSource(item);
                     return (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={`suggest-${item.name}`}
                         onPress={() => { setPlantSearch(""); setSelectedType("All"); openPlantFromList(item); }}
                         style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(92, 255, 137, 0.08)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
@@ -437,7 +437,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
               </View>
             ) : null}
             {(plantSearch || selectedType !== "All" || plantAttrFilters.length) ? (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => { setPlantSearch(""); setSelectedType("All"); setPlantAttrFilters([]); }}
                 style={{ marginTop: 14, backgroundColor: "#5cff89", borderRadius: 16, paddingHorizontal: 18, paddingVertical: 12 }}
               >
@@ -478,7 +478,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
             </Text>
           </Pressable>
         ) : filteredPlants.length > plantsVisibleCount ? (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => setPlantsVisibleCount((c) => c + 20)}
             style={{ marginTop: 14, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
           >

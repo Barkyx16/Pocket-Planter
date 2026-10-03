@@ -71,7 +71,7 @@ export function PlantDetailScreen({
   contentContainerStyle={{ paddingBottom: 140 }}
 >
   <View style={styles.detailHeader}>
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={handleBackFromPlant}
       style={styles.backButton}
     >
@@ -131,7 +131,7 @@ export function PlantDetailScreen({
             <Text style={styles.detailSubtitle}>{typeLabel(normalizeType(selectedPlant.type, selectedPlant.name))} • {t("plantPage.zonesRange", { min: selectedPlant.minZone, max: selectedPlant.maxZone })}</Text>
           </Animated.View>
           <View style={styles.detailQuickActions}>
-            <Pressable onPress={() => toggleSavedPlant(selectedPlant.name)} style={[styles.quickActionButton, isSaved && styles.quickActionButtonActive]}>
+            <Pressable accessibilityRole="button" onPress={() => toggleSavedPlant(selectedPlant.name)} style={[styles.quickActionButton, isSaved && styles.quickActionButtonActive]}>
               <Ionicons name={isSaved ? "heart" : "heart-outline"} size={21} color={isSaved ? "#07120b" : "#ffffff"} />
               <Text style={[styles.quickActionText, isSaved && styles.quickActionTextActive]}>{isSaved ? "Saved" : "Save"}</Text>
             </Pressable>
@@ -161,7 +161,7 @@ export function PlantDetailScreen({
               : getHarvestCountdown(selectedPlant)}
           </Text>
         </View>
-        <Pressable
+        <Pressable accessibilityRole="button"
           style={styles.harvestTrackerButton}
           onPress={() => {
             setHarvestTrackers((current) => ({
@@ -179,7 +179,7 @@ export function PlantDetailScreen({
           </Text>
         </Pressable>
       </View>
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={() => { setHarvestLogText(""); setHarvestLogPlant(selectedPlant.name); }}
         style={{ marginTop: 10, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 12, alignItems: "center" }}
       >
@@ -201,7 +201,7 @@ export function PlantDetailScreen({
               : t("plantPage.trackFertilizer")}
           </Text>
         </View>
-        <Pressable
+        <Pressable accessibilityRole="button"
           style={styles.harvestTrackerButton}
           onPress={() => toggleFertilizerTracker(selectedPlant.name)}
         >
@@ -211,7 +211,7 @@ export function PlantDetailScreen({
         </Pressable>
       </View>
       <View style={styles.detailControlGrid}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => markPlantWatered(selectedPlant.name)}
           style={[styles.controlTile, wateringCompletedToday && styles.controlTileActive]}
         >
@@ -223,15 +223,15 @@ export function PlantDetailScreen({
             {getLastWateredText(selectedPlant.name, wateredPlants, wateringHistory)}
           </Text>
         </Pressable>
-        <Pressable onPress={() => quickAddPlantToGarden(selectedPlant.name)} style={styles.controlTile}>
+        <Pressable accessibilityRole="button" onPress={() => quickAddPlantToGarden(selectedPlant.name)} style={styles.controlTile}>
           <Text style={styles.controlTileIcon}>🗺️</Text>
           <Text style={styles.controlTileTitle}>{t("plantPage.addToGarden")}</Text>
         </Pressable>
-        <Pressable onPress={() => schedulePlantReminder(selectedPlant.name)} style={styles.controlTile}>
+        <Pressable accessibilityRole="button" onPress={() => schedulePlantReminder(selectedPlant.name)} style={styles.controlTile}>
           <Text style={styles.controlTileIcon}>🔔</Text>
           <Text style={styles.controlTileTitle}>{t("plantPage.reminder")}</Text>
         </Pressable>
-        <Pressable onPress={() => pickJournalPhoto(selectedPlant.name)} style={styles.controlTile}>
+        <Pressable accessibilityRole="button" onPress={() => pickJournalPhoto(selectedPlant.name)} style={styles.controlTile}>
           <Text style={styles.controlTileIcon}>📸</Text>
           <Text style={styles.controlTileTitle}>{t("plantPage.addPhoto")}</Text>
         </Pressable>
@@ -435,7 +435,7 @@ export function PlantDetailScreen({
           </View>
           <View style={styles.companionExcellentGrid}>
             {excellentCompanions.map((item) => (
-              <Pressable key={`excellent-${item}`} onPress={() => openPlantByName(item)} style={styles.companionChip}>
+              <Pressable accessibilityRole="button" key={`excellent-${item}`} onPress={() => openPlantByName(item)} style={styles.companionChip}>
                 <View style={styles.companionChipIconWrap}>
                   {getCompanionImage(item) ? (
                     <Image source={getCompanionImage(item)} style={{ width: 26, height: 26 }} resizeMode="contain" />
@@ -462,7 +462,7 @@ export function PlantDetailScreen({
           </View>
           <View style={styles.companionExcellentGrid}>
             {neutralCompanions.map((item) => (
-              <Pressable key={`neutral-${item}`} onPress={() => openPlantByName(item)} style={[styles.companionChip, { backgroundColor: "rgba(255, 216, 107, 0.08)", borderColor: "rgba(255, 216, 107, 0.2)" }]}>
+              <Pressable accessibilityRole="button" key={`neutral-${item}`} onPress={() => openPlantByName(item)} style={[styles.companionChip, { backgroundColor: "rgba(255, 216, 107, 0.08)", borderColor: "rgba(255, 216, 107, 0.2)" }]}>
                 <View style={[styles.companionChipIconWrap, { backgroundColor: "rgba(255, 216, 107, 0.16)" }]}>
                   {getCompanionImage(item) ? (
                     <Image source={getCompanionImage(item)} style={{ width: 26, height: 26 }} resizeMode="contain" />
@@ -489,7 +489,7 @@ export function PlantDetailScreen({
           </View>
           <View style={styles.companionExcellentGrid}>
             {avoidCompanions.map((item) => (
-              <Pressable key={`avoid-${item}`} onPress={() => openPlantByName(item)} style={[styles.companionChip, { backgroundColor: "rgba(255, 123, 123, 0.08)", borderColor: "rgba(255, 123, 123, 0.2)" }]}>
+              <Pressable accessibilityRole="button" key={`avoid-${item}`} onPress={() => openPlantByName(item)} style={[styles.companionChip, { backgroundColor: "rgba(255, 123, 123, 0.08)", borderColor: "rgba(255, 123, 123, 0.2)" }]}>
                 <View style={[styles.companionChipIconWrap, { backgroundColor: "rgba(255, 123, 123, 0.16)" }]}>
                   {getCompanionImage(item) ? (
                     <Image source={getCompanionImage(item)} style={{ width: 26, height: 26 }} resizeMode="contain" />
@@ -527,7 +527,7 @@ export function PlantDetailScreen({
       <Text style={styles.cardText}>
         {zip ? t("plantPage.findSuppliesZip", { plant: selectedPlant.name, zip }) : t("plantPage.findSuppliesArea", { plant: selectedPlant.name })}
       </Text>
-      <Pressable
+      <Pressable accessibilityRole="button"
         style={styles.shopLinkButton}
         onPress={() => Linking.openURL(`https://www.amazon.com/s?k=${encodeURIComponent(selectedPlant.name + " seeds")}`)}
       >
@@ -538,7 +538,7 @@ export function PlantDetailScreen({
         </View>
         <Text style={styles.shopLinkArrow}>›</Text>
       </Pressable>
-      <Pressable
+      <Pressable accessibilityRole="button"
         style={styles.shopLinkButton}
         onPress={() => Linking.openURL(`https://www.amazon.com/s?k=${encodeURIComponent(selectedPlant.name + " fertilizer")}`)}
       >
@@ -549,7 +549,7 @@ export function PlantDetailScreen({
         </View>
         <Text style={styles.shopLinkArrow}>›</Text>
       </Pressable>
-      <Pressable
+      <Pressable accessibilityRole="button"
         style={styles.shopLinkButton}
         onPress={() => Linking.openURL(`https://www.parkseed.com/search?q=${encodeURIComponent(selectedPlant.name)}`)}
       >
@@ -560,7 +560,7 @@ export function PlantDetailScreen({
         </View>
         <Text style={styles.shopLinkArrow}>›</Text>
       </Pressable>
-      <Pressable
+      <Pressable accessibilityRole="button"
         style={styles.shopLinkButton}
         onPress={() => Linking.openURL(`https://www.google.com/maps/search/garden+center+near+${zip || "me"}`)}
       >
@@ -571,7 +571,7 @@ export function PlantDetailScreen({
         </View>
         <Text style={styles.shopLinkArrow}>›</Text>
       </Pressable>
-      <Pressable
+      <Pressable accessibilityRole="button"
         style={styles.shopLinkButton}
         onPress={() => Linking.openURL(`https://www.homedepot.com/s/${encodeURIComponent(selectedPlant.name + " plant")}`)}
       >
@@ -599,7 +599,7 @@ export function PlantDetailScreen({
 </View>
 
 <View style={styles.card}>
-  <Pressable onPress={handleBackFromPlant} style={styles.bottomBackButton}>
+  <Pressable accessibilityRole="button" onPress={handleBackFromPlant} style={styles.bottomBackButton}>
     <Ionicons name="chevron-back" size={22} color="#07120b" />
     <Text style={styles.bottomBackButtonText}>{t("plantPage.backToPlants")}</Text>
   </Pressable>

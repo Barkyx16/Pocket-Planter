@@ -59,7 +59,7 @@ export const HouseplantCareLogSection = memo(function HouseplantCareLogSection({
             return (
               <View key={item.name} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 12, padding: 10, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                  <Pressable onPress={() => onOpenPlant && onOpenPlant(item)} style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                  <Pressable accessibilityRole="button" onPress={() => onOpenPlant && onOpenPlant(item)} style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                     {img ? <Image source={img} style={{ width: 26, height: 26 }} resizeMode="contain" /> : <Text style={{ fontSize: 15 }}>🪴</Text>}
                   </Pressable>
                   <View style={{ flex: 1 }}>
@@ -68,10 +68,10 @@ export const HouseplantCareLogSection = memo(function HouseplantCareLogSection({
                       💧 {wSince == null ? t("tools.careNotLogged") : waterDue ? t("tools.careWaterDue") : t("tools.careInDays", { count: wLeft })}{repotDue ? ` · ${t("tools.careRepotDue")}` : ""}
                     </Text>
                   </View>
-                  <Pressable onPress={() => mark(item.name, "watered")} style={{ backgroundColor: waterDue ? "#6bc7ff" : "rgba(255,255,255,0.08)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}>
+                  <Pressable accessibilityRole="button" onPress={() => mark(item.name, "watered")} style={{ backgroundColor: waterDue ? "#6bc7ff" : "rgba(255,255,255,0.08)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}>
                     <Text style={{ color: waterDue ? "#07120b" : theme.secondaryText, fontSize: 11, fontWeight: "900" }}>💧</Text>
                   </Pressable>
-                  <Pressable onPress={() => mark(item.name, "repot")} style={{ backgroundColor: repotDue ? "#ffd86b" : "rgba(255,255,255,0.08)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}>
+                  <Pressable accessibilityRole="button" onPress={() => mark(item.name, "repot")} style={{ backgroundColor: repotDue ? "#ffd86b" : "rgba(255,255,255,0.08)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}>
                     <Text style={{ color: repotDue ? "#07120b" : theme.secondaryText, fontSize: 11, fontWeight: "900" }}>🪴</Text>
                   </Pressable>
                 </View>

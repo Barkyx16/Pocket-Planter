@@ -112,7 +112,7 @@ export const ChoreRotationSection = memo(function ChoreRotationSection({ theme }
       {data.members.length ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
           {data.members.map((m) => (
-            <Pressable key={m} onPress={() => removeMember(m)} style={{ flexDirection: "row", alignItems: "center", gap: 6, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: "rgba(255,216,107,0.16)", borderWidth: 1, borderColor: "rgba(255,216,107,0.3)" }}>
+            <Pressable accessibilityRole="button" key={m} onPress={() => removeMember(m)} style={{ flexDirection: "row", alignItems: "center", gap: 6, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: "rgba(255,216,107,0.16)", borderWidth: 1, borderColor: "rgba(255,216,107,0.3)" }}>
               <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900" }}>{m}</Text>
               <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900" }}>✕</Text>
             </Pressable>
@@ -137,7 +137,7 @@ export const ChoreRotationSection = memo(function ChoreRotationSection({ theme }
       </View>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
         {CHORE_SUGGESTIONS.map((k) => t(`toolkit.${k}`)).filter((c) => !data.chores.includes(c)).map((c) => (
-          <Pressable key={c} onPress={() => addChore(c)} style={{ borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
+          <Pressable accessibilityRole="button" key={c} onPress={() => addChore(c)} style={{ borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
             <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800" }}>+ {c}</Text>
           </Pressable>
         ))}
@@ -145,7 +145,7 @@ export const ChoreRotationSection = memo(function ChoreRotationSection({ theme }
       {data.chores.length ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
           {data.chores.map((c) => (
-            <Pressable key={c} onPress={() => removeChore(c)} style={{ flexDirection: "row", alignItems: "center", gap: 6, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: "rgba(142,255,171,0.14)", borderWidth: 1, borderColor: "rgba(142,255,171,0.3)" }}>
+            <Pressable accessibilityRole="button" key={c} onPress={() => removeChore(c)} style={{ flexDirection: "row", alignItems: "center", gap: 6, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: "rgba(142,255,171,0.14)", borderWidth: 1, borderColor: "rgba(142,255,171,0.3)" }}>
               <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900" }}>{c}</Text>
               <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900" }}>✕</Text>
             </Pressable>
@@ -171,10 +171,10 @@ export const ChoreRotationSection = memo(function ChoreRotationSection({ theme }
             ))}
           </View>
           <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
-            <Pressable onPress={() => advance(-1)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
+            <Pressable accessibilityRole="button" onPress={() => advance(-1)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
               <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{t("toolkit.chorePrev")}</Text>
             </Pressable>
-            <Pressable onPress={() => advance(1)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
+            <Pressable accessibilityRole="button" onPress={() => advance(1)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
               <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{t("toolkit.choreNext")}</Text>
             </Pressable>
           </View>

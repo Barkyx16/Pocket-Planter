@@ -31,7 +31,7 @@ export const PetSafeSection = memo(function PetSafeSection({ theme, savedPlants,
     const img = resolvePlantImageSource(item);
     const meta = sev ? SEV[sev] : null;
     return (
-      <Pressable onPress={() => onOpenPlant && onOpenPlant(item)} style={{ flexDirection: "row", alignItems: "flex-start", gap: 10, backgroundColor: `${tint}12`, borderRadius: 12, padding: 10, borderWidth: 1, borderColor: `${tint}30` }}>
+      <Pressable accessibilityRole="button" onPress={() => onOpenPlant && onOpenPlant(item)} style={{ flexDirection: "row", alignItems: "flex-start", gap: 10, backgroundColor: `${tint}12`, borderRadius: 12, padding: 10, borderWidth: 1, borderColor: `${tint}30` }}>
         <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
           {img ? <Image source={img} style={{ width: 26, height: 26 }} resizeMode="contain" /> : <Text style={{ fontSize: 15 }}>🌿</Text>}
         </View>

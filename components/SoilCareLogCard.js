@@ -184,7 +184,7 @@ return (
       ) : null}
 
       {/* ADD ENTRY BUTTON */}
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={() => setShowAddPanel(!showAddPanel)}
         style={[styles.careLogAddButton, { backgroundColor: showAddPanel ? "rgba(107, 199, 255, 0.16)" : "#6bc7ff" }]}
       >
@@ -201,7 +201,7 @@ return (
           <Text style={styles.careLogPanelLabel}>{t("soilCareLog.whichPlant")}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
             {plantOptions.map(plant => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={plant}
                 onPress={() => setSelectedPlant(plant)}
                 style={[styles.careLogPlantPill, {
@@ -220,7 +220,7 @@ return (
           <Text style={[styles.careLogPanelLabel, { marginTop: 14 }]}>{t("soilCareLog.whatDidYouDo")}</Text>
           <View style={styles.careLogActionGrid}>
             {CARE_ACTIONS.map(action => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={action.id}
                 onPress={() => setSelectedAction(selectedAction === action.id ? null : action.id)}
                 style={[styles.careLogActionTile, {
@@ -254,7 +254,7 @@ return (
           />
 
           {/* LOG BUTTON */}
-          <Pressable onPress={addCareEntry} style={styles.careLogSubmitButton}>
+          <Pressable accessibilityRole="button" onPress={addCareEntry} style={styles.careLogSubmitButton}>
             <IconText label={t("soilCareLog.logCareEntry")} style={styles.careLogSubmitButtonText} />
           </Pressable>
         </View>
@@ -265,7 +265,7 @@ return (
         <>
           <View style={styles.careLogViewToggle}>
             {[{ id: "calendar", label: t("soilCareLog.calendar") }, { id: "timeline", label: t("soilCareLog.timeline") }].map(v => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={v.id}
                 onPress={() => setViewMode(v.id)}
                 style={[styles.careLogViewBtn, viewMode === v.id && styles.careLogViewBtnActive]}
@@ -279,14 +279,14 @@ return (
 
          {/* PLANT FILTER */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 10 }}>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => setTodayOnly(v => !v)}
               style={[styles.journalFilterPill, todayOnly && styles.journalFilterPillActive]}
             >
               <IconText label={t("soilCareLog.today")} style={[styles.journalFilterPillText, todayOnly && styles.journalFilterPillTextActive]} />
             </Pressable>
             {["All", "Garden", ...savedPlants].map(plant => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={plant}
                 onPress={() => setFilterPlant(plant)}
                 style={[styles.journalFilterPill, filterPlant === plant && styles.journalFilterPillActive]}
@@ -347,7 +347,7 @@ return (
                   const hasLog = hasEntries(day);
                   const dotColor = getEntryColor(day);
                   return (
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       key={day}
                       onPress={() => setSelectedDate(dateKey)}
                       style={[styles.careLogCalendarCell, {

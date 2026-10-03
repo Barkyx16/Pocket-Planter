@@ -56,7 +56,7 @@ export const AllNotesCard = memo(function AllNotesCard({ theme, plantNotes, onOp
             const plant = produceData.find((p) => p.name === n.name);
             const img = plant ? resolvePlantImageSource(plant) : null;
             return (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={`note-${n.name}`}
                 onPress={() => plant && onOpenPlant(plant)}
                 style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(142, 255, 171, 0.16)" }}

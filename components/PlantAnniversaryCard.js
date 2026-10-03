@@ -43,7 +43,7 @@ export const PlantAnniversaryCard = memo(function PlantAnniversaryCard({ theme, 
           const plant = produceData.find((p) => p.name === m.name);
           const img = plant ? resolvePlantImageSource(plant) : null;
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={`anniv-${m.name}`}
               onPress={() => plant && onOpenPlant(plant)}
               style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(255, 182, 193, 0.2)" }}

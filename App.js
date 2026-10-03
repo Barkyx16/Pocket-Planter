@@ -5282,7 +5282,7 @@ const jumpToTab = useCallback((tab) => {
               </Pressable>
             </View>
 
-            <Pressable
+            <Pressable accessibilityRole="button"
               style={({ pressed }) => [styles.authButton, pressed && { opacity: 0.8 }]}
               onPress={handleAuth}
             >
@@ -5303,7 +5303,7 @@ const jumpToTab = useCallback((tab) => {
               </Pressable>
             ) : null}
 
-            <Pressable
+            <Pressable accessibilityRole="button"
               style={styles.authSwitchButton}
               onPress={() => setAuthMode(authMode === "signup" ? "login" : "signup")}
             >
@@ -5313,7 +5313,7 @@ const jumpToTab = useCallback((tab) => {
             </Pressable>
 
             {authMode === "login" ? (
-              <Pressable style={styles.authSwitchButton} onPress={handleForgotPassword}>
+              <Pressable accessibilityRole="button" style={styles.authSwitchButton} onPress={handleForgotPassword}>
                 <Text style={styles.authSwitchText}>{t("auth.forgotPassword")}</Text>
               </Pressable>
             ) : null}
@@ -5366,8 +5366,8 @@ const jumpToTab = useCallback((tab) => {
     />
 
     <Modal visible={!!harvestLogPlant} animationType="fade" transparent onRequestClose={() => setHarvestLogPlant(null)}>
-      <Pressable style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", alignItems: "center", justifyContent: "center", padding: 24 }} onPress={() => setHarvestLogPlant(null)}>
-        <Pressable onPress={(e) => e.stopPropagation?.()} style={{ width: "100%", maxWidth: 420, backgroundColor: theme.card, borderRadius: 24, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", padding: 22 }}>
+      <Pressable accessible={false} style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", alignItems: "center", justifyContent: "center", padding: 24 }} onPress={() => setHarvestLogPlant(null)}>
+        <Pressable accessible={false} onPress={(e) => e.stopPropagation?.()} style={{ width: "100%", maxWidth: 420, backgroundColor: theme.card, borderRadius: 24, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", padding: 22 }}>
           <IconText label={t("harvestLog.modalTitle")} style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 10 }} />
           <Text style={{ color: theme.text, fontSize: 16, fontWeight: "900" }}>{harvestLogPlant}</Text>
           <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "600", marginTop: 4, marginBottom: 12 }}>{t("harvestLog.howMuch")}</Text>
@@ -5382,10 +5382,10 @@ const jumpToTab = useCallback((tab) => {
             style={{ backgroundColor: theme.input, color: theme.text, borderColor: theme.border, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 }}
           />
           <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
-            <Pressable onPress={() => setHarvestLogPlant(null)} style={{ flex: 1, borderRadius: 14, paddingVertical: 13, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.12)" }}>
+            <Pressable accessibilityRole="button" onPress={() => setHarvestLogPlant(null)} style={{ flex: 1, borderRadius: 14, paddingVertical: 13, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.12)" }}>
               <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>{t("common.cancel")}</Text>
             </Pressable>
-            <Pressable onPress={() => { if (harvestLogPlant) { logHarvest(harvestLogPlant, harvestLogText.trim(), "", ""); setHarvestLogPlant(null); } }} style={{ flex: 1, borderRadius: 14, paddingVertical: 13, alignItems: "center", backgroundColor: "#5cff89" }}>
+            <Pressable accessibilityRole="button" onPress={() => { if (harvestLogPlant) { logHarvest(harvestLogPlant, harvestLogText.trim(), "", ""); setHarvestLogPlant(null); } }} style={{ flex: 1, borderRadius: 14, paddingVertical: 13, alignItems: "center", backgroundColor: "#5cff89" }}>
               <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{t("harvestLog.logIt")}</Text>
             </Pressable>
           </View>
@@ -5413,7 +5413,7 @@ const jumpToTab = useCallback((tab) => {
               placeholderTextColor="#8fbf9d"
               style={{ marginTop: 16, backgroundColor: "rgba(255, 255, 255, 0.08)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)", color: "#ffffff", fontSize: 14, fontWeight: "700", paddingHorizontal: 16, paddingVertical: 14 }}
             />
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={async () => {
                 if ((resetPasswordValue || "").length < 6) { Alert.alert(t("auth.tooShortTitle"), t("auth.tooShortBody")); return; }
                 try {
@@ -5440,7 +5440,7 @@ const jumpToTab = useCallback((tab) => {
             >
               <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 14 }}>{t("auth.updatePasswordButton")}</Text>
             </Pressable>
-            <Pressable onPress={() => { setShowResetPassword(false); setResetPasswordValue(""); }} style={{ marginTop: 10, paddingVertical: 12, alignItems: "center" }}>
+            <Pressable accessibilityRole="button" onPress={() => { setShowResetPassword(false); setResetPasswordValue(""); }} style={{ marginTop: 10, paddingVertical: 12, alignItems: "center" }}>
               <Text style={{ color: "#8fbf9d", fontWeight: "800", fontSize: 14 }}>{t("common.cancel")}</Text>
             </Pressable>
           </View>
@@ -5451,14 +5451,14 @@ const jumpToTab = useCallback((tab) => {
     {undoToast ? (
       <View style={{ position: "absolute", bottom: 96, left: 16, right: 16, zIndex: 900, flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(16, 41, 23, 0.98)", borderRadius: 16, paddingVertical: 14, paddingHorizontal: 18, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 20 }}>
         <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800", flex: 1 }}>{undoToast.message}</Text>
-        <Pressable onPress={undoToast.onUndo} hitSlop={10} style={{ marginLeft: 12, backgroundColor: "#5cff89", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10 }}>
+        <Pressable accessibilityRole="button" onPress={undoToast.onUndo} hitSlop={10} style={{ marginLeft: 12, backgroundColor: "#5cff89", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10 }}>
           <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "900" }}>{t("garden.undo")}</Text>
         </Pressable>
       </View>
     ) : null}
 
   {celebrationBadge ? (
-      <Pressable onPress={() => setCelebrationBadge(null)} style={styles.levelUpOverlay}>
+      <Pressable accessibilityRole="button" onPress={() => setCelebrationBadge(null)} style={styles.levelUpOverlay}>
         <ConfettiBurst />
         <View style={styles.levelUpCard}>
           {getBadgeImage(celebrationBadge.id) ? (
@@ -5475,7 +5475,7 @@ const jumpToTab = useCallback((tab) => {
     ) : null}
 
   {celebrationBanner ? (
-      <Pressable onPress={() => setCelebrationBanner(null)} style={styles.levelUpOverlay}>
+      <Pressable accessibilityRole="button" onPress={() => setCelebrationBanner(null)} style={styles.levelUpOverlay}>
         <ConfettiBurst />
         <View style={[styles.levelUpCard, celebrationBanner.gradient ? { borderColor: celebrationBanner.gradient[0] } : null]}>
           {getBannerImage(celebrationBanner.id) ? (
@@ -5502,7 +5502,7 @@ const jumpToTab = useCallback((tab) => {
       </View>
     ) : null}
     {milestoneCelebration ? (
-      <Pressable onPress={() => setMilestoneCelebration(null)} style={styles.levelUpOverlay}>
+      <Pressable accessibilityRole="button" onPress={() => setMilestoneCelebration(null)} style={styles.levelUpOverlay}>
         <ConfettiBurst />
         <View style={styles.levelUpCard}>
           <Text style={styles.levelUpEmoji}>{milestoneCelebration.emoji}</Text>
@@ -5513,7 +5513,7 @@ const jumpToTab = useCallback((tab) => {
       </Pressable>
     ) : null}
     {showAnniversary ? (
-      <Pressable onPress={() => setShowAnniversary(null)} style={styles.levelUpOverlay}>
+      <Pressable accessibilityRole="button" onPress={() => setShowAnniversary(null)} style={styles.levelUpOverlay}>
         <ConfettiBurst />
         <View style={styles.levelUpCard}>
           <Text style={styles.levelUpEmoji}>🎉</Text>
@@ -5530,7 +5530,7 @@ const jumpToTab = useCallback((tab) => {
       </Pressable>
     ) : null}
     {showFirstSave ? (
-      <Pressable onPress={() => setShowFirstSave(false)} style={styles.levelUpOverlay}>
+      <Pressable accessibilityRole="button" onPress={() => setShowFirstSave(false)} style={styles.levelUpOverlay}>
         <ConfettiBurst />
         <View style={styles.levelUpCard}>
           <Text style={styles.levelUpEmoji}>🌱</Text>
@@ -5595,7 +5595,7 @@ const jumpToTab = useCallback((tab) => {
           </View>
           <Text style={[styles.cardText, { color: theme.secondaryText }]}>{t("zone.findBody")}</Text>
 
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => { tapHaptic(); setShowLanguagePicker(true); }}
             style={[styles.input, styles.zoneInput, { backgroundColor: theme.input, borderColor: theme.border, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}
           >
@@ -5605,7 +5605,7 @@ const jumpToTab = useCallback((tab) => {
             <Ionicons name="chevron-down" size={18} color={theme.secondaryText} />
           </Pressable>
 
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => { tapHaptic(); setShowCountryPicker(true); }}
             style={[styles.input, styles.zoneInput, { backgroundColor: theme.input, borderColor: theme.border, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}
           >
@@ -5628,8 +5628,8 @@ const jumpToTab = useCallback((tab) => {
           />
 
           <View style={styles.actionRow}>
-            <Pressable style={[styles.primaryButton, styles.glowPrimaryButton]} onPress={() => { Keyboard.dismiss(); setZoneRetryToken((value) => value + 1); }}><Text style={styles.primaryButtonText}>{t("zone.findButton")}</Text></Pressable>
-            <Pressable style={[styles.secondaryButton, styles.glowSecondaryButton, { borderColor: theme.border }]} onPress={detectLocationAndZone}><Text style={[styles.secondaryButtonText, { color: theme.text }]}>{t("zone.useLocation")}</Text></Pressable>
+            <Pressable accessibilityRole="button" style={[styles.primaryButton, styles.glowPrimaryButton]} onPress={() => { Keyboard.dismiss(); setZoneRetryToken((value) => value + 1); }}><Text style={styles.primaryButtonText}>{t("zone.findButton")}</Text></Pressable>
+            <Pressable accessibilityRole="button" style={[styles.secondaryButton, styles.glowSecondaryButton, { borderColor: theme.border }]} onPress={detectLocationAndZone}><Text style={[styles.secondaryButtonText, { color: theme.text }]}>{t("zone.useLocation")}</Text></Pressable>
           </View>
 
           {zoneLoading ? (
@@ -5663,7 +5663,7 @@ const jumpToTab = useCallback((tab) => {
               </View>
               <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
                 {LANGUAGES.map((item) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={item.code}
                     onPress={() => {
                       tapHaptic();
@@ -5721,7 +5721,7 @@ const jumpToTab = useCallback((tab) => {
 
               <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 40 }}>
                 {countryResults.map((item) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={item.code}
                     onPress={() => {
                       tapHaptic();
@@ -6183,8 +6183,8 @@ const jumpToTab = useCallback((tab) => {
   </Pressable>
 ) : null}
 <Modal visible={showMoreSheet} animationType="slide" transparent onRequestClose={() => setShowMoreSheet(false)}>
-  <Pressable style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", justifyContent: "flex-end" }} onPress={() => setShowMoreSheet(false)}>
-    <Pressable
+  <Pressable accessible={false} style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", justifyContent: "flex-end" }} onPress={() => setShowMoreSheet(false)}>
+    <Pressable accessible={false}
       onPress={(e) => e.stopPropagation()}
       style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 18, paddingBottom: 34 }}
     >

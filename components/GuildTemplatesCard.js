@@ -108,7 +108,7 @@ export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, save
           const haveCount = plants.filter((p) => owned.has(p.toLowerCase())).length;
           return (
             <View key={guild.name} style={{ backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 12, borderWidth: 1, borderColor: open ? "rgba(92, 255, 137, 0.3)" : "rgba(255, 255, 255, 0.08)", overflow: "hidden" }}>
-              <Pressable onPress={() => setExpanded(open ? null : guild.name)} style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 12 }}>
+              <Pressable accessibilityRole="button" onPress={() => setExpanded(open ? null : guild.name)} style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 12 }}>
                 <Text style={{ fontSize: 20 }}>{guild.icon}</Text>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{guild.name}</Text>
@@ -144,7 +144,7 @@ export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, save
                       const img = item ? resolvePlantImageSource(item) : null;
                       const have = owned.has(p.toLowerCase());
                       return (
-                        <Pressable
+                        <Pressable accessibilityRole="button"
                           key={p}
                           onPress={() => { if (have) { if (item && onOpenPlant) onOpenPlant(item); } else if (onSavePlant) { onSavePlant(item?.name || p); } }}
                           style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: have ? "rgba(92, 255, 137, 0.16)" : "rgba(255, 255, 255, 0.06)", borderRadius: 999, paddingLeft: img ? 5 : 11, paddingRight: 12, paddingVertical: 6, borderWidth: 1, borderColor: have ? "rgba(92, 255, 137, 0.3)" : "rgba(255, 255, 255, 0.12)" }}
@@ -167,7 +167,7 @@ export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, save
       </View>
 
       {guilds.length > visible ? (
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => setVisible((c) => c + 4)}
           style={{ marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
         >

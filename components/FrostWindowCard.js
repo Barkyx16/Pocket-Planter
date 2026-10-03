@@ -39,7 +39,7 @@ export const FrostWindowCard = memo(function FrostWindowCard({ theme, plants, zo
         {atRisk.map(({ item, info }) => {
           const img = resolvePlantImageSource(item);
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={`frostwin-${item.name}`}
               onPress={() => onOpenPlant(item)}
               style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.2)" }}

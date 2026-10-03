@@ -59,7 +59,7 @@ export const DailyBonusCard = memo(function DailyBonusCard({
         </Text>
       </View>
 
-      <Pressable
+      <Pressable accessibilityRole="button"
         disabled={claimedToday}
         onPress={onClaim}
         style={[

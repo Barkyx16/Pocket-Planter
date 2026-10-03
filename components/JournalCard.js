@@ -235,7 +235,7 @@ return (
       {totalPhotos > 0 ? (
         <View style={styles.journalTabSwitcher}>
           {[{ id: "timeline", label: t("journal.timeline") }, { id: "plants", label: t("journal.byPlant") }].map(tab => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={tab.id}
               onPress={() => setActiveTab(tab.id)}
               style={[styles.journalTabButton, activeTab === tab.id && styles.journalTabButtonActive]}
@@ -259,7 +259,7 @@ return (
             {t("journal.snapAPhotoWheneverSomething")}
           </Text>
 
-          <Pressable disabled={uploadingPhoto} style={styles.journalHeroButton} onPress={onAddGeneralPhoto}>
+          <Pressable accessibilityRole="button" disabled={uploadingPhoto} style={styles.journalHeroButton} onPress={onAddGeneralPhoto}>
             <Text style={styles.journalHeroButtonText}>{uploadingPhoto ? t("journal.uploading") : t("journal.addFirstPhoto")}</Text>
           </Pressable>
           <Text style={styles.journalEmptyHint}>{t("journal.takesSeconds")}</Text>
@@ -275,7 +275,7 @@ return (
               { icon: "🍅", label: t("journal.momentFruit") },
               { icon: "🎉", label: t("journal.momentHarvest") },
             ].map((idea) => (
-              <Pressable key={idea.label} disabled={uploadingPhoto} onPress={onAddGeneralPhoto} style={styles.journalIdeaChip}>
+              <Pressable accessibilityRole="button" key={idea.label} disabled={uploadingPhoto} onPress={onAddGeneralPhoto} style={styles.journalIdeaChip}>
                 <Text style={styles.journalIdeaChipIcon}>{idea.icon}</Text>
                 <Text style={styles.journalIdeaChipLabel}>{idea.label}</Text>
               </Pressable>
@@ -295,7 +295,7 @@ return (
         </View>
       ) : (
         <>
-          <Pressable disabled={uploadingPhoto} style={styles.journalAddPhotoButton} onPress={onAddGeneralPhoto}>
+          <Pressable accessibilityRole="button" disabled={uploadingPhoto} style={styles.journalAddPhotoButton} onPress={onAddGeneralPhoto}>
             <Text style={styles.journalAddPhotoButtonIcon}>📷</Text>
             <Text style={styles.journalAddPhotoButtonText}>{uploadingPhoto ? t("journal.uploading") : t("journal.addPhoto")}</Text>
           </Pressable>
@@ -320,7 +320,7 @@ return (
           {/* ── PLANT FILTER ── */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.journalFilterScroll}>
             {uniquePlants.map(plant => (
-              <Pressable key={plant} onPress={() => setFilterPlant(plant)}
+              <Pressable accessibilityRole="button" key={plant} onPress={() => setFilterPlant(plant)}
                 style={[styles.journalFilterPill, filterPlant === plant && styles.journalFilterPillActive]}>
                 <Text style={[styles.journalFilterPillText, filterPlant === plant && styles.journalFilterPillTextActive]}>
                   {plant === "All" ? t("journal.allPlants") : plant}
@@ -332,7 +332,7 @@ return (
           {/* ── STAGE FILTER ── */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.journalFilterScroll, { marginTop: 0 }]}>
             {uniqueStages.map(stage => (
-              <Pressable key={stage} onPress={() => setFilterStage(stage)}
+              <Pressable accessibilityRole="button" key={stage} onPress={() => setFilterStage(stage)}
                 style={[styles.journalFilterPill, filterStage === stage && styles.journalFilterPillActive]}>
                 <Text style={[styles.journalFilterPillText, filterStage === stage && styles.journalFilterPillTextActive]}>
                   {stage === "All" ? t("journal.allStages") : growthStageLabel(stage)}
@@ -345,7 +345,7 @@ return (
           {(searchQuery || filterPlant !== "All" || filterStage !== "All") ? (
             <View style={styles.journalResultsRow}>
               <Text style={styles.journalResultsText}>{filteredEntries.length} {filteredEntries.length === 1 ? "entry" : "entries"} found</Text>
-              <Pressable onPress={() => { setSearchQuery(""); setFilterPlant("All"); setFilterStage("All"); }}>
+              <Pressable accessibilityRole="button" onPress={() => { setSearchQuery(""); setFilterPlant("All"); setFilterStage("All"); }}>
                 <Text style={styles.journalResultsClear}>{t("journal.clearFilters")}</Text>
               </Pressable>
             </View>
@@ -359,7 +359,7 @@ return (
                   <Text style={styles.journalNoResultsEmoji}>🔍</Text>
                   <Text style={styles.journalNoResultsTitle}>{t("journal.noEntriesFound")}</Text>
                   <Text style={[styles.journalNoResultsText, { color: theme.secondaryText }]}>{t("journal.tryAdjustingYourSearchOr")}</Text>
-                  <Pressable onPress={() => { setSearchQuery(""); setFilterPlant("All"); setFilterStage("All"); }} style={styles.journalNoResultsBtn}>
+                  <Pressable accessibilityRole="button" onPress={() => { setSearchQuery(""); setFilterPlant("All"); setFilterStage("All"); }} style={styles.journalNoResultsBtn}>
                     <Text style={styles.journalNoResultsBtnText}>{t("journal.clearFilters")}</Text>
                   </Pressable>
                 </View>
@@ -376,7 +376,7 @@ return (
                     </View>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingVertical: 8 }}>
                       {plantEntries.map(entry => (
-                        <Pressable key={entry.id} onPress={() => { setActiveTab("timeline"); setExpandedEntry(entry.id); }}
+                        <Pressable accessibilityRole="button" key={entry.id} onPress={() => { setActiveTab("timeline"); setExpandedEntry(entry.id); }}
                           style={styles.journalPlantThumb}>
                           {entry.imageUri ? (
                             <Image source={{ uri: entry.imageUri }} style={styles.journalPlantThumbImage} resizeMode="cover" />
@@ -424,7 +424,7 @@ return (
                         <View style={styles.journalTimelineDotV2} />
                         <View style={styles.journalTimelineLineV2} />
 
-                        <Pressable
+                        <Pressable accessibilityRole="button"
                           onPress={() => setExpandedEntry(isExpanded ? null : entry.id)}
                           style={[styles.journalEntryCardV2, {
                             backgroundColor: theme.input,
@@ -522,7 +522,7 @@ return (
                                       autoFocus
                                     />
                                     {/* AI CAPTION SUGGESTIONS */}
-                                    <Pressable
+                                    <Pressable accessibilityRole="button"
                                       onPress={() => setShowCaptionSuggestions(showingSuggestions ? null : entry.id)}
                                       style={styles.journalSuggestButton}
                                     >
@@ -532,7 +532,7 @@ return (
                                       <View style={styles.journalSuggestionsBox}>
                                         <Text style={styles.journalSuggestionsTitle}>💡 {t("journal.suggestionsFor", { stage: growthStageLabel(entry.growthStage || "Seedling") })}</Text>
                                         {suggestions.map((s, i) => (
-                                          <Pressable key={i} onPress={() => { setCaptionDraft(s); setShowCaptionSuggestions(null); }}
+                                          <Pressable accessibilityRole="button" key={i} onPress={() => { setCaptionDraft(s); setShowCaptionSuggestions(null); }}
                                             style={styles.journalSuggestionPill}>
                                             <Text style={styles.journalSuggestionText}>{s}</Text>
                                           </Pressable>
@@ -540,22 +540,22 @@ return (
                                       </View>
                                     ) : null}
                                     <View style={styles.journalCaptionButtonRow}>
-                                      <Pressable onPress={() => saveCaption(entry.id)} style={styles.journalCaptionSaveBtn}>
+                                      <Pressable accessibilityRole="button" onPress={() => saveCaption(entry.id)} style={styles.journalCaptionSaveBtn}>
                                         <Text style={styles.journalCaptionSaveBtnText}>{t("journal.saveCaption")}</Text>
                                       </Pressable>
-                                      <Pressable onPress={() => setEditingCaption(null)} style={styles.journalCaptionCancelBtn}>
+                                      <Pressable accessibilityRole="button" onPress={() => setEditingCaption(null)} style={styles.journalCaptionCancelBtn}>
                                         <Text style={styles.journalCaptionCancelBtnText}>{t("common.cancel")}</Text>
                                       </Pressable>
                                     </View>
                                   </View>
                                 ) : (
-                                  <Pressable onPress={() => { setEditingCaption(entry.id); setCaptionDraft(caption || ""); }}
+                                  <Pressable accessibilityRole="button" onPress={() => { setEditingCaption(entry.id); setCaptionDraft(caption || ""); }}
                                     style={styles.journalCaptionWrap}>
                                     <Text style={[styles.journalCaptionText, { color: caption ? theme.text : theme.secondaryText }]}>
                                       {caption || t("journal.tapToAddACaption")}
                                     </Text>
                                     {!caption ? (
-                                      <Pressable onPress={() => { setEditingCaption(entry.id); setShowCaptionSuggestions(entry.id); setCaptionDraft(""); }}
+                                      <Pressable accessibilityRole="button" onPress={() => { setEditingCaption(entry.id); setShowCaptionSuggestions(entry.id); setCaptionDraft(""); }}
                                         style={styles.journalSuggestButton}>
                                         <IconText label={t("journal.getSmartCaptionIdeas")} style={styles.journalSuggestButtonText} />
                                       </Pressable>
@@ -608,7 +608,7 @@ return (
                   <Text style={styles.journalNoResultsEmoji}>🔍</Text>
                   <Text style={styles.journalNoResultsTitle}>{t("journal.noEntriesFound")}</Text>
                   <Text style={[styles.journalNoResultsText, { color: theme.secondaryText }]}>{t("journal.tryAdjustingYourSearchOr2")}</Text>
-                  <Pressable onPress={() => { setSearchQuery(""); setFilterPlant("All"); setFilterStage("All"); }} style={styles.journalNoResultsBtn}>
+                  <Pressable accessibilityRole="button" onPress={() => { setSearchQuery(""); setFilterPlant("All"); setFilterStage("All"); }} style={styles.journalNoResultsBtn}>
                     <Text style={styles.journalNoResultsBtnText}>{t("journal.clearFilters")}</Text>
                   </Pressable>
                 </View>

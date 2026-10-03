@@ -179,7 +179,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
           const areaPct = totalPairs > 0 ? Math.round(((totalPairs - conflictPairs) / totalPairs) * 100) : 100;
           const areaHasConflict = conflictPairs > 0;
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={area.id}
               onPress={() => setSelectedAreaId(area.id)}
               style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}
@@ -225,8 +225,8 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
         );
       })()}
       <Modal visible={!!perfectGardenPlant} transparent animationType="fade" onRequestClose={() => setPerfectGardenPlant(null)}>
-        <Pressable onPress={() => setPerfectGardenPlant(null)} style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.85)", alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <Pressable onPress={() => {}} style={{ width: "100%", maxWidth: 420, backgroundColor: "#0e2414", borderRadius: 24, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", padding: 22 }}>
+        <Pressable accessible={false} onPress={() => setPerfectGardenPlant(null)} style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.85)", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <Pressable accessible={false} onPress={() => {}} style={{ width: "100%", maxWidth: 420, backgroundColor: "#0e2414", borderRadius: 24, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", padding: 22 }}>
             {(() => {
               if (!perfectGardenPlant) return null;
               const modalArea = gardenAreas.find((a) => a.id === selectedAreaId);
@@ -260,13 +260,13 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                       );
                     })}
                   </View>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => addPerfectCompanions(perfectGardenPlant)}
                     style={{ backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 14, alignItems: "center", marginBottom: 10 }}
                   >
                     <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{t("areaPlannerMap.addTheseToMyGarden")}</Text>
                   </Pressable>
-                  <Pressable onPress={() => setPerfectGardenPlant(null)} style={{ paddingVertical: 10, alignItems: "center" }}>
+                  <Pressable accessibilityRole="button" onPress={() => setPerfectGardenPlant(null)} style={{ paddingVertical: 10, alignItems: "center" }}>
                     <Text style={{ color: "#8fbf9d", fontSize: 14, fontWeight: "800" }}>{t("areaPlannerMap.maybeLater")}</Text>
                   </Pressable>
                 </>
@@ -276,7 +276,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
         </Pressable>
       </Modal>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => setSelectedAreaId(null)}
           style={{ flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", paddingVertical: 6 }}
         >
@@ -291,7 +291,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
          <View key={area.id}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10, flex: 1 }}>
-                <Pressable onPress={() => onPickPhoto && onPickPhoto(area.id)}>
+                <Pressable accessibilityRole="button" onPress={() => onPickPhoto && onPickPhoto(area.id)}>
                   {area.photo ? (
                     <Image source={{ uri: area.photo }} style={{ width: 40, height: 40, borderRadius: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.2)" }} />
                   ) : (
@@ -359,7 +359,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                 // By the plant's own schedule — the badge's rule, not "not watered since midnight".
                 const needsWater = plantName && isWaterDue(plantName, plant, wateredPlants, wateringHistory, weather);
                 return (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={`${area.id}-${slotId}`}
                     onPress={() => choosePlantForSlot(area.id, slotId)}
                     style={[styles.gardenSlotV2, {
@@ -537,7 +537,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
 </View>
               );
             })()}
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => {
                 Alert.alert(
                   t("alerts.deleteGardenTitle"),

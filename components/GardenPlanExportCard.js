@@ -62,7 +62,7 @@ export const GardenPlanExportCard = memo(function GardenPlanExportCard({ theme, 
         </View>
       </View>
 
-      <Pressable onPress={exportPlan} style={{ marginTop: 12, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 14, alignItems: "center" }}>
+      <Pressable accessibilityRole="button" onPress={exportPlan} style={{ marginTop: 12, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 14, alignItems: "center" }}>
         <IconText label={t("gardenPlanExport.exportShareGardenPlan")} style={{
   color: "#07120b",
   fontSize: 14,

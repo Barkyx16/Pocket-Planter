@@ -23,8 +23,8 @@ export const PremiumIntroCard = memo(function PremiumIntroCard({ onClose, onUnlo
         <IconText label={t("premiumIntro.gardenScore")} style={styles.premiumFeatureNew} />
       </View>
       <View style={styles.premiumActionRowNew}>
-        <Pressable style={styles.premiumCtaButton} onPress={onUnlock}><Text style={styles.premiumCtaText}>{t("premiumIntro.startGrowingSmarter")}</Text></Pressable>
-        <Pressable style={styles.premiumLaterButton} onPress={onClose}><Text style={styles.premiumLaterText}>{t("premiumIntro.maybeLater")}</Text></Pressable>
+        <Pressable accessibilityRole="button" style={styles.premiumCtaButton} onPress={onUnlock}><Text style={styles.premiumCtaText}>{t("premiumIntro.startGrowingSmarter")}</Text></Pressable>
+        <Pressable accessibilityRole="button" style={styles.premiumLaterButton} onPress={onClose}><Text style={styles.premiumLaterText}>{t("premiumIntro.maybeLater")}</Text></Pressable>
       </View>
     <IconText label={t("premiumIntro.n299monthOr2499yearCancelAnytime")} style={styles.premiumPriceText} />
     </View>

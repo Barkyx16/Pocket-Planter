@@ -52,7 +52,7 @@ export const PlantGrowthTimeline = memo(function PlantGrowthTimeline({ theme, pl
         <>
           <Text style={styles.cardText}>
           </Text>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={onAddPhoto}
             style={{ marginTop: 14, backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 14, alignItems: "center" }}
           >
@@ -133,7 +133,7 @@ export const PlantGrowthTimeline = memo(function PlantGrowthTimeline({ theme, pl
             ))}
           </View>
 
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={onAddPhoto}
             style={{ marginTop: 16, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
           >

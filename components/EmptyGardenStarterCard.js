@@ -36,7 +36,7 @@ export const EmptyGardenStarterCard = memo(function EmptyGardenStarterCard({ the
           const img = resolvePlantImageSource(item);
           const diff = getPlantDifficulty(item);
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={`starter-${item.name}`}
               onPress={() => onOpenPlant(item)}
               style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(92, 255, 137, 0.08)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
@@ -55,7 +55,7 @@ export const EmptyGardenStarterCard = memo(function EmptyGardenStarterCard({ the
           );
         })}
       </View>
-      <Pressable onPress={onBrowse} style={{ marginTop: 14, backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 14, alignItems: "center" }}>
+      <Pressable accessibilityRole="button" onPress={onBrowse} style={{ marginTop: 14, backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 14, alignItems: "center" }}>
         <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 14 }}>{t("emptyGardenStarter.browseAllPlants")}</Text>
       </Pressable>
     </View>

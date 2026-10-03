@@ -108,7 +108,7 @@ export const SeasonalChallengesCard = memo(function SeasonalChallengesCard({ the
                   </Text>
                 </View>
                 {isDone ? (
-                  <Pressable onPress={() => claim(ch)} style={{ backgroundColor: ch.color, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 }}>
+                  <Pressable accessibilityRole="button" onPress={() => claim(ch)} style={{ backgroundColor: ch.color, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 }}>
                     <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "900" }}>{t("common.claim")}</Text>
                   </Pressable>
                 ) : null}

@@ -43,7 +43,7 @@ export const QuickAddCard = memo(function QuickAddCard({ theme, savedPlants, onS
                 <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                   {img ? <Image source={img} style={{ width: 26, height: 26 }} resizeMode="contain" /> : <Text style={{ fontSize: 14 }}>🌱</Text>}
                 </View>
-                <Pressable style={{ flex: 1 }} onPress={() => onOpenPlant && onOpenPlant(p)}>
+                <Pressable accessibilityRole="button" style={{ flex: 1 }} onPress={() => onOpenPlant && onOpenPlant(p)}>
                   <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }}>{p.name} ›</Text>
                 </Pressable>
                 {have ? (
@@ -51,7 +51,7 @@ export const QuickAddCard = memo(function QuickAddCard({ theme, savedPlants, onS
                     <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900" }}>{t("quickAdd.saved")}</Text>
                   </View>
                 ) : (
-                  <Pressable onPress={() => onSavePlant && onSavePlant(p.name)} style={{ backgroundColor: "#5cff89", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6 }}>
+                  <Pressable accessibilityRole="button" onPress={() => onSavePlant && onSavePlant(p.name)} style={{ backgroundColor: "#5cff89", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6 }}>
                     <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "900" }}>{t("quickAdd.add")}</Text>
                   </Pressable>
                 )}

@@ -81,13 +81,13 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
         {INTERVALS.map((iv) => {
           const active = interval === iv.days;
           return (
-            <Pressable key={iv.days} onPress={() => setIntervalDays(iv.days)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}>
+            <Pressable accessibilityRole="button" key={iv.days} onPress={() => setIntervalDays(iv.days)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}>
               <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{t(`ui7.${iv.label}`)}</Text>
             </Pressable>
           );
         })}
       </View>
-      <Pressable onPress={add} style={{ marginTop: 10, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 12, alignItems: "center" }}>
+      <Pressable accessibilityRole="button" onPress={add} style={{ marginTop: 10, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 12, alignItems: "center" }}>
         <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{t("customTasks.addReminder")}</Text>
       </Pressable>
 

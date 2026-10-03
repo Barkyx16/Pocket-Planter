@@ -38,15 +38,15 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
-      <Pressable onPress={close} style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" }}>
-        <Pressable onPress={(e) => e.stopPropagation?.()} style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 16, paddingBottom: 30, maxHeight: "82%" }}>
+      <Pressable accessible={false} onPress={close} style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" }}>
+        <Pressable accessible={false} onPress={(e) => e.stopPropagation?.()} style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 16, paddingBottom: 30, maxHeight: "82%" }}>
           {/* Header */}
           <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18, marginBottom: 12 }}>
             <View style={{ flex: 1 }}>
               <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900" }}>{t("plantPicker.addAPlant")}</Text>
               {bedName ? <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>to {bedName}</Text> : null}
             </View>
-            <Pressable onPress={close} hitSlop={12} style={{ padding: 4 }}>
+            <Pressable accessibilityRole="button" onPress={close} hitSlop={12} style={{ padding: 4 }}>
               <Text style={{ color: theme.secondaryText, fontSize: 20, fontWeight: "900" }}>✕</Text>
             </Pressable>
           </View>
@@ -62,7 +62,7 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
               style={{ flex: 1, color: theme.text, fontSize: 14, fontWeight: "700", paddingVertical: 11 }}
             />
             {search ? (
-              <Pressable onPress={() => setSearch("")} hitSlop={touchSlop(14)}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
+              <Pressable accessibilityRole="button" onPress={() => setSearch("")} hitSlop={touchSlop(14)}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
             ) : null}
           </View>
 
@@ -72,7 +72,7 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
               {categories.map((c) => {
                 const active = category === c;
                 return (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={c}
                     onPress={() => setCategory(c)}
                     style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255,255,255,0.12)" }}
@@ -94,7 +94,7 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
               const img = resolvePlantImageSource(p);
               const isCurrent = currentPlant && p.name === currentPlant;
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={p.name}
                   onPress={() => { reset(); onPick && onPick(p.name); }}
                   style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: theme.border }}
@@ -113,7 +113,7 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
           </ScrollView>
 
           {currentPlant ? (
-            <Pressable onPress={() => { reset(); onClear && onClear(); }} style={{ marginHorizontal: 18, marginTop: 12, backgroundColor: "rgba(255,123,123,0.12)", borderRadius: 12, paddingVertical: 12, alignItems: "center", borderWidth: 1, borderColor: "rgba(255,123,123,0.3)" }}>
+            <Pressable accessibilityRole="button" onPress={() => { reset(); onClear && onClear(); }} style={{ marginHorizontal: 18, marginTop: 12, backgroundColor: "rgba(255,123,123,0.12)", borderRadius: 12, paddingVertical: 12, alignItems: "center", borderWidth: 1, borderColor: "rgba(255,123,123,0.3)" }}>
               <Text style={{ color: "#ff9f9f", fontSize: 13, fontWeight: "900" }}>{t("plantPicker.clearThisPlot")}</Text>
             </Pressable>
           ) : null}

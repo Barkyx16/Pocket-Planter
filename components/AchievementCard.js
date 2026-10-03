@@ -44,7 +44,7 @@ export const AchievementCard = memo(function AchievementCard({ theme, badges, ea
     <View>
       {/* GARDEN GNOME CELEBRATION */}
       {showGardenGodCelebration ? (
-        <Pressable onPress={() => setShowGardenGodCelebration(false)} style={styles.gardenGodOverlay}>
+        <Pressable accessibilityRole="button" onPress={() => setShowGardenGodCelebration(false)} style={styles.gardenGodOverlay}>
           <ConfettiBurst />
           <View style={styles.gardenGodCard}>
             <Text style={styles.gardenGodEmoji}>🌟</Text>
@@ -64,7 +64,7 @@ export const AchievementCard = memo(function AchievementCard({ theme, badges, ea
 
       {/* BADGE DETAIL — how it was earned */}
       {selectedBadge ? (
-        <Pressable onPress={() => setSelectedBadge(null)} style={styles.gardenGodOverlay}>
+        <Pressable accessibilityRole="button" onPress={() => setSelectedBadge(null)} style={styles.gardenGodOverlay}>
           <View style={[styles.gardenGodCard, { alignItems: "center" }]}>
             {getBadgeImage(selectedBadge.id) ? (
               <Image source={getBadgeImage(selectedBadge.id)} style={{ width: 132, height: 132, marginBottom: 10 }} resizeMode="contain" />
@@ -126,7 +126,7 @@ export const AchievementCard = memo(function AchievementCard({ theme, badges, ea
           </View>
 
           {earnedBadges.length > visible ? (
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => setVisible((c) => c + 3)}
               style={{ marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
             >

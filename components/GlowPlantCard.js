@@ -12,7 +12,7 @@ export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone,
   const difficulty = getPlantDifficulty(plant);
 
   return (
-    <Pressable onPress={onOpen} style={[styles.glowPlantCard, { backgroundColor: theme.card, borderColor: "rgba(92, 255, 137, 0.16)" }]}>
+    <Pressable accessibilityRole="button" onPress={onOpen} style={[styles.glowPlantCard, { backgroundColor: theme.card, borderColor: "rgba(92, 255, 137, 0.16)" }]}>
 
       {/* TOP ROW */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 14 }}>
@@ -54,18 +54,18 @@ export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone,
           ]}
         >
           <Text style={{ fontSize: 12, fontWeight: "900", color: isSaved ? "#07120b" : "#ffffff" }}>
-            {isSaved ? t("glowPlant.saved") : "Save"}
+            {isSaved ? t("glowPlant.saved") : t("common.save")}
           </Text>
         </Pressable>
 
-        <Pressable
+        <Pressable accessible={false}
           onPress={(e) => { e.stopPropagation?.(); onCompare(); }}
           style={[{ flex: 1, borderRadius: 16, paddingVertical: 12, alignItems: "center", borderWidth: 1 },
             isCompared ? { backgroundColor: "#ffd86b", borderColor: "#ffd86b" } : { backgroundColor: "rgba(255, 255, 255, 0.08)", borderColor: "rgba(255, 255, 255, 0.1)" }
           ]}
         >
           <Text style={{ fontSize: 12, fontWeight: "900", color: isCompared ? "#07120b" : "#ffffff" }}>
-            {isCompared ? t("glowPlant.on") : "Compare"}
+            {isCompared ? t("glowPlant.on") : t("common.compare")}
           </Text>
         </Pressable>
 

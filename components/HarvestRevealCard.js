@@ -39,7 +39,7 @@ export const HarvestRevealCard = memo(function HarvestRevealCard({ theme, journa
         {reveals.map((r) => {
           const plant = produceData.find((p) => p.name === r.name);
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={`reveal-${r.name}`}
               onPress={() => plant && onOpenPlant(plant)}
               style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(255, 216, 107, 0.16)" }}

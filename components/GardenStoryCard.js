@@ -117,14 +117,14 @@ export const GardenStoryCard = memo(function GardenStoryCard({ theme, savedPlant
         </Text>
       </View>
 
-      <Pressable onPress={shareImage} style={{ marginTop: 16, backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 16, alignItems: "center" }}>
+      <Pressable accessibilityRole="button" onPress={shareImage} style={{ marginTop: 16, backgroundColor: "#5cff89", borderRadius: 16, paddingVertical: 16, alignItems: "center" }}>
         <IconText label={t("gardenStory.shareAsImage")} style={{
   color: "#07120b",
   fontWeight: "900",
   fontSize: 14
 }} />
       </Pressable>
-      <Pressable onPress={shareStory} style={{ marginTop: 10, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(142, 255, 171, 0.2)" }}>
+      <Pressable accessibilityRole="button" onPress={shareStory} style={{ marginTop: 10, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(142, 255, 171, 0.2)" }}>
         <IconText label={t("gardenStory.shareAsText")} style={{
   color: "#8effab",
   fontWeight: "900",

@@ -54,7 +54,7 @@ export const WateringStreakNudge = memo(function WateringStreakNudge({ theme, sa
                 borderWidth: 1, borderColor: critical ? "rgba(255, 159, 67, 0.3)" : "rgba(255, 255, 255, 0.08)",
               }}
             >
-              <Pressable onPress={() => plant && onOpenPlant(plant)} style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}>
+              <Pressable accessibilityRole="button" onPress={() => plant && onOpenPlant(plant)} style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}>
                 <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#0e2414", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                   {img ? <Image source={img} style={{ width: 36, height: 36 }} resizeMode="contain" /> : <Text style={{ fontSize: 20 }}>🌱</Text>}
                 </View>

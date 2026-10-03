@@ -7,7 +7,7 @@ import { useTranslation } from "../lib/i18n";
 export const PremiumLockedCard = memo(function PremiumLockedCard({ theme, title, body, onUnlock }) {
   const { t } = useTranslation();
   return (
-    <Pressable onPress={onUnlock} style={[styles.weatherPremiumBlock, { backgroundColor: theme.card, borderColor: "#5cff89" }]}>
+    <Pressable accessibilityRole="button" onPress={onUnlock} style={[styles.weatherPremiumBlock, { backgroundColor: theme.card, borderColor: "#5cff89" }]}>
       <View style={styles.weatherLockCircle}><Text style={styles.weatherLockIcon}>🔒</Text></View>
       <View style={{ flex: 1 }}>
         <Text style={styles.weatherPremiumTitle}>{title || t("premiumLocked.weatherIntelligence")}</Text>

@@ -46,7 +46,7 @@ if (!harvestGoal) {
             keyboardType="number-pad"
             style={{ flex: 1, backgroundColor: "rgba(255, 255, 255, 0.08)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255, 216, 107, 0.2)", color: "#ffffff", fontSize: 16, fontWeight: "800", paddingHorizontal: 16, paddingVertical: 14 }}
           />
-          <Pressable onPress={setGoal} style={{ backgroundColor: "#ffd86b", borderRadius: 12, paddingHorizontal: 22, alignItems: "center", justifyContent: "center" }}>
+          <Pressable accessibilityRole="button" onPress={setGoal} style={{ backgroundColor: "#ffd86b", borderRadius: 12, paddingHorizontal: 22, alignItems: "center", justifyContent: "center" }}>
             <Text style={{ color: "#3d2c00", fontSize: 14, fontWeight: "900" }}>{t("ui4.set")}</Text>
           </Pressable>
         </View>
@@ -73,7 +73,7 @@ if (!harvestGoal) {
       </View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", textAlign: "center", marginTop: 8 }}>{pct}{t("harvestGoal.complete")}</Text>
 
-      <Pressable onPress={clearGoal} style={{ marginTop: 16, alignItems: "center" }}>
+      <Pressable accessibilityRole="button" onPress={clearGoal} style={{ marginTop: 16, alignItems: "center" }}>
         <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "800" }}>{done ? t("harvestGoal.setANewGoal") : t("harvestGoal.changeGoal")}</Text>
       </Pressable>
     </View>

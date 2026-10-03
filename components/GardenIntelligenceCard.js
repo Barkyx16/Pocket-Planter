@@ -71,7 +71,7 @@ export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ the
   return (
     <View>
       <Text style={[styles.gardenIntelligenceSub, { color: theme.secondaryText, marginTop: 0 }]}>
-        Zone {zone || "—"} · {formatDate(new Date(), {
+        {t("zone.zoneN", { zone: zone || "—" })} · {formatDate(new Date(), {
   month: "long",
   day: "numeric"
 })}
