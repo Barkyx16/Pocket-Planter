@@ -3623,7 +3623,8 @@ async function retryPendingPhotoUploads(account) {
   const pending = journalEntries.filter(
     (e) => e && !e.storagePath && typeof e.imageUri === "string" && e.imageUri.startsWith("file://")
   );
-  if (!pending.length) return;
+  const pendingAreas = gardenAreas.filter((a) => typeof a?.photo === "string" && a.photo.startsWith("file://"));
+  if (!pending.length && !pendingAreas.length) return;
   retryingPhotos.current = true;
   try {
     for (const entry of pending) {
@@ -3644,6 +3645,11 @@ async function retryPendingPhotoUploads(account) {
         // The local file is gone, or the network dropped mid-upload. Leave the
         // entry as it is rather than losing the record of the photo.
       }
+    }
+    // Bed photos picked while offline wait the same way.
+    for (const area of pendingAreas) {
+      const uploaded = await uploadJournalImage(area.photo);
+      if (uploaded) replaceAreaPhoto(area.id, area.photo, uploaded.imageUrl);
     }
   } finally {
     retryingPhotos.current = false;
@@ -4402,8 +4408,22 @@ async function pickAreaPhoto(areaId) {
   if (!permission.granted) { Alert.alert(t("photos.permissionTitle"), t("photos.permissionGarden")); return; }
   const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7, allowsEditing: true, aspect: [1, 1] });
   if (!result.canceled && result.assets?.[0]?.uri) {
-    setAreaStyle(areaId, { photo: result.assets[0].uri });
+    const asset = result.assets[0];
+    // Shown at once from the local file, then swapped for the uploaded copy. The
+    // picker's file lives in the app cache: synced as-is, the photo was a broken
+    // path on every other device and vanished here when the OS cleared the cache.
+    setAreaStyle(areaId, { photo: asset.uri });
+    const uploaded = await uploadJournalImage(asset.uri, asset.mimeType);
+    if (uploaded) replaceAreaPhoto(areaId, asset.uri, uploaded.imageUrl);
   }
+}
+
+// Swaps a bed's local photo for its uploaded URL, unless it was changed again
+// in the meantime.
+function replaceAreaPhoto(areaId, localUri, remoteUrl) {
+  setGardenAreas((current) => current.map((area) => (
+    area.id === areaId && area.photo === localUri ? { ...area, photo: remoteUrl } : area
+  )));
 }
 
 function setAreaStyle(areaId, patch) {
