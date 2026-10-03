@@ -2,7 +2,7 @@ import { memo, useState } from "react";
 import { Alert, Platform, Pressable, Share, Text, View } from "react-native";
 import * as Calendar from "expo-calendar";
 import { tapHaptic } from "../core";
-import { formatDate, formatTime, t } from "../lib/i18n";
+import { formatDate, formatTime, t, useLanguage } from "../lib/i18n";
 
 // Turns the garden's recurring chores into real calendar events. Uses
 // expo-calendar to write straight to the device calendar, and falls back to a
@@ -86,6 +86,7 @@ async function getWritableCalendarId() {
 }
 
 export const CalendarExportSection = memo(function CalendarExportSection({ theme }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const [task, setTask] = useState(TASKS[0]);
   const [freq, setFreq] = useState(FREQS[1]);
   const [busy, setBusy] = useState(false);

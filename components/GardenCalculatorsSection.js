@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { parseDecimal, successHaptic, tapHaptic } from "../core";
-import { formatNumber, t, tn } from "../lib/i18n";
+import { formatNumber, t, tn, useLanguage } from "../lib/i18n";
 
 // ── Unit + mixing constants ──────────────────────────────────────────────────
 const GAL_TO_L = 3.785;
@@ -359,6 +359,7 @@ function PottingMixCalc({ theme, metric }) {
 }
 
 export const GardenCalculatorsSection = memo(function GardenCalculatorsSection({ theme, unitSystem }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const metric = unitSystem === "metric";
   const unitKey = metric ? "metric" : "imperial";
   const [tab, setTab] = useState("fert");

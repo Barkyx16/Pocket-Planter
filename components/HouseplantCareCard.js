@@ -1,6 +1,6 @@
 import { memo, useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
-import { t, tn } from "../lib/i18n";
+import { t, tn, useLanguage } from "../lib/i18n";
 import produceData from "../data/produceData";
 import { normalizeType, resolvePlantImageSource, tapHaptic } from "../core";
 import { AIR_PURIFYING, HOUSEPLANT_PESTS } from "../data/flowerHomeData";
@@ -49,6 +49,7 @@ const THRIVES = { 1: "hpThrivesLow", 2: "hpThrivesMedium", 3: "hpThrivesBright" 
 const LEVELS = [{ v: 1, label: "hpLow" }, { v: 2, label: "hpMedium" }, { v: 3, label: "hpBright" }];
 
 export const HouseplantCareCard = memo(function HouseplantCareCard({ theme, savedPlants, onOpenPlant }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const houseplants = useMemo(() => {
     return (savedPlants || [])
       .map((name) => produceData.find((p) => p.name === name))

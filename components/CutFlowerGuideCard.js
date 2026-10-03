@@ -1,6 +1,6 @@
 import { memo, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
-import { t, tn } from "../lib/i18n";
+import { t, tn, useLanguage } from "../lib/i18n";
 import produceData from "../data/produceData";
 import { normalizeType, resolvePlantImageSource, tapHaptic } from "../core";
 import { DRIES_WELL } from "../data/flowerHomeData";
@@ -35,6 +35,7 @@ const VASE = {
 const DEFAULT_VASE = [6, "Cut in the cool morning, strip lower leaves, and recut stems under water."];
 
 export const CutFlowerGuideCard = memo(function CutFlowerGuideCard({ theme, savedPlants, onOpenPlant }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const flowers = useMemo(() => {
     return (savedPlants || [])
       .map((name) => produceData.find((p) => p.name === name))

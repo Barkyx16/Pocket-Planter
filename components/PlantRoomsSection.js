@@ -1,7 +1,7 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { t } from "../lib/i18n";
+import { t, useLanguage } from "../lib/i18n";
 import produceData from "../data/produceData";
 import { normalizeType, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
@@ -11,6 +11,7 @@ export const PLANT_ROOMS_STORAGE_KEY = "pp_plantRooms";
 const SUGGESTIONS = ["roomLiving", "roomBedroom", "roomBathroom", "roomKitchen", "roomOffice"];
 
 export const PlantRoomsSection = memo(function PlantRoomsSection({ theme, savedPlants }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const [data, setData] = useState({ rooms: [], assign: {} }); // assign: { plantName: room }
   const [loaded, setLoaded] = useState(false);
   const [draft, setDraft] = useState("");

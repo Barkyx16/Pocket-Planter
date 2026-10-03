@@ -3,7 +3,7 @@ import { Pressable, ScrollView, Share, Text, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import produceData from "../data/produceData";
 import { localPlantMonths, normalizeType, tapHaptic, typeLabel } from "../core";
-import { formatDate, t, tn } from "../lib/i18n";
+import { formatDate, t, tn, useLanguage } from "../lib/i18n";
 import { NativeModuleGuard } from "./NativeModuleGuard";
 
 // Short month name in the app language, e.g. "Mar" or "mars".
@@ -35,6 +35,7 @@ function firstSentence(text) {
 }
 
 export const PlantLabelsSection = memo(function PlantLabelsSection({ theme, savedPlants, zone }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const names = Array.from(new Set(savedPlants || []));
   const [qrPlant, setQrPlant] = useState(null);
 

@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
 import { getDaysSince, getTodayKey, tapHaptic } from "../core";
-import { formatDate, t, tn } from "../lib/i18n";
+import { formatDate, t, tn, useLanguage } from "../lib/i18n";
 import { SkeletonSection } from "./Skeleton";
 
 export const TOOL_MAINT_STORAGE_KEY = "pp_toolMaint";
@@ -23,6 +23,7 @@ const MAINT_ITEMS = [
 const daysSince = (dateKey) => getDaysSince(dateKey);
 
 export const ToolMaintenanceSection = memo(function ToolMaintenanceSection({ theme, embedded }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const [log, setLog] = useState({}); // { itemId: lastDoneDateKey }
   const [loaded, setLoaded] = useState(false);
 

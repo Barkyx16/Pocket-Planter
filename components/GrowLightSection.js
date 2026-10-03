@@ -4,7 +4,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { getDaysSince, getTodayKey, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
 import { touchSlop } from "../lib/a11y";
-import { formatTime, t } from "../lib/i18n";
+import { formatTime, t, useLanguage } from "../lib/i18n";
 
 export const GROW_LIGHT_STORAGE_KEY = "pp_growLights";
 
@@ -22,6 +22,7 @@ const offLabel = (hours) => {
 };
 
 export const GrowLightSection = memo(function GrowLightSection({ theme }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const [trays, setTrays] = useState([]); // { id, name, hours, start }
   const [loaded, setLoaded] = useState(false);
   const [name, setName] = useState("");

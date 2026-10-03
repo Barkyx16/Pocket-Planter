@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { careWindowKey, flipMonth, resolvePlantImageSource } from "../core";
-import { formatDate, t } from "../lib/i18n";
+import { formatDate, t, useLanguage } from "../lib/i18n";
 
 const findItem = (name) => produceData.find((p) => p.name.toLowerCase() === String(name).toLowerCase());
 
@@ -59,6 +59,7 @@ function bloomFor(name) {
 }
 
 export const BloomSuccessionSection = memo(function BloomSuccessionSection({ theme, savedPlants, onOpenPlant }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   // Localised bloom coverage: for each of the 12 local months, which owned
   // plants are flowering.
   const bloomers = [];

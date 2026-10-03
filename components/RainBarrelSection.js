@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
 import { tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
-import { t, tn } from "../lib/i18n";
+import { t, tn, useLanguage } from "../lib/i18n";
 
 export const RAIN_BARREL_STORAGE_KEY = "pp_rainBarrel";
 
@@ -16,6 +16,7 @@ const TYPICAL_DAILY_L = 19; // ~5 gal/day covers a modest bed + a few pots
 const DEFAULT = { capacityL: 208, levelL: 0 }; // 208 L ≈ a standard 55-gal barrel
 
 export const RainBarrelSection = memo(function RainBarrelSection({ theme, unitSystem }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const metric = unitSystem === "metric";
   const [data, setData] = useState(DEFAULT);
   const [loaded, setLoaded] = useState(false);

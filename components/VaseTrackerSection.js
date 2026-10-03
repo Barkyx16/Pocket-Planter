@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { t, tn } from "../lib/i18n";
+import { t, tn, useLanguage } from "../lib/i18n";
 import { getDaysSince, getTodayKey, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
 import { touchSlop } from "../lib/a11y";
@@ -14,6 +14,7 @@ const LIFE_OPTS = [5, 7, 10, 14];
 const daysSince = (dateKey) => getDaysSince(dateKey) ?? 0;
 
 export const VaseTrackerSection = memo(function VaseTrackerSection({ theme }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const [vases, setVases] = useState([]); // { id, name, date, days }
   const [loaded, setLoaded] = useState(false);
   const [name, setName] = useState("");

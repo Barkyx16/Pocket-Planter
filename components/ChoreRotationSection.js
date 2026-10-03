@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { daysBetweenKeys, getTodayKey, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
-import { t, tn } from "../lib/i18n";
+import { t, tn, useLanguage } from "../lib/i18n";
 
 export const CHORE_STORAGE_KEY = "pp_choreRotation";
 
@@ -16,6 +16,7 @@ const DEFAULT = { members: [], chores: [], startDate: getTodayKey(), periodDays:
 const daysBetween = (aKey, bKey) => daysBetweenKeys(aKey, bKey) ?? 0;
 
 export const ChoreRotationSection = memo(function ChoreRotationSection({ theme }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const [data, setData] = useState(DEFAULT);
   const [loaded, setLoaded] = useState(false);
   const [memberDraft, setMemberDraft] = useState("");

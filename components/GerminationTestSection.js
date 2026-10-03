@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { getTodayKey, tapHaptic } from "../core";
-import { formatDate, t } from "../lib/i18n";
+import { formatDate, t, useLanguage } from "../lib/i18n";
 import { SkeletonSection } from "./Skeleton";
 import { touchSlop } from "../lib/a11y";
 
@@ -19,6 +19,7 @@ function viabilityMeta(pct) {
 }
 
 export const GerminationTestSection = memo(function GerminationTestSection({ theme }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const [tests, setTests] = useState([]); // { id, seedName, sown, sprouted, date }
   const [loaded, setLoaded] = useState(false);
   const [name, setName] = useState("");

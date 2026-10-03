@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
-import { formatDate, t } from "../lib/i18n";
+import { formatDate, t, useLanguage } from "../lib/i18n";
 import { careWindowKey, flipMonth, getMonthKey, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
 
@@ -46,6 +46,7 @@ function pruneFor(name) {
 }
 
 export const PruningScheduleSection = memo(function PruningScheduleSection({ theme, savedPlants }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const [done, setDone] = useState({}); // { monthKey: { plantName: true } }
   const [loaded, setLoaded] = useState(false);
 

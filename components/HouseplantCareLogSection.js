@@ -5,7 +5,7 @@ import produceData from "../data/produceData";
 import { getDaysSince, getTodayKey, normalizeType, resolvePlantImageSource, tapHaptic } from "../core";
 import { HOUSEPLANT_CARE, HOUSEPLANT_CARE_DEFAULT } from "../data/flowerHomeData";
 import { SkeletonSection } from "./Skeleton";
-import { t } from "../lib/i18n";
+import { t, useLanguage } from "../lib/i18n";
 
 export const HOUSEPLANT_CARELOG_STORAGE_KEY = "pp_houseplantCare";
 
@@ -14,6 +14,7 @@ export const HOUSEPLANT_CARELOG_STORAGE_KEY = "pp_houseplantCare";
 const daysSince = (dateKey) => getDaysSince(dateKey);
 
 export const HouseplantCareLogSection = memo(function HouseplantCareLogSection({ theme, savedPlants, onOpenPlant }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const [log, setLog] = useState({}); // { name: { watered: dateKey, repot: dateKey } }
   const [loaded, setLoaded] = useState(false);
 

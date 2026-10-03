@@ -3,7 +3,7 @@ import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { resolvePlantImageSource } from "../core";
 import { PET_TOXIC, PET_SAFE } from "../data/flowerHomeData";
-import { t } from "../lib/i18n";
+import { t, useLanguage } from "../lib/i18n";
 
 const SEV = {
   severe: { color: "#ff7b7b", label: "petSevere" },
@@ -12,6 +12,7 @@ const SEV = {
 };
 
 export const PetSafeSection = memo(function PetSafeSection({ theme, savedPlants, onOpenPlant }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const { toxic, safe, unknown } = useMemo(() => {
     const tox = [], s = [], u = [];
     (savedPlants || []).forEach((n) => {

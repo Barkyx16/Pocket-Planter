@@ -1,7 +1,7 @@
 import { memo, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { COMPANION_PLANTING_DATA, getCompatibilityScore, getPairReason, tapHaptic } from "../core";
-import { t } from "../lib/i18n";
+import { t, useLanguage } from "../lib/i18n";
 
 const PAIR_LABEL_KEYS = { "Excellent Pair": "pairExcellent", Avoid: "pairAvoid", Neutral: "pairNeutral" };
 
@@ -9,6 +9,7 @@ const PAIR_LABEL_KEYS = { "Excellent Pair": "pairExcellent", Avoid: "pairAvoid",
 // bed — the companion-conflict logic already exists for planted beds, this just
 // makes it available up front for anything, even with an empty garden.
 export const PairCheckSection = memo(function PairCheckSection({ theme, savedPlants }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const options = useMemo(() => {
     const set = new Set(Object.keys(COMPANION_PLANTING_DATA));
     (savedPlants || []).forEach((n) => set.add(n));

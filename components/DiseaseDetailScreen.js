@@ -5,7 +5,7 @@ import { styles } from "../styles";
 import { localizeTemperatures } from "../core";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { IconText } from "./IconText";
-import { t } from "../lib/i18n";
+import { t, useLanguage } from "../lib/i18n";
 
 // Disease counterpart of PestDetailScreen. Same layout and section rhythm, but
 // amber-themed (matching the "Common Diseases" section) and with disease-shaped
@@ -14,6 +14,7 @@ import { t } from "../lib/i18n";
 const AMBER = "#ffcf8b";
 
 export const DiseaseDetailScreen = memo(function DiseaseDetailScreen({ theme, disease, onBack, onOpenPlant, unitSystem }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   if (!disease) return null;
 
   // Affected = the user's own plants this disease hits (passed in from the plant

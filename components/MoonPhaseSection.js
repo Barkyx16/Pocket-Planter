@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Text, View } from "react-native";
-import { t, tn } from "../lib/i18n";
+import { t, tn, useLanguage } from "../lib/i18n";
 
 // Pure-astronomy moon phase — no data feed. Reference new moon: 2000-01-06
 // 18:14 UTC. Synodic month = 29.530588853 days. Everything else is derived.
@@ -33,6 +33,7 @@ const QUARTER_ADVICE = {
 };
 
 export const MoonPhaseSection = memo(function MoonPhaseSection({ theme, embedded }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const age = moonAge();
   const phase = PHASES.find((p) => age < p.max) || PHASES[0];
   const illum = Math.round(((1 - Math.cos((2 * Math.PI * age) / SYNODIC)) / 2) * 100);

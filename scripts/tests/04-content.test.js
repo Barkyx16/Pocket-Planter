@@ -993,3 +993,21 @@ describe("counted text", () => {
     }
   });
 });
+
+describe("memo components and the language", () => {
+  it("subscribe to language changes when they translate", () => {
+    // memo() sees unchanged props on a language switch and skips the render, so
+    // a memoised component reading the module-level t kept the old language
+    // until something else changed. It has to consume the language context.
+    const offenders = [];
+    for (const f of fs.readdirSync(path.join(ROOT, "components")).filter((x) => x.endsWith(".js"))) {
+      const src = fs.readFileSync(path.join(ROOT, "components", f), "utf8");
+      if (!/memo\(function /.test(src)) continue;
+      if (!/import \{[^}]*\b(t|tn)\b[^}]*\} from "\.\.\/lib\/i18n"/.test(src)) continue;
+      const memos = (src.match(/memo\(function /g) || []).length;
+      const subs = (src.match(/useTranslation\(\)|useLanguage\(\)|useT\(\)/g) || []).length;
+      if (subs < memos) offenders.push(f);
+    }
+    eq(offenders, []);
+  });
+});
