@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Linking, Platform, Pressable, Text, View } from "react-native";
 import * as Notifications from "expo-notifications";
 import Purchases from "react-native-purchases";
@@ -19,6 +19,28 @@ export const SettingsCard = memo(function SettingsCard({ theme, premiumUnlocked,
  );
   const [restoring, setRestoring] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
+  // The store's own price for each plan, in the shopper's currency ("2,99 €").
+  // The figures below are only a fallback for when the store can't be reached.
+  const [storePrices, setStorePrices] = useState({});
+  useEffect(() => {
+    let alive = true;
+    // Through a promise so a missing native module (Expo Go) is caught, not thrown.
+    Promise.resolve()
+      .then(() => Purchases.getOfferings())
+      .then((offerings) => {
+        const prices = {};
+        (offerings?.current?.availablePackages || []).forEach((pkg) => {
+          const id = pkg?.product?.identifier;
+          const price = pkg?.product?.priceString;
+          if (!price) return;
+          if (id === PRODUCT_IDS.Monthly) prices.Monthly = price;
+          if (id === PRODUCT_IDS.Yearly) prices.Yearly = price;
+        });
+        if (alive) setStorePrices(prices);
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
 
 async function restorePurchases() {
     if (restoring) return;
@@ -149,11 +171,11 @@ async function choosePlan(plan) {
           {[
             {
               plan: "Monthly",
-              badge: "POPULAR",
+              badge: t("premiumCard.popular"),
               badgeBg: "#5cff89",
               badgeColor: "#07120b",
-              price: "$2.99",
-              per: "/ month",
+              price: storePrices.Monthly || "$2.99",
+              per: t("premiumCard.perMonth"),
               savings: null,
             },
             {
@@ -161,8 +183,8 @@ async function choosePlan(plan) {
               badge: t("premiumCard.bestValue"),
               badgeBg: "#ffd86b",
               badgeColor: "#3d2c00",
-              price: "$24.99",
-              per: "/ year",
+              price: storePrices.Yearly || "$24.99",
+              per: t("premiumCard.perYear"),
               savings: t("premiumCard.savings"),
             },
           ].map(({ plan, badge, badgeBg, badgeColor, price, per, savings }) => {
@@ -195,7 +217,7 @@ async function choosePlan(plan) {
                 ) : null}
 
                 <Text style={[styles.premiumPlanOptionName, { color: isSelected ? "#5cff89" : "#ffffff" }]}>
-                  {plan}
+                  {t(plan === "Monthly" ? "premiumCard.planMonthly" : "premiumCard.planYearly")}
                 </Text>
 
                 <Text style={[styles.premiumPlanOptionPrice, { color: "#ffffff" }]}>

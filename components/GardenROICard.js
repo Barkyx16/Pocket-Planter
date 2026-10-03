@@ -40,11 +40,11 @@ return (
             {net >= 0 ? t("gardenROI.netSavings") : t("gardenROI.netSoFar")}
           </Text>
           <Text style={{ color: netColor, fontSize: 42, fontWeight: "900", marginTop: 4 }}>
-            {net >= 0 ? "" : "-"}${Math.abs(net)}
+            {net >= 0 ? "" : "-"}{formatMoney(Math.abs(net), { decimals: 0 })}
           </Text>
           {roi ? (
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 4 }}>
-              {t("gardenROI.forEvery1SpentYou")}{roi.toFixed(2)} {t("gardenROI.ofProduce")}
+              {t("extra.roiLine", { one: formatMoney(1, { decimals: 0 }), value: formatMoney(roi) })}
             </Text>
           ) : null}
         </View>

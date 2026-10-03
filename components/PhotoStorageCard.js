@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
-import { tn, useTranslation } from "../lib/i18n";
+import { formatNumber, tn, useTranslation } from "../lib/i18n";
 
 const DAY = 24 * 60 * 60 * 1000;
 // Rough estimate — the app doesn't read real file sizes, so we approximate.
@@ -16,7 +16,7 @@ export const PhotoStorageCard = memo(function PhotoStorageCard({ theme, journalE
   const thisMonth = entries.filter((e) => ageDays(e) <= 30).length;
   const older6mo = entries.filter((e) => ageDays(e) > 182).length;
   const older1yr = entries.filter((e) => ageDays(e) > 365).length;
-  const estMB = (total * EST_MB_PER_PHOTO).toFixed(1);
+  const estMB = formatNumber(total * EST_MB_PER_PHOTO, { maximumFractionDigits: 1 });
 
   const stats = [
     { value: String(total), label: "Photos", color: "#8effab" },
