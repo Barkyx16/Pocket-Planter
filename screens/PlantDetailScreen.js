@@ -6,7 +6,7 @@ import { PlantGrowthTimeline } from "../components/PlantGrowthTimeline";
 import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { PremiumLockedSection } from "../components/PremiumLockedSection";
 import { WeatherParticles } from "../components/WeatherParticles";
-import { getCompanionInfo, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, normalizeType, resolvePlantImageSource } from "../core";
+import { getCompanionLists, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, normalizeType, resolvePlantImageSource } from "../core";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { getPestImage } from "../data/pestImageMap";
 import { formatDate, t } from "../lib/i18n";
@@ -21,11 +21,13 @@ export function PlantDetailScreen({
   createBedFromPlacementPrompt, fadeAnimation, fertilizerTrackers, followedPlants, gardenPlacementPrompt, gardenXP, getCompanionDisplayName, getCompanionImage, glowOpacity, handleBackFromPlant, harvestTrackers, isDark, journalEntries, jumpToTab, markPlantWatered, openDisease, openPest, openPlantByName, pickJournalPhoto, placeFromPlacementPrompt, plantNotes, premiumUnlocked, quickAddPlantToGarden, rarityStyle, replaceFromPlacementPrompt, resolveCompanionPlant, savedPlants, schedulePlantReminder, selectedPlant, setGardenPlacementPrompt, setHarvestLogPlant, setHarvestLogText, setHarvestTrackers, setPlantNotes, showLevelUp, theme, toggleFertilizerTracker, toggleSavedPlant, wateredPlants, wateringHistory, weather, xpPopups, zip, zone,
 }) {
     const plantImage = resolvePlantImageSource(selectedPlant);
-    const companionInfo = getCompanionInfo(selectedPlant.name) || {};
     const inCatalog = (item) => resolveCompanionPlant(item) !== null;
-    const excellentCompanions = (Array.isArray(companionInfo.excellent) ? companionInfo.excellent : []).filter(inCatalog);
-    const neutralCompanions = (Array.isArray(companionInfo.neutral) ? companionInfo.neutral : []).filter(inCatalog);
-    const avoidCompanions = (Array.isArray(companionInfo.avoid) ? companionInfo.avoid : []).filter(inCatalog);
+    // Sorted by the pair check, so the page agrees with the garden map and the
+    // pair checker; see getCompanionLists.
+    const companionLists = getCompanionLists(selectedPlant.name);
+    const excellentCompanions = companionLists.excellent.filter(inCatalog);
+    const neutralCompanions = companionLists.neutral.filter(inCatalog);
+    const avoidCompanions = companionLists.avoid.filter(inCatalog);
     const seasonLabel = getPlantSeasonLabel(selectedPlant, zone);
     const quickFacts = getPlantQuickFacts(selectedPlant);
     const plantHealth = getPlantHealth(selectedPlant);

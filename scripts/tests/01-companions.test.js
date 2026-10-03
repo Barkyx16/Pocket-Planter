@@ -148,3 +148,36 @@ describe("a pairing reads the same both ways", () => {
     eq(label("Potato", "Pea"), "Excellent Pair");
   });
 });
+
+describe("a plant's page lists companions the way the pair check sees them", () => {
+  const label = (a, b) => core.getCompatibilityScore(a, b).label;
+  it("does not list a companion the check calls Avoid", () => {
+    // Sage's general-advice chart lists Basil as great; Basil's own chart warns
+    // against Sage, and the check says Avoid.
+    const sage = core.getCompanionLists("Sage");
+    ok(!sage.excellent.includes("Basil"), "Basil is not one of Sage's great companions");
+    ok(sage.avoid.includes("Basil"), "and Sage's page should say so");
+  });
+  it("includes warnings that live on the other plant's chart", () => {
+    // Broccoli's chart warns against Tomato; Tomato's page never said.
+    ok(core.getCompanionLists("Tomato").avoid.includes("Broccoli"));
+  });
+  it("files every entry where the check puts it, for every chart", () => {
+    const wrong = [];
+    for (const name of Object.keys(core.COMPANION_PLANTING_DATA)) {
+      const lists = core.getCompanionLists(name);
+      lists.excellent.forEach((x) => { if (label(name, x) !== "Excellent Pair") wrong.push(`${name}+${x}`); });
+      lists.avoid.forEach((x) => { if (label(name, x) !== "Avoid") wrong.push(`${name}-${x}`); });
+      lists.neutral.forEach((x) => { if (label(name, x) !== "Neutral") wrong.push(`${name}~${x}`); });
+    }
+    eq(wrong, []);
+  });
+  it("is what the plant page shows", () => {
+    const src = require("fs").readFileSync(require("path").join(ROOT, "screens/PlantDetailScreen.js"), "utf8");
+    ok(/const companionLists = getCompanionLists\(selectedPlant\.name\)/.test(src));
+  });
+  it("keeps the classics", () => {
+    ok(core.getCompanionLists("Tomato").excellent.includes("Basil"));
+    ok(core.getCompanionLists("Potato").avoid.includes("Tomato"));
+  });
+});

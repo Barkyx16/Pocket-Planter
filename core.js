@@ -1847,6 +1847,38 @@ export function getCompatibilityScore(plantName, comparePlant) {
   return result;
 }
 
+// A plant's companions as its page lists them, sorted by the pair check rather
+// than copied from its chart. The chart alone disagreed with the check in both
+// directions: Sage's general-advice chart lists Basil as great, which the check
+// calls Avoid on Basil's word; and Tomato's page never mentioned Broccoli,
+// though Broccoli's chart warns against Tomato and the check says Avoid. So the
+// candidates are everything this plant's chart names plus every chart that
+// names this plant, each filed where getCompatibilityScore puts it.
+const _companionListsCache = new Map();
+export function getCompanionLists(plantName) {
+  const name = String(plantName || "");
+  if (_companionListsCache.has(name)) return _companionListsCache.get(name);
+  const self = (resolveCompanionName(name) || name).toLowerCase();
+  const out = { excellent: [], neutral: [], avoid: [] };
+  const seen = new Set([self]);
+  const file = (entry) => {
+    const canonical = resolveCompanionName(entry);
+    if (!canonical || seen.has(canonical.toLowerCase())) return;
+    seen.add(canonical.toLowerCase());
+    const label = getCompatibilityScore(name, entry).label;
+    (label === "Excellent Pair" ? out.excellent : label === "Avoid" ? out.avoid : out.neutral).push(entry);
+  };
+  const info = getCompanionInfo(name) || {};
+  [...(info.excellent || []), ...(info.avoid || []), ...(info.neutral || [])].forEach(file);
+  Object.entries(COMPANION_PLANTING_DATA).forEach(([key, other]) => {
+    const mentions = [...(other.excellent || []), ...(other.avoid || [])]
+      .some((e) => (resolveCompanionName(e) || String(e)).toLowerCase() === self);
+    if (mentions) file(key);
+  });
+  _companionListsCache.set(name, out);
+  return out;
+}
+
 // What one plant's chart says about another: "excellent", "avoid" or null.
 function chartVerdict(plantName, comparePlant) {
   const info = getCompanionInfo(plantName);
