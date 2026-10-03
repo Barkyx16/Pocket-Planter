@@ -153,7 +153,7 @@ const [sortMode, setSortMode] = useState("recent");
                   { color: health.color },
                 ]}
               >
-                {health.icon} {health.label}
+                {health.icon} {health.text || health.label}
               </Text>
 
 <Text

@@ -488,3 +488,27 @@ describe("season labels in the gardener's language", () => {
     }
   });
 });
+
+describe("watering words in the gardener's language", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("reads the same in English, with real plurals", () => {
+    eq(core.getLastWateredText("T", {}, { T: [ago(3)] }), "Watered 3 days ago");
+    eq(core.getLastWateredText("T", {}, { T: [ago(21)] }), "Watered 3 weeks ago");
+    eq(core.getLastWateredText("T", {}, { T: [ago(7)] }), "Watered 7 days ago");
+  });
+  it("speaks Spanish when the app does", () => {
+    i18n.setLocale("es");
+    try {
+      eq(core.getLastWateredText("T", {}, { T: [ago(0)] }), "Regada hoy");
+      eq(core.getLastWateredText("T", {}, { T: [ago(3)] }), "Regada hace 3 días");
+      const tomato = plant("Tomato");
+      const nw = core.getNextWaterInfo("Tomato", tomato, { Tomato: [ago(30)] }, {}, null);
+      eq(nw.label, "Toca regar hoy");
+      eq(nw.urgency, "due", "the logic is untouched");
+      const badge = core.getPlantHealthStatus({ plantName: "Tomato", item: tomato, wateredPlants: {}, wateringHistory: { Tomato: [ago(30)] }, weather: null });
+      eq([badge.label, badge.text], ["Needs Water", "Necesita agua"]);
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});

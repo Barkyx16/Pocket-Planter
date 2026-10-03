@@ -6,7 +6,7 @@ import zipZoneData from "./data/zipZoneData";
 import { PLANT_DETAILS } from "./data/plantDetails";
 import { PLANT_HEALTH } from "./data/plantHealth";
 import { DISEASE_LIBRARY } from "./data/diseaseData";
-import { formatDate, t } from "./lib/i18n";
+import { formatDate, t, tn } from "./lib/i18n";
 
 export const loadingScreenImage = require("./assets/loading-screen.png");
 
@@ -3831,12 +3831,11 @@ export function getLastWateredText(plantName, wateredPlants, wateringHistory) {
     ? history[history.length - 1]
     : wateredPlants?.[plantName];
   const days = getDaysSince(lastDate);
-  if (days === null) return "Never watered";
-  if (days <= 0) return "Watered today";
-  if (days === 1) return "Watered yesterday";
-  if (days < 14) return `Watered ${days} days ago`;
-  const weeks = Math.floor(days / 7);
-  return `Watered ${weeks} week${weeks === 1 ? "" : "s"} ago`;
+  if (days === null) return t("savedPlants.neverWatered");
+  if (days <= 0) return t("savedPlants.wateredToday");
+  if (days === 1) return t("savedPlants.wateredYesterday");
+  if (days < 14) return tn("savedPlants.wateredDaysAgo", days);
+  return tn("savedPlants.wateredWeeksAgo", Math.floor(days / 7));
 }
 
 export function getWateringCount(plantName, wateringHistory) {
@@ -3918,10 +3917,10 @@ export function getNextWaterInfo(plantName, item, wateringHistory, wateredPlants
   if (rainSoon && daysUntil <= 0) daysUntil = 1;
 
   let label, urgency;
-  if (daysUntil <= 0) { label = "Water due today"; urgency = "due"; }
-  else if (daysUntil === 1) { label = "Water tomorrow"; urgency = "soon"; }
-  else { label = `Water in ${daysUntil} days`; urgency = "ok"; }
-  if (rainSoon) { label = "Rain expected — check soil first"; urgency = "soon"; }
+  if (daysUntil <= 0) { label = t("savedPlants.waterDueToday"); urgency = "due"; }
+  else if (daysUntil === 1) { label = t("savedPlants.waterTomorrow"); urgency = "soon"; }
+  else { label = tn("savedPlants.waterInDays", daysUntil); urgency = "ok"; }
+  if (rainSoon) { label = t("savedPlants.rainCheckSoil"); urgency = "soon"; }
 
   return { daysUntil, label, urgency, interval, rainSoon };
 }
@@ -5309,8 +5308,8 @@ export function getPowerPairs(gardenAreas) {
 
 export function getPlantHealthStatus({ plantName, item, wateredPlants, wateringHistory, weather }) {
   const wateredToday = wateredPlants?.[plantName] === getTodayKey();
-  if (weather?.minTempF <= FROST_THRESHOLD_F) return { label: "Frost Risk", icon: "❄️", color: "#6bc7ff" };
-  if (weather?.maxTempF >= HEAT_THRESHOLD_F && !wateredToday) return { label: "Heat Stressed", icon: "🔥", color: "#ff7a7a" };
+  if (weather?.minTempF <= FROST_THRESHOLD_F) return { label: "Frost Risk", text: t("savedPlants.healthFrost"), icon: "❄️", color: "#6bc7ff" };
+  if (weather?.maxTempF >= HEAT_THRESHOLD_F && !wateredToday) return { label: "Heat Stressed", text: t("savedPlants.healthHeat"), icon: "🔥", color: "#ff7a7a" };
 
   // "Not watered today" is not the same as "thirsty". Every plant that had not
   // been watered since midnight read Needs Water, so an apple on a five-day
@@ -5320,8 +5319,8 @@ export function getPlantHealthStatus({ plantName, item, wateredPlants, wateringH
   //
   // Without an item there is no interval to reason about, so fall back to the
   // old question rather than guess.
-  if (isWaterDue(plantName, item, wateredPlants, wateringHistory, weather)) return { label: "Needs Water", icon: "💧", color: "#ffd86b" };
-  return { label: "Healthy", icon: "🌿", color: "#5cff89" };
+  if (isWaterDue(plantName, item, wateredPlants, wateringHistory, weather)) return { label: "Needs Water", text: t("savedPlants.healthNeedsWater"), icon: "💧", color: "#ffd86b" };
+  return { label: "Healthy", text: t("savedPlants.healthHealthy"), icon: "🌿", color: "#5cff89" };
 }
 
 // Does this plant need water today? The one rule behind the health badge, the
