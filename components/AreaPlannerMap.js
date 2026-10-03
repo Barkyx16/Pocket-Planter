@@ -355,7 +355,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                 const plant = produceData.find((item) => item?.name === plantName);
                 const imageSource = plant ? resolvePlantImageSource(plant) : null;
                 const hasConflict = plantName && areaPlants.some((c) => c !== plantName && getCompatibilityScore(plantName, c).label === "Avoid");
-                const hasExcellent = plantName && areaPlants.some((c) => c !== plantName && getCompatibilityScore(plantName, c).label === t("areaPlannerMap.excellentPair"));
+                const hasExcellent = plantName && areaPlants.some((c) => c !== plantName && getCompatibilityScore(plantName, c).label === "Excellent Pair");
                 // By the plant's own schedule — the badge's rule, not "not watered since midnight".
                 const needsWater = plantName && isWaterDue(plantName, plant, wateredPlants, wateringHistory, weather);
                 return (

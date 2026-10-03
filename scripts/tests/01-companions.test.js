@@ -190,3 +190,19 @@ describe("the garden map suggests what the pair check approves", () => {
     ok(!/getCompanionInfo\(/.test(src), "no suggestion should read a chart directly");
   });
 });
+
+describe("pair labels in the garden map", () => {
+  it("compare against the English label, never a translation", () => {
+    // getCompatibilityScore's label is always English; comparing it with t(...)
+    // only matches in English, so the green "excellent pair" border vanished in
+    // every other language.
+    const fs = require("fs");
+    const offenders = [];
+    for (const dir of ["components", "screens"]) {
+      for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith(".js"))) {
+        if (/\.label\s*[!=]==\s*t\(/.test(fs.readFileSync(path.join(ROOT, dir, f), "utf8"))) offenders.push(`${dir}/${f}`);
+      }
+    }
+    eq(offenders, []);
+  });
+});
