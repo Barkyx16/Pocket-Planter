@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Image, Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import produceData from "../data/produceData";
-import { normalizeType, resolvePlantImageSource } from "../core";
+import { normalizeType, resolvePlantImageSource, typeLabel } from "../core";
 import { touchSlop } from "../lib/a11y";
 import { useTranslation } from "../lib/i18n";
 
@@ -77,7 +77,7 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
                     onPress={() => setCategory(c)}
                     style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255,255,255,0.12)" }}
                   >
-                    <Text style={{ color: active ? "#07120b" : theme.text, fontSize: 12, fontWeight: "900" }}>{c}</Text>
+                    <Text style={{ color: active ? "#07120b" : theme.text, fontSize: 12, fontWeight: "900" }}>{typeLabel(c)}</Text>
                   </Pressable>
                 );
               })}
@@ -104,7 +104,7 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: theme.text, fontSize: 15, fontWeight: "800" }}>{p.name}</Text>
-                    <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 1 }}>{normalizeType(p.type, p.name)}</Text>
+                    <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 1 }}>{typeLabel(normalizeType(p.type, p.name))}</Text>
                   </View>
                   {isCurrent ? <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900" }}>{t("plantPicker.inThisPlot")}</Text> : <Text style={{ color: "#5cff89", fontSize: 20, fontWeight: "900" }}>＋</Text>}
                 </Pressable>

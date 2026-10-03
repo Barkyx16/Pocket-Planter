@@ -512,3 +512,16 @@ describe("watering words in the gardener's language", () => {
     }
   });
 });
+
+describe("plant types in the gardener's language", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("labels every type, and leaves the English the filters compare with", () => {
+    for (const type of core.PLANT_TYPES) ok(core.typeLabel(type) && core.typeLabel(type) !== `plantTypes.${type}`, type);
+    eq(core.typeLabel("Tree Fruits"), "Tree Fruits");
+    i18n.setLocale("de");
+    eq(core.typeLabel("Vegetables"), "Gemüse");
+    eq(core.typeLabel("Herbs"), "Kräuter");
+    i18n.setLocale("en");
+    eq(core.normalizeType("Vegetable", "Carrot"), "Vegetables", "the data stays English");
+  });
+});

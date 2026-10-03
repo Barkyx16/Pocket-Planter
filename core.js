@@ -968,6 +968,17 @@ export function matchesCrop(name, key) {
   return !(CROP_IMPOSTORS[k] || []).some((impostor) => lower.includes(impostor));
 }
 
+// A plant type ("Vegetables", "Tree Fruits") in the gardener's language, for
+// display. The types stay English in the data, the filters and every compare.
+const TYPE_LABEL_KEYS = {
+  All: "all", Vegetables: "vegetables", "Tree Fruits": "treeFruits", "Tropical Fruits": "tropicalFruits",
+  Berries: "berries", Herbs: "herbs", Flowers: "flowers", Houseplants: "houseplants", Grains: "grains", Nuts: "nuts",
+};
+export function typeLabel(type) {
+  const key = TYPE_LABEL_KEYS[type];
+  return key ? t(`plantTypes.${key}`) : String(type || "");
+}
+
 export function normalizeType(type, name = "") {
   const value = String(type || "").trim();
   if (value === "Vegetable") return "Vegetables";

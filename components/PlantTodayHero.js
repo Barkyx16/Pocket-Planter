@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
-import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, getHarvestCountdown, getPlantDifficulty, getTodayKey, getPlantSeasonLabel, normalizeType, resolvePlantImageSource } from "../core";
+import { FROST_THRESHOLD_F, getHarvestCountdown, getPlantDifficulty, getPlantSeasonLabel, getTodayKey, HEAT_THRESHOLD_F, normalizeType, resolvePlantImageSource, typeLabel } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const PlantTodayHero = memo(function PlantTodayHero({ theme, monthlySuggestions, compatiblePlants, savedPlants = [], zone, weather, onOpen }) {
@@ -56,7 +56,7 @@ return (
             <Text style={styles.plantTodayTagText}>🚜 {harvest}</Text>
           </View>
           <View style={styles.plantTodayTag}>
-            <Text style={styles.plantTodayTagText}>🌿 {type}</Text>
+            <Text style={styles.plantTodayTagText}>🌿 {typeLabel(type)}</Text>
           </View>
         </View>
         <Text style={styles.plantTodayButtonText}>{t("plantTodayHero.viewCareGuide")}</Text>

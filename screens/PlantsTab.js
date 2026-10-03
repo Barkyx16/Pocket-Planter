@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Image, InteractionManager, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { getHarvestCountdown, getMonthEmoji, getPlantDifficulty, getPlantSeasonLabel, getSearchSuggestions, getTomorrowKey, MONTH_NAMES, normalizeType, PLANT_TYPES, plantsBuddyImage, resolvePlantImageSource, SCREEN_WIDTH, tapHaptic, translateSeasonLabel } from "../core";
+import { getHarvestCountdown, getMonthEmoji, getPlantDifficulty, getPlantSeasonLabel, getSearchSuggestions, getTomorrowKey, MONTH_NAMES, normalizeType, PLANT_TYPES, plantsBuddyImage, resolvePlantImageSource, SCREEN_WIDTH, tapHaptic, translateSeasonLabel, typeLabel } from "../core";
 import { getMonthImage } from "../data/monthImageMap";
 import { CollapsibleCard } from "../components/CollapsibleCard";
 import { PremiumLockedCard } from "../components/PremiumLockedCard";
@@ -124,7 +124,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.cleanPlantName}>{item.name}</Text>
-                  <Text style={styles.cleanPlantMeta}>{normalizeType(item.type, item.name)} • {translateSeasonLabel(getPlantSeasonLabel(item, zone, selectedMonth))}</Text>
+                  <Text style={styles.cleanPlantMeta}>{typeLabel(normalizeType(item.type, item.name))} • {translateSeasonLabel(getPlantSeasonLabel(item, zone, selectedMonth))}</Text>
                 </View>
                 <Text style={styles.cleanPlantArrow}>›</Text>
               </Pressable>
@@ -203,11 +203,11 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
               onPress={() => setSelectedType(type)}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
-              accessibilityLabel={`Filter by ${type}`}
+              accessibilityLabel={typeLabel(type)}
               style={[styles.filterTabNew, active && styles.filterTabNewActive]}
             >
               <Text style={[styles.filterTabNewText, active && styles.filterTabNewTextActive]}>
-                {type}
+                {typeLabel(type)}
               </Text>
             </Pressable>
           );
@@ -348,7 +348,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
                   ["Difficulty", getPlantDifficulty(left).label, getPlantDifficulty(right).label],
                   ["Harvest", getHarvestCountdown(left), getHarvestCountdown(right)],
                   ["Zones", `${left.minZone}-${left.maxZone}`, `${right.minZone}-${right.maxZone}`],
-                  ["Type", normalizeType(left.type, left.name), normalizeType(right.type, right.name)],
+                  ["Type", typeLabel(normalizeType(left.type, left.name)), typeLabel(normalizeType(right.type, right.name))],
                 ].map(([label, lv, rv]) => (
                   <View key={label} style={styles.compareStatRow}>
                     <Text style={styles.compareLabel}>{label}</Text>

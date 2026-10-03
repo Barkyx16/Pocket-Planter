@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
-import { getNextSeasonStart, getPlantDifficulty, getSeasonForDate, getSuggestionsForMonth, normalizeType, resolvePlantImageSource } from "../core";
+import { getNextSeasonStart, getPlantDifficulty, getSeasonForDate, getSuggestionsForMonth, normalizeType, resolvePlantImageSource, typeLabel } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, zone, onOpenPlant, onBrowse }) {
@@ -55,7 +55,7 @@ export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, 
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{item.name}</Text>
                   <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "800", marginTop: 2 }}>
-                    {diff.icon} {diff.text} · {normalizeType(item.type, item.name)}
+                    {diff.icon} {diff.text} · {typeLabel(normalizeType(item.type, item.name))}
                   </Text>
                 </View>
                 <Text style={{ color: "#ff9f43", fontSize: 20, fontWeight: "900" }}>›</Text>

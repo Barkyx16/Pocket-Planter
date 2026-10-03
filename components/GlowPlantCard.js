@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
-import { RARITY_STYLES, getHarvestCountdown, getLastWateredText, getNextWaterInfo, getPlantDifficulty, getRarity, getStreakDaysLeft, getTodayKey, getWateringStreak, normalizeType, resolvePlantImageSource } from "../core";
+import { getHarvestCountdown, getLastWateredText, getNextWaterInfo, getPlantDifficulty, getRarity, getStreakDaysLeft, getTodayKey, getWateringStreak, normalizeType, RARITY_STYLES, resolvePlantImageSource, typeLabel } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone, theme, isSaved, isCompared, isFollowed, isInGarden, isSnoozed, wateredDate, wateredPlants, wateringHistory, onOpen, onSave, onCompare, onFollow, onAddToGarden, onWater, onSnooze }) {
@@ -30,7 +30,7 @@ export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone,
             </View>
           </View>
           <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4 }}>
-            {normalizeType(plant.type, plant.name)} {t("glowPlant.zones")} {plant.minZone}–{plant.maxZone}
+            {typeLabel(normalizeType(plant.type, plant.name))} {t("glowPlant.zones")} {plant.minZone}–{plant.maxZone}
           </Text>
           <View style={{ flexDirection: "row", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
             <View style={{ backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}>

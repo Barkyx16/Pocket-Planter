@@ -6,7 +6,7 @@ import { PlantGrowthTimeline } from "../components/PlantGrowthTimeline";
 import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { PremiumLockedSection } from "../components/PremiumLockedSection";
 import { WeatherParticles } from "../components/WeatherParticles";
-import { getCompanionLists, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantingSteps, getPlantingWindowText, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeUnits, normalizeType, resolvePlantImageSource, translateSeasonLabel } from "../core";
+import { getCompanionLists, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantingSteps, getPlantingWindowText, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeUnits, normalizeType, resolvePlantImageSource, translateSeasonLabel, typeLabel } from "../core";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { getPestImage } from "../data/pestImageMap";
 import { formatDate, t } from "../lib/i18n";
@@ -128,7 +128,7 @@ export function PlantDetailScreen({
       </View>
     </View>
             <Text style={styles.detailTitle}>{selectedPlant.name}</Text>
-            <Text style={styles.detailSubtitle}>{normalizeType(selectedPlant.type, selectedPlant.name)} • Zones {selectedPlant.minZone}–{selectedPlant.maxZone}</Text>
+            <Text style={styles.detailSubtitle}>{typeLabel(normalizeType(selectedPlant.type, selectedPlant.name))} • Zones {selectedPlant.minZone}–{selectedPlant.maxZone}</Text>
           </Animated.View>
           <View style={styles.detailQuickActions}>
             <Pressable onPress={() => toggleSavedPlant(selectedPlant.name)} style={[styles.quickActionButton, isSaved && styles.quickActionButtonActive]}>
