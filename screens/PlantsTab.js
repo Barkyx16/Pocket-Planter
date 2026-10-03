@@ -9,8 +9,13 @@ import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { TabHero } from "../components/TabHero";
 import { GlowPlantCard } from "../components/GlowPlantCard";
 import { PersonalPlantingCalendar } from "../components/PersonalPlantingCalendar";
-import { t, tn } from "../lib/i18n";
+import { formatDate, t, tn } from "../lib/i18n";
 import { IconText } from "../components/IconText";
+
+// Month names in the gardener's language; MONTH_NAMES is the English table the
+// rest of the code keys on.
+const monthLong = (n) => formatDate(new Date(2026, n - 1, 1), { month: "long" });
+const monthShort = (n) => formatDate(new Date(2026, n - 1, 1), { month: "short" });
 
 export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filteredPlants, followedPlants, markPlantWatered, monthScrollDone, monthScrollRef, monthlyPicksY, monthlySuggestions, openPlantFromList, openPlantFromMonthly, plantSearch, plantDifficultyFilter, setPlantDifficultyFilter, plantNowOnly, setPlantNowOnly, plantSortMode, setPlantSortMode, plantAttrFilters, setPlantAttrFilters, addPlantToGarden, gardenPlantNames, plantsListY, plantsVisibleCount, recentPlants, savedPlants, scrollRef, selectedMonth, selectedType, setComparePlants, setPlantSearch, setPlantsVisibleCount, setSelectedMonth, setSelectedType, snoozePlantWatering, snoozedPlants, theme, toggleComparePlant, toggleFollowPlant, toggleSavedPlant, wateredPlants, wateringHistory, weather, zone }) {
   const [selectMode, setSelectMode] = useState(false);
@@ -40,9 +45,9 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
   const toggleBulk = (name) => setBulkSel((cur) => cur.includes(name) ? cur.filter((n) => n !== name) : [...cur, name]);
   const toggleAttr = (key) => { tapHaptic("light"); setPlantAttrFilters((cur) => cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key]); };
   const ATTR_FILTERS = [
-    { key: "container", label: "🪴 Container-friendly" },
-    { key: "fullsun", label: "☀️ Full sun" },
-    { key: "perennial", label: "🔁 Perennial" },
+    { key: "container", label: t("plants.attrContainer") },
+    { key: "fullsun", label: t("plants.attrFullSun") },
+    { key: "perennial", label: t("plants.attrPerennial") },
   ];
   const exitSelect = () => { setSelectMode(false); setBulkSel([]); };
   const bulkSave = () => {
@@ -73,8 +78,8 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
       {!premiumUnlocked ? (
       <PremiumLockedCard
         theme={theme}
-        title="This month's picks locked"
-        body="Unlock Premium to see the best plants to start this month, matched to your zone and climate."
+        title={t("plants.picksLockedTitle")}
+        body={t("plants.picksLockedBody")}
         onUnlock={onViewPremium}
       />
       ) : (
@@ -108,7 +113,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
               ) : (
                 <Text style={styles.calendarMonthEmoji}>{getMonthEmoji(monthNumber)}</Text>
               )}
-              <Text style={[styles.calendarMonthText, { color: active ? "#ffd86b" : "#d7ebdc" }]}>{month.slice(0, 3)}</Text>
+              <Text style={[styles.calendarMonthText, { color: active ? "#ffd86b" : "#d7ebdc" }]}>{monthShort(monthNumber)}</Text>
             </Pressable>
           );
         })}
@@ -148,10 +153,10 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
       ) : (
         <View style={styles.emptyStateCard}>
           <Text style={styles.emptyStateIcon}>📅</Text>
-          <Text style={styles.emptyStateTitle}>{t("plants.nothingIdealFor")} {MONTH_NAMES[selectedMonth - 1]}</Text>
+          <Text style={styles.emptyStateTitle}>{t("plants.nothingIdealFor")} {monthLong(selectedMonth)}</Text>
           <Text style={styles.emptyStateText}>
             {zone
-              ? `${MONTH_NAMES[selectedMonth - 1]} isn't a prime planting window for Zone ${zone}. Try another month above, or browse all plants to plan ahead.`
+              ? t("plants.notPrimeMonth", { month: monthLong(selectedMonth), zone })
               : t("plants.setYourZipCodeOn")}
           </Text>
 </View>
@@ -299,7 +304,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
               onPress={() => toggleAttr(a.key)}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
-              accessibilityLabel={active ? `Remove ${a.label} filter` : `Filter by ${a.label}`}
+              accessibilityLabel={active ? t("plants.a11yRemoveFilter", { label: a.label }) : t("plants.a11yFilterBy", { label: a.label })}
               style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}
             >
               <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{a.label}</Text>
@@ -322,7 +327,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
               onPress={() => { tapHaptic("light"); setPlantSortMode(s.id); }}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
-              accessibilityLabel={`Sort by ${s.label.replace(/^[^ ]+ /, "")}`}
+              accessibilityLabel={t("plants.a11ySortBy", { label: s.label.replace(/^[^ ]+ /, "") })}
               style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: active ? "rgba(255, 216, 107, 0.16)" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#ffd86b" : "rgba(255, 255, 255, 0.1)" }}
             >
               <Text style={{ color: active ? "#ffd86b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{s.label}</Text>
@@ -341,14 +346,14 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
               <>
                 <View style={styles.compareRow}>
                   <Text style={styles.comparePlantName}>{left.name}</Text>
-                  <Text style={styles.compareVs}>VS</Text>
+                  <Text style={styles.compareVs}>{t("plants.cmpVs")}</Text>
                   <Text style={styles.comparePlantName}>{right.name}</Text>
                 </View>
                 {[
-                  ["Difficulty", getPlantDifficulty(left).labelText, getPlantDifficulty(right).labelText],
-                  ["Harvest", getHarvestCountdown(left), getHarvestCountdown(right)],
-                  ["Zones", `${left.minZone}-${left.maxZone}`, `${right.minZone}-${right.maxZone}`],
-                  ["Type", typeLabel(normalizeType(left.type, left.name)), typeLabel(normalizeType(right.type, right.name))],
+                  [t("plants.cmpDifficulty"), getPlantDifficulty(left).labelText, getPlantDifficulty(right).labelText],
+                  [t("plants.cmpHarvest"), getHarvestCountdown(left), getHarvestCountdown(right)],
+                  [t("plants.cmpZones"), `${left.minZone}-${left.maxZone}`, `${right.minZone}-${right.maxZone}`],
+                  [t("plants.cmpType"), typeLabel(normalizeType(left.type, left.name)), typeLabel(normalizeType(right.type, right.name))],
                 ].map(([label, lv, rv]) => (
                   <View key={label} style={styles.compareStatRow}>
                     <Text style={styles.compareLabel}>{label}</Text>
@@ -403,9 +408,9 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
             <Text style={styles.emptyStateTitle}>{t("plants.noPlantsFound")}</Text>
             <Text style={styles.emptyStateText}>
               {plantSearch
-                ? `Nothing matches "${plantSearch}". Try a different name or clear your search.`
+                ? t("plants.noMatchSearch", { query: plantSearch })
                 : selectedType !== "All"
-                ? `No ${selectedType.toLowerCase()} match right now. Try viewing all plants instead.`
+                ? t("plants.noMatchType", { type: typeLabel(selectedType) })
                 : t("plants.noPlantsMatchTheCurrent")}
             </Text>
             {plantSearch && getSearchSuggestions(plantSearch).length > 0 ? (
@@ -465,11 +470,11 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
           <Pressable
             onPress={onViewPremium}
             accessibilityRole="button"
-            accessibilityLabel="Unlock all plants with Premium"
+            accessibilityLabel={t("plants.unlockAllA11y")}
             style={{ marginTop: 14, backgroundColor: "rgba(255, 216, 107, 0.16)", borderRadius: 16, paddingVertical: 14, paddingHorizontal: 16, alignItems: "center", borderWidth: 1, borderColor: "#ffd86b" }}
           >
             <Text style={{ color: "#ffd86b", fontWeight: "900", fontSize: 14 }}>
-              🔒 Unlock all {filteredPlants.length} plants with Premium
+              {tn("plants.unlockAllCount", filteredPlants.length)}
             </Text>
           </Pressable>
         ) : filteredPlants.length > plantsVisibleCount ? (

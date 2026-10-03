@@ -2392,20 +2392,20 @@ export function getPlantHealth(item) {
 
 export function getHarvestCountdown(item) {
   const ornType = normalizeType(item?.type, item?.name);
-  if (ornType === "Flowers") return "Blooms seasonally";
-  if (ornType === "Houseplants") return "Grown for foliage";
+  if (ornType === "Flowers") return t("plants.harvestBlooms");
+  if (ornType === "Houseplants") return t("plants.harvestFoliage");
   const authored = getPlantDetails(item);
   if (authored) {
     // Authored plants with a real maturity window (incl. perennial herbs that
     // still crop the first season) show a day count; trees/berries carry
     // daysToMaturity: null and fall through to the seasonal label.
-    if (authored.daysToMaturity) return `~${authored.daysToMaturity} day harvest`;
-    if (authored.perennial) return "Perennial — harvests seasonally";
+    if (authored.daysToMaturity) return tn("plants.harvestInDays", authored.daysToMaturity);
+    if (authored.perennial) return t("plants.harvestPerennial");
   }
-  if (isPerennial(item)) return "Perennial — harvests seasonally";
+  if (isPerennial(item)) return t("plants.harvestPerennial");
   const key = String(item?.name || "").replace(/\s+/g, "_");
   const days = harvestDays[key] || harvestDays[item?.name] || 75;
-  return `~${days} day harvest`;
+  return tn("plants.harvestInDays", days);
 }
 
 export function getHarvestDays(item) {

@@ -541,3 +541,21 @@ describe("difficulty in the gardener's language", () => {
     eq(core.getPlantDifficulty(plant("Basil")).labelText, "Easy");
   });
 });
+
+describe("the Plants tab and harvest countdown in the gardener's language", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("reads the same in English", () => {
+    ok(/^~\d+ day harvest$/.test(core.getHarvestCountdown(plant("Tomato"))), core.getHarvestCountdown(plant("Tomato")));
+  });
+  it("translates the countdown", () => {
+    i18n.setLocale("fr");
+    try { ok(/^Récolte en ~\d+ jours$/.test(core.getHarvestCountdown(plant("Tomato"))), core.getHarvestCountdown(plant("Tomato"))); }
+    finally { i18n.setLocale("en"); }
+  });
+  it("has no English sentences left in the Plants tab", () => {
+    const src = require("fs").readFileSync(path.join(ROOT, "screens/PlantsTab.js"), "utf8");
+    for (const phrase of ["Container-friendly\"", "This month's picks locked", "isn't a prime planting window", "Nothing matches \"${", "match right now", "Unlock all {filteredPlants", "month.slice(0, 3)", "[\"Difficulty\","]) {
+      ok(!src.includes(phrase), `PlantsTab still has "${phrase}"`);
+    }
+  });
+});
