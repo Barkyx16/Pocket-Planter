@@ -2,10 +2,12 @@ import { memo, useState } from "react";
 import { Pressable, ScrollView, Share, Text, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import produceData from "../data/produceData";
-import { localPlantMonths, normalizeType, tapHaptic } from "../core";
+import { localPlantMonths, normalizeType, tapHaptic, typeLabel } from "../core";
+import { formatDate, t, tn } from "../lib/i18n";
 import { NativeModuleGuard } from "./NativeModuleGuard";
 
-const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+// Short month name in the app language, e.g. "Mar" or "mars".
+const monthShort = (m) => formatDate(new Date(2026, m - 1, 1), { month: "short" });
 
 // Compresses a sorted month list into ranges, e.g. [3,4,5,6] → "Mar–Jun".
 function monthRanges(months) {
@@ -17,7 +19,7 @@ function monthRanges(months) {
   for (let i = 1; i <= sorted.length; i++) {
     const m = sorted[i];
     if (m === prev + 1) { prev = m; continue; }
-    parts.push(start === prev ? MONTH_SHORT[start - 1] : `${MONTH_SHORT[start - 1]}–${MONTH_SHORT[prev - 1]}`);
+    parts.push(start === prev ? monthShort(start) : `${monthShort(start)}–${monthShort(prev)}`);
     start = m; prev = m;
   }
   return parts.join(", ");
@@ -39,22 +41,22 @@ export const PlantLabelsSection = memo(function PlantLabelsSection({ theme, save
   const buildLabels = () => {
     const blocks = names.map((name) => {
       const item = produceData.find((p) => p.name === name);
-      const type = item ? normalizeType(item.type, item.name) : "";
+      const type = item ? typeLabel(normalizeType(item.type, item.name)) : "";
       const months = item ? monthRanges(localPlantMonths(item)) : "";
-      const zones = item && item.minZone ? `Zones ${item.minZone}–${item.maxZone}` : "";
+      const zones = item && item.minZone ? t("tools.labelsZones", { min: item.minZone, max: item.maxZone }) : "";
       const tip = item ? firstSentence(item.notes) : "";
       const line2 = [type, zones].filter(Boolean).join(" · ");
       return [
         "✂ - - - - - - - - - - - - - - - -",
         `🌱 ${name.toUpperCase()}`,
         line2,
-        months ? `Plant: ${months}` : "",
-        tip ? `Tip: ${tip}` : "",
+        months ? t("tools.labelsPlant", { months }) : "",
+        tip ? t("tools.labelsTip", { tip }) : "",
       ].filter(Boolean).join("\n");
     });
     return [
-      `🌿 Pocket Planter — Plant Labels${zone ? ` (Zone ${zone})` : ""}`,
-      "Print, cut along the dashed lines, and stake next to each plant.",
+      zone ? t("tools.labelsShareHeaderZone", { zone }) : t("tools.labelsShareHeader"),
+      t("tools.labelsShareHow"),
       "",
       ...blocks,
       "✂ - - - - - - - - - - - - - - - -",
@@ -69,24 +71,24 @@ export const PlantLabelsSection = memo(function PlantLabelsSection({ theme, save
   return (
     <View style={{ marginTop: 18, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 16 }}>
       <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 4 }}>
-        🏷️ PLANT LABELS
+        {t("tools.labelsTitle")}
       </Text>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Make printable garden stakes for your saved plants — name, planting window, and a care tip.
+        {t("tools.labelsIntro")}
       </Text>
 
       {names.length ? (
         <>
           <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 10 }}>
-            {names.length} label{names.length === 1 ? "" : "s"} ready
+            {tn("tools.labelsReady", names.length)}
           </Text>
           <Pressable onPress={share} style={{ marginTop: 10, backgroundColor: "#ffd86b", borderRadius: 12, paddingVertical: 13, alignItems: "center" }}>
-            <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>Export / share labels</Text>
+            <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{t("tools.labelsExport")}</Text>
           </Pressable>
 
           {/* QR stakes — scannable tag per plant */}
           <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 16, marginBottom: 6 }}>
-            QR STAKE — tap a plant
+            {t("tools.labelsQr")}
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 2 }}>
             {names.map((n) => {
@@ -103,7 +105,7 @@ export const PlantLabelsSection = memo(function PlantLabelsSection({ theme, save
               <NativeModuleGuard
                 fallback={
                   <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", textAlign: "center", lineHeight: 18, paddingVertical: 12 }}>
-                    QR codes need the latest app build. The text labels above work now on any device.
+                    {t("tools.labelsQrNeedsBuild")}
                   </Text>
                 }
               >
@@ -113,14 +115,14 @@ export const PlantLabelsSection = memo(function PlantLabelsSection({ theme, save
                 </View>
               </NativeModuleGuard>
               <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 8, fontStyle: "italic", textAlign: "center" }}>
-                Screenshot or print it, then stick it on a stake next to the plant.
+                {t("tools.labelsQrHint")}
               </Text>
             </View>
           ) : null}
         </>
       ) : (
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", fontStyle: "italic", marginTop: 10 }}>
-          Save some plants first and their labels will be ready to print here.
+          {t("tools.labelsEmpty")}
         </Text>
       )}
     </View>

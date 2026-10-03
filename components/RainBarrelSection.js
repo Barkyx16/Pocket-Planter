@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
 import { tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
+import { t, tn } from "../lib/i18n";
 
 export const RAIN_BARREL_STORAGE_KEY = "pp_rainBarrel";
 
@@ -70,10 +71,10 @@ export const RainBarrelSection = memo(function RainBarrelSection({ theme, unitSy
   return (
     <View style={{ marginTop: 16, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 14 }}>
       <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 4 }}>
-        🛢️ RAIN BARREL
+        {t("tools.rainTitle")}
       </Text>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Track your collected rainwater and how long it'll keep the garden going.
+        {t("tools.rainIntro")}
       </Text>
 
       {/* LEVEL DISPLAY */}
@@ -85,18 +86,18 @@ export const RainBarrelSection = memo(function RainBarrelSection({ theme, unitSy
         <View style={{ flex: 1 }}>
           <Text style={{ color: fillColor, fontSize: 24, fontWeight: "900" }}>{fmt(data.levelL)}</Text>
           <Text style={{ color: theme.text, fontSize: 12, fontWeight: "800" }}>
-            of {fmt(data.capacityL)} · {pct}% full
+            {t("tools.rainOf", { capacity: fmt(data.capacityL), pct })}
           </Text>
           <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 4 }}>
             {data.levelL <= 0
-              ? "Empty — waiting on rain."
-              : `≈ ${daysLeft} day${daysLeft === 1 ? "" : "s"} of watering left`}
+              ? t("tools.rainEmpty")
+              : tn("tools.rainDaysLeft", daysLeft)}
           </Text>
         </View>
       </View>
 
       {/* FILL (rain collected) */}
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>IT RAINED — ADD WATER</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("tools.rainAdd")}</Text>
       <View style={{ flexDirection: "row", gap: 6 }}>
         {fillOpts.map((amt) => (
           <Pressable key={amt} onPress={() => changeLevel(toL(amt))} style={{ flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12, backgroundColor: "rgba(107,199,255,0.12)", borderWidth: 1, borderColor: "rgba(107,199,255,0.26)" }}>
@@ -104,12 +105,12 @@ export const RainBarrelSection = memo(function RainBarrelSection({ theme, unitSy
           </Pressable>
         ))}
         <Pressable onPress={topUp} style={{ alignItems: "center", justifyContent: "center", paddingHorizontal: 12, borderRadius: 12, backgroundColor: "rgba(107,199,255,0.12)", borderWidth: 1, borderColor: "rgba(107,199,255,0.26)" }}>
-          <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900" }}>Full</Text>
+          <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900" }}>{t("tools.rainFull")}</Text>
         </Pressable>
       </View>
 
       {/* DRAW (watering used) */}
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 10, marginBottom: 6 }}>WATERED — USED WATER</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 10, marginBottom: 6 }}>{t("tools.rainUsed")}</Text>
       <View style={{ flexDirection: "row", gap: 6 }}>
         {drawOpts.map((amt) => (
           <Pressable key={amt} onPress={() => changeLevel(-toL(amt))} style={{ flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12, backgroundColor: "rgba(255,159,67,0.1)", borderWidth: 1, borderColor: "rgba(255,159,67,0.24)" }}>
@@ -117,12 +118,12 @@ export const RainBarrelSection = memo(function RainBarrelSection({ theme, unitSy
           </Pressable>
         ))}
         <Pressable onPress={empty} style={{ alignItems: "center", justifyContent: "center", paddingHorizontal: 12, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
-          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "900" }}>Empty</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{t("tools.rainEmptyBtn")}</Text>
         </Pressable>
       </View>
 
       {/* CAPACITY */}
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>BARREL SIZE</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("tools.rainSize")}</Text>
       <View style={{ flexDirection: "row", gap: 6 }}>
         {capacityOpts.map((opt) => {
           const active = Math.round(data.capacityL) === Math.round(opt.l);

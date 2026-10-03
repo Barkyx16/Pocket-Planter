@@ -4,6 +4,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { getDaysSince, getTodayKey, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
 import { touchSlop } from "../lib/a11y";
+import { formatTime, t } from "../lib/i18n";
 
 export const GROW_LIGHT_STORAGE_KEY = "pp_growLights";
 
@@ -15,8 +16,9 @@ const ON_HOUR = 6; // suggested lights-on time
 const daysUnder = (startKey) => Math.max(1, (getDaysSince(startKey) ?? 0) + 1);
 const offLabel = (hours) => {
   const off = (ON_HOUR + hours) % 24;
-  const ampm = (h) => `${((h + 11) % 12) + 1}${h < 12 ? "am" : "pm"}`;
-  return `${ampm(ON_HOUR)}–${ampm(off)}`;
+  // In the app language's clock: "6 AM–10 PM", or "06–22 Uhr" in German.
+  const at = (h) => formatTime(new Date(2026, 0, 1, h, 0), { hour: "numeric" }) || `${h}:00`;
+  return `${at(ON_HOUR)}–${at(off)}`;
 };
 
 export const GrowLightSection = memo(function GrowLightSection({ theme }) {
@@ -58,10 +60,10 @@ export const GrowLightSection = memo(function GrowLightSection({ theme }) {
   return (
     <View style={{ marginTop: 18, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 16 }}>
       <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 4 }}>
-        💡 GROW-LIGHT SCHEDULE
+        {t("tools.growTitle")}
       </Text>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Seedlings want 14–16 h of light a day, 2–3″ above the leaves. Track each tray's schedule here.
+        {t("tools.growIntro")}
       </Text>
 
       {/* Add tray */}
@@ -70,11 +72,11 @@ export const GrowLightSection = memo(function GrowLightSection({ theme }) {
           value={name}
           onChangeText={setName}
           onSubmitEditing={add}
-          placeholder="Tray / shelf name"
+          placeholder={t("tools.growPlaceholder")}
           placeholderTextColor="#8fbf9d"
           style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 9, fontSize: 14, fontWeight: "700" }}
         />
-        <Pressable onPress={add} accessibilityRole="button" accessibilityLabel="Add grow-light tray" style={{ backgroundColor: "#ffd86b", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
+        <Pressable onPress={add} accessibilityRole="button" accessibilityLabel={t("tools.growAddA11y")} style={{ backgroundColor: "#ffd86b", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
           <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>＋</Text>
         </Pressable>
       </View>
@@ -83,7 +85,7 @@ export const GrowLightSection = memo(function GrowLightSection({ theme }) {
           const active = hours === h;
           return (
             <Pressable key={h} onPress={() => setHours(h)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 10, backgroundColor: active ? "#ffd86b" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#ffd86b" : "rgba(255,255,255,0.1)" }}>
-              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{h}h/day</Text>
+              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{t("tools.growHoursChip", { h })}</Text>
             </Pressable>
           );
         })}
@@ -98,10 +100,10 @@ export const GrowLightSection = memo(function GrowLightSection({ theme }) {
               <View style={{ flex: 1 }}>
                 <Text numberOfLines={1} style={{ color: theme.text, fontSize: 13, fontWeight: "800" }}>{tr.name}</Text>
                 <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 1 }}>
-                  Day {daysUnder(tr.start)} · {tr.hours}h/day · {offLabel(tr.hours)}
+                  {t("tools.growTrayLine", { day: daysUnder(tr.start), h: tr.hours, window: offLabel(tr.hours) })}
                 </Text>
               </View>
-              <Pressable onPress={() => remove(tr.id)} hitSlop={touchSlop(14)} accessibilityRole="button" accessibilityLabel="Remove tray">
+              <Pressable onPress={() => remove(tr.id)} hitSlop={touchSlop(14)} accessibilityRole="button" accessibilityLabel={t("tools.growRemoveA11y")}>
                 <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text>
               </Pressable>
             </View>

@@ -931,3 +931,22 @@ describe("tn", () => {
     }
   });
 });
+
+describe("tool sections", () => {
+  it("keep no English-only UI text", () => {
+    const checks = {
+      RainBarrelSection: ["RAIN BARREL", "BARREL SIZE", "waiting on rain"],
+      PlantLabelsSection: ["PLANT LABELS", "Export / share labels", '"Jan", "Feb"'],
+      PetSafeSection: ["KEEP AWAY FROM PETS", 'label: "SEVERE"'],
+      BloomSuccessionSection: ["BLOOM SUCCESSION", "Bloom gap in", '"Jan", "Feb"'],
+      PairCheckSection: ["FIRST PLANT{", "Pick two different plants."],
+      GrowLightSection: ["GROW-LIGHT SCHEDULE", "h/day</Text>", '"am" : "pm"'],
+      HouseplantCareLogSection: ['"not logged"', "repot due\""],
+      GardenCalculatorsSection: ["WATERING CONTAINER", "Enter a batch size", '"Coir / peat"'],
+    };
+    for (const [f, strings] of Object.entries(checks)) {
+      const src = fs.readFileSync(path.join(ROOT, "components", `${f}.js`), "utf8");
+      for (const s of strings) ok(!src.includes(s), `${f}: ${s}`);
+    }
+  });
+});

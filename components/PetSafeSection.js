@@ -3,26 +3,27 @@ import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { resolvePlantImageSource } from "../core";
 import { PET_TOXIC, PET_SAFE } from "../data/flowerHomeData";
+import { t } from "../lib/i18n";
 
 const SEV = {
-  severe: { color: "#ff7b7b", label: "SEVERE" },
-  toxic: { color: "#ff9f43", label: "TOXIC" },
-  mild: { color: "#ffd86b", label: "MILD" },
+  severe: { color: "#ff7b7b", label: "petSevere" },
+  toxic: { color: "#ff9f43", label: "petToxic" },
+  mild: { color: "#ffd86b", label: "petMild" },
 };
 
 export const PetSafeSection = memo(function PetSafeSection({ theme, savedPlants, onOpenPlant }) {
   const { toxic, safe, unknown } = useMemo(() => {
-    const t = [], s = [], u = [];
+    const tox = [], s = [], u = [];
     (savedPlants || []).forEach((n) => {
       const item = produceData.find((p) => p.name === n);
       if (!item) return;
-      if (PET_TOXIC[n]) t.push({ item, sev: PET_TOXIC[n][0], note: PET_TOXIC[n][1] });
+      if (PET_TOXIC[n]) tox.push({ item, sev: PET_TOXIC[n][0], note: PET_TOXIC[n][1] });
       else if (PET_SAFE.has(n)) s.push({ item });
       else u.push({ item });
     });
     const rank = { severe: 0, toxic: 1, mild: 2 };
-    t.sort((a, b) => rank[a.sev] - rank[b.sev]);
-    return { toxic: t, safe: s, unknown: u };
+    tox.sort((a, b) => rank[a.sev] - rank[b.sev]);
+    return { toxic: tox, safe: s, unknown: u };
   }, [savedPlants]);
 
   const Row = ({ item, sev, note, tint }) => {
@@ -36,7 +37,7 @@ export const PetSafeSection = memo(function PetSafeSection({ theme, savedPlants,
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
             <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }}>{item.name}</Text>
-            {meta ? <Text style={{ color: meta.color, fontSize: 10, fontWeight: "900" }}>{meta.label}</Text> : <Text style={{ color: tint, fontSize: 10, fontWeight: "900" }}>SAFE</Text>}
+            {meta ? <Text style={{ color: meta.color, fontSize: 10, fontWeight: "900" }}>{t(`tools.${meta.label}`)}</Text> : <Text style={{ color: tint, fontSize: 10, fontWeight: "900" }}>{t("tools.petSafeTag")}</Text>}
           </View>
           {note ? <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", lineHeight: 15, marginTop: 2 }}>{note}</Text> : null}
         </View>
@@ -49,36 +50,36 @@ export const PetSafeSection = memo(function PetSafeSection({ theme, savedPlants,
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Which of your plants are risky around cats and dogs.
+        {t("tools.petIntro")}
       </Text>
 
       {!hasAny ? (
-        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", fontStyle: "italic", marginTop: 12 }}>Save some flowers or houseplants to check them here.</Text>
+        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", fontStyle: "italic", marginTop: 12 }}>{t("tools.petEmpty")}</Text>
       ) : null}
 
       {toxic.length ? (
         <>
-          <Text style={{ color: "#ff9f43", fontSize: 11, fontWeight: "900", letterSpacing: 0.6, marginTop: 12, marginBottom: 6 }}>⚠️ KEEP AWAY FROM PETS</Text>
+          <Text style={{ color: "#ff9f43", fontSize: 11, fontWeight: "900", letterSpacing: 0.6, marginTop: 12, marginBottom: 6 }}>{t("tools.petKeepAway")}</Text>
           <View style={{ gap: 6 }}>{toxic.map((r) => <Row key={r.item.name} item={r.item} sev={r.sev} note={r.note} tint={SEV[r.sev].color} />)}</View>
         </>
       ) : null}
 
       {safe.length ? (
         <>
-          <Text style={{ color: "#8effab", fontSize: 11, fontWeight: "900", letterSpacing: 0.6, marginTop: 14, marginBottom: 6 }}>✅ PET-SAFE</Text>
+          <Text style={{ color: "#8effab", fontSize: 11, fontWeight: "900", letterSpacing: 0.6, marginTop: 14, marginBottom: 6 }}>{t("tools.petSafeHeader")}</Text>
           <View style={{ gap: 6 }}>{safe.map((r) => <Row key={r.item.name} item={r.item} tint="#5cff89" />)}</View>
         </>
       ) : null}
 
       {unknown.length ? (
         <>
-          <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "900", letterSpacing: 0.6, marginTop: 14, marginBottom: 6 }}>❔ NOT LISTED — CHECK FIRST</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "900", letterSpacing: 0.6, marginTop: 14, marginBottom: 6 }}>{t("tools.petUnknown")}</Text>
           <View style={{ gap: 6 }}>{unknown.map((r) => <Row key={r.item.name} item={r.item} tint="#8fbf9d" />)}</View>
         </>
       ) : null}
 
       <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 12, fontStyle: "italic", lineHeight: 14 }}>
-        Best-effort guidance, not veterinary advice. When unsure, keep plants out of reach and check the ASPCA list or your vet.
+        {t("tools.petDisclaimer")}
       </Text>
     </View>
   );

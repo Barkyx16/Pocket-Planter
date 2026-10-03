@@ -5,6 +5,7 @@ import produceData from "../data/produceData";
 import { getDaysSince, getTodayKey, normalizeType, resolvePlantImageSource, tapHaptic } from "../core";
 import { HOUSEPLANT_CARE, HOUSEPLANT_CARE_DEFAULT } from "../data/flowerHomeData";
 import { SkeletonSection } from "./Skeleton";
+import { t } from "../lib/i18n";
 
 export const HOUSEPLANT_CARELOG_STORAGE_KEY = "pp_houseplantCare";
 
@@ -40,7 +41,7 @@ export const HouseplantCareLogSection = memo(function HouseplantCareLogSection({
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Log watering and repotting so you always know what's due.
+        {t("tools.careIntro")}
       </Text>
 
       {houseplants.length ? (
@@ -63,7 +64,7 @@ export const HouseplantCareLogSection = memo(function HouseplantCareLogSection({
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }}>{item.name}</Text>
                     <Text style={{ color: waterDue ? "#6bc7ff" : theme.secondaryText, fontSize: 10, fontWeight: "800", marginTop: 1 }}>
-                      💧 {wSince == null ? "not logged" : waterDue ? "water due" : `in ${wLeft}d`}{repotDue ? " · 🪴 repot due" : ""}
+                      💧 {wSince == null ? t("tools.careNotLogged") : waterDue ? t("tools.careWaterDue") : t("tools.careInDays", { count: wLeft })}{repotDue ? ` · ${t("tools.careRepotDue")}` : ""}
                     </Text>
                   </View>
                   <Pressable onPress={() => mark(item.name, "watered")} style={{ backgroundColor: waterDue ? "#6bc7ff" : "rgba(255,255,255,0.08)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}>
@@ -78,7 +79,7 @@ export const HouseplantCareLogSection = memo(function HouseplantCareLogSection({
           })}
         </View>
       ) : (
-        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", fontStyle: "italic", marginTop: 12 }}>Save some houseplants to track their care.</Text>
+        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", fontStyle: "italic", marginTop: 12 }}>{t("tools.careEmpty")}</Text>
       )}
     </View>
   );

@@ -1,6 +1,9 @@
 import { memo, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { COMPANION_PLANTING_DATA, getCompatibilityScore, getPairReason, tapHaptic } from "../core";
+import { t } from "../lib/i18n";
+
+const PAIR_LABEL_KEYS = { "Excellent Pair": "pairExcellent", Avoid: "pairAvoid", Neutral: "pairNeutral" };
 
 // Lets a gardener check any two plants against each other before they commit a
 // bed — the companion-conflict logic already exists for planted beds, this just
@@ -47,13 +50,13 @@ export const PairCheckSection = memo(function PairCheckSection({ theme, savedPla
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Pick any two plants to see if they're good neighbours before you plant.
+        {t("tools.pairIntro")}
       </Text>
 
-      <Text style={{ color: "#5cff89", fontSize: 11, fontWeight: "900", letterSpacing: 0.6, marginTop: 14, marginBottom: 6 }}>FIRST PLANT{a ? ` · ${a}` : ""}</Text>
+      <Text style={{ color: "#5cff89", fontSize: 11, fontWeight: "900", letterSpacing: 0.6, marginTop: 14, marginBottom: 6 }}>{t("tools.pairFirst")}{a ? ` · ${a}` : ""}</Text>
       <Row which="a" selected={a} />
 
-      <Text style={{ color: "#5cff89", fontSize: 11, fontWeight: "900", letterSpacing: 0.6, marginTop: 12, marginBottom: 6 }}>SECOND PLANT{b ? ` · ${b}` : ""}</Text>
+      <Text style={{ color: "#5cff89", fontSize: 11, fontWeight: "900", letterSpacing: 0.6, marginTop: 12, marginBottom: 6 }}>{t("tools.pairSecond")}{b ? ` · ${b}` : ""}</Text>
       <Row which="b" selected={b} />
 
       {result ? (
@@ -61,13 +64,13 @@ export const PairCheckSection = memo(function PairCheckSection({ theme, savedPla
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <Text style={{ fontSize: 18 }}>{result.icon}</Text>
             <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900", flex: 1 }}>{a} + {b}</Text>
-            <Text style={{ color: result.color, fontSize: 12, fontWeight: "900" }}>{result.label}</Text>
+            <Text style={{ color: result.color, fontSize: 12, fontWeight: "900" }}>{PAIR_LABEL_KEYS[result.label] ? t(`tools.${PAIR_LABEL_KEYS[result.label]}`) : result.label}</Text>
           </View>
           <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18, marginTop: 8 }}>{reason}</Text>
         </View>
       ) : (
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", fontStyle: "italic", textAlign: "center", paddingVertical: 18 }}>
-          {a && b && a === b ? "Pick two different plants." : "Choose a plant in each row to compare them."}
+          {a && b && a === b ? t("tools.pairDifferent") : t("tools.pairChoose")}
         </Text>
       )}
     </View>
