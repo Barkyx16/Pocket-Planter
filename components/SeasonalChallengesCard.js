@@ -49,10 +49,10 @@ export const SeasonalChallengesCard = memo(function SeasonalChallengesCard({ the
   const careActions = (careLog || []).filter((e) => inSeason(e.date || e.createdAt, season)).length;
 
   const challenges = [
-    { id: "water", icon: "💧", title: `Water 15 times this ${season.label.toLowerCase()}`, progress: waterings, goal: 15, reward: 50, color: "#6bc7ff" },
-    { id: "photos", icon: "📸", title: "Log 6 garden photos", progress: photos, goal: 6, reward: 40, color: "#ffd86b" },
-    { id: "harvest", icon: "🚜", title: "Record 3 harvests", progress: harvests, goal: 3, reward: 60, color: "#ff9f43" },
-    { id: "care", icon: "🧪", title: "Log 5 care actions", progress: careActions, goal: 5, reward: 40, color: "#8effab" },
+    { id: "water", icon: "💧", title: t("seasons.chWater", { season: season.labelMid }), progress: waterings, goal: 15, reward: 50, color: "#6bc7ff" },
+    { id: "photos", icon: "📸", title: t("seasons.chPhotos"), progress: photos, goal: 6, reward: 40, color: "#ffd86b" },
+    { id: "harvest", icon: "🚜", title: t("seasons.chHarvest"), progress: harvests, goal: 3, reward: 60, color: "#ff9f43" },
+    { id: "care", icon: "🧪", title: t("seasons.chCare"), progress: careActions, goal: 5, reward: 40, color: "#8effab" },
   ];
 
   const persist = (next) => {
@@ -79,7 +79,7 @@ export const SeasonalChallengesCard = memo(function SeasonalChallengesCard({ the
     return (
       <View style={{ alignItems: "center", paddingVertical: 18 }}>
         <Text style={{ fontSize: 34 }}>🏆</Text>
-        <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900", marginTop: 8 }}>All {season.label.toLowerCase()} {t("seasonalChallenges.challengesDone")}</Text>
+        <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900", marginTop: 8 }}>{t("seasons.chAllDone", { season: season.labelMid })}</Text>
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4, textAlign: "center" }}>
           {t("seasonalChallenges.youveClaimedEveryRewardThis")}
         </Text>
@@ -90,7 +90,7 @@ export const SeasonalChallengesCard = memo(function SeasonalChallengesCard({ the
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        {season.label} {t("seasonalChallenges.challenges")} {claimedCount}/{challenges.length} {t("seasonalChallenges.claimedFinishTheRestFor")}
+        {t("seasons.chProgress", { season: season.label, claimed: claimedCount, total: challenges.length })}
       </Text>
 
       <View style={{ gap: 8, marginTop: 14 }}>

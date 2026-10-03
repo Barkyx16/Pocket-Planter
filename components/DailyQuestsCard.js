@@ -22,7 +22,7 @@ export const DailyQuestsCard = memo(function DailyQuestsCard({ theme, dailyQuest
     const msLeft = midnight - now;
     const hoursLeft = Math.floor(msLeft / (1000 * 60 * 60));
     const minsLeft = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60));
-    return hoursLeft >= 1 ? `Resets in ${hoursLeft}h` : `Resets in ${minsLeft}m`;
+    return hoursLeft >= 1 ? t("ui2.resetsH", { count: hoursLeft }) : t("ui2.resetsM", { count: minsLeft });
   };
 
   const diffColorOf = (d) =>

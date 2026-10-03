@@ -617,3 +617,21 @@ describe("the forecast", () => {
     ok(/const forecast = parseForecast\(weatherData\?\.daily\);/.test(require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8")));
   });
 });
+
+describe("season names in the app language", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("labels the season and the next one", () => {
+    const july = new Date(2026, 6, 15);
+    const s = core.getSeasonForDate(july);
+    ok(["Summer", "Winter"].includes(s.label), s.label);
+    ok(["summer", "winter"].includes(s.labelMid), s.labelMid);
+    try {
+      i18n.setLocale("de");
+      const de = core.getSeasonForDate(july);
+      ok(["Sommer", "Winter"].includes(de.label), de.label);
+      ok(!core.getNextSeasonStart(july).label.startsWith("seasons."), "next season");
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});

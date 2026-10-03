@@ -5213,7 +5213,9 @@ export function getSeasonForDate(input = new Date()) {
   const next = bounds[i + 1];
   return {
     key: current.key,
-    label: SEASON_LABELS[current.key],
+    // In the app language: `label` stands alone ("Spring"), `labelMid` sits mid-sentence ("spring").
+    label: t(`seasons.${current.key}`),
+    labelMid: t(`seasons.${current.key}Mid`),
     months: getSeasonForMonth(current.date.getMonth() + 1).months,
     start: current.date,
     end: next.date,
@@ -5228,7 +5230,8 @@ export function getNextSeasonStart(input = new Date()) {
   const season = getSeasonForDate(now);
   return {
     key: season.nextKey,
-    label: SEASON_LABELS[season.nextKey],
+    label: t(`seasons.${season.nextKey}`),
+    labelMid: t(`seasons.${season.nextKey}Mid`),
     emoji: SEASON_EMOJI[season.nextKey],
     date: season.end,
     month: season.end.getMonth() + 1,

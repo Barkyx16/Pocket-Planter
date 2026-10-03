@@ -35,7 +35,7 @@ export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, 
         </View>
       </View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 8 }}>
-        {currentSeason.label} {t("seasonTransition.isWindingDownGetA")} {seasonLabel.toLowerCase()} {t("seasonTransition.heresWhatDoesWellIn")} {zone} {t("seasonTransition.asItOpens")}
+        {t("seasons.windingDown", { current: currentSeason.labelMid, next: next.labelMid, zone })}
       </Text>
 
       {picks.length ? (

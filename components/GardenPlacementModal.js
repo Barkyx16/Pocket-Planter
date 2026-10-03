@@ -63,7 +63,7 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }} numberOfLines={1}>Replace {occ.plant}</Text>
         <Text style={{ color: occ.clashes ? "#ff9f9f" : theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 1 }} numberOfLines={1}>
-          {occ.clashes ? `⚠ Clashes with ${plantName}` : `Swaps it out for ${plantName}`}
+          {occ.clashes ? t("ui2.clashesWith", { plant: plantName }) : t("ui2.swapsOut", { plant: plantName })}
         </Text>
       </View>
       <Ionicons name="swap-horizontal" size={18} color={occ.clashes ? "#ff9f9f" : theme.secondaryText} />

@@ -50,8 +50,8 @@ export const WateringForecastCard = memo(function WateringForecastCard({ theme, 
   const headline = dueToday > 0
     ? tn("counts.toWaterToday", dueToday)
     : nextDue
-    ? `✅ Nothing due today — next up ${weekdayFmt(nextDue.date, nextDue.offset)}`
-    : "✅ You're all caught up this week!";
+    ? t("ui2.nothingDue", { day: weekdayFmt(nextDue.date, nextDue.offset) })
+    : t("ui2.caughtUp");
 
 return (
     <View>

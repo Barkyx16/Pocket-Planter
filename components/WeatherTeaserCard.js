@@ -54,7 +54,7 @@ export const WeatherTeaserCard = memo(function WeatherTeaserCard({ theme, weathe
               </Text>
             </Text>
             <Text style={[styles.weatherTeaserRainPreview, { color: theme.secondaryText }]}>
-              {weather?.precipChance !== undefined ? `💧 ${Math.round(weather.precipChance)}% rain chance` : ""}
+              {weather?.precipChance !== undefined ? t("ui2.rainChance", { pct: Math.round(weather.precipChance) }) : ""}
             </Text>
           </View>
           <View style={styles.weatherTeaserLockCircle}>

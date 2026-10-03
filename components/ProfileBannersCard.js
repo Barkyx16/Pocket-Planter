@@ -42,7 +42,7 @@ export const ProfileBannersCard = memo(function ProfileBannersCard({ theme, prof
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
         {unlockedCount === 0
           ? t("profileBanners.noBannersYetKeepGrowing")
-          : `${unlockedCount} of ${profileBanners.length} banners earned · tap one to display it above your profile.`}
+          : t("ui2.bannersEarned", { earned: unlockedCount, total: profileBanners.length })}
       </Text>
 
       {unlockedBanners.length === 0 ? (

@@ -122,8 +122,8 @@ return (
           </Text>
           <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 16, marginTop: 2 }}>
             {lastSyncedAt
-              ? `Synced ${lastSync} — saved to your account and restored when you sign in on any device.`
-              : "Your progress saves automatically to your account."}
+              ? t("ui2.synced", { when: lastSync })
+              : t("ui2.autosave")}
           </Text>
         </View>
         {lastSyncedAt ? <Text style={{ color: "#5cff89", fontSize: 18, fontWeight: "900" }}>✓</Text> : null}

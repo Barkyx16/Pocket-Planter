@@ -144,7 +144,7 @@ export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlant
     const then = new Date(lastEntry.createdAt); then.setHours(0, 0, 0, 0);
     const now = new Date(); now.setHours(0, 0, 0, 0);
     const days = Math.round((now - then) / 86400000);
-    return days <= 0 ? "today" : days === 1 ? "yesterday" : `${days} days ago`;
+    return days <= 0 ? t("extra.compostToday") : days === 1 ? t("extra.compostYesterday") : tn("harvestLog.daysAgo", days);
   })();
 
 return (

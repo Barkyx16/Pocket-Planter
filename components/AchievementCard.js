@@ -4,7 +4,7 @@ import { styles } from "../styles";
 import { ConfettiBurst } from "./ConfettiBurst";
 import { getBadgeImage } from "../data/badgeImageMap";
 import { IconText } from "./IconText";
-import { formatDate, useTranslation } from "../lib/i18n";
+import { formatDate, tn, useTranslation } from "../lib/i18n";
 import { EmptyState } from "./EmptyState";
 import { vibrate } from "../core";
 
@@ -85,7 +85,7 @@ export const AchievementCard = memo(function AchievementCard({ theme, badges, ea
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
         {unlockedCount === 0
           ? t("achievement.noAchievementsYetKeepGrowing")
-          : `${unlockedCount} of ${totalCount} achievements earned · 🔥 ${streakData?.count || 0} day streak`}
+          : t("ui2.achievementsEarned", { earned: unlockedCount, total: totalCount, streak: tn("share.lStreak", streakData?.count || 0) })}
       </Text>
 
       {earnedBadges.length === 0 ? (

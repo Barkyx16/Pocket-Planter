@@ -47,7 +47,7 @@ export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone,
       <View style={{ flexDirection: "row", gap: 8 }}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={isSaved ? `Remove ${plant.name} from saved plants` : `Save ${plant.name}`}
+          accessibilityLabel={isSaved ? t("ui2.glowRemoveSaved", { plant: plant.name }) : t("ui2.glowSave", { plant: plant.name })}
           onPress={(e) => { e.stopPropagation?.(); onSave(); }}
           style={[{ flex: 1, borderRadius: 16, paddingVertical: 12, alignItems: "center", borderWidth: 1 },
             isSaved ? { backgroundColor: "#5cff89", borderColor: "#5cff89" } : { backgroundColor: "rgba(255, 255, 255, 0.08)", borderColor: "rgba(255, 255, 255, 0.1)" }
@@ -71,7 +71,7 @@ export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone,
 
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={wateredToday ? `Undo watering for ${plant.name}` : `Mark ${plant.name} as watered today`}
+          accessibilityLabel={wateredToday ? t("ui2.glowUndoWater", { plant: plant.name }) : t("ui2.glowMarkWatered", { plant: plant.name })}
           onPress={(e) => { e.stopPropagation?.(); onWater(); }}
           style={[{ flex: 1, borderRadius: 16, paddingVertical: 12, alignItems: "center", borderWidth: 1 },
             wateredToday ? { backgroundColor: "#6bc7ff", borderColor: "#6bc7ff" } : { backgroundColor: "rgba(255, 255, 255, 0.08)", borderColor: "rgba(255, 255, 255, 0.1)" }
@@ -87,7 +87,7 @@ export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone,
       {onAddToGarden ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={isInGarden ? `${plant.name} is in your garden` : `Add ${plant.name} to your garden`}
+          accessibilityLabel={isInGarden ? t("ui2.glowInGarden", { plant: plant.name }) : t("ui2.glowAddGarden", { plant: plant.name })}
           onPress={(e) => { e.stopPropagation?.(); onAddToGarden(); }}
           style={{ marginTop: 8, borderRadius: 14, paddingVertical: 11, alignItems: "center", borderWidth: 1, backgroundColor: isInGarden ? "rgba(92, 255, 137, 0.14)" : "rgba(92, 255, 137, 0.06)", borderColor: "rgba(92, 255, 137, 0.28)" }}
         >
@@ -101,7 +101,7 @@ export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone,
       {isSaved && !wateredToday && onSnooze ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={isSnoozed ? `${plant.name} snoozed until tomorrow` : `Snooze watering for ${plant.name} until tomorrow`}
+          accessibilityLabel={isSnoozed ? t("garden.snoozedUntilTomorrow", { plant: plant.name }) : t("ui2.glowSnooze", { plant: plant.name })}
           onPress={(e) => { e.stopPropagation?.(); if (!isSnoozed) onSnooze(); }}
           disabled={isSnoozed}
           style={{ marginTop: 8, borderRadius: 12, paddingVertical: 10, alignItems: "center", borderWidth: 1, backgroundColor: isSnoozed ? "rgba(255, 216, 107, 0.1)" : "rgba(255, 255, 255, 0.04)", borderColor: isSnoozed ? "rgba(255, 216, 107, 0.3)" : "rgba(255, 255, 255, 0.08)" }}

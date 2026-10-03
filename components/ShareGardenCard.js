@@ -15,16 +15,16 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
   const shareText = async () => {
     try {
       const lines = [
-        "🌱 My Pocket Planter garden report card:",
+        t("ui2.reportHeader"),
         "",
         t("stats.shareLevel", { level: gardenXP.level, title: gardenXP.title }),
-        `🪴 ${savedPlants.length} plants growing`,
+        tn("stats.shareGrowing", savedPlants.length),
         plotCount > 0 ? `🗺️ ${plotCount} plots planted` : null,
         harvests > 0 ? tn("counts.harvestsLogged", harvests) : null,
         photos > 0 ? tn("counts.gardenPhotos", photos) : null,
-        streak > 0 ? `🔥 ${streak}-day care streak` : null,
+        streak > 0 ? tn("ui2.careStreak", streak) : null,
         "",
-        "Growing smarter with Pocket Planter 🌿",
+        t("gardenStatsDashboard.growingSmarterWithPocketPlanter"),
       ].filter(Boolean);
       await Share.share({ message: lines.join("\n") });
     } catch (e) { /* share cancelled */ }
@@ -50,14 +50,14 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
   };
 
   const stats = [
-    { value: `Lv${gardenXP.level}`, label: "Level", color: "#5cff89" },
-    { value: savedPlants.length, label: "Plants", color: "#8effab" },
-    { value: harvests, label: "Harvests", color: "#ffd86b" },
-    { value: `${streak}d`, label: "Streak", color: "#ff9f43" },
+    { value: `Lv${gardenXP.level}`, label: t("ui2.level"), color: "#5cff89" },
+    { value: savedPlants.length, label: t("stats.plants"), color: "#8effab" },
+    { value: harvests, label: t("stats.harvests"), color: "#ffd86b" },
+    { value: `${streak}d`, label: t("ui2.streak"), color: "#ff9f43" },
   ];
   const extras = [
     plotCount > 0 ? `🗺️ ${plotCount} plots planted` : null,
-    photos > 0 ? `📸 ${photos} garden photos` : null,
+    photos > 0 ? tn("counts.gardenPhotos", photos) : null,
   ].filter(Boolean);
 
   return (

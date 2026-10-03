@@ -2,7 +2,7 @@ import { memo, useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { findGardenConflicts, normalizeType, resolvePlantImageSource } from "../core";
+import { findGardenConflicts, normalizeType, resolvePlantImageSource, typeLabel } from "../core";
 import { IconText } from "./IconText";
 import { tn, useTranslation } from "../lib/i18n";
 
@@ -16,11 +16,11 @@ export const FixMyGardenCard = memo(function FixMyGardenCard({ theme, gardenArea
 
   // A short, plausible explanation for why a given pair shouldn't share a bed.
   const conflictReason = (aObj, bObj) => {
-    if (!aObj || !bObj) return "They compete for the same nutrients, water, and root space.";
+    if (!aObj || !bObj) return t("ui2.reasonGeneric");
     const ta = normalizeType(aObj.type, aObj.name);
     const tb = normalizeType(bObj.type, bObj.name);
-    if (ta === tb) return `Both are ${ta.toLowerCase()} — grouping them concentrates the same pests and soil-borne diseases.`;
-    return "They compete for the same nutrients and root space, and can stunt each other's growth.";
+    if (ta === tb) return t("ui2.reasonSameType", { type: typeLabel(ta) });
+    return t("ui2.reasonOther");
   };
 
 return (
@@ -47,8 +47,8 @@ return (
               accessibilityRole="button"
               accessibilityState={{ expanded: onFocusConflict ? undefined : isOpen }}
               accessibilityLabel={onFocusConflict
-                ? `${c.plantA} and ${c.plantB} conflict in ${c.areaName}. Tap to go to that bed and see how to fix it.`
-                : `${c.plantA} and ${c.plantB} conflict. Tap for why and how to fix it.`}
+                ? t("ui2.conflictInA11y", { a: c.plantA, b: c.plantB, bed: c.areaName })
+                : t("ui2.conflictA11y", { a: c.plantA, b: c.plantB })}
               style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(255, 123, 123, 0.2)" }}
             >
               {/* the conflicting pair */}
@@ -96,8 +96,8 @@ return (
                     </Text>
                     <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "800", lineHeight: 19, marginTop: 4 }}>
                       {c.suggestion
-                        ? `✅ Fix: move ${c.suggestion.move} to ${c.suggestion.toAreaName} — it has room and no conflicts there.`
-                        : `✅ Fix: move ${c.plantA} or ${c.plantB} to a different bed to give them space.`}
+                        ? t("ui2.fixLine", { fix: t("garden.conflictFixMove", { plant: c.suggestion.move, bed: c.suggestion.toAreaName }) })
+                        : t("ui2.fixLine", { fix: t("garden.conflictFixEither", { plantA: c.plantA, plantB: c.plantB }) })}
                     </Text>
                   </View>
                 </>

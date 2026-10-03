@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { styles } from "../styles";
 import { tapHaptic } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 export const HarvestGoalCard = memo(function HarvestGoalCard({ theme, harvestLog, harvestGoal, setHarvestGoal }) {
   const { t } = useTranslation();
@@ -60,8 +60,8 @@ if (!harvestGoal) {
       </Text>
       <Text style={[styles.cardText, { color: theme.secondaryText }]}>
         {done
-          ? `You hit your goal of ${target} harvests. Amazing season — set a new one to keep going.`
-          : `${progress} of ${target} harvests logged. ${target - progress} to go!`}
+          ? tn("ui2.goalHit", target)
+          : tn("ui2.goalProgress", target, { progress, left: target - progress })}
       </Text>
 
       <View style={{ alignItems: "center", marginTop: 18 }}>

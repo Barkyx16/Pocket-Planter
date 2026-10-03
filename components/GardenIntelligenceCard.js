@@ -45,27 +45,27 @@ export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ the
   const plantNow = getSuggestionsForMonth(zone, currentMonth).slice(0, 8);
 
   const getSeasonalInsight = () => {
-    if (frostRiskDay) return { icon: "❄️", text: `Frost on ${formatDay(frostRiskDay.date)} — cover tender plants the night before.`, color: "#6bc7ff" };
-    if (heatRiskDay) return { icon: "🔥", text: `Heat stress on ${formatDay(heatRiskDay.date)} — water early and mulch to protect roots.`, color: "#ff7b7b" };
-    if (rainyDays >= 4) return { icon: "🌧️", text: `${rainyDays} rainy days — check drainage and hold off fertilizing until soil dries.`, color: "#6bc7ff" };
+    if (frostRiskDay) return { icon: "❄️", text: t("ui2.frostOn", { day: formatDay(frostRiskDay.date) }), color: "#6bc7ff" };
+    if (heatRiskDay) return { icon: "🔥", text: t("ui2.heatOn", { day: formatDay(heatRiskDay.date) }), color: "#ff7b7b" };
+    if (rainyDays >= 4) return { icon: "🌧️", text: tn("ui2.rainyDays", rainyDays), color: "#6bc7ff" };
     // Reference month: the 5–9 window is northern summer. getSuggestionsForMonth
     // above needs the local month, so only this seasonal test is translated.
     const refMonth = flipMonth(currentMonth);
-    if (climate === "hot" && refMonth >= 5 && refMonth <= 9) return { icon: "☀️", text: "Hot-zone summer — water deeply every 2–3 days and harvest often.", color: "#ffd86b" };
-    if (climate === "cold" && getSeasonForDate().key === "fall") return { icon: "🍂", text: "Cold-zone fall — harvest before first frost and plant garlic for spring.", color: "#ff9f43" };
-    return { icon: "🌱", text: `Good growing week — ${weeklyHigh > 85 ? "stay on top of watering" : "great for planting and garden care"}.`, color: "#5cff89" };
+    if (climate === "hot" && refMonth >= 5 && refMonth <= 9) return { icon: "☀️", text: t("ui2.hotSummer"), color: "#ffd86b" };
+    if (climate === "cold" && getSeasonForDate().key === "fall") return { icon: "🍂", text: t("ui2.coldFall"), color: "#ff9f43" };
+    return { icon: "🌱", text: t(weeklyHigh > 85 ? "ui2.goodWeekWater" : "ui2.goodWeekPlant"), color: "#5cff89" };
   };
   const seasonalInsight = getSeasonalInsight();
 
   // Always-useful action days + risk tiles only when there's an actual risk.
   const tiles = [
-    { label: "Best to plant", value: formatDay(bestPlantingDay.date), sub: `${formatTemp(bestPlantingDay.maxTempF, unitSystem)} · ${Math.round(bestPlantingDay.precipChance)}% rain`, icon: "🌱", color: "#5cff89" },
-    { label: wateringSkippable ? "Watering" : "Best to water", value: wateringSkippable ? "Rain covers it" : formatDay(bestWateringDay.date), sub: wateringSkippable ? `${Math.round(weather.precipChance)}% rain today` : `${formatTemp(bestWateringDay.maxTempF, unitSystem)} · dry`, icon: "💧", color: "#6bc7ff" },
-    { label: "Best to harvest", value: formatDay(bestHarvestDay.date), sub: `${formatTemp(bestHarvestDay.maxTempF, unitSystem)} · dry`, icon: "🚜", color: "#ffd86b" },
-    { label: "Best to fertilize", value: formatDay(bestFertilizerDay.date), sub: `${formatTemp(bestFertilizerDay.maxTempF, unitSystem)} · ${Math.round(bestFertilizerDay.precipChance)}% rain`, icon: "🌿", color: "#8effab" },
-    ...(frostRiskDay ? [{ label: "Frost risk", value: formatDay(frostRiskDay.date), sub: `Low ${formatTemp(frostRiskDay.minTempF, unitSystem, true)}`, icon: "❄️", color: "#a3d5ff" }] : []),
-    ...(heatRiskDay ? [{ label: "Heat risk", value: formatDay(heatRiskDay.date), sub: `High ${formatTemp(heatRiskDay.maxTempF, unitSystem, true)}`, icon: "🔥", color: "#ff7b7b" }] : []),
-    ...(heavyRainDay ? [{ label: "Heavy rain", value: formatDay(heavyRainDay.date), sub: `${Math.round(heavyRainDay.precipChance)}% chance`, icon: "🌧️", color: "#6bc7ff" }] : []),
+    { label: t("ui2.bestPlant"), value: formatDay(bestPlantingDay.date), sub: t("ui2.subTempRain", { temp: formatTemp(bestPlantingDay.maxTempF, unitSystem), pct: Math.round(bestPlantingDay.precipChance) }), icon: "🌱", color: "#5cff89" },
+    { label: wateringSkippable ? t("ui2.watering") : t("ui2.bestWater"), value: wateringSkippable ? t("ui2.rainCovers") : formatDay(bestWateringDay.date), sub: wateringSkippable ? t("ui2.subRainToday", { pct: Math.round(weather.precipChance) }) : t("ui2.subDry", { temp: formatTemp(bestWateringDay.maxTempF, unitSystem) }), icon: "💧", color: "#6bc7ff" },
+    { label: t("ui2.bestHarvest"), value: formatDay(bestHarvestDay.date), sub: t("ui2.subDry", { temp: formatTemp(bestHarvestDay.maxTempF, unitSystem) }), icon: "🚜", color: "#ffd86b" },
+    { label: t("ui2.bestFertilize"), value: formatDay(bestFertilizerDay.date), sub: t("ui2.subTempRain", { temp: formatTemp(bestFertilizerDay.maxTempF, unitSystem), pct: Math.round(bestFertilizerDay.precipChance) }), icon: "🌿", color: "#8effab" },
+    ...(frostRiskDay ? [{ label: t("ui2.frostRisk"), value: formatDay(frostRiskDay.date), sub: t("ui2.subLow", { temp: formatTemp(frostRiskDay.minTempF, unitSystem, true) }), icon: "❄️", color: "#a3d5ff" }] : []),
+    ...(heatRiskDay ? [{ label: t("ui2.heatRisk"), value: formatDay(heatRiskDay.date), sub: t("ui2.subHigh", { temp: formatTemp(heatRiskDay.maxTempF, unitSystem, true) }), icon: "🔥", color: "#ff7b7b" }] : []),
+    ...(heavyRainDay ? [{ label: t("ui2.heavyRain"), value: formatDay(heavyRainDay.date), sub: t("ui2.subChance", { pct: Math.round(heavyRainDay.precipChance) }), icon: "🌧️", color: "#6bc7ff" }] : []),
   ];
 
   return (
