@@ -83,7 +83,7 @@ export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlant
     tapHaptic("light");
     setCareLog((current) => current.filter((e) => e.id !== id));
     if (onUndoToast) {
-      onUndoToast("Care entry deleted", () => {
+      onUndoToast(t("a11y.careDeleted"), () => {
         setCareLog((current) => [removed, ...current].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
       });
     }

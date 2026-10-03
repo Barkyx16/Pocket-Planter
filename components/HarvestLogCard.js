@@ -20,7 +20,7 @@ export const HarvestLogCard = memo(function HarvestLogCard({ theme, harvestLog, 
     tapHaptic("light");
     setHarvestLog((c) => c.filter((h) => h.id !== id));
     if (onUndoToast) {
-      onUndoToast("Harvest deleted", () => {
+      onUndoToast(t("a11y.harvestDeleted"), () => {
         setHarvestLog((c) => [removed, ...c].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
       });
     }
