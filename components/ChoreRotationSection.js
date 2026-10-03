@@ -3,10 +3,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { daysBetweenKeys, getTodayKey, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
+import { t, tn } from "../lib/i18n";
 
 export const CHORE_STORAGE_KEY = "pp_choreRotation";
 
-const CHORE_SUGGESTIONS = ["Water", "Weed", "Harvest", "Compost", "Feed plants"];
+// Keys in the toolkit namespace; a tapped suggestion is saved in the user's language.
+const CHORE_SUGGESTIONS = ["choreWater", "choreWeed", "choreHarvest", "choreCompost", "choreFeed"];
 const DEFAULT = { members: [], chores: [], startDate: getTodayKey(), periodDays: 7 };
 
 // Shared with the rest of the app: flooring this put the rotation a day behind
@@ -85,24 +87,24 @@ export const ChoreRotationSection = memo(function ChoreRotationSection({ theme }
   return (
     <View style={{ marginTop: 18, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 16 }}>
       <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 4 }}>
-        🔁 CHORE ROTATION
+        {t("toolkit.choreTitle")}
       </Text>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Share the garden work — chores rotate through everyone each week.
+        {t("toolkit.choreIntro")}
       </Text>
 
       {/* Members */}
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>WHO HELPS</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("toolkit.choreWho")}</Text>
       <View style={{ flexDirection: "row", gap: 8 }}>
         <TextInput
           value={memberDraft}
           onChangeText={setMemberDraft}
           onSubmitEditing={addMember}
-          placeholder="Add a name"
+          placeholder={t("toolkit.choreAddName")}
           placeholderTextColor="#8fbf9d"
           style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 9, fontSize: 14, fontWeight: "700" }}
         />
-        <Pressable onPress={addMember} accessibilityRole="button" accessibilityLabel="Add person" style={{ backgroundColor: "#ffd86b", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
+        <Pressable onPress={addMember} accessibilityRole="button" accessibilityLabel={t("toolkit.choreAddPersonA11y")} style={{ backgroundColor: "#ffd86b", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
           <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>＋</Text>
         </Pressable>
       </View>
@@ -118,22 +120,22 @@ export const ChoreRotationSection = memo(function ChoreRotationSection({ theme }
       ) : null}
 
       {/* Chores */}
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>CHORES</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("toolkit.choreChores")}</Text>
       <View style={{ flexDirection: "row", gap: 8 }}>
         <TextInput
           value={choreDraft}
           onChangeText={setChoreDraft}
           onSubmitEditing={() => addChore(choreDraft)}
-          placeholder="Add a chore"
+          placeholder={t("toolkit.choreAddChore")}
           placeholderTextColor="#8fbf9d"
           style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 9, fontSize: 14, fontWeight: "700" }}
         />
-        <Pressable onPress={() => addChore(choreDraft)} accessibilityRole="button" accessibilityLabel="Add chore" style={{ backgroundColor: "#8effab", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
+        <Pressable onPress={() => addChore(choreDraft)} accessibilityRole="button" accessibilityLabel={t("toolkit.choreAddChoreA11y")} style={{ backgroundColor: "#8effab", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
           <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>＋</Text>
         </Pressable>
       </View>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-        {CHORE_SUGGESTIONS.filter((c) => !data.chores.includes(c)).map((c) => (
+        {CHORE_SUGGESTIONS.map((k) => t(`toolkit.${k}`)).filter((c) => !data.chores.includes(c)).map((c) => (
           <Pressable key={c} onPress={() => addChore(c)} style={{ borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
             <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800" }}>+ {c}</Text>
           </Pressable>
@@ -154,9 +156,9 @@ export const ChoreRotationSection = memo(function ChoreRotationSection({ theme }
       {canAssign ? (
         <View style={{ marginTop: 14, backgroundColor: "rgba(255,216,107,0.08)", borderRadius: 14, padding: 12, borderWidth: 1, borderColor: "rgba(255,216,107,0.22)" }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900" }}>THIS WEEK</Text>
+            <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900" }}>{t("toolkit.choreThisWeek")}</Text>
             <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "800" }}>
-              rotates in {remaining} day{remaining === 1 ? "" : "s"}
+              {tn("toolkit.choreRotates", remaining)}
             </Text>
           </View>
           <View style={{ gap: 6 }}>
@@ -169,16 +171,16 @@ export const ChoreRotationSection = memo(function ChoreRotationSection({ theme }
           </View>
           <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
             <Pressable onPress={() => advance(-1)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
-              <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "900" }}>‹ Previous</Text>
+              <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{t("toolkit.chorePrev")}</Text>
             </Pressable>
             <Pressable onPress={() => advance(1)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
-              <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "900" }}>Next ›</Text>
+              <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{t("toolkit.choreNext")}</Text>
             </Pressable>
           </View>
         </View>
       ) : (
         <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", fontStyle: "italic", marginTop: 12 }}>
-          Add at least one person and one chore to start the rotation.
+          {t("toolkit.choreEmpty")}
         </Text>
       )}
     </View>

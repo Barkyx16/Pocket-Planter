@@ -943,6 +943,11 @@ describe("tool sections", () => {
       GrowLightSection: ["GROW-LIGHT SCHEDULE", "h/day</Text>", '"am" : "pm"'],
       HouseplantCareLogSection: ['"not logged"', "repot due\""],
       GardenCalculatorsSection: ["WATERING CONTAINER", "Enter a batch size", '"Coir / peat"'],
+      MoonPhaseSection: ["MOON PLANTING", 'name: "Full Moon"', "illuminated ·"],
+      GerminationTestSection: ["SEED VIABILITY TEST", 'label: "Great"', "Save test"],
+      ToolMaintenanceSection: ["TOOL MAINTENANCE", 'label: "Sharpen pruners"', "not logged yet"],
+      SoilTempSection: ["SOIL TEMPERATURE", "latest soil temp", "Warm enough to sow"],
+      ChoreRotationSection: ["CHORE ROTATION", '"Feed plants"', "‹ Previous"],
     };
     for (const [f, strings] of Object.entries(checks)) {
       const src = fs.readFileSync(path.join(ROOT, "components", `${f}.js`), "utf8");

@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { getTodayKey, tapHaptic } from "../core";
-import { formatDate } from "../lib/i18n";
+import { formatDate, t } from "../lib/i18n";
 import { SkeletonSection } from "./Skeleton";
 import { touchSlop } from "../lib/a11y";
 
@@ -12,10 +12,10 @@ export const GERM_STORAGE_KEY = "pp_germTests";
 // viability % tells you whether the packet is still good and how many extra to
 // sow to hit your target.
 function viabilityMeta(pct) {
-  if (pct >= 85) return { color: "#8effab", label: "Great", tip: "Sow as normal — these seeds are strong." };
-  if (pct >= 60) return { color: "#ffd86b", label: "OK", tip: "Still usable — sow a few extra to be safe." };
-  if (pct >= 30) return { color: "#ff9f43", label: "Low", tip: "Sow well over your target, or buy fresh seed." };
-  return { color: "#ff7b7b", label: "Poor", tip: "Time to replace this packet." };
+  if (pct >= 85) return { color: "#8effab", label: "germGreat", tip: "germTipGreat" };
+  if (pct >= 60) return { color: "#ffd86b", label: "germOk", tip: "germTipOk" };
+  if (pct >= 30) return { color: "#ff9f43", label: "germLow", tip: "germTipLow" };
+  return { color: "#ff7b7b", label: "germPoor", tip: "germTipPoor" };
 }
 
 export const GerminationTestSection = memo(function GerminationTestSection({ theme }) {
@@ -56,7 +56,7 @@ export const GerminationTestSection = memo(function GerminationTestSection({ the
     setSown(10);
   };
 
-  const remove = (id) => { tapHaptic("light"); persist(tests.filter((t) => t.id !== id)); };
+  const remove = (id) => { tapHaptic("light"); persist(tests.filter((x) => x.id !== id)); };
 
   if (!loaded) {
     return (
@@ -73,23 +73,23 @@ export const GerminationTestSection = memo(function GerminationTestSection({ the
   return (
     <View style={{ marginTop: 18, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 16 }}>
       <Text style={{ color: "#5cff89", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 4 }}>
-        🌱 SEED VIABILITY TEST
+        {t("toolkit.germTitle")}
       </Text>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Sprout a few seeds on a damp paper towel, then log how many came up.
+        {t("toolkit.germIntro")}
       </Text>
 
       {/* Seed name */}
       <TextInput
         value={name}
         onChangeText={setName}
-        placeholder="Seed (e.g. 2022 Tomato packet)"
+        placeholder={t("toolkit.germPlaceholder")}
         placeholderTextColor="#8fbf9d"
         style={{ marginTop: 12, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontWeight: "700" }}
       />
 
       {/* Seeds sown */}
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>SEEDS SOWN</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("toolkit.germSown")}</Text>
       <View style={{ flexDirection: "row", gap: 6 }}>
         {[5, 10, 20].map((n) => {
           const active = sown === n;
@@ -102,7 +102,7 @@ export const GerminationTestSection = memo(function GerminationTestSection({ the
       </View>
 
       {/* Sprouted */}
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>HOW MANY SPROUTED?</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("toolkit.germSprouted")}</Text>
       <TextInput
         value={sprouted}
         onChangeText={(txt) => setSprouted(txt.replace(/[^0-9]/g, ""))}
@@ -117,10 +117,10 @@ export const GerminationTestSection = memo(function GerminationTestSection({ the
         <View style={{ marginTop: 12, backgroundColor: `${preview.color}18`, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: `${preview.color}40` }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <Text style={{ color: preview.color, fontSize: 22, fontWeight: "900" }}>{previewPct}%</Text>
-            <Text style={{ color: preview.color, fontSize: 12, fontWeight: "900" }}>{preview.label} viability</Text>
+            <Text style={{ color: preview.color, fontSize: 12, fontWeight: "900" }}>{t("toolkit.germViability", { label: t(`toolkit.${preview.label}`) })}</Text>
           </View>
           <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 17, marginTop: 4 }}>
-            {preview.tip}{forTen ? ` For ~10 plants, sow about ${forTen} seeds.` : ""}
+            {t(`toolkit.${preview.tip}`)}{forTen ? ` ${t("toolkit.germForTen", { count: forTen })}` : ""}
           </Text>
         </View>
       ) : null}
@@ -130,7 +130,7 @@ export const GerminationTestSection = memo(function GerminationTestSection({ the
         disabled={!name.trim() || !sprouted}
         style={{ marginTop: 10, backgroundColor: name.trim() && sprouted ? "#5cff89" : "rgba(255,255,255,0.08)", borderRadius: 12, paddingVertical: 12, alignItems: "center" }}
       >
-        <Text style={{ color: name.trim() && sprouted ? "#07120b" : "#8fbf9d", fontSize: 14, fontWeight: "900" }}>Save test</Text>
+        <Text style={{ color: name.trim() && sprouted ? "#07120b" : "#8fbf9d", fontSize: 14, fontWeight: "900" }}>{t("toolkit.germSave")}</Text>
       </Pressable>
 
       {/* History */}
@@ -150,7 +150,7 @@ export const GerminationTestSection = memo(function GerminationTestSection({ the
                     {tst.sprouted}/{tst.sown} · {formatDate(new Date(tst.date + "T12:00:00"), { month: "short", day: "numeric", year: "numeric" })}
                   </Text>
                 </View>
-                <Pressable onPress={() => remove(tst.id)} hitSlop={touchSlop(13)} accessibilityRole="button" accessibilityLabel="Delete test">
+                <Pressable onPress={() => remove(tst.id)} hitSlop={touchSlop(13)} accessibilityRole="button" accessibilityLabel={t("toolkit.germDeleteA11y")}>
                   <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>✕</Text>
                 </Pressable>
               </View>
