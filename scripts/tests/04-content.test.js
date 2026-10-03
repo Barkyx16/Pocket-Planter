@@ -617,3 +617,20 @@ describe("the bed planner", () => {
       require("fs").readFileSync(path.join(ROOT, "screens/GardenTab.js"), "utf8")));
   });
 });
+
+describe("money in the gardener's currency", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("formats with the device currency, falling back to dollars", () => {
+    // The test environment has no region, so this is the fallback.
+    eq(i18n.deviceCurrency().code, "USD");
+    eq(i18n.formatMoney(1234.5), "$1,234.50");
+    eq(i18n.formatMoney(1234.5, { decimals: 0 }), "$1,235");
+    eq(i18n.formatMoney("x"), "");
+  });
+  it("is what the garden budget shows", () => {
+    // Every amount was a "$" glued to toFixed, whatever the gardener's currency.
+    const card = require("fs").readFileSync(path.join(ROOT, "components/BudgetTrackerCard.js"), "utf8");
+    ok(!/\$\$\{|>\$\{/.test(card), "no hard-coded dollar sign");
+    ok(/formatMoney\(total\)/.test(card) && /placeholder=\{deviceCurrency\(\)\.symbol\}/.test(card));
+  });
+});

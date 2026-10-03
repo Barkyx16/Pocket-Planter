@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { parseDecimal, tapHaptic } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { deviceCurrency, formatMoney, useTranslation } from "../lib/i18n";
 import { touchSlop } from "../lib/a11y";
 
 const STORAGE_KEY = "pp_gardenExpenses";
@@ -53,18 +53,18 @@ export const BudgetTrackerCard = memo(function BudgetTrackerCard({ theme }) {
       </Text>
 
       <View style={{ alignItems: "center", marginTop: 14, backgroundColor: "rgba(255, 216, 107, 0.08)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(255, 216, 107, 0.24)" }}>
-        <Text style={{ color: "#ffd86b", fontSize: 30, fontWeight: "900" }}>${total.toFixed(2)}</Text>
+        <Text style={{ color: "#ffd86b", fontSize: 30, fontWeight: "900" }}>{formatMoney(total)}</Text>
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{t("budgetTracker.totalInvested")}</Text>
         {byCat.length ? (
           <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 6, textAlign: "center" }}>
-            {byCat.map((c) => `${c.label} $${c.sum.toFixed(0)}`).join("  ·  ")}
+            {byCat.map((c) => `${c.label} ${formatMoney(c.sum, { decimals: 0 })}`).join("  ·  ")}
           </Text>
         ) : null}
       </View>
 
       {/* ADD */}
       <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
-        <TextInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="$" placeholderTextColor="#8fbf9d" style={{ width: 70, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontWeight: "800" }} />
+        <TextInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder={deviceCurrency().symbol} placeholderTextColor="#8fbf9d" style={{ width: 70, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontWeight: "800" }} />
         <TextInput value={label} onChangeText={setLabel} placeholder={t("budgetTracker.whatForOptional")} placeholderTextColor="#8fbf9d" style={{ flex: 1, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontWeight: "700" }} />
         <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.addItem")} onPress={add} style={{ backgroundColor: "#5cff89", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}><Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>＋</Text></Pressable>
       </View>
@@ -87,7 +87,7 @@ export const BudgetTrackerCard = memo(function BudgetTrackerCard({ theme }) {
               <View key={e.id} style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 8, paddingVertical: 8, paddingHorizontal: 10 }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.color }} />
                 <Text style={{ flex: 1, color: theme.text, fontSize: 12, fontWeight: "700" }} numberOfLines={1}>{e.label || c.label.replace(/^\S+\s/, "")}</Text>
-                <Text style={{ color: theme.text, fontSize: 12, fontWeight: "900" }}>${e.amount.toFixed(2)}</Text>
+                <Text style={{ color: theme.text, fontSize: 12, fontWeight: "900" }}>{formatMoney(e.amount)}</Text>
                 <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.removeItem")} onPress={() => remove(e.id)} hitSlop={touchSlop(14)}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
               </View>
             );
