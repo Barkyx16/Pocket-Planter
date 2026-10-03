@@ -15,7 +15,7 @@ export const RainfallLogCard = memo(function RainfallLogCard({ theme, weather, u
   useEffect(() => {
     let alive = true;
     AsyncStorage.getItem(STORAGE_KEY).then((val) => {
-      if (alive && val) { try { setLog(JSON.parse(val) || {}); } catch (e) { /* ignore */ } }
+      if (alive && val) { try { setLog(JSON.parse(val) || {}); } catch { /* ignore */ } }
       if (alive) setLoaded(true);
     }).catch(() => { if (alive) setLoaded(true); });
     return () => { alive = false; };

@@ -66,7 +66,7 @@ export function HomeTab({ activationSteps, claimDailyBonus, combinedGardenMap, c
     let alive = true;
     AsyncStorage.getItem("pp_onThisDaySeen").then((v) => {
       if (!alive) return;
-      if (v) { try { setOnThisDaySeen(JSON.parse(v)); } catch (e) { /* ignore */ } }
+      if (v) { try { setOnThisDaySeen(JSON.parse(v)); } catch { /* ignore */ } }
       setOnThisDayLoaded(true);
     }).catch(() => { if (alive) setOnThisDayLoaded(true); });
     return () => { alive = false; };

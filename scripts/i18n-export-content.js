@@ -141,7 +141,7 @@ function exportComponents() {
     const src = fs.readFileSync(file, "utf8");
     let ast;
     try { ast = parser.parse(src, { sourceType: "module", plugins: ["jsx"] }); }
-    catch (e) { continue; }
+    catch { continue; }
     const slug = rel.split("/").pop().replace(/Card\.js$/, "").replace(/\.js$/, "")
       .replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
     const seen = new Set();

@@ -25,7 +25,7 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
   useEffect(() => {
     let alive = true;
     AsyncStorage.getItem(STORAGE_KEY).then((val) => {
-      if (alive && val) { try { setTasks(JSON.parse(val) || []); } catch (e) { /* ignore */ } }
+      if (alive && val) { try { setTasks(JSON.parse(val) || []); } catch { /* ignore */ } }
       if (alive) setLoaded(true);
     }).catch(() => { if (alive) setLoaded(true); });
     return () => { alive = false; };
@@ -50,7 +50,7 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
           trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: interval * 86400, repeats: true },
         });
       }
-    } catch (e) { /* scheduling may be limited in Expo Go */ }
+    } catch { /* scheduling may be limited in Expo Go */ }
     persist([{ id: Date.now().toString(), title: text, interval, notifId }, ...tasks]);
     setTitle("");
     if (!notifId) Alert.alert(t("alerts.taskSavedTitle"), t("alerts.taskSavedBody"));
@@ -58,7 +58,7 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
 
   const remove = async (task) => {
     tapHaptic("light");
-    if (task.notifId) { try { await Notifications.cancelScheduledNotificationAsync(task.notifId); } catch (e) { /* ignore */ } }
+    if (task.notifId) { try { await Notifications.cancelScheduledNotificationAsync(task.notifId); } catch { /* ignore */ } }
     persist(tasks.filter((t) => t.id !== task.id));
   };
 

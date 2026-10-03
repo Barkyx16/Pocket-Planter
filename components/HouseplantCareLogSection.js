@@ -22,7 +22,7 @@ export const HouseplantCareLogSection = memo(function HouseplantCareLogSection({
     let alive = true;
     AsyncStorage.getItem(HOUSEPLANT_CARELOG_STORAGE_KEY)
       .then((val) => {
-        if (alive && val) { try { setLog(JSON.parse(val) || {}); } catch (e) { /* ignore */ } }
+        if (alive && val) { try { setLog(JSON.parse(val) || {}); } catch { /* ignore */ } }
         if (alive) setLoaded(true);
       })
       .catch(() => { if (alive) setLoaded(true); });

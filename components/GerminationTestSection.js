@@ -30,7 +30,7 @@ export const GerminationTestSection = memo(function GerminationTestSection({ the
     let alive = true;
     AsyncStorage.getItem(GERM_STORAGE_KEY)
       .then((val) => {
-        if (alive && val) { try { setTests(JSON.parse(val) || []); } catch (e) { /* ignore */ } }
+        if (alive && val) { try { setTests(JSON.parse(val) || []); } catch { /* ignore */ } }
         if (alive) setLoaded(true);
       })
       .catch(() => { if (alive) setLoaded(true); });

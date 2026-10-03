@@ -229,7 +229,7 @@ function WateringTimer({ theme }) {
         if (l <= 1) {
           clearInterval(ref.current);
           setRunning(false);
-          try { successHaptic(); } catch (e) { /* ignore */ }
+          try { successHaptic(); } catch { /* ignore */ }
           return 0;
         }
         return l - 1;

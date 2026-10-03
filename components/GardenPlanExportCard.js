@@ -30,7 +30,7 @@ export const GardenPlanExportCard = memo(function GardenPlanExportCard({ theme, 
   };
 
   const exportPlan = async () => {
-    try { tapHaptic("light"); await Share.share({ message: buildPlan() }); } catch (e) { /* cancelled */ }
+    try { tapHaptic("light"); await Share.share({ message: buildPlan() }); } catch { /* cancelled */ }
   };
 
   if (!areas.length) {

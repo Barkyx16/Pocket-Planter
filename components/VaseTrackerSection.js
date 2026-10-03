@@ -23,7 +23,7 @@ export const VaseTrackerSection = memo(function VaseTrackerSection({ theme }) {
   useEffect(() => {
     let alive = true;
     AsyncStorage.getItem(VASE_STORAGE_KEY)
-      .then((val) => { if (alive && val) { try { setVases(JSON.parse(val) || []); } catch (e) { /* ignore */ } } if (alive) setLoaded(true); })
+      .then((val) => { if (alive && val) { try { setVases(JSON.parse(val) || []); } catch { /* ignore */ } } if (alive) setLoaded(true); })
       .catch(() => { if (alive) setLoaded(true); });
     return () => { alive = false; };
   }, []);

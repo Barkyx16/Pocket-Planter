@@ -15,7 +15,7 @@ export async function hydrateTabHeroes() {
   try {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
     if (raw) (JSON.parse(raw) || []).forEach((k) => seenTabHeroes.add(k));
-  } catch (e) {
+  } catch {
     /* ignore bad data */
   }
   hydrated = true;

@@ -36,7 +36,7 @@ export const SoilTempSection = memo(function SoilTempSection({ theme }) {
           try {
             const p = JSON.parse(val);
             if (p && Array.isArray(p.readings)) setData({ unit: p.unit === "C" ? "C" : "F", readings: p.readings });
-          } catch (e) { /* ignore */ }
+          } catch { /* ignore */ }
         }
         if (alive) setLoaded(true);
       })

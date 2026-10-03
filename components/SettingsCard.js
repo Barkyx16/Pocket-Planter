@@ -54,7 +54,7 @@ async function restorePurchases() {
       } else {
         Alert.alert(t("purchases.noneTitle"), t("purchases.noneBody"));
       }
-    } catch (err) {
+    } catch {
       Alert.alert(t("purchases.restoreFailed"), t("purchases.restoreFailedBody"));
     } finally {
       setRestoring(false);

@@ -52,7 +52,7 @@ function analyse(file) {
   const src = fs.readFileSync(file, "utf8");
   try {
     ast = parser.parse(src, { sourceType: "module", plugins: ["jsx"] });
-  } catch (error) {
+  } catch {
     return null;
   }
   const hardcoded = [];

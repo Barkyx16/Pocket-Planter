@@ -120,7 +120,7 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
         message: t("journal.shareText"),
         url: imageUri,
       });
-    } catch (error) {
+    } catch {
       Alert.alert(t("journal.shareFailed"), t("journal.shareFailedBody"));
     }
   };

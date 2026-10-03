@@ -32,7 +32,7 @@ export const GrowLightSection = memo(function GrowLightSection({ theme }) {
     let alive = true;
     AsyncStorage.getItem(GROW_LIGHT_STORAGE_KEY)
       .then((val) => {
-        if (alive && val) { try { setTrays(JSON.parse(val) || []); } catch (e) { /* ignore */ } }
+        if (alive && val) { try { setTrays(JSON.parse(val) || []); } catch { /* ignore */ } }
         if (alive) setLoaded(true);
       })
       .catch(() => { if (alive) setLoaded(true); });

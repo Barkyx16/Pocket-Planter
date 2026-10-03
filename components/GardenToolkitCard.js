@@ -68,7 +68,7 @@ export const GardenToolkitCard = memo(function GardenToolkitCard({ theme, onComp
     let alive = true;
     AsyncStorage.getItem(STORAGE_KEY).then((val) => {
       if (alive && val) {
-        try { setOwned(JSON.parse(val) || {}); } catch (e) { /* ignore bad data */ }
+        try { setOwned(JSON.parse(val) || {}); } catch { /* ignore bad data */ }
       }
       if (alive) setLoaded(true);
     }).catch(() => { if (alive) setLoaded(true); });

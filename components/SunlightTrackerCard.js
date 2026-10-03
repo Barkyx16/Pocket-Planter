@@ -21,7 +21,7 @@ export const SunlightTrackerCard = memo(function SunlightTrackerCard({ theme, ga
   useEffect(() => {
     let alive = true;
     AsyncStorage.getItem(STORAGE_KEY).then((val) => {
-      if (alive && val) { try { setByArea(JSON.parse(val) || {}); } catch (e) { /* ignore */ } }
+      if (alive && val) { try { setByArea(JSON.parse(val) || {}); } catch { /* ignore */ } }
       if (alive) setLoaded(true);
     }).catch(() => { if (alive) setLoaded(true); });
     return () => { alive = false; };

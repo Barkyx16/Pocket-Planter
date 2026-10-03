@@ -201,7 +201,7 @@ if (Text.render && !Text.__interPatched) {
   Text.render = function (...args) {
     const el = origTextRender.apply(this, args);
     try { return React.cloneElement(el, { style: withInterFont(el.props.style) }); }
-    catch (e) { return el; }
+    catch { return el; }
   };
   Text.__interPatched = true;
 }
@@ -210,7 +210,7 @@ if (TextInput.render && !TextInput.__interPatched) {
   TextInput.render = function (...args) {
     const el = origInputRender.apply(this, args);
     try { return React.cloneElement(el, { style: withInterFont(el.props.style) }); }
-    catch (e) { return el; }
+    catch { return el; }
   };
   TextInput.__interPatched = true;
 }
@@ -241,7 +241,7 @@ if (Pressable && Pressable.type && !Pressable.__ppPressPatched) {
   try {
     Pressable.type = PatchedPressable;
     Pressable.__ppPressPatched = true;
-  } catch (e) {
+  } catch {
     // Older/newer RN internals — leave Pressable exactly as it was.
   }
 }
@@ -571,10 +571,10 @@ useEffect(() => {
         AsyncStorage.getItem("pp_frostChecklist"),
         AsyncStorage.getItem("pp_frostDatesHidden"),
       ]);
-      if (m) { try { setMonthlyChecklist(JSON.parse(m)); } catch (e) {} }
-      if (f) { try { setFrostChecklist(JSON.parse(f)); } catch (e) {} }
+      if (m) { try { setMonthlyChecklist(JSON.parse(m)); } catch {} }
+      if (f) { try { setFrostChecklist(JSON.parse(f)); } catch {} }
       if (fh === "true") setFrostDatesHidden(true);
-    } catch (e) {
+    } catch {
       // try/finally with no catch let a rejected Promise.all escape the async
       // IIFE with nothing to receive it. The checklists just stay empty.
     } finally {
@@ -968,7 +968,7 @@ const saveProfileToSupabase = async () => {
         optionalPrefsUnavailable.current = true;
         console.log("Optional prefs sync disabled — add unit_system / weekly_recap_on / badge_earned_dates / banner_earned_dates / country / latitude columns to enable:", prefErr.message);
       }
-    } catch (e) {
+    } catch {
       optionalPrefsUnavailable.current = true;
     }
   }
@@ -2168,7 +2168,7 @@ useEffect(() => {
 useEffect(() => {
   hydrate("pp_recentPlants", (val) => {
     if (val) {
-      try { setRecentPlants(JSON.parse(val)); } catch (e) {}
+      try { setRecentPlants(JSON.parse(val)); } catch {}
     }
   });
 }, []);
@@ -2193,7 +2193,7 @@ useEffect(() => {
 useEffect(() => {
   hydrate("pp_plantSaveDates", (val) => {
     if (val) {
-      try { setPlantSaveDates(JSON.parse(val)); } catch (e) {}
+      try { setPlantSaveDates(JSON.parse(val)); } catch {}
     }
   });
 }, []);
@@ -2241,7 +2241,7 @@ useEffect(() => {
       if (typeof f.plantNowOnly === "boolean") setPlantNowOnly(f.plantNowOnly);
       if (typeof f.plantSortMode === "string") setPlantSortMode(f.plantSortMode);
       if (Array.isArray(f.plantAttrFilters)) setPlantAttrFilters(f.plantAttrFilters.filter((k) => ["container", "fullsun", "perennial"].includes(k)));
-    } catch (e) { /* ignore bad data */ }
+    } catch { /* ignore bad data */ }
   }).catch(() => {});
 }, []);
 
@@ -2257,7 +2257,7 @@ useEffect(() => {
 useEffect(() => {
   hydrate("pp_harvestGoal", (val) => {
     if (val) {
-      try { setHarvestGoal(JSON.parse(val)); } catch (e) {}
+      try { setHarvestGoal(JSON.parse(val)); } catch {}
     }
   });
 }, []);
@@ -2277,7 +2277,7 @@ useEffect(() => {
       try {
         const parsed = JSON.parse(val);
         if (Array.isArray(parsed)) setWateringAmounts(parsed);
-      } catch (e) {}
+      } catch {}
     }
   });
 }, []);
@@ -2287,7 +2287,7 @@ useEffect(() => {
       try {
         const parsed = JSON.parse(val);
         if (parsed && typeof parsed === "object") setAreaHistory(parsed);
-      } catch (e) {}
+      } catch {}
     }
   });
 }, []);
@@ -2297,7 +2297,7 @@ useEffect(() => {
       try {
         const parsed = JSON.parse(val);
         if (parsed && typeof parsed === "object") setSowLog(parsed);
-      } catch (e) {}
+      } catch {}
     }
   });
 }, []);
@@ -2310,7 +2310,7 @@ useEffect(() => {
           setFrostOverrides(parsed);
           setFrostOverrideRef(parsed); // apply before first render pass
         }
-      } catch (e) {}
+      } catch {}
     }
   });
 }, []);
@@ -2342,7 +2342,7 @@ useEffect(() => {
       try {
         const parsed = JSON.parse(val);
         if (parsed && parsed.start && parsed.end) setVacation(parsed);
-      } catch (e) {}
+      } catch {}
     }
   });
 }, []);
@@ -2354,7 +2354,7 @@ const milestonesHydrated = useRef(false);
 useEffect(() => {
   hydrate("pp_firedMilestones", (val) => {
     if (val) {
-      try { setFiredMilestones(JSON.parse(val)); } catch (e) {}
+      try { setFiredMilestones(JSON.parse(val)); } catch {}
     }
     milestonesHydrated.current = true;
   });
@@ -2415,7 +2415,7 @@ useEffect(() => {
 useEffect(() => {
   hydrate("pp_pinnedPlants", (val) => {
     if (val) {
-      try { setPinnedPlants(JSON.parse(val)); } catch (e) {}
+      try { setPinnedPlants(JSON.parse(val)); } catch {}
     }
   });
 }, []);
@@ -2435,7 +2435,7 @@ useEffect(() => {
       try {
         const parsed = JSON.parse(val);
         if (typeof parsed?.hour === "number") setWateringReminderTime(parsed);
-      } catch (e) {}
+      } catch {}
     }
   });
 }, []);
@@ -2520,14 +2520,14 @@ useEffect(() => {
 useEffect(() => {
   hydrate("pp_weeklyRecapOn", (val) => {
     if (!val || cloudProfileLoadedRef.current) return;
-    try { setWeeklyRecapOn(JSON.parse(val) === true); } catch (e) {}
+    try { setWeeklyRecapOn(JSON.parse(val) === true); } catch {}
   });
 }, []);
 
 useEffect(() => {
   hydrate("pp_plantOfDayOn", (val) => {
     if (val) {
-      try { setPlantOfDayOn(JSON.parse(val)); } catch (e) {}
+      try { setPlantOfDayOn(JSON.parse(val)); } catch {}
     }
   });
 }, []);
@@ -2567,7 +2567,7 @@ useEffect(() => {
       // If the summary was set for a day that's now passed, this clears it;
       // if snoozes are still pending for tomorrow, it stays scheduled.
       scheduleSnoozeSummary(fresh);
-    } catch (e) {}
+    } catch {}
   });
 }, []);
 
@@ -2580,7 +2580,7 @@ useEffect(() => {
   hydrate("pp_streakFreeze", (val) => {
     let loaded = { available: true, lastUsed: null, weekKey: null };
     if (val) {
-      try { loaded = JSON.parse(val); } catch (e) {}
+      try { loaded = JSON.parse(val); } catch {}
     }
     // Refresh the freeze at the start of each week, Monday. The week number this
     // used to compute by hand rolled over at midnight going into a weekday set
@@ -2625,7 +2625,7 @@ useEffect(() => {
 useEffect(() => {
   hydrate("pp_careLog", (val) => {
     if (!val || cloudProfileLoadedRef.current) return;
-    try { const parsed = JSON.parse(val); if (Array.isArray(parsed)) setCareLog(parsed); } catch (e) {}
+    try { const parsed = JSON.parse(val); if (Array.isArray(parsed)) setCareLog(parsed); } catch {}
   });
   hydrate("pp_bonusXP", (val) => {
     if (val == null || cloudProfileLoadedRef.current) return;
@@ -2642,7 +2642,7 @@ useEffect(() => {
     try {
       const parsed = JSON.parse(val);
       if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) setCompletedQuestIds(parsed);
-    } catch (e) {}
+    } catch {}
   });
   hydrate("pp_activeBannerId", (val) => {
     if (!val || cloudProfileLoadedRef.current) return;
@@ -2752,7 +2752,7 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
         },
       });
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
@@ -3015,7 +3015,7 @@ async function exportFullBackup() {
 
 function restoreFromBackup(text) {
   let data;
-  try { data = JSON.parse(text); } catch (e) {
+  try { data = JSON.parse(text); } catch {
     Alert.alert(t("backup.invalidTitle"), t("backup.invalidPasteBody"));
     return;
   }
@@ -3331,7 +3331,7 @@ async function scheduleFertilizerReminder(plantName, days) {
     // was opened.
     const today = getTodayKey();
     let sent = {};
-    try { sent = JSON.parse((await AsyncStorage.getItem("pp_harvestAlertSent")) || "{}") || {}; } catch (e) { /* ignore */ }
+    try { sent = JSON.parse((await AsyncStorage.getItem("pp_harvestAlertSent")) || "{}") || {}; } catch { /* ignore */ }
     const fresh = ready.filter((name) => sent[name] !== today);
     if (!fresh.length) return;
 
@@ -3456,7 +3456,7 @@ async function schedulePlantWaterReminder(plantName) {
 }
 
 async function cancelPlantWaterReminder(plantName) {
-  try { await Notifications.cancelScheduledNotificationAsync(`water-${plantName}`); } catch (e) { /* ignore */ }
+  try { await Notifications.cancelScheduledNotificationAsync(`water-${plantName}`); } catch { /* ignore */ }
 }
 
 // Switching watering reminders off has to stop the ones already scheduled, not
@@ -4469,7 +4469,7 @@ async function detectLocationAndZone() {
           if (cached?.weather && age < WEATHER_CACHE_MAX_AGE_MS) setWeather(cached.weather);
           if (!coords && cached?.coords) coords = cached.coords;
         }
-      } catch (e) {}
+      } catch {}
 if (!coords) {
   const zipResponse = await fetch(
     `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(zip)}&countrycodes=${country.toLowerCase()}&format=json&limit=1`,
@@ -4479,7 +4479,7 @@ if (!coords) {
   let zipData;
   try {
     zipData = JSON.parse(zipText);
-  } catch (e) {
+  } catch {
     setWeather(null);
     return;
   }
@@ -4546,14 +4546,14 @@ useEffect(() => {
       // resets on every app start, and the cached forecast repaints immediately,
       // so reopening the app fired the same frost warning again and again.
       let alreadySent = null;
-      try { alreadySent = await AsyncStorage.getItem("pp_frostAlertDay"); } catch (e) { /* ignore */ }
+      try { alreadySent = await AsyncStorage.getItem("pp_frostAlertDay"); } catch { /* ignore */ }
       if (alreadySent === frost.date) { lastFrostAlertDate.current = frost.date; return; }
 
       const granted = await ensureNotificationPermission();
       if (!granted) return;
 
       lastFrostAlertDate.current = frost.date;
-      try { await AsyncStorage.setItem("pp_frostAlertDay", frost.date); } catch (e) { /* ignore */ }
+      try { await AsyncStorage.setItem("pp_frostAlertDay", frost.date); } catch { /* ignore */ }
 
       await Notifications.scheduleNotificationAsync({
         identifier: "frost-detected",
@@ -4584,14 +4584,14 @@ useEffect(() => {
       // and "tomorrow" arrived on the morning it meant. The guard is persisted so
       // an app reload (which resets the in-memory ref) can't repeat it either.
       let alreadySent = null;
-      try { alreadySent = await AsyncStorage.getItem("pp_heatAlertDay"); } catch (e) { /* ignore */ }
+      try { alreadySent = await AsyncStorage.getItem("pp_heatAlertDay"); } catch { /* ignore */ }
       if (alreadySent === day.date) { lastHeatAlertDate.current = day.date; return; }
 
       const granted = await ensureNotificationPermission();
       if (!granted) return;
 
       lastHeatAlertDate.current = day.date;
-      try { await AsyncStorage.setItem("pp_heatAlertDay", day.date); } catch (e) { /* ignore */ }
+      try { await AsyncStorage.setItem("pp_heatAlertDay", day.date); } catch { /* ignore */ }
 
       // Midnight at the start of the hot day. If that is already behind us the
       // heat is today, so send it now — the advice is still actionable.
@@ -5038,10 +5038,10 @@ useEffect(() => {
 
   useEffect(() => {
     hydrate("pp_badgeEarnedDates", (val) => {
-      if (val) { try { setBadgeEarnedDates(JSON.parse(val) || {}); } catch (e) { /* ignore */ } }
+      if (val) { try { setBadgeEarnedDates(JSON.parse(val) || {}); } catch { /* ignore */ } }
     }).catch(() => {});
     hydrate("pp_bannerEarnedDates", (val) => {
-      if (val) { try { setBannerEarnedDates(JSON.parse(val) || {}); } catch (e) { /* ignore */ } }
+      if (val) { try { setBannerEarnedDates(JSON.parse(val) || {}); } catch { /* ignore */ } }
     }).catch(() => {});
   }, []);
 
@@ -5386,7 +5386,7 @@ const jumpToTab = useCallback((tab) => {
                   Alert.alert(t("auth.passwordUpdatedTitle"), t("auth.passwordUpdatedBody"));
                   setShowResetPassword(false);
                   setResetPasswordValue("");
-                } catch (e) {
+                } catch {
                   Alert.alert(t("common.somethingWrong"), t("common.pleaseTryAgain"));
                 }
               }}

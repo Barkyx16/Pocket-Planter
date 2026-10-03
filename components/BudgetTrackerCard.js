@@ -25,7 +25,7 @@ export const BudgetTrackerCard = memo(function BudgetTrackerCard({ theme }) {
   useEffect(() => {
     let alive = true;
     AsyncStorage.getItem(STORAGE_KEY).then((val) => {
-      if (alive && val) { try { setExpenses(JSON.parse(val) || []); } catch (e) { /* ignore */ } }
+      if (alive && val) { try { setExpenses(JSON.parse(val) || []); } catch { /* ignore */ } }
       if (alive) setLoaded(true);
     }).catch(() => { if (alive) setLoaded(true); });
     return () => { alive = false; };

@@ -30,7 +30,7 @@ export const ChoreRotationSection = memo(function ChoreRotationSection({ theme }
           try {
             const p = JSON.parse(val);
             if (p && Array.isArray(p.members)) setData({ ...DEFAULT, ...p });
-          } catch (e) { /* ignore */ }
+          } catch { /* ignore */ }
         }
         if (alive) setLoaded(true);
       })

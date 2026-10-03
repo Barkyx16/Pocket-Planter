@@ -27,7 +27,7 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
         t("gardenStatsDashboard.growingSmarterWithPocketPlanter"),
       ].filter(Boolean);
       await Share.share({ message: lines.join("\n") });
-    } catch (e) { /* share cancelled */ }
+    } catch { /* share cancelled */ }
   };
 
   const shareGarden = async () => {

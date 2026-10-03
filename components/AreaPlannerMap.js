@@ -38,7 +38,7 @@ export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas,
     let alive = true;
     AsyncStorage.getItem("pp_perfectGardenSeen").then((val) => {
       if (alive && val) {
-        try { seenPerfectRef.current = new Set(JSON.parse(val)); } catch (e) {}
+        try { seenPerfectRef.current = new Set(JSON.parse(val)); } catch {}
       }
     }).catch(() => {});
     return () => { alive = false; };

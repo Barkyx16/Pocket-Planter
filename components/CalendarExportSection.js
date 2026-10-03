@@ -27,7 +27,7 @@ const FREQS = [
 // (especially on Android). Falls back to undefined, which lets the calendar use
 // its own default.
 function deviceTimeZone() {
-  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined; } catch (e) { return undefined; }
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined; } catch { return undefined; }
 }
 
 // Next 8:00 AM from now (tomorrow if 8am already passed today).
@@ -78,7 +78,7 @@ async function getWritableCalendarId() {
     try {
       const def = await Calendar.getDefaultCalendarAsync();
       if (def?.id) return def.id;
-    } catch (e) { /* fall through to enumeration */ }
+    } catch { /* fall through to enumeration */ }
   }
   const cals = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
   const writable = cals.find((c) => c.allowsModifications) || cals[0];
@@ -123,7 +123,7 @@ export const CalendarExportSection = memo(function CalendarExportSection({ theme
         notes: t("misc.calNotes"),
       });
       Alert.alert(t("alerts.addedToCalendarTitle"), t("alerts.addedToCalendarBody", { task: t(`misc.${task.title}`), freq: t(`misc.${freq.label}`).toLowerCase(), date: formatDate(start) }));
-    } catch (e) {
+    } catch {
       Alert.alert(t("alerts.calendarFailedTitle"), t("alerts.calendarFailedBody"));
     } finally {
       setBusy(false);
@@ -135,7 +135,7 @@ export const CalendarExportSection = memo(function CalendarExportSection({ theme
       tapHaptic("light");
       const ics = buildICS(t(`misc.${task.title}`), freq, nextEightAM());
       await Share.share({ title: `${t(`misc.${task.title}`)} (Pocket Planter)`, message: ics });
-    } catch (e) { /* cancelled */ }
+    } catch { /* cancelled */ }
   };
 
   return (

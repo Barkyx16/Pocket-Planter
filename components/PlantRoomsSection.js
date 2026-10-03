@@ -20,7 +20,7 @@ export const PlantRoomsSection = memo(function PlantRoomsSection({ theme, savedP
     let alive = true;
     AsyncStorage.getItem(PLANT_ROOMS_STORAGE_KEY)
       .then((val) => {
-        if (alive && val) { try { const p = JSON.parse(val); if (p && p.assign) setData({ rooms: p.rooms || [], assign: p.assign || {} }); } catch (e) { /* ignore */ } }
+        if (alive && val) { try { const p = JSON.parse(val); if (p && p.assign) setData({ rooms: p.rooms || [], assign: p.assign || {} }); } catch { /* ignore */ } }
         if (alive) setLoaded(true);
       })
       .catch(() => { if (alive) setLoaded(true); });

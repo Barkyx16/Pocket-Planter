@@ -54,7 +54,7 @@ export const PruningScheduleSection = memo(function PruningScheduleSection({ the
     let alive = true;
     AsyncStorage.getItem(PRUNING_STORAGE_KEY)
       .then((val) => {
-        if (alive && val) { try { setDone(JSON.parse(val) || {}); } catch (e) { /* ignore */ } }
+        if (alive && val) { try { setDone(JSON.parse(val) || {}); } catch { /* ignore */ } }
         if (alive) setLoaded(true);
       })
       .catch(() => { if (alive) setLoaded(true); });

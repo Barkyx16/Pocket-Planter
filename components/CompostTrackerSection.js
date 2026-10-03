@@ -39,7 +39,7 @@ export const CompostTrackerSection = memo(function CompostTrackerSection({ theme
     AsyncStorage.getItem(COMPOST_STORAGE_KEY)
       .then((val) => {
         if (alive && val) {
-          try { setEntries(JSON.parse(val) || []); } catch (e) { /* ignore bad data */ }
+          try { setEntries(JSON.parse(val) || []); } catch { /* ignore bad data */ }
         }
         if (alive) setLoaded(true);
       })

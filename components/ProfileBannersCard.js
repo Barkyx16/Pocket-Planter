@@ -14,7 +14,7 @@ const fmtDate = (iso) => {
   day: "numeric",
   year: "numeric"
 }); }
-  catch (e) { return null; }
+  catch { return null; }
 };
 
 export const ProfileBannersCard = memo(function ProfileBannersCard({ theme, profileBanners, earnedDates, activeBannerId, setActiveBannerId }) {

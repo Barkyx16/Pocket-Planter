@@ -15,7 +15,7 @@ const fmtDate = (iso) => {
   day: "numeric",
   year: "numeric"
 }); }
-  catch (e) { return null; }
+  catch { return null; }
 };
 
 export const AchievementCard = memo(function AchievementCard({ theme, badges, earnedDates, streakData, seenGardenGod, setSeenGardenGod }) {

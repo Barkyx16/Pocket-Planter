@@ -65,7 +65,7 @@ export const PlantingCalendarCard = memo(function PlantingCalendarCard({ theme, 
       try {
         const def = await Calendar.getDefaultCalendarAsync?.();
         if (def?.allowsModifications) writable = def;
-      } catch (e) { /* getDefaultCalendarAsync is iOS-only */ }
+      } catch { /* getDefaultCalendarAsync is iOS-only */ }
       if (!writable) writable = cals.find((c) => c.allowsModifications) || cals[0];
       if (!writable) {
         Alert.alert(t("plantingCalendar.noCalendarTitle"), t("plantingCalendar.noCalendarBody"));

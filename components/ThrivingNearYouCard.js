@@ -23,7 +23,7 @@ export const ThrivingNearYouCard = memo(function ThrivingNearYouCard({ theme, zo
           if (error) { console.log("thriving load error:", error); setRows([]); }
           else setRows(Array.isArray(data) ? data : []);
         }
-      } catch (e) {
+      } catch {
         if (!cancelled) setRows([]);
       } finally {
         if (!cancelled) setLoading(false);

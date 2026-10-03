@@ -20,7 +20,7 @@ export const DataExportCard = memo(function DataExportCard({ theme, harvestLog, 
       AsyncStorage.getItem("pp_germTests"),
     ]).then(([c, g]) => {
       if (!alive) return;
-      const parse = (v) => { try { return JSON.parse(v) || []; } catch (e) { return []; } };
+      const parse = (v) => { try { return JSON.parse(v) || []; } catch { return []; } };
       setModuleCounts({ compost: parse(c).length, germ: parse(g).length });
     }).catch(() => {});
     return () => { alive = false; };
@@ -68,7 +68,7 @@ export const DataExportCard = memo(function DataExportCard({ theme, harvestLog, 
 
   const exportCompost = async () => {
     let entries = [];
-    try { entries = JSON.parse(await AsyncStorage.getItem("pp_compostLog")) || []; } catch (e) { /* ignore */ }
+    try { entries = JSON.parse(await AsyncStorage.getItem("pp_compostLog")) || []; } catch { /* ignore */ }
     const rows = entries.map((e) => [e.date || "", KIND_LABEL[e.kind] || e.kind || ""]);
     const csv = buildCsv(["Date", "Type"], rows);
     shareCsv("compost log", csv, rows.length);
@@ -76,7 +76,7 @@ export const DataExportCard = memo(function DataExportCard({ theme, harvestLog, 
 
   const exportGermination = async () => {
     let entries = [];
-    try { entries = JSON.parse(await AsyncStorage.getItem("pp_germTests")) || []; } catch (e) { /* ignore */ }
+    try { entries = JSON.parse(await AsyncStorage.getItem("pp_germTests")) || []; } catch { /* ignore */ }
     const rows = entries.map((e) => {
       const sown = Number(e.sown) || 0;
       const sprouted = Number(e.sprouted) || 0;

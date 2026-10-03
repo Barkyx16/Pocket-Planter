@@ -31,7 +31,7 @@ export const ToolMaintenanceSection = memo(function ToolMaintenanceSection({ the
     let alive = true;
     AsyncStorage.getItem(TOOL_MAINT_STORAGE_KEY)
       .then((val) => {
-        if (alive && val) { try { setLog(JSON.parse(val) || {}); } catch (e) { /* ignore */ } }
+        if (alive && val) { try { setLog(JSON.parse(val) || {}); } catch { /* ignore */ } }
         if (alive) setLoaded(true);
       })
       .catch(() => { if (alive) setLoaded(true); });

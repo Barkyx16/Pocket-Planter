@@ -761,7 +761,7 @@ export async function collectModuleBackup() {
     pairs.forEach(([key, val]) => {
       if (val != null) out[key] = val;
     });
-  } catch (e) {
+  } catch {
     /* ignore — a partial backup is better than a failed one */
   }
   return out;
@@ -778,7 +778,7 @@ export async function applyModuleBackup(modules) {
   if (!entries.length) return;
   try {
     await AsyncStorage.multiSet(entries);
-  } catch (e) {
+  } catch {
     /* ignore */
   }
 }

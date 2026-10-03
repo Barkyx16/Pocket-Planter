@@ -25,7 +25,7 @@ export const SoilTestLogCard = memo(function SoilTestLogCard({ theme }) {
   useEffect(() => {
     let alive = true;
     AsyncStorage.getItem(STORAGE_KEY).then((val) => {
-      if (alive && val) { try { setTests(JSON.parse(val) || []); } catch (e) { /* ignore */ } }
+      if (alive && val) { try { setTests(JSON.parse(val) || []); } catch { /* ignore */ } }
       if (alive) setLoaded(true);
     }).catch(() => { if (alive) setLoaded(true); });
     return () => { alive = false; };

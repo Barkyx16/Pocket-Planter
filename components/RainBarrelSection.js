@@ -29,7 +29,7 @@ export const RainBarrelSection = memo(function RainBarrelSection({ theme, unitSy
           try {
             const parsed = JSON.parse(val);
             if (parsed && typeof parsed.capacityL === "number") setData({ ...DEFAULT, ...parsed });
-          } catch (e) { /* ignore bad data */ }
+          } catch { /* ignore bad data */ }
         }
         if (alive) setLoaded(true);
       })

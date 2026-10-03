@@ -270,7 +270,7 @@ return (
                     await disableBiometricLogin();
                     await supabase.auth.signOut();
                     Alert.alert(t("accountCloud.accountDeleted"), t("accountCloud.accountDeletedBody"));
-                  } catch (err) {
+                  } catch {
                     Alert.alert(t("accountCloud.contactSupport"), t("accountCloud.contactSupportBody"));
                   }
                 },

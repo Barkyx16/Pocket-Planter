@@ -18,7 +18,7 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
     let alive = true;
     AsyncStorage.getItem(`pp_smartActionsDone_${today}`).then((val) => {
       if (!alive) return;
-      try { setDoneIds(val ? (JSON.parse(val) || {}) : {}); } catch (e) { setDoneIds({}); }
+      try { setDoneIds(val ? (JSON.parse(val) || {}) : {}); } catch { setDoneIds({}); }
     }).catch(() => {});
     return () => { alive = false; };
   }, [today]);

@@ -66,7 +66,7 @@ export const PlantLabelsSection = memo(function PlantLabelsSection({ theme, save
 
   const share = async () => {
     if (!names.length) return;
-    try { tapHaptic("light"); await Share.share({ message: buildLabels() }); } catch (e) { /* cancelled */ }
+    try { tapHaptic("light"); await Share.share({ message: buildLabels() }); } catch { /* cancelled */ }
   };
 
   return (
