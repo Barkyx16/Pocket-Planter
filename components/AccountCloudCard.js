@@ -208,6 +208,8 @@ return (
           onChangeText={setNewEmail}
           autoCapitalize="none"
           keyboardType="email-address"
+          autoComplete="email"
+          textContentType="emailAddress"
           placeholder={t("accountCloud.newEmailAddress")}
           placeholderTextColor="#8fbf9d"
           style={styles.accountInput}

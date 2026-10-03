@@ -5214,6 +5214,9 @@ const jumpToTab = useCallback((tab) => {
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
+              // Lets the OS password manager offer saved logins.
+              autoComplete="email"
+              textContentType="username"
               placeholder={t("auth.emailPlaceholder")}
               placeholderTextColor="#8fbf9d"
               style={[styles.input, { marginTop: 0, backgroundColor: theme.input, color: theme.text, borderColor: theme.border }]}
@@ -5224,6 +5227,8 @@ const jumpToTab = useCallback((tab) => {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
+                autoComplete={authMode === "signup" ? "new-password" : "current-password"}
+                textContentType={authMode === "signup" ? "newPassword" : "password"}
                 placeholder={t("auth.passwordPlaceholder")}
                 placeholderTextColor="#8fbf9d"
                 style={[styles.input, { marginTop: 0, backgroundColor: theme.input, color: theme.text, borderColor: theme.border, paddingRight: 50 }]}
@@ -5369,6 +5374,8 @@ const jumpToTab = useCallback((tab) => {
               value={resetPasswordValue}
               onChangeText={setResetPasswordValue}
               secureTextEntry
+              autoComplete="new-password"
+              textContentType="newPassword"
               placeholder={t("auth.newPasswordPlaceholder")}
               placeholderTextColor="#8fbf9d"
               style={{ marginTop: 16, backgroundColor: "rgba(255, 255, 255, 0.08)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)", color: "#ffffff", fontSize: 14, fontWeight: "700", paddingHorizontal: 16, paddingVertical: 14 }}
