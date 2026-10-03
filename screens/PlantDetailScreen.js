@@ -6,7 +6,7 @@ import { PlantGrowthTimeline } from "../components/PlantGrowthTimeline";
 import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { PremiumLockedSection } from "../components/PremiumLockedSection";
 import { WeatherParticles } from "../components/WeatherParticles";
-import { getCompanionLists, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeUnits, normalizeType, resolvePlantImageSource } from "../core";
+import { getCompanionLists, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantingSteps, getPlantingWindowText, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeUnits, normalizeType, resolvePlantImageSource, translateSeasonLabel } from "../core";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { getPestImage } from "../data/pestImageMap";
 import { formatDate, t } from "../lib/i18n";
@@ -123,7 +123,7 @@ export function PlantDetailScreen({
 
       <View style={styles.detailBadge}>
         <Text style={styles.detailBadgeText}>
-          {seasonLabel}
+          {translateSeasonLabel(seasonLabel)}
         </Text>
       </View>
     </View>

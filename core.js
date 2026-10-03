@@ -1992,6 +1992,23 @@ export function getPlantSeasonLabel(item, zone, monthOverride = null) {
   return `Starts in ${MONTH_NAMES[nextMonth - 1]}`;
 }
 
+// getPlantSeasonLabel's answer in the gardener's language, for display only:
+// code compares against the English "Plant now", so the label itself stays
+// English and is translated where it is shown.
+export function translateSeasonLabel(label) {
+  const text = String(label || "");
+  if (text === "Plant now") return t("seasonTransition.labelPlantNow");
+  if (text === "Outside your zone") return t("seasonTransition.labelOutsideZone");
+  if (text === "Zone fit") return t("seasonTransition.labelZoneFit");
+  const starts = text.match(/^Starts in (\w+)$/);
+  const monthIndex = starts ? MONTH_NAMES.indexOf(starts[1]) : -1;
+  if (monthIndex >= 0) {
+    const month = formatDate(new Date(2026, monthIndex, 1), { month: "long" }) || starts[1];
+    return t("seasonTransition.labelStartsIn", { month });
+  }
+  return text;
+}
+
 export const PERENNIALS = new Set([
   "Ivy Gourd (Tindora)",
   "Garlic Chives",

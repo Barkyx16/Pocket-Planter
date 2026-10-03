@@ -467,3 +467,24 @@ describe("getPlantSeasonLabel", () => {
     ok(/^Starts in (January|February|March|April|May)$/.test(label), `got ${label}`);
   });
 });
+
+describe("season labels in the gardener's language", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("translates for display and leaves the English the code compares with", () => {
+    eq(core.translateSeasonLabel("Plant now"), "Plant now");
+    eq(core.translateSeasonLabel("Starts in March"), "Starts in March");
+    i18n.setLocale("es");
+    eq(core.translateSeasonLabel("Plant now"), "Plantar ya");
+    ok(/^Empieza en marzo$/i.test(core.translateSeasonLabel("Starts in March")), core.translateSeasonLabel("Starts in March"));
+    i18n.setLocale("de");
+    ok(/^Ab März$/.test(core.translateSeasonLabel("Starts in March")), core.translateSeasonLabel("Starts in March"));
+    i18n.setLocale("en");
+    eq(core.getPlantSeasonLabel(plant("Tomato"), "7a", 4), "Plant now", "the logic still speaks English");
+  });
+  it("is used wherever the label is shown", () => {
+    const fs21 = require("fs");
+    for (const f of ["components/EmptyGardenStarterCard.js", "screens/PlantsTab.js", "screens/PlantDetailScreen.js"]) {
+      ok(/translateSeasonLabel\(/.test(fs21.readFileSync(path.join(ROOT, f), "utf8")), f);
+    }
+  });
+});

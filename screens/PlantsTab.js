@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Image, InteractionManager, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { MONTH_NAMES, PLANT_TYPES, SCREEN_WIDTH, getHarvestCountdown, getMonthEmoji, getPlantDifficulty, getPlantSeasonLabel, getSearchSuggestions, getTomorrowKey, normalizeType, plantsBuddyImage, resolvePlantImageSource, tapHaptic } from "../core";
+import { getHarvestCountdown, getMonthEmoji, getPlantDifficulty, getPlantSeasonLabel, getSearchSuggestions, getTomorrowKey, MONTH_NAMES, normalizeType, PLANT_TYPES, plantsBuddyImage, resolvePlantImageSource, SCREEN_WIDTH, tapHaptic, translateSeasonLabel } from "../core";
 import { getMonthImage } from "../data/monthImageMap";
 import { CollapsibleCard } from "../components/CollapsibleCard";
 import { PremiumLockedCard } from "../components/PremiumLockedCard";
@@ -124,7 +124,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.cleanPlantName}>{item.name}</Text>
-                  <Text style={styles.cleanPlantMeta}>{normalizeType(item.type, item.name)} • {getPlantSeasonLabel(item, zone, selectedMonth)}</Text>
+                  <Text style={styles.cleanPlantMeta}>{normalizeType(item.type, item.name)} • {translateSeasonLabel(getPlantSeasonLabel(item, zone, selectedMonth))}</Text>
                 </View>
                 <Text style={styles.cleanPlantArrow}>›</Text>
               </Pressable>

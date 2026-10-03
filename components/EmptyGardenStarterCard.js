@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
-import { getPlantDifficulty, getPlantSeasonLabel, resolvePlantImageSource } from "../core";
+import { getPlantDifficulty, getPlantSeasonLabel, resolvePlantImageSource, translateSeasonLabel } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
@@ -47,7 +47,7 @@ export const EmptyGardenStarterCard = memo(function EmptyGardenStarterCard({ the
               <View style={{ flex: 1 }}>
                 <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{item.name}</Text>
                 <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "800", marginTop: 2 }}>
-                  {diff.icon} {diff.text} · {getPlantSeasonLabel(item, zone)}
+                  {diff.icon} {diff.text} · {translateSeasonLabel(getPlantSeasonLabel(item, zone))}
                 </Text>
               </View>
               <Text style={{ color: "#5cff89", fontSize: 20, fontWeight: "900" }}>›</Text>
