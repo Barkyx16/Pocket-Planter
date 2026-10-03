@@ -3,7 +3,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "./lib/supabase";
 import { isBiometricAvailable, getBiometricLabel, isBiometricEnabled, enableBiometricLogin, disableBiometricLogin, authenticateAndGetCredentials, getBiometricEmail } from "./lib/biometricAuth";
 import { hydrateTabHeroes } from "./components/TabHero";
-import { ActivityIndicator, Alert, Animated, AppState, Appearance, Image, Keyboard, Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, RefreshControl, Share, StatusBar, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Animated, AppState, Appearance, Image, Keyboard, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, RefreshControl, Share, StatusBar, StyleSheet, Text, TextInput, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import * as Location from "expo-location";
@@ -5320,6 +5320,7 @@ const jumpToTab = useCallback((tab) => {
     />
 
     <Modal visible={!!harvestLogPlant} animationType="fade" transparent onRequestClose={() => setHarvestLogPlant(null)}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <Pressable accessible={false} style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", alignItems: "center", justifyContent: "center", padding: 24 }} onPress={() => setHarvestLogPlant(null)}>
         <Pressable accessible={false} onPress={(e) => e.stopPropagation?.()} style={{ width: "100%", maxWidth: 420, backgroundColor: theme.card, borderRadius: 24, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", padding: 22 }}>
           <IconText label={t("harvestLog.modalTitle")} style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 10 }} />
@@ -5345,10 +5346,12 @@ const jumpToTab = useCallback((tab) => {
           </View>
         </Pressable>
       </Pressable>
+      </KeyboardAvoidingView>
     </Modal>
 
     {showResetPassword ? (
       <Modal visible transparent animationType="fade" onRequestClose={() => setShowResetPassword(false)}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <View style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.85)", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <View style={{ width: "100%", maxWidth: 420, backgroundColor: "#0e2414", borderRadius: 24, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", padding: 22 }}>
             <IconText label={t("auth.resetEyebrow")} style={{
@@ -5399,6 +5402,7 @@ const jumpToTab = useCallback((tab) => {
             </Pressable>
           </View>
         </View>
+        </KeyboardAvoidingView>
       </Modal>
     ) : null}
 
