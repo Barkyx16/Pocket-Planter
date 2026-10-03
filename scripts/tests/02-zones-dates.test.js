@@ -463,3 +463,27 @@ describe("the streak freeze week", () => {
     ok(!/oneJan\.getDay\(\)/.test(app), "the hand-rolled week number should be gone");
   });
 });
+
+describe("daily quests count today's harvests by the local day", () => {
+  const core11 = require(path.join(ROOT, "core.js"));
+  const today = new Date(2026, 6, 2, 9, 0);
+  const lateLast = new Date(2026, 6, 1, 23, 50); // 11:50pm the night before, local
+  const key = core11.getDateKey(today);
+  it("does not count last night's harvest toward today", () => {
+    // Its UTC timestamp falls on today's date anywhere west of Greenwich, and a
+    // prefix match on it counted it — including for the "two harvests" quest.
+    const log = [
+      { date: core11.getDateKey(today), createdAt: today.toISOString() },
+      { date: core11.getDateKey(lateLast), createdAt: lateLast.toISOString() },
+    ];
+    eq(core11.countHarvestsOnDay(log, key), 1);
+  });
+  it("reads an entry with no day key by its timestamp's local day", () => {
+    eq(core11.countHarvestsOnDay([{ createdAt: lateLast.toISOString() }], key), 0);
+    eq(core11.countHarvestsOnDay([{ createdAt: today.toISOString() }, null], key), 1);
+  });
+  it("is what the quests use", () => {
+    const src = require("fs").readFileSync(path.join(ROOT, "core.js"), "utf8");
+    ok(/const harvestLogToday = countHarvestsOnDay\(harvestLog, today\);/.test(src));
+  });
+});

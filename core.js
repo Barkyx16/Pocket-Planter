@@ -4264,6 +4264,19 @@ export function getProfileBanners({ gardenXP, savedPlants, journalEntries, garde
   ];
 }
 
+// Harvests logged on a given local day. By the entry's own day key, falling back
+// to its timestamp read as a local day. The fallback used to prefix-match
+// createdAt, a UTC timestamp, so west of Greenwich last night's harvest
+// ("…-04T03:10Z") counted toward today's quests — and the 50 XP "two harvests"
+// quest could be had with one.
+export function countHarvestsOnDay(harvestLog, dayKey) {
+  return (harvestLog || []).filter((h) => {
+    if (!h) return false;
+    const day = h.date || (h.createdAt ? getDateKey(new Date(h.createdAt)) : null);
+    return day === dayKey;
+  }).length;
+}
+
 export function getDailyQuests({ savedPlants, journalEntries, gardenMap, wateredPlants, careLog, harvestTrackers, streakData, harvestLog, fertilizerTrackers, comparePlants }) {
   const today = getTodayKey();
   const dayOfWeek = new Date().getDay();
@@ -4277,7 +4290,7 @@ export function getDailyQuests({ savedPlants, journalEntries, gardenMap, watered
   const streakCount = streakData?.count || 0;
   const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).length;
   const fertilizerCount = Object.keys(fertilizerTrackers || {}).length;
-  const harvestLogToday = (harvestLog || []).filter((h) => h.date === today || (h.createdAt || "").startsWith(today)).length;
+  const harvestLogToday = countHarvestsOnDay(harvestLog, today);
   const compareCount = (comparePlants || []).length;
 
   const allQuests = [
