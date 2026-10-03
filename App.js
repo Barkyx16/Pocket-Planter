@@ -120,7 +120,7 @@ import { LoadingScreen } from "./components/LoadingScreen";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { PremiumLockedSection } from "./components/PremiumLockedSection";
 import { MAX_FONT_SCALE_COMPACT, touchSlop } from "./lib/a11y";
-import { createBatchedReader } from "./lib/batchedReader";
+import { readStored } from "./lib/storageRead";
 import { OnboardingCard } from "./components/OnboardingCard";
 import { PestDetailScreen } from "./components/PestDetailScreen";
 import { DiseaseDetailScreen } from "./components/DiseaseDetailScreen";
@@ -322,7 +322,7 @@ const persist = (key, value) => {
 // re-rendered all of App. Batched, they resolve together and React folds the
 // state updates into one render. Each apply still runs on its own, so one that
 // throws cannot stop the rest.
-const hydrate = createBatchedReader(AsyncStorage);
+const hydrate = readStored;
 
 // The key inside the cloud row's module_data blob that carries progress with no
 // column of its own. applyModuleBackup only restores MODULE_STORAGE_KEYS, so an

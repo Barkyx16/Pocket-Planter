@@ -5,6 +5,7 @@ import { LayoutAnimation, Platform, Pressable, Text, UIManager, View } from "rea
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { styles } from "../styles";
 import { splitLeadingIcon } from "../lib/icons";
+import { readStored } from "../lib/storageRead";
 
 // Enable smooth layout animations on Android.
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -19,9 +20,9 @@ export const CollapsibleCard = memo(function CollapsibleCard({ theme, storageKey
 
   useEffect(() => {
     let alive = true;
-    AsyncStorage.getItem(`pp_collapse_${storageKey}`).then((val) => {
+    readStored(`pp_collapse_${storageKey}`, (val) => {
       if (alive && val !== null) setOpen(val === "1");
-    }).catch(() => {});
+    });
     return () => { alive = false; };
   }, [storageKey]);
 
