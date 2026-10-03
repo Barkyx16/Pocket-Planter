@@ -1,13 +1,13 @@
 import { memo } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
-import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, flipMonth, formatTemp, getClimateBucket, getSeasonForDate, getSuggestionsForMonth, getTodayKey, isHarvestReady } from "../core";
+import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, flipMonth, formatTemp, getClimateBucket, getSeasonForDate, getSuggestionsForMonth, isHarvestReady, isWaterDue } from "../core";
+import produceData from "../data/produceData";
 import { formatDate, useTranslation } from "../lib/i18n";
 
-export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ theme, weather, zone, savedPlants, wateredPlants, gardenMap, harvestTrackers, onOpenPlant, unitSystem }) {
+export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ theme, weather, zone, savedPlants, wateredPlants, wateringHistory, gardenMap, harvestTrackers, onOpenPlant, unitSystem }) {
   const { t } = useTranslation();
   const forecast = weather?.forecast || [];
-  const today = getTodayKey();
   const currentMonth = new Date().getMonth() + 1;
   const climate = getClimateBucket(zone);
 
@@ -34,7 +34,8 @@ export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ the
   const heatRiskDay = forecast.find((d) => d.maxTempF >= HEAT_THRESHOLD_F);
   const wateringSkippable = weather?.precipChance >= 65;
 
-  const unwateredCount = savedPlants.filter((p) => wateredPlants?.[p] !== today).length;
+  // Due by each plant's schedule, the rule every other "need water" count uses.
+  const unwateredCount = savedPlants.filter((p) => isWaterDue(p, produceData.find((item) => item.name === p), wateredPlants, wateringHistory, weather)).length;
   const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).length;
   const weeklyHigh = Math.max(...forecast.map((d) => d.maxTempF));
   const weeklyLow = Math.min(...forecast.map((d) => d.minTempF));

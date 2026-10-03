@@ -38,6 +38,7 @@ export function WeatherTab({ frostAlertsOn, gardenMap, harvestTrackers, jumpToTa
         zone={zone}
         savedPlants={savedPlants}
         wateredPlants={wateredPlants}
+        wateringHistory={wateringHistory}
         harvestTrackers={harvestTrackers}
         unitSystem={unitSystem}
       />
@@ -45,7 +46,7 @@ export function WeatherTab({ frostAlertsOn, gardenMap, harvestTrackers, jumpToTa
         <ForecastCard theme={theme} weather={weather} zone={zone} savedPlants={savedPlants} wateredPlants={wateredPlants} unitSystem={unitSystem} />
       </ToggleSection>
       <ToggleSection label={t("weather.gardenIntelligence")} closeLabel={t("weather.closeGardenIntelligence")} accent="blue" marginTop={10}>
-        <GardenIntelligenceCard theme={theme} weather={weather} zone={zone} savedPlants={savedPlants} wateredPlants={wateredPlants} gardenMap={gardenMap} harvestTrackers={harvestTrackers} onOpenPlant={openPlantFromList} unitSystem={unitSystem} />
+        <GardenIntelligenceCard theme={theme} weather={weather} zone={zone} savedPlants={savedPlants} wateredPlants={wateredPlants} wateringHistory={wateringHistory} gardenMap={gardenMap} harvestTrackers={harvestTrackers} onOpenPlant={openPlantFromList} unitSystem={unitSystem} />
       </ToggleSection>
       </CollapsibleCard>
     ) : (
@@ -61,7 +62,7 @@ export function WeatherTab({ frostAlertsOn, gardenMap, harvestTrackers, jumpToTa
         <ForecastCard theme={theme} weather={weather} zone={zone} savedPlants={savedPlants} wateredPlants={wateredPlants} unitSystem={unitSystem} />
       </CollapsibleCard>
       <CollapsibleCard theme={theme} storageKey="gardenintel" title={t("weather.gardenIntelligence")}>
-        <GardenIntelligenceCard theme={theme} weather={weather} zone={zone} savedPlants={savedPlants} wateredPlants={wateredPlants} gardenMap={gardenMap} harvestTrackers={harvestTrackers} onOpenPlant={openPlantFromList} unitSystem={unitSystem} />
+        <GardenIntelligenceCard theme={theme} weather={weather} zone={zone} savedPlants={savedPlants} wateredPlants={wateredPlants} wateringHistory={wateringHistory} gardenMap={gardenMap} harvestTrackers={harvestTrackers} onOpenPlant={openPlantFromList} unitSystem={unitSystem} />
       </CollapsibleCard>
       </>
     )}

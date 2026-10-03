@@ -2,12 +2,13 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LayoutAnimation, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
-import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, WARM_DAY_THRESHOLD_F, formatTemp, getTodayKey, isHarvestReady, tapHaptic } from "../core";
+import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, WARM_DAY_THRESHOLD_F, formatTemp, getTodayKey, isHarvestReady, isWaterDue, tapHaptic } from "../core";
+import produceData from "../data/produceData";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
-export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, recommendation, savedPlants, wateredPlants, harvestTrackers, unitSystem }) {
-  const { t } = useTranslation();
+export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, recommendation, savedPlants, wateredPlants, wateringHistory, harvestTrackers, unitSystem }) {
+  const { t, tn } = useTranslation();
   const today = getTodayKey();
   const currentHour = new Date().getHours();
 
@@ -32,7 +33,8 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
     });
   };
 
-  const unwateredCount = savedPlants?.filter(p => wateredPlants?.[p] !== today).length || 0;
+  // Due by each plant's schedule, the rule every other "need water" count uses.
+  const unwateredCount = (savedPlants || []).filter((p) => isWaterDue(p, produceData.find((item) => item.name === p), wateredPlants, wateringHistory, weather)).length;
   const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).length;
 
   const getConditionDetails = () => {
@@ -67,7 +69,7 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
       actions.push({ id: "rain-check-soil", icon: "🌱", text: "Check soil moisture before watering — rain may help", priority: "low" });
     }
     if (unwateredCount > 0 && weather.precipChance < 40) {
-      actions.push({ id: "water-remaining", icon: "💧", text: `${unwateredCount} saved plant${unwateredCount === 1 ? "" : "s"} still need watering today`, priority: weather.maxTempF >= WARM_DAY_THRESHOLD_F ? "high" : "medium" });
+      actions.push({ id: "water-remaining", icon: "💧", text: tn("liveWeather.stillNeedWater", unwateredCount), priority: weather.maxTempF >= WARM_DAY_THRESHOLD_F ? "high" : "medium" });
     }
     if (harvestsReady > 0) {
       actions.push({ id: "harvest-ready", icon: "🎉", text: `${harvestsReady} plant${harvestsReady === 1 ? "" : "s"} ready to harvest — pick today for peak flavor`, priority: "high" });

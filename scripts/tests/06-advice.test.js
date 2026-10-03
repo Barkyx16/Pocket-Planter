@@ -572,3 +572,16 @@ describe("the stats dashboard's watering to-do", () => {
     eq(i18n.tn("gardenStatsDashboard.dashPlantsNeedWater", 1), "1 plant needs watering");
   });
 });
+
+describe("every 'need water' count uses the shared rule", () => {
+  it("in the garden map's bed summary, Garden Intelligence and Live Weather", () => {
+    const fs28 = require("fs");
+    for (const f of ["components/AreaPlannerMap.js", "components/GardenIntelligenceCard.js", "components/LiveWeatherCard.js"]) {
+      const src = fs28.readFileSync(path.join(ROOT, f), "utf8");
+      ok(!/wateredPlants\?\.\[(n|p)\] !== today/.test(src), `${f} still counts "not watered today"`);
+      ok(/isWaterDue\(/.test(src), `${f} should ask isWaterDue`);
+    }
+    const tab = fs28.readFileSync(path.join(ROOT, "screens/WeatherTab.js"), "utf8");
+    eq((tab.match(/wateringHistory=\{wateringHistory\}/g) || []).length >= 3, true, "the Weather tab passes the history down");
+  });
+});

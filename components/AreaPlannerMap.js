@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Alert, Image, Modal, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { areaCapacity, canPlantInArea, getAreaTag, getCompanionLists, getCompatibilityScore, getPairReason, getTodayKey, isWaterDue, resolveCompanionName, resolvePlantImageSource } from "../core";
+import { areaCapacity, canPlantInArea, getAreaTag, getCompanionLists, getCompatibilityScore, getPairReason, isWaterDue, resolveCompanionName, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
 import { PlantPickerModal } from "./PlantPickerModal";
 import { useTranslation } from "../lib/i18n";
@@ -320,8 +320,8 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
               ) : null}
             </View>
             {areaPlants.length > 0 ? (() => {
-              const today = getTodayKey();
-              const needWater = areaPlants.filter((n) => wateredPlants?.[n] !== today).length;
+              // Due by schedule, as the plot borders below and every other count.
+              const needWater = areaPlants.filter((n) => isWaterDue(n, produceData.find((p) => p.name === n), wateredPlants, wateringHistory, weather)).length;
               let conflicts = 0;
               for (let i = 0; i < areaPlants.length; i++) {
                 for (let j = i + 1; j < areaPlants.length; j++) {
