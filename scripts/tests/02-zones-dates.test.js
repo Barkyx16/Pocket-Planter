@@ -291,3 +291,24 @@ describe("frost alert scheduling", () => {
     core5.setHemisphereFromLatitude(40.7);
   });
 });
+
+describe("calendar .ics export", () => {
+  const cal = require(path.join(ROOT, "components/CalendarExportSection.js"));
+  const field = (ics, name) => ics.split("\r\n").find((l) => l.startsWith(name + ":")).slice(name.length + 1);
+  it("starts a recurring reminder at local 8:00 AM, not at a fixed UTC hour", () => {
+    // DTSTART used to be written in UTC with a "Z". A recurring event keeps that
+    // UTC hour all year, so an 8:00 AM reminder exported in July arrived at 7:00
+    // AM from November — and in every zone but UTC this assertion caught it.
+    const ics = cal.buildICS("Water", { freq: "DAILY", interval: 2 }, cal.nextEightAM());
+    const start = field(ics, "DTSTART");
+    ok(/^\d{8}T080000$/.test(start), `DTSTART should be floating 08:00 local, got ${start}`);
+    ok(/^\d{8}T081500$/.test(field(ics, "DTEND")), "a quarter of an hour later");
+    ok(/Z$/.test(field(ics, "DTSTAMP")), "DTSTAMP is a moment and stays UTC");
+  });
+  it("dates the start on the local day, even when that is not the UTC day", () => {
+    const at = new Date(2026, 6, 1, 8, 0, 0);
+    const ics = cal.buildICS("Water", { freq: "WEEKLY", interval: 1 }, at);
+    eq(field(ics, "DTSTART"), "20260701T080000");
+    eq(field(ics, "RRULE"), "FREQ=WEEKLY;INTERVAL=1");
+  });
+});

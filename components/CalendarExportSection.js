@@ -30,15 +30,25 @@ function deviceTimeZone() {
 }
 
 // Next 8:00 AM from now (tomorrow if 8am already passed today).
-function nextEightAM() {
+export function nextEightAM() {
   const d = new Date();
   d.setHours(8, 0, 0, 0);
   if (d.getTime() <= Date.now()) d.setDate(d.getDate() + 1);
   return d;
 }
 
-function buildICS(title, freqObj, start) {
-  const dt = (d) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+// iCalendar date-times. DTSTAMP records a moment, so it is UTC. The event's own
+// start and end are written as floating local time — no "Z", no TZID — which RFC
+// 5545 defines as "this wall-clock time wherever the calendar is". A recurring
+// event pinned to UTC instead keeps the same UTC hour all year, so an 8:00 AM
+// reminder exported in summer arrives at 7:00 AM once the clocks go back.
+const pad2 = (n) => String(n).padStart(2, "0");
+const icsUtc = (d) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+const icsLocal = (d) =>
+  `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}` +
+  `T${pad2(d.getHours())}${pad2(d.getMinutes())}${pad2(d.getSeconds())}`;
+
+export function buildICS(title, freqObj, start) {
   const end = new Date(start.getTime() + 15 * 60000);
   return [
     "BEGIN:VCALENDAR",
@@ -47,9 +57,9 @@ function buildICS(title, freqObj, start) {
     "CALSCALE:GREGORIAN",
     "BEGIN:VEVENT",
     `UID:${Date.now()}@pocketplanter`,
-    `DTSTAMP:${dt(new Date())}`,
-    `DTSTART:${dt(start)}`,
-    `DTEND:${dt(end)}`,
+    `DTSTAMP:${icsUtc(new Date())}`,
+    `DTSTART:${icsLocal(start)}`,
+    `DTEND:${icsLocal(end)}`,
     `RRULE:FREQ=${freqObj.freq};INTERVAL=${freqObj.interval}`,
     `SUMMARY:${title}`,
     "BEGIN:VALARM",
