@@ -871,3 +871,13 @@ describe("times in the app language", () => {
     }
   });
 });
+
+describe("sign-in screen and celebrations", () => {
+  it("have no English-only text left in App.js", () => {
+    const src = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    for (const s of ['placeholder="Email"', 'placeholder="Password"', '"Log In"', ">Forgot password?<",
+      ">ACHIEVEMENT UNLOCKED<", "DAY STREAK!", ">FIRST PLANT!<", ">Undo<", "LOG A HARVEST", '"Photo deleted"']) {
+      ok(!src.includes(s), s);
+    }
+  });
+});

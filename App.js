@@ -3156,7 +3156,7 @@ function deleteJournalEntry(entryId) {
   tapHaptic("light");
   setJournalEntries((current) => current.filter((entry) => entry.id !== entryId));
   let undone = false;
-  showUndoToast("Photo deleted", () => {
+  showUndoToast(t("garden.photoDeleted"), () => {
     undone = true;
     setJournalEntries((current) => [removed, ...current].sort(
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
@@ -3842,7 +3842,7 @@ function snoozePlantWatering(plantName) {
   const snoozed = { ...snoozedPlants, [plantName]: key };
   setSnoozedPlants(snoozed);
   scheduleSnoozeSummary(snoozed);
-  showUndoToast(`${plantName} snoozed until tomorrow`, () => {
+  showUndoToast(t("garden.snoozedUntilTomorrow", { plant: plantName }), () => {
     const restored = { ...snoozedPlants };
     delete restored[plantName];
     setSnoozedPlants(restored);
@@ -4932,7 +4932,7 @@ useEffect(() => {
     setFollowedPlants((current) => current.includes(name) ? current.filter((item) => item !== name) : [...current, name].sort());
     tapHaptic("light");
     showUndoToast(
-      wasFollowing ? `Unfollowed ${name}` : `Following ${name} — you'll see its seasonal tips`,
+      wasFollowing ? t("garden.unfollowed", { plant: name }) : t("garden.following", { plant: name }),
       () => setFollowedPlants((current) =>
         wasFollowing ? [...current, name].sort() : current.filter((item) => item !== name)
       )
@@ -5246,10 +5246,10 @@ const jumpToTab = useCallback((tab) => {
             </View>
             <Text style={styles.premiumHeroEyebrow}>POCKET PLANTER</Text>
             <Text style={styles.premiumHeroHeadline}>
-              {authMode === "signup" ? "Create your\ngarden account" : "Welcome back,\ngardener"}
+              {authMode === "signup" ? t("auth.heroSignup") : t("auth.heroLogin")}
             </Text>
             <Text style={styles.premiumHeroSubtext}>
-              {authMode === "signup" ? "Start growing smarter — free to begin." : "Log in to pick up where you left off."}
+              {authMode === "signup" ? t("auth.subSignup") : t("auth.subLogin")}
             </Text>
           </View>
 
@@ -5260,7 +5260,7 @@ const jumpToTab = useCallback((tab) => {
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
-              placeholder="Email"
+              placeholder={t("auth.emailPlaceholder")}
               placeholderTextColor="#8fbf9d"
               style={[styles.input, { marginTop: 0, backgroundColor: theme.input, color: theme.text, borderColor: theme.border }]}
             />
@@ -5270,14 +5270,14 @@ const jumpToTab = useCallback((tab) => {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
-                placeholder="Password"
+                placeholder={t("auth.passwordPlaceholder")}
                 placeholderTextColor="#8fbf9d"
                 style={[styles.input, { marginTop: 0, backgroundColor: theme.input, color: theme.text, borderColor: theme.border, paddingRight: 50 }]}
               />
               <Pressable
                 onPress={() => setShowPassword((v) => !v)}
                 accessibilityRole="button"
-                accessibilityLabel={showPassword ? "Hide password" : "Show password"}
+                accessibilityLabel={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
                 hitSlop={touchSlop(22)}
                 style={{ position: "absolute", right: 14, top: 0, bottom: 0, justifyContent: "center" }}
               >
@@ -5290,7 +5290,7 @@ const jumpToTab = useCallback((tab) => {
               onPress={handleAuth}
             >
               <Text style={styles.authButtonText}>
-                {authMode === "signup" ? "Sign Up" : "Log In"}
+                {authMode === "signup" ? t("auth.signUp") : t("auth.logIn")}
               </Text>
             </Pressable>
 
@@ -5311,13 +5311,13 @@ const jumpToTab = useCallback((tab) => {
               onPress={() => setAuthMode(authMode === "signup" ? "login" : "signup")}
             >
               <Text style={styles.authSwitchText}>
-                {authMode === "signup" ? "Already have an account? Log in" : "Need an account? Sign up"}
+                {authMode === "signup" ? t("auth.switchToLogin") : t("auth.switchToSignup")}
               </Text>
             </Pressable>
 
             {authMode === "login" ? (
               <Pressable style={styles.authSwitchButton} onPress={handleForgotPassword}>
-                <Text style={styles.authSwitchText}>Forgot password?</Text>
+                <Text style={styles.authSwitchText}>{t("auth.forgotPassword")}</Text>
               </Pressable>
             ) : null}
           </View>
@@ -5400,7 +5400,7 @@ const jumpToTab = useCallback((tab) => {
       <Modal visible transparent animationType="fade" onRequestClose={() => setShowResetPassword(false)}>
         <View style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.85)", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <View style={{ width: "100%", maxWidth: 420, backgroundColor: "#0e2414", borderRadius: 24, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", padding: 22 }}>
-            <IconText label={"🔒 RESET PASSWORD"} style={{
+            <IconText label={t("auth.resetEyebrow")} style={{
   color: "#8effab",
   fontSize: 12,
   fontWeight: "900",
@@ -5455,7 +5455,7 @@ const jumpToTab = useCallback((tab) => {
       <View style={{ position: "absolute", bottom: 96, left: 16, right: 16, zIndex: 900, flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(16, 41, 23, 0.98)", borderRadius: 16, paddingVertical: 14, paddingHorizontal: 18, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 20 }}>
         <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800", flex: 1 }}>{undoToast.message}</Text>
         <Pressable onPress={undoToast.onUndo} hitSlop={10} style={{ marginLeft: 12, backgroundColor: "#5cff89", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10 }}>
-          <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "900" }}>Undo</Text>
+          <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "900" }}>{t("garden.undo")}</Text>
         </Pressable>
       </View>
     ) : null}
@@ -5469,7 +5469,7 @@ const jumpToTab = useCallback((tab) => {
           ) : (
             <Text style={styles.levelUpEmoji}>{celebrationBadge.icon || "🏆"}</Text>
           )}
-          <Text style={[styles.levelUpText, { fontSize: 12, fontWeight: "900", letterSpacing: 1, color: "#5cff89", marginBottom: 6 }]}>ACHIEVEMENT UNLOCKED</Text>
+          <Text style={[styles.levelUpText, { fontSize: 12, fontWeight: "900", letterSpacing: 1, color: "#5cff89", marginBottom: 6 }]}>{t("achievement.unlocked")}</Text>
           <Text style={styles.levelUpTitle}>{celebrationBadge.title}</Text>
           <Text style={styles.levelUpText}>{celebrationBadge.text}</Text>
           <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>{t("achievement.tapAnywhereToClose")}</Text>
@@ -5486,10 +5486,10 @@ const jumpToTab = useCallback((tab) => {
           ) : (
             <Text style={styles.levelUpEmoji}>{celebrationBanner.emoji || "🎏"}</Text>
           )}
-          <Text style={[styles.levelUpText, { fontSize: 12, fontWeight: "900", letterSpacing: 1, color: celebrationBanner.gradient ? celebrationBanner.gradient[0] : "#5cff89", marginBottom: 6 }]}>NEW BANNER UNLOCKED</Text>
+          <Text style={[styles.levelUpText, { fontSize: 12, fontWeight: "900", letterSpacing: 1, color: celebrationBanner.gradient ? celebrationBanner.gradient[0] : "#5cff89", marginBottom: 6 }]}>{t("achievement.bannerUnlocked")}</Text>
           <Text style={styles.levelUpTitle}>{celebrationBanner.title}</Text>
           <Text style={styles.levelUpText}>{celebrationBanner.subtitle}</Text>
-          <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>Tap to close · equip it in your profile</Text>
+          <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>{t("achievement.bannerTapToClose")}</Text>
         </View>
       </Pressable>
     ) : null}
@@ -5499,8 +5499,8 @@ const jumpToTab = useCallback((tab) => {
         <ConfettiBurst />
         <View style={styles.levelUpCard}>
           <Text style={styles.levelUpEmoji}>🔥</Text>
-          <Text style={styles.levelUpTitle}>{showStreakCelebration}-DAY STREAK!</Text>
-          <Text style={styles.levelUpText}>You've opened Pocket Planter {showStreakCelebration} days in a row. Incredible consistency! 🌱</Text>
+          <Text style={styles.levelUpTitle}>{tn("achievement.streakTitle", showStreakCelebration)}</Text>
+          <Text style={styles.levelUpText}>{tn("achievement.streakBody", showStreakCelebration)}</Text>
         </View>
       </View>
     ) : null}
@@ -5521,12 +5521,12 @@ const jumpToTab = useCallback((tab) => {
         <View style={styles.levelUpCard}>
           <Text style={styles.levelUpEmoji}>🎉</Text>
           <Text style={styles.levelUpTitle}>
-            {showAnniversary >= 365 ? "1 YEAR!" : `${showAnniversary} DAYS!`}
+            {showAnniversary >= 365 ? t("achievement.yearTitle") : tn("achievement.daysTitle", showAnniversary)}
           </Text>
           <Text style={styles.levelUpText}>
             {showAnniversary >= 365
-              ? "You've been growing with Pocket Planter for a whole year. What a journey! 🌳"
-              : `You've been gardening with Pocket Planter for ${showAnniversary} days. Your garden has come so far! 🌱`}
+              ? t("achievement.yearBody")
+              : tn("achievement.daysBody", showAnniversary)}
           </Text>
           <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>{t("achievement.tapAnywhereToClose")}</Text>
         </View>
@@ -5537,8 +5537,8 @@ const jumpToTab = useCallback((tab) => {
         <ConfettiBurst />
         <View style={styles.levelUpCard}>
           <Text style={styles.levelUpEmoji}>🌱</Text>
-          <Text style={styles.levelUpTitle}>FIRST PLANT!</Text>
-          <Text style={styles.levelUpText}>You just saved your very first plant. Welcome to your garden journey! 🌿</Text>
+          <Text style={styles.levelUpTitle}>{t("achievement.firstPlantTitle")}</Text>
+          <Text style={styles.levelUpText}>{t("achievement.firstPlantBody")}</Text>
           <Text style={[styles.levelUpText, { fontSize: 12, marginTop: 8, opacity: 0.7 }]}>{t("achievement.tapAnywhereToClose")}</Text>
         </View>
       </Pressable>
