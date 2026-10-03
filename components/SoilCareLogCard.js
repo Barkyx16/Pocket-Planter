@@ -201,7 +201,7 @@ return (
           <Text style={styles.careLogPanelLabel}>{t("soilCareLog.whichPlant")}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
             {plantOptions.map(plant => (
-              <Pressable accessibilityRole="button"
+              <Pressable accessibilityState={{ selected: selectedPlant === plant }} accessibilityRole="button"
                 key={plant}
                 onPress={() => setSelectedPlant(plant)}
                 style={[styles.careLogPlantPill, {
@@ -220,7 +220,7 @@ return (
           <Text style={[styles.careLogPanelLabel, { marginTop: 14 }]}>{t("soilCareLog.whatDidYouDo")}</Text>
           <View style={styles.careLogActionGrid}>
             {CARE_ACTIONS.map(action => (
-              <Pressable accessibilityRole="button"
+              <Pressable accessibilityState={{ selected: selectedAction === action.id }} accessibilityRole="button"
                 key={action.id}
                 onPress={() => setSelectedAction(selectedAction === action.id ? null : action.id)}
                 style={[styles.careLogActionTile, {
@@ -265,7 +265,7 @@ return (
         <>
           <View style={styles.careLogViewToggle}>
             {[{ id: "calendar", label: t("soilCareLog.calendar") }, { id: "timeline", label: t("soilCareLog.timeline") }].map(v => (
-              <Pressable accessibilityRole="button"
+              <Pressable accessibilityState={{ selected: viewMode === v.id }} accessibilityRole="button"
                 key={v.id}
                 onPress={() => setViewMode(v.id)}
                 style={[styles.careLogViewBtn, viewMode === v.id && styles.careLogViewBtnActive]}
@@ -286,7 +286,7 @@ return (
               <IconText label={t("soilCareLog.today")} style={[styles.journalFilterPillText, todayOnly && styles.journalFilterPillTextActive]} />
             </Pressable>
             {["All", "Garden", ...savedPlants].map(plant => (
-              <Pressable accessibilityRole="button"
+              <Pressable accessibilityState={{ selected: filterPlant === plant }} accessibilityRole="button"
                 key={plant}
                 onPress={() => setFilterPlant(plant)}
                 style={[styles.journalFilterPill, filterPlant === plant && styles.journalFilterPillActive]}

@@ -5682,7 +5682,7 @@ const jumpToTab = useCallback((tab) => {
               </View>
               <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
                 {LANGUAGES.map((item) => (
-                  <Pressable accessibilityRole="button"
+                  <Pressable accessibilityState={{ selected: item.code === language }} accessibilityRole="button"
                     key={item.code}
                     onPress={() => {
                       tapHaptic();
@@ -5740,7 +5740,7 @@ const jumpToTab = useCallback((tab) => {
 
               <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 40 }}>
                 {countryResults.map((item) => (
-                  <Pressable accessibilityRole="button"
+                  <Pressable accessibilityState={{ selected: item.code === country }} accessibilityRole="button"
                     key={item.code}
                     onPress={() => {
                       tapHaptic();

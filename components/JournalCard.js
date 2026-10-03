@@ -238,7 +238,7 @@ return (
       {totalPhotos > 0 ? (
         <View style={styles.journalTabSwitcher}>
           {[{ id: "timeline", label: t("journal.timeline") }, { id: "plants", label: t("journal.byPlant") }].map(tab => (
-            <Pressable accessibilityRole="button"
+            <Pressable accessibilityState={{ selected: activeTab === tab.id }} accessibilityRole="button"
               key={tab.id}
               onPress={() => setActiveTab(tab.id)}
               style={[styles.journalTabButton, activeTab === tab.id && styles.journalTabButtonActive]}
@@ -323,7 +323,7 @@ return (
           {/* ── PLANT FILTER ── */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.journalFilterScroll}>
             {uniquePlants.map(plant => (
-              <Pressable accessibilityRole="button" key={plant} onPress={() => setFilterPlant(plant)}
+              <Pressable accessibilityState={{ selected: filterPlant === plant }} accessibilityRole="button" key={plant} onPress={() => setFilterPlant(plant)}
                 style={[styles.journalFilterPill, filterPlant === plant && styles.journalFilterPillActive]}>
                 <Text style={[styles.journalFilterPillText, filterPlant === plant && styles.journalFilterPillTextActive]}>
                   {plant === "All" ? t("journal.allPlants") : plant}
@@ -335,7 +335,7 @@ return (
           {/* ── STAGE FILTER ── */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.journalFilterScroll, { marginTop: 0 }]}>
             {uniqueStages.map(stage => (
-              <Pressable accessibilityRole="button" key={stage} onPress={() => setFilterStage(stage)}
+              <Pressable accessibilityState={{ selected: filterStage === stage }} accessibilityRole="button" key={stage} onPress={() => setFilterStage(stage)}
                 style={[styles.journalFilterPill, filterStage === stage && styles.journalFilterPillActive]}>
                 <Text style={[styles.journalFilterPillText, filterStage === stage && styles.journalFilterPillTextActive]}>
                   {stage === "All" ? t("journal.allStages") : growthStageLabel(stage)}

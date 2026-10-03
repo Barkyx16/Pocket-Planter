@@ -84,7 +84,7 @@ export const SoilTempSection = memo(function SoilTempSection({ theme }) {
         <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900", letterSpacing: 0.8 }}>{t("toolkit.soilTitle")}</Text>
         <View style={{ flexDirection: "row", gap: 4 }}>
           {["F", "C"].map((u) => (
-            <Pressable accessibilityRole="button" key={u} onPress={() => setUnit(u)} style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: data.unit === u ? "#6bc7ff" : "rgba(255,255,255,0.06)" }}>
+            <Pressable accessibilityState={{ selected: data.unit === u }} accessibilityRole="button" key={u} onPress={() => setUnit(u)} style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: data.unit === u ? "#6bc7ff" : "rgba(255,255,255,0.06)" }}>
               <Text style={{ color: data.unit === u ? "#07120b" : theme.secondaryText, fontSize: 11, fontWeight: "900" }}>°{u}</Text>
             </Pressable>
           ))}

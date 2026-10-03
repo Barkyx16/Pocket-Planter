@@ -328,7 +328,7 @@ function PottingMixCalc({ theme, metric }) {
       <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("calc.recipe")}</Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
         {MIX_RECIPES.map((r) => (
-          <Pressable accessibilityRole="button" key={r.id} onPress={() => setRecipeId(r.id)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: recipeId === r.id ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: recipeId === r.id ? "#8effab" : "rgba(255,255,255,0.1)" }}>
+          <Pressable accessibilityState={{ selected: recipeId === r.id }} accessibilityRole="button" key={r.id} onPress={() => setRecipeId(r.id)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: recipeId === r.id ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: recipeId === r.id ? "#8effab" : "rgba(255,255,255,0.1)" }}>
             <Text style={{ color: recipeId === r.id ? "#07120b" : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{t(`calc.${r.label}`)}</Text>
           </Pressable>
         ))}
