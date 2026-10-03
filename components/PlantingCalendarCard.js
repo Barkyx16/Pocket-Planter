@@ -1,7 +1,7 @@
 import { memo, useState } from "react";
 import { Alert, Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { getFirstFrostDate, getHarvestDays, getLastFrostDate, getSeedStartWeeks, isOrnamental, resolvePlantImageSource, tapHaptic } from "../core";
+import { getGrowingSeason, getHarvestDays, getSeedStartWeeks, isOrnamental, resolvePlantImageSource, tapHaptic } from "../core";
 import { IconText } from "./IconText";
 import { DatePickerModal } from "./DatePickerModal";
 import { formatDate, useTranslation } from "../lib/i18n";
@@ -18,8 +18,9 @@ export const PlantingCalendarCard = memo(function PlantingCalendarCard({ theme, 
   const [pickerOpen, setPickerOpen] = useState(false);
   if (!zone || !savedPlants || savedPlants.length === 0) return null;
 
-  const lastFrost = getLastFrostDate(zone);
-  const firstFrost = getFirstFrostDate(zone);
+  // The current season, or next year's once this one's autumn frost has passed —
+  // and in the order the seasons actually run in the southern hemisphere.
+  const { lastFrost, firstFrost } = getGrowingSeason(zone);
 
   const rows = savedPlants
     .map((name) => produceData.find((p) => p.name === name))

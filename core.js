@@ -2674,6 +2674,30 @@ export function getDaylightHours(lat, date = new Date()) {
   return (2 * H * 24) / (2 * Math.PI);
 }
 
+// The frost-free season that is under way, or the next one if the last has
+// ended: { lastFrost, firstFrost }, spring frost first, autumn frost after it.
+//
+// getLastFrostDate and getFirstFrostDate each answer for the current calendar
+// year. North of the equator that happens to be one season in order. South of
+// it, the spring frost is in September and the autumn frost the following May,
+// so "this year's" pair runs backwards — and everything that asked whether a
+// harvest beats the first frost was comparing against the May the season had
+// already passed. Every southern plant read "Tight", and the frost-window check
+// went quiet for the whole of spring. Once a season's autumn frost is behind
+// us, the next season is the one worth planning.
+export function getGrowingSeason(zone, today = new Date()) {
+  const shift = (d, years) => { const x = new Date(d); x.setFullYear(x.getFullYear() + years); return x; };
+  const lastFrost = getLastFrostDate(zone);
+  let firstFrost = getFirstFrostDate(zone);
+  if (firstFrost <= lastFrost) firstFrost = shift(firstFrost, 1);
+  const now = new Date(today); now.setHours(12, 0, 0, 0);
+  for (const years of [-1, 0, 1]) {
+    const season = { lastFrost: shift(lastFrost, years), firstFrost: shift(firstFrost, years) };
+    if (season.firstFrost >= now) return season;
+  }
+  return { lastFrost: shift(lastFrost, 1), firstFrost: shift(firstFrost, 1) };
+}
+
 export function getDaylightInfo(coords) {
   const lat = parseFloat(coords?.lat);
   if (Number.isNaN(lat)) return null;
@@ -2698,7 +2722,7 @@ export function getDaylightInfo(coords) {
 export function getFrostMaturityInfo(item, zone) {
   if (!zone) return null;
   const days = getHarvestDays(item);
-  const firstFrost = getFirstFrostDate(zone);
+  const { firstFrost } = getGrowingSeason(zone);
   const now = new Date(); now.setHours(12, 0, 0, 0);
   const daysUntilFrost = Math.round((firstFrost - now) / (1000 * 60 * 60 * 24));
   if (daysUntilFrost <= 0) return null; // already in/after frost season

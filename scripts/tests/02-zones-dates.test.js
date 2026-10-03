@@ -487,3 +487,42 @@ describe("daily quests count today's harvests by the local day", () => {
     ok(/const harvestLogToday = countHarvestsOnDay\(harvestLog, today\);/.test(src));
   });
 });
+
+describe("the growing season", () => {
+  const core15 = require(path.join(ROOT, "core.js"));
+  const Y = new Date().getFullYear();
+  const at = (y, m, d) => new Date(y, m, d, 12);
+  const keys = (s) => [core15.getDateKey(s.lastFrost), core15.getDateKey(s.firstFrost)];
+  it("runs spring frost to autumn frost in the north, then rolls to next year", () => {
+    core15.setHemisphereFromLatitude(40.7);
+    eq(keys(core15.getGrowingSeason("7a", at(Y, 5, 1))), [`${Y}-03-15`, `${Y}-11-15`]);
+    eq(keys(core15.getGrowingSeason("7a", at(Y, 11, 1))), [`${Y + 1}-03-15`, `${Y + 1}-11-15`]);
+  });
+  it("crosses the new year in the south, in the right order", () => {
+    // "This year's" southern pair is September then May: backwards. Every
+    // harvest landed after that May, so every southern plant read "Tight".
+    core15.setHemisphereFromLatitude(-33.87);
+    eq(keys(core15.getGrowingSeason("7a", at(Y, 9, 3))), [`${Y}-09-15`, `${Y + 1}-05-15`]);
+    eq(keys(core15.getGrowingSeason("7a", at(Y, 1, 1))), [`${Y - 1}-09-15`, `${Y}-05-15`]);
+    for (const zone of ["4a", "6b", "8a", "9b"]) {
+      const s = core15.getGrowingSeason(zone, at(Y, 9, 3));
+      ok(s.firstFrost > s.lastFrost, `${zone}: autumn frost after spring frost`);
+    }
+    core15.setHemisphereFromLatitude(40.7);
+  });
+  it("keeps the frost-window check working through a southern spring", () => {
+    core15.setHemisphereFromLatitude(-33.87);
+    const tomato = (require(path.join(ROOT, "data/produceData.js")).default || require(path.join(ROOT, "data/produceData.js"))).find((p) => p.name === "Tomato");
+    const now = new Date();
+    const season = core15.getGrowingSeason("7a");
+    const info = core15.getFrostMaturityInfo(tomato, "7a");
+    ok(info !== null || season.firstFrost <= now, "a season with an autumn frost ahead must be measured");
+    if (info) ok(info.daysUntilFrost > 0);
+    core15.setHemisphereFromLatitude(40.7);
+  });
+  it("is what the planting calendar and frost window read", () => {
+    const fs15 = require("fs");
+    ok(/getGrowingSeason\(zone\)/.test(fs15.readFileSync(path.join(ROOT, "components/PlantingCalendarCard.js"), "utf8")));
+    ok(/getGrowingSeason\(zone\)/.test(fs15.readFileSync(path.join(ROOT, "components/FrostWindowCard.js"), "utf8")));
+  });
+});
