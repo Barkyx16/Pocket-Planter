@@ -587,7 +587,7 @@ export function PlantDetailScreen({
 
 <View style={styles.card}>
   <Text style={styles.cardEyebrow}>{t("plantPage.personalNotes")}</Text>
-  <TextInput
+  <TextInput accessibilityLabel={t("plantPage.notesPlaceholder", { plant: selectedPlant.name })}
     multiline
     placeholder={t("plantPage.notesPlaceholder", { plant: selectedPlant.name })}
     placeholderTextColor="#8fbf9d"

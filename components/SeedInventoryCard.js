@@ -83,7 +83,7 @@ export const SeedInventoryCard = memo(function SeedInventoryCard({ theme }) {
 
       {/* ADD ROW */}
       <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
-        <TextInput
+        <TextInput accessibilityLabel={t("seedInventory.addAnItemYouOwn")}
           value={draft}
           onChangeText={setDraft}
           onSubmitEditing={addItem}

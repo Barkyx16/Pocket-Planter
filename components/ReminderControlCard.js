@@ -35,7 +35,7 @@ export const ReminderControlCard = memo(function ReminderControlCard({ theme, re
       {[{ label: t("reminderControl.wateringReminders"), text: t("reminderControl.addDailyRemindersFromPlant"), value: remindersOn, onToggle: onToggleReminders }, { label: t("reminderControl.frostAlerts"), text: t("reminderControl.eveningReminderToCheckOvernight"), value: frostAlertsOn, onToggle: onToggleFrost }, { label: t("reminderControl.monthlyPlantingGuides"), text: t("reminderControl.reminderOnThe1stOf"), value: monthlyPlantingOn, onToggle: onToggleMonthlyPlanting }, { label: t("reminderControl.dailyWateringCheck"), text: t("reminderControl.morningReminderToCheckYour"), value: dailyWateringOn, onToggle: onToggleDailyWatering }, { label: t("reminderControl.plantOfTheDay"), text: t("reminderControl.dailyPlantPickEveryMorning"), value: plantOfDayOn, onToggle: onTogglePlantOfDay }, { label: t("reminderControl.weeklyRecap"), text: t("reminderControl.sundayEveningSummaryOfYour"), value: weeklyRecapOn, onToggle: onToggleWeeklyRecap }].map((row) => (
         <View key={row.label} style={styles.settingRow}>
           <View style={{ flex: 1, minWidth: 0 }}><Text style={[styles.settingTitle, { color: theme.text }]}>{row.label}</Text><Text style={[styles.settingText, { color: theme.secondaryText }]}>{row.text}</Text></View>
-          <Switch value={row.value} onValueChange={row.onToggle} trackColor={{ false: "#314c39", true: "#5cff89" }} thumbColor="#ffffff" />
+          <Switch accessibilityLabel={row.label} value={row.value} onValueChange={row.onToggle} trackColor={{ false: "#314c39", true: "#5cff89" }} thumbColor="#ffffff" />
         </View>
       ))}
       {dailyWateringOn && wateringReminderTime ? (

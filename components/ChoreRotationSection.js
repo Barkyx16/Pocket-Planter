@@ -97,7 +97,7 @@ export const ChoreRotationSection = memo(function ChoreRotationSection({ theme }
       {/* Members */}
       <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("toolkit.choreWho")}</Text>
       <View style={{ flexDirection: "row", gap: 8 }}>
-        <TextInput
+        <TextInput accessibilityLabel={t("toolkit.choreAddName")}
           value={memberDraft}
           onChangeText={setMemberDraft}
           onSubmitEditing={addMember}
@@ -123,7 +123,7 @@ export const ChoreRotationSection = memo(function ChoreRotationSection({ theme }
       {/* Chores */}
       <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("toolkit.choreChores")}</Text>
       <View style={{ flexDirection: "row", gap: 8 }}>
-        <TextInput
+        <TextInput accessibilityLabel={t("toolkit.choreAddChore")}
           value={choreDraft}
           onChangeText={setChoreDraft}
           onSubmitEditing={() => addChore(choreDraft)}

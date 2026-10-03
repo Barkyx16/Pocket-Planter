@@ -47,7 +47,7 @@ export const WishlistCard = memo(function WishlistCard({ theme, savedPlants, onO
       </Text>
 
       <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
-        <TextInput
+        <TextInput accessibilityLabel={t("wishlist.addAPlantToTry")}
           value={draft}
           onChangeText={setDraft}
           onSubmitEditing={() => add()}

@@ -45,7 +45,7 @@ export const BackupRestoreCard = memo(function BackupRestoreCard({ theme, onExpo
 
       {showRestore ? (
         <View style={{ marginTop: 10 }}>
-          <TextInput
+          <TextInput accessibilityLabel={t("backupRestore.pasteYourBackupTextHere")}
             value={pasted}
             onChangeText={setPasted}
             placeholder={t("backupRestore.pasteYourBackupTextHere")}

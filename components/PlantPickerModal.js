@@ -54,7 +54,7 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
           {/* Search */}
           <View style={{ marginHorizontal: 18, marginBottom: 10, flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, paddingHorizontal: 12, borderWidth: 1, borderColor: theme.border }}>
             <Text style={{ fontSize: 14 }}>🔍</Text>
-            <TextInput
+            <TextInput accessibilityLabel={t("plantPicker.searchSaved")}
               value={search}
               onChangeText={setSearch}
               placeholder={t("plantPicker.searchSaved")}

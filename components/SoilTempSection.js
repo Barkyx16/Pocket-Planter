@@ -116,7 +116,7 @@ export const SoilTempSection = memo(function SoilTempSection({ theme }) {
       ) : null}
 
       <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
-        <TextInput
+        <TextInput accessibilityLabel={t("toolkit.soilPlaceholder", { unit: unitLabel })}
           value={draft}
           onChangeText={(txt) => setDraft(txt.replace(/[^0-9.,]/g, ""))}
           onSubmitEditing={add}

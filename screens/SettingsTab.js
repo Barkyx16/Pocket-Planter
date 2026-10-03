@@ -153,6 +153,7 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>{t("settings.hapticsBody")}</Text>
           </View>
           <Switch
+            accessibilityLabel={t("settings.hapticsLabel")}
             value={hapticsOn}
             onValueChange={setHapticsOn}
             trackColor={{ false: "rgba(255, 255, 255, 0.16)", true: "#5cff89" }}

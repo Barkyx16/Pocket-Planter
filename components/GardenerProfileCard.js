@@ -35,7 +35,7 @@ return (
           <Text style={styles.profileBannerTitle}>{activeBanner?.title || t("gardenerProfile.seedlingStarter")}</Text>
         </View>
       )}
-      <TextInput value={profileName} onChangeText={setProfileName} placeholder={t("gardenerProfile.enterProfileName")} placeholderTextColor="#8fbf9d" style={[styles.profileNameInput, { marginTop: 4 }]} />
+      <TextInput accessibilityLabel={t("gardenerProfile.enterProfileName")} value={profileName} onChangeText={setProfileName} placeholder={t("gardenerProfile.enterProfileName")} placeholderTextColor="#8fbf9d" style={[styles.profileNameInput, { marginTop: 4 }]} />
 
       <Text style={styles.profileRank}>{t("levels.levelLine", { level: gardenXP.level, title: gardenXP.title })}</Text>
       <Text style={styles.profileXP}>{gardenXP.xp} {t("gardenerProfile.totalXpEarned")}</Text>

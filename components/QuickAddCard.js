@@ -24,7 +24,7 @@ export const QuickAddCard = memo(function QuickAddCard({ theme, savedPlants, onS
         {t("quickAdd.typeAPlantNameTo")}
       </Text>
 
-      <TextInput
+      <TextInput accessibilityLabel={t("quickAdd.search179Plants", { count: produceData.length })}
         value={query}
         onChangeText={setQuery}
         placeholder={t("quickAdd.search179Plants", { count: produceData.length })}

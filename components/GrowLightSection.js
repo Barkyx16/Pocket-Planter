@@ -69,7 +69,7 @@ export const GrowLightSection = memo(function GrowLightSection({ theme }) {
 
       {/* Add tray */}
       <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
-        <TextInput
+        <TextInput accessibilityLabel={t("tools.growPlaceholder")}
           value={name}
           onChangeText={setName}
           onSubmitEditing={add}

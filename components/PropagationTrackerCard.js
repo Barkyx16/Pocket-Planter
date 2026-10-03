@@ -64,7 +64,7 @@ export const PropagationTrackerCard = memo(function PropagationTrackerCard({ the
 
       {/* Add */}
       <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
-        <TextInput
+        <TextInput accessibilityLabel={t("misc.propPlaceholder")}
           value={name}
           onChangeText={setName}
           onSubmitEditing={add}

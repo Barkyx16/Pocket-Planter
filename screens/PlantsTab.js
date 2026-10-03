@@ -251,7 +251,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
 
       <View style={styles.plantSearchBar}>
         <Text style={styles.plantSearchIcon}>🔍</Text>
-        <TextInput
+        <TextInput accessibilityLabel={t("plants.searchPlants")}
           value={plantSearch}
           onChangeText={setPlantSearch}
           placeholder={t("plants.searchPlants")}

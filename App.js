@@ -5206,7 +5206,7 @@ const jumpToTab = useCallback((tab) => {
 
           {/* FORM CARD */}
           <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <TextInput
+            <TextInput accessibilityLabel={t("auth.emailPlaceholder")}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -5217,7 +5217,7 @@ const jumpToTab = useCallback((tab) => {
             />
 
             <View style={{ position: "relative", justifyContent: "center", marginTop: 12 }}>
-              <TextInput
+              <TextInput accessibilityLabel={t("auth.passwordPlaceholder")}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -5359,7 +5359,7 @@ const jumpToTab = useCallback((tab) => {
 }} />
             <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "900", marginTop: 6 }}>{t("auth.setNewPasswordTitle")}</Text>
             <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 8 }}>{t("auth.setNewPasswordBody")}</Text>
-            <TextInput
+            <TextInput accessibilityLabel={t("auth.newPasswordPlaceholder")}
               value={resetPasswordValue}
               onChangeText={setResetPasswordValue}
               secureTextEntry
@@ -5657,7 +5657,7 @@ const jumpToTab = useCallback((tab) => {
                 </Pressable>
               </View>
 
-              <TextInput
+              <TextInput accessibilityLabel={t("country.search", { count: COUNTRIES.length })}
                 value={countrySearch}
                 onChangeText={setCountrySearch}
                 placeholder={t("country.search", { count: COUNTRIES.length })}

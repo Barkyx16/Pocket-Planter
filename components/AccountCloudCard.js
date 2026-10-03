@@ -203,7 +203,7 @@ return (
           {t("accountCloud.changeEmail")}
         </Text>
 
-        <TextInput
+        <TextInput accessibilityLabel={t("accountCloud.newEmailAddress")}
           value={newEmail}
           onChangeText={setNewEmail}
           autoCapitalize="none"

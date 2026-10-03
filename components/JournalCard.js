@@ -306,7 +306,7 @@ return (
           {/* ── SEARCH ── */}
           <View style={styles.journalSearchBar}>
             <Text style={styles.journalSearchIcon}>🔍</Text>
-            <TextInput
+            <TextInput accessibilityLabel={t("journal.searchPlaceholder")}
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholder={t("journal.searchPlaceholder")}
@@ -515,7 +515,7 @@ return (
                               <>
                                 {isEditingThis ? (
                                   <View style={styles.journalCaptionEditWrap}>
-                                    <TextInput
+                                    <TextInput accessibilityLabel={t("journal.writeACaption")}
                                       value={captionDraft}
                                       onChangeText={setCaptionDraft}
                                       placeholder={t("journal.writeACaption")}

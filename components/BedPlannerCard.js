@@ -52,6 +52,7 @@ export const BedPlannerCard = memo(function BedPlannerCard({ theme, savedPlants,
           <View key={f.label} style={{ flex: 1 }}>
             <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "800", marginBottom: 6 }}>{f.label}</Text>
             <TextInput
+              accessibilityLabel={f.label}
               value={f.v}
               onChangeText={f.set}
               keyboardType="decimal-pad"

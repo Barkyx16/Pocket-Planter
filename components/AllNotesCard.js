@@ -32,7 +32,7 @@ export const AllNotesCard = memo(function AllNotesCard({ theme, plantNotes, onOp
 
       <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.08)", borderRadius: 16, borderWidth: 1, borderColor: "rgba(142, 255, 171, 0.16)", paddingHorizontal: 14, marginTop: 16, gap: 10 }}>
         <Text style={{ fontSize: 16 }}>🔍</Text>
-        <TextInput
+        <TextInput accessibilityLabel={t("allNotes.searchYourNotes")}
           value={query}
           onChangeText={setQuery}
           placeholder={t("allNotes.searchYourNotes")}

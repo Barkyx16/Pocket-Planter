@@ -78,7 +78,7 @@ export const SoilTestLogCard = memo(function SoilTestLogCard({ theme }) {
           placeholderTextColor="#8fbf9d"
           style={{ width: 110, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontWeight: "700" }}
         />
-        <TextInput
+        <TextInput accessibilityLabel={t("soilTestLog.bedNoteOptional")}
           value={note}
           onChangeText={setNote}
           placeholder={t("soilTestLog.bedNoteOptional")}

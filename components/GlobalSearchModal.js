@@ -62,7 +62,7 @@ export const GlobalSearchModal = memo(function GlobalSearchModal({ visible, onCl
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
           <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255, 255, 255, 0.08)", borderRadius: 16, paddingHorizontal: 14, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}>
             <Text style={{ fontSize: 16 }}>🔍</Text>
-            <TextInput
+            <TextInput accessibilityLabel={t("globalSearchModal.searchPlantsPestsJournal")}
               value={q}
               onChangeText={setQ}
               autoFocus
