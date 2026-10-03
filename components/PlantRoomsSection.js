@@ -1,12 +1,14 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { t } from "../lib/i18n";
 import produceData from "../data/produceData";
 import { normalizeType, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
 
 export const PLANT_ROOMS_STORAGE_KEY = "pp_plantRooms";
-const SUGGESTIONS = ["Living Room", "Bedroom", "Bathroom", "Kitchen", "Office"];
+// Keys in the misc namespace; a tapped suggestion is saved in the user's language.
+const SUGGESTIONS = ["roomLiving", "roomBedroom", "roomBathroom", "roomKitchen", "roomOffice"];
 
 export const PlantRoomsSection = memo(function PlantRoomsSection({ theme, savedPlants }) {
   const [data, setData] = useState({ rooms: [], assign: {} }); // assign: { plantName: room }
@@ -48,19 +50,19 @@ export const PlantRoomsSection = memo(function PlantRoomsSection({ theme, savedP
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Keep track of which houseplant lives in which room.
+        {t("misc.roomsIntro")}
       </Text>
 
       {/* Add room */}
       <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
-        <TextInput value={draft} onChangeText={setDraft} onSubmitEditing={() => addRoom(draft)} placeholder="Add a room" placeholderTextColor="#8fbf9d" style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 9, fontSize: 14, fontWeight: "700" }} />
-        <Pressable onPress={() => addRoom(draft)} accessibilityRole="button" accessibilityLabel="Add room" style={{ backgroundColor: "#8effab", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
+        <TextInput value={draft} onChangeText={setDraft} onSubmitEditing={() => addRoom(draft)} placeholder={t("misc.roomsAddPlaceholder")} placeholderTextColor="#8fbf9d" style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 9, fontSize: 14, fontWeight: "700" }} />
+        <Pressable onPress={() => addRoom(draft)} accessibilityRole="button" accessibilityLabel={t("misc.roomsAddA11y")} style={{ backgroundColor: "#8effab", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
           <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>＋</Text>
         </Pressable>
       </View>
       {!rooms.length ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-          {SUGGESTIONS.map((s) => (
+          {SUGGESTIONS.map((k) => t(`misc.${k}`)).map((s) => (
             <Pressable key={s} onPress={() => addRoom(s)} style={{ borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
               <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800" }}>+ {s}</Text>
             </Pressable>
@@ -96,9 +98,9 @@ export const PlantRoomsSection = memo(function PlantRoomsSection({ theme, savedP
           ))}
         </View>
       ) : houseplants.length ? (
-        <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", fontStyle: "italic", marginTop: 12 }}>Add a room above to start assigning your houseplants.</Text>
+        <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", fontStyle: "italic", marginTop: 12 }}>{t("misc.roomsAddAbove")}</Text>
       ) : (
-        <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", fontStyle: "italic", marginTop: 12 }}>Save some houseplants to organize them by room.</Text>
+        <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", fontStyle: "italic", marginTop: 12 }}>{t("misc.roomsEmpty")}</Text>
       )}
     </View>
   );

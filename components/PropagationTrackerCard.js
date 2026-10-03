@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { getDaysSince, getTodayKey, tapHaptic } from "../core";
-import { formatDate } from "../lib/i18n";
+import { formatDate, t } from "../lib/i18n";
 import { SkeletonSection } from "./Skeleton";
 import { touchSlop } from "../lib/a11y";
 
@@ -58,7 +58,7 @@ export const PropagationTrackerCard = memo(function PropagationTrackerCard({ the
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Turn one plant into many — track your cuttings and divisions until they root.
+        {t("misc.propIntro")}
       </Text>
 
       {/* Add */}
@@ -67,11 +67,11 @@ export const PropagationTrackerCard = memo(function PropagationTrackerCard({ the
           value={name}
           onChangeText={setName}
           onSubmitEditing={add}
-          placeholder="What are you propagating?"
+          placeholder={t("misc.propPlaceholder")}
           placeholderTextColor="#8fbf9d"
           style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontWeight: "700" }}
         />
-        <Pressable onPress={add} accessibilityRole="button" accessibilityLabel="Add propagation" style={{ backgroundColor: "#8effab", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
+        <Pressable onPress={add} accessibilityRole="button" accessibilityLabel={t("misc.propAddA11y")} style={{ backgroundColor: "#8effab", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
           <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>＋</Text>
         </Pressable>
       </View>
@@ -103,7 +103,7 @@ export const PropagationTrackerCard = memo(function PropagationTrackerCard({ the
                     {methodOf(i.method).label} · {i.rooted ? "rooted!" : `day ${d}`} · {formatDate(new Date(i.date + "T12:00:00"), { month: "short", day: "numeric" })}
                   </Text>
                 </View>
-                <Pressable onPress={() => remove(i.id)} hitSlop={touchSlop(13)} accessibilityRole="button" accessibilityLabel="Delete">
+                <Pressable onPress={() => remove(i.id)} hitSlop={touchSlop(13)} accessibilityRole="button" accessibilityLabel={t("common.delete")}>
                   <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>✕</Text>
                 </Pressable>
               </View>

@@ -2,10 +2,10 @@ import { memo } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
 import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, formatTemp, getClimateBucket, getTodayKey, getWeatherIconFromDay } from "../core";
-import { formatDate, useTranslation } from "../lib/i18n";
+import { formatDate, formatTime, useTranslation } from "../lib/i18n";
 
 export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, savedPlants, wateredPlants, unitSystem }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const forecast = weather?.forecast || [];
   const today = getTodayKey();
   const climate = getClimateBucket(zone);
@@ -35,13 +35,13 @@ export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, s
     const heatSkip = climate === "hot" ? 104 : climate === "cold" ? 94 : 98;
     const heatWater = climate === "hot" ? 95 : climate === "cold" ? 85 : 90;
     const greatMax = climate === "cold" ? 80 : 85;
-    if (day.minTempF <= FROST_THRESHOLD_F) return { text: "Cover plants", color: "#6bc7ff" };
-    if (day.maxTempF >= heatSkip) return { text: "Skip planting", color: "#ff7b7b" };
-    if (day.maxTempF >= heatWater) return { text: "Water early", color: "#ffd86b" };
-    if (day.precipChance >= 70) return { text: "Skip watering", color: "#6bc7ff" };
-    if (day.precipChance >= 40) return { text: "Check soil", color: "#8effab" };
-    if (day.maxTempF >= 62 && day.maxTempF <= greatMax && day.precipChance < 30) return { text: "Great day! 🌟", color: "#5cff89" };
-    return { text: "Normal care", color: "#d7ebdc" };
+    if (day.minTempF <= FROST_THRESHOLD_F) return { text: t("misc.fcCover"), color: "#6bc7ff" };
+    if (day.maxTempF >= heatSkip) return { text: t("misc.fcSkipPlanting"), color: "#ff7b7b" };
+    if (day.maxTempF >= heatWater) return { text: t("misc.fcWaterEarly"), color: "#ffd86b" };
+    if (day.precipChance >= 70) return { text: t("misc.fcSkipWatering"), color: "#6bc7ff" };
+    if (day.precipChance >= 40) return { text: t("misc.fcCheckSoil"), color: "#8effab" };
+    if (day.maxTempF >= 62 && day.maxTempF <= greatMax && day.precipChance < 30) return { text: t("misc.fcGreat"), color: "#5cff89" };
+    return { text: t("misc.fcNormal"), color: "#d7ebdc" };
   };
 
   const getTempColor = (temp) => {
@@ -63,12 +63,12 @@ export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, s
   const getWeekSummary = () => {
     const frostDays = forecast.filter(d => d.minTempF <= FROST_THRESHOLD_F).length;
     const heatDays = forecast.filter(d => d.maxTempF >= HEAT_THRESHOLD_F).length;
-    if (frostDays > 0) return { icon: "❄️", text: `${frostDays} frost risk night${frostDays === 1 ? "" : "s"} this week — keep covers ready.`, color: "#6bc7ff" };
-    if (heatDays >= 3) return { icon: "🔥", text: `${heatDays} days above ${formatTemp(HEAT_THRESHOLD_F, unitSystem, true)} — water deeply every morning and mulch heavily.`, color: "#ff7b7b" };
-    if (rainyDays >= 4) return { icon: "🌧️", text: `${rainyDays} rainy days ahead — hold off on fertilizing and check container drainage.`, color: "#6bc7ff" };
-    if (weeklyHigh <= 75 && weeklyLow >= 45) return { icon: "✅", text: "Perfect growing week ahead — mild temps and low rain chance all week.", color: "#5cff89" };
-    if (climate === "hot") return { icon: "☀️", text: `Hot zone week — high of ${formatTemp(weeklyHigh, unitSystem, true)}. Water before 9 AM daily and harvest often.`, color: "#ffd86b" };
-    return { icon: "🌱", text: `Good garden week — high of ${formatTemp(weeklyHigh, unitSystem, true)} with ${rainyDays} rainy day${rainyDays === 1 ? "" : "s"}. Stay consistent with watering.`, color: "#8effab" };
+    if (frostDays > 0) return { icon: "❄️", text: tn("misc.fcFrostNights", frostDays), color: "#6bc7ff" };
+    if (heatDays >= 3) return { icon: "🔥", text: tn("misc.fcHeatDays", heatDays, { temp: formatTemp(HEAT_THRESHOLD_F, unitSystem, true) }), color: "#ff7b7b" };
+    if (rainyDays >= 4) return { icon: "🌧️", text: tn("misc.fcRainyDays", rainyDays), color: "#6bc7ff" };
+    if (weeklyHigh <= 75 && weeklyLow >= 45) return { icon: "✅", text: t("misc.fcPerfect"), color: "#5cff89" };
+    if (climate === "hot") return { icon: "☀️", text: t("misc.fcHotWeek", { temp: formatTemp(weeklyHigh, unitSystem, true), time: formatTime(new Date(2026, 0, 1, 9, 0), { hour: "numeric" }) || "9:00" }), color: "#ffd86b" };
+    return { icon: "🌱", text: tn("misc.fcGoodWeek", rainyDays, { temp: formatTemp(weeklyHigh, unitSystem, true) }), color: "#8effab" };
   };
 
   const weekSummary = getWeekSummary();
@@ -172,7 +172,7 @@ export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, s
               {/* BEST DAY BADGE */}
               {isBestDay && !isToday ? (
                 <View style={styles.forecastBestBadge}>
-                  <Text style={styles.forecastBestBadgeText}>Best</Text>
+                  <Text style={styles.forecastBestBadgeText}>{t("misc.fcBest")}</Text>
                 </View>
               ) : null}
 

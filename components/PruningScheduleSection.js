@@ -1,12 +1,13 @@
 import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
+import { formatDate, t } from "../lib/i18n";
 import { careWindowKey, flipMonth, getMonthKey, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
 
 export const PRUNING_STORAGE_KEY = "pp_pruningDone";
 
-const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const monthShort = (m) => formatDate(new Date(2026, m - 1, 1), { month: "short" });
 
 // Curated northern-hemisphere pruning windows (month numbers) with a short why.
 // Localised for the southern hemisphere via flipMonth at render time.
@@ -98,7 +99,7 @@ export const PruningScheduleSection = memo(function PruningScheduleSection({ the
   return (
     <View style={{ marginTop: 20, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 18 }}>
       <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 4 }}>
-        ✂️ PRUNING THIS MONTH
+        {t("misc.pruneTitle")}
       </Text>
 
       {thisMonth.length ? (
@@ -127,8 +128,8 @@ export const PruningScheduleSection = memo(function PruningScheduleSection({ the
       ) : (
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18, marginTop: 6 }}>
           {matched.length
-            ? `Nothing to prune in ${MONTH_SHORT[currentMonth - 1]}.${upcoming ? ` Next: ${upcoming.name} in ${MONTH_SHORT[upcoming.month - 1]}.` : ""}`
-            : "Save some fruit trees, berries, or herbs and their pruning windows will show up here."}
+            ? `${t("misc.pruneNothing", { month: monthShort(currentMonth) })}${upcoming ? ` ${t("misc.pruneNext", { plant: upcoming.name, month: monthShort(upcoming.month) })}` : ""}`
+            : t("misc.pruneEmpty")}
         </Text>
       )}
     </View>

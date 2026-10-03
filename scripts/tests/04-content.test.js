@@ -948,10 +948,19 @@ describe("tool sections", () => {
       ToolMaintenanceSection: ["TOOL MAINTENANCE", 'label: "Sharpen pruners"', "not logged yet"],
       SoilTempSection: ["SOIL TEMPERATURE", "latest soil temp", "Warm enough to sow"],
       ChoreRotationSection: ["CHORE ROTATION", '"Feed plants"', "‹ Previous"],
+      CalendarExportSection: ["ADD TO CALENDAR", '"Every 2 days"', "toLocaleDateString()"],
+      PlantRoomsSection: ['"Living Room"', "Add a room above"],
+      PruningScheduleSection: ["PRUNING THIS MONTH", "Nothing to prune in", '"Jan", "Feb"'],
+      ForecastCard: ['"Cover plants"', "rainy days ahead", ">Best<"],
+      RainfallLogCard: ["Dry week so far", ">Clear<"],
+      VaseTrackerSection: ["Started a fresh vase?"],
+      PropagationTrackerCard: ["What are you propagating?"],
     };
     for (const [f, strings] of Object.entries(checks)) {
       const src = fs.readFileSync(path.join(ROOT, "components", `${f}.js`), "utf8");
       for (const s of strings) ok(!src.includes(s), `${f}: ${s}`);
     }
+    const pests = fs.readFileSync(path.join(ROOT, "screens", "PestsTab.js"), "utf8");
+    for (const s of ['title="Pest watch locked"', '"Browse plants"']) ok(!pests.includes(s), `PestsTab: ${s}`);
   });
 });

@@ -112,10 +112,10 @@ export const SeedInventoryCard = memo(function SeedInventoryCard({ theme }) {
       <Pressable
         onPress={() => { tapHaptic("light"); setScanOpen(true); }}
         accessibilityRole="button"
-        accessibilityLabel="Scan a seed packet barcode"
+        accessibilityLabel={t("misc.seedScanA11y")}
         style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8, backgroundColor: "rgba(107,199,255,0.1)", borderRadius: 12, paddingVertical: 11, borderWidth: 1, borderColor: "rgba(107,199,255,0.24)" }}
       >
-        <Text style={{ color: "#6bc7ff", fontSize: 13, fontWeight: "900" }}>📷 Scan a packet barcode</Text>
+        <Text style={{ color: "#6bc7ff", fontSize: 13, fontWeight: "900" }}>{t("misc.seedScan")}</Text>
       </Pressable>
 
       {scanOpen ? (

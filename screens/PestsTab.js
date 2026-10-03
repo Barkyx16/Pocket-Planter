@@ -18,14 +18,14 @@ export function PestsTab({ theme, savedPlantObjs = [], zone, premiumUnlocked, on
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <Text style={[styles.cardTitle, { color: theme.text }]}>{t("home.pestWatch")}</Text>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 4, marginBottom: 14 }}>
-        Early warnings for the pests most likely to hit your saved plants this month.
+        {t("misc.pestsIntro")}
       </Text>
 
       {!premiumUnlocked ? (
         <PremiumLockedCard
           theme={theme}
-          title="Pest watch locked"
-          body="Unlock Premium to get early warnings for the pests most likely to hit your saved plants this month."
+          title={t("misc.pestsLockedTitle")}
+          body={t("misc.pestsLockedBody")}
           onUnlock={() => jumpToTab && jumpToTab("premium")}
         />
       ) : pests.length ? (
@@ -39,11 +39,11 @@ export function PestsTab({ theme, savedPlantObjs = [], zone, premiumUnlocked, on
       ) : (
         <EmptyState
           icon="shield-checkmark"
-          title="No pest threats right now"
+          title={t("misc.pestsNoneTitle")}
           body={savedPlantObjs.length
-            ? "None of your saved plants have common pests active this month. Check back as the season changes."
-            : "Save a few plants and this tab will warn you about the pests most likely to target them."}
-          actionLabel={savedPlantObjs.length ? undefined : "Browse plants"}
+            ? t("misc.pestsNoneBody")
+            : t("misc.pestsSaveBody")}
+          actionLabel={savedPlantObjs.length ? undefined : t("misc.pestsBrowse")}
           onAction={savedPlantObjs.length ? undefined : () => jumpToTab && jumpToTab("plants")}
         />
       )}
