@@ -7,7 +7,7 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weather, monthlySuggestions, savedPlants, wateredPlants, onOpenPlant, onAddPhoto, uploadingPhoto, harvestTrackers, fertilizerTrackers, journalEntries, zone, gardenMap, onNavigate, unitSystem, snoozedPlants, compatiblePlants, wateringHistory }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const today = getTodayKey();
   const currentHour = new Date().getHours();
 
@@ -46,19 +46,22 @@ export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weathe
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
 
   const getTimeOfDayGreeting = () => {
-    if (currentHour < 12) return { greeting: "Hey There! 🌅", tip: "Morning is the best time to water — cooler temps reduce evaporation." };
-    if (currentHour < 17) return { greeting: "Good afternoon! ☀️", tip: "Midday heat is high. Check on any plants in direct sun and make sure soil stays moist." };
-    return { greeting: "Good evening! 🌙", tip: "Evening is a great time to check tonight's forecast and cover any frost-sensitive plants." };
+    if (currentHour < 12) return { greeting: t("myGardenToday.greetMorning"), tip: t("myGardenToday.tipMorning") };
+    if (currentHour < 17) return { greeting: t("myGardenToday.greetAfternoon"), tip: t("myGardenToday.tipAfternoon") };
+    return { greeting: t("myGardenToday.greetEvening"), tip: t("myGardenToday.tipEvening") };
   };
 
   const getWeatherSummary = () => {
-    if (!weather) return { icon: "🌤️", title: "Weather loading", text: "Your forecast will appear shortly.", color: "#d7ebdc", urgent: false };
-    if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", title: "Frost risk tonight", text: `Low of ${formatTemp(weather.minTempF, unitSystem, true)} — cover tender plants and move containers to shelter before dark.`, color: "#6bc7ff", urgent: true };
-    if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", title: "Extreme heat today", text: `High of ${formatTemp(weather.maxTempF, unitSystem, true)} — water before 9 AM, add shade cloth, and skip transplanting.`, color: "#ff7b7b", urgent: true };
-    if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) return { icon: "☀️", title: "Hot day ahead", text: `High of ${formatTemp(weather.maxTempF, unitSystem, true)} — water deeply early and mulch around roots to hold moisture.`, color: "#ffd86b", urgent: false };
-    if (weather.precipChance >= 70) return { icon: "🌧️", title: "Rain likely today", text: `${Math.round(weather.precipChance)}% chance of rain — skip watering and check drainage on containers.`, color: "#6bc7ff", urgent: false };
-    if (weather.precipChance >= 40) return { icon: "🌦️", title: "Possible showers", text: `${Math.round(weather.precipChance)}% rain chance — check soil before watering, may not be needed.`, color: "#8effab", urgent: false };
-    return { icon: "✅", title: "Great garden day", text: `${formatTemp(weather.maxTempF, unitSystem)} high, ${Math.round(weather.precipChance)}% rain — ideal conditions for planting, watering, and garden care.`, color: "#5cff89", urgent: false };
+    if (!weather) return { icon: "🌤️", title: t("myGardenToday.wxLoadingTitle"), text: t("myGardenToday.wxLoadingText"), color: "#d7ebdc", urgent: false };
+    const low = formatTemp(weather.minTempF, unitSystem, true);
+    const high = formatTemp(weather.maxTempF, unitSystem, true);
+    const pct = Math.round(weather.precipChance);
+    if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", title: t("myGardenToday.wxFrostTitle"), text: t("myGardenToday.wxFrostText", { temp: low }), color: "#6bc7ff", urgent: true };
+    if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", title: t("myGardenToday.wxExtremeTitle"), text: t("myGardenToday.wxExtremeText", { temp: high }), color: "#ff7b7b", urgent: true };
+    if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) return { icon: "☀️", title: t("myGardenToday.wxHotTitle"), text: t("myGardenToday.wxHotText", { temp: high }), color: "#ffd86b", urgent: false };
+    if (weather.precipChance >= 70) return { icon: "🌧️", title: t("myGardenToday.wxRainTitle"), text: t("myGardenToday.wxRainText", { pct }), color: "#6bc7ff", urgent: false };
+    if (weather.precipChance >= 40) return { icon: "🌦️", title: t("myGardenToday.wxShowersTitle"), text: t("myGardenToday.wxShowersText", { pct }), color: "#8effab", urgent: false };
+    return { icon: "✅", title: t("myGardenToday.wxGreatTitle"), text: t("myGardenToday.wxGreatText", { temp: formatTemp(weather.maxTempF, unitSystem), pct }), color: "#5cff89", urgent: false };
   };
 
   const getSeasonalTip = () => {
@@ -66,19 +69,10 @@ export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weathe
     // Keyed off the real season span so the advice turns over on the equinox,
     // and reads correctly below the equator.
     const seasonKey = getSeasonForDate().key;
-    if (seasonKey === "spring") {
-      if (climate === "hot") return "🌱 Hot zone spring: get plants in the ground now before summer heat peaks. Prioritize tomatoes, peppers, and basil.";
-      return "🌱 Spring is prime planting season. Focus on getting seeds started and transplants in the ground while temps are mild.";
-    }
-    if (seasonKey === "summer") {
-      if (climate === "hot") return "🔥 Summer in hot zones: deep watering every 2-3 days keeps roots cool. Harvest zucchini and beans daily.";
-      return "☀️ Summer peak: water consistently, harvest regularly, and watch for heat stress on leafy greens.";
-    }
-    if (seasonKey === "fall") {
-      if (climate === "cold") return "🍂 Fall in cold zones: harvest everything before first frost and plant garlic for next spring.";
-      return "🍂 Fall growing season: great time for cool crops like kale, spinach, lettuce, and root vegetables.";
-    }
-    return "❄️ Winter prep: add compost to beds, protect perennials, and start planning your spring garden layout.";
+    if (seasonKey === "spring") return t(climate === "hot" ? "myGardenToday.tipSpringHot" : "myGardenToday.tipSpring");
+    if (seasonKey === "summer") return t(climate === "hot" ? "myGardenToday.tipSummerHot" : "myGardenToday.tipSummer");
+    if (seasonKey === "fall") return t(climate === "cold" ? "myGardenToday.tipFallCold" : "myGardenToday.tipFall");
+    return t("myGardenToday.tipWinter");
   };
 
   const { greeting, tip } = getTimeOfDayGreeting();
@@ -169,14 +163,14 @@ return (
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.myGardenTaskTitle, { color: allWatered ? "#5cff89" : "#6bc7ff" }]}>
-                {allWatered ? (everyPlantWatered ? t("myGardenToday.allPlantsWatered") : t("myGardenToday.nothingNeedsWaterToday")) : `${needsWaterCount} plant${needsWaterCount === 1 ? "" : "s"} need water`}
+                {allWatered ? (everyPlantWatered ? t("myGardenToday.allPlantsWatered") : t("myGardenToday.nothingNeedsWaterToday")) : tn("myGardenToday.plantsNeedWater", needsWaterCount)}
               </Text>
               <Text style={[styles.myGardenTaskText, { color: theme.secondaryText }]}>
                 {allWatered
-                  ? `${wateredToday.length} of ${savedPlants.length} plants watered today`
+                  ? t("myGardenToday.wateredOfToday", { watered: wateredToday.length, total: savedPlants.length })
                   : weather?.precipChance >= 65
                   ? t("myGardenToday.rainMayHelpCheckSoil")
-                  : `${wateredToday.length}/${savedPlants.length} done — tap to go to Plants tab`}
+                  : t("myGardenToday.wateredDoneTap", { watered: wateredToday.length, total: savedPlants.length })}
               </Text>
               {!allWatered && unwateredPlants.length > 0 ? (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.myGardenPlantPillRow}>
@@ -282,10 +276,10 @@ return (
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.myGardenTaskTitle, { color: "#8effab" }]}>
-                Start {seedsToStart.length} seed{seedsToStart.length === 1 ? "" : "s"} indoors
+                {tn("myGardenToday.startSeedsIndoors", seedsToStart.length)}
               </Text>
               <Text style={[styles.myGardenTaskText, { color: theme.secondaryText }]}>
-                {seedsToStart.slice(0, 3).map((e) => e.name).join(", ")} — it's the right window for your zone.
+                {t("myGardenToday.seedsRightWindow", { plants: seedsToStart.slice(0, 3).map((e) => e.name).join(", ") })}
               </Text>
             </View>
             <Text style={styles.myGardenTaskArrow}>›</Text>
@@ -302,7 +296,7 @@ return (
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.myGardenTaskTitle, { color: todayPhotos > 0 ? "#5cff89" : theme.text }]}>
-              {uploadingPhoto ? t("myGardenToday.uploadingPhoto") : todayPhotos > 0 ? `${todayPhotos} photo${todayPhotos === 1 ? "" : "s"} logged today!` : t("myGardenToday.addAGardenPhoto")}
+              {uploadingPhoto ? t("myGardenToday.uploadingPhoto") : todayPhotos > 0 ? tn("myGardenToday.photosLoggedToday", todayPhotos) : t("myGardenToday.addAGardenPhoto")}
             </Text>
             <Text style={[styles.myGardenTaskText, { color: theme.secondaryText }]}>
               {todayPhotos > 0 ? t("myGardenToday.yourGardenStoryIsGrowing") : t("myGardenToday.documentYourGardensProgressWith")}

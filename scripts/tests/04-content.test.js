@@ -634,3 +634,26 @@ describe("money in the gardener's currency", () => {
     ok(/formatMoney\(total\)/.test(card) && /placeholder=\{deviceCurrency\(\)\.symbol\}/.test(card));
   });
 });
+
+describe("My Garden Today speaks the gardener's language", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  const card = require("fs").readFileSync(path.join(ROOT, "components/MyGardenTodayCard.js"), "utf8");
+  it("has no English sentences left in its daily plan", () => {
+    for (const phrase of ["Good afternoon", "Frost risk tonight", "Great garden day", "need water`", "logged today!", "it's the right window", "Winter prep"]) {
+      ok(!card.includes(phrase), `"${phrase}" is still hard-coded`);
+    }
+  });
+  it("counts plants with a real plural", () => {
+    // "1 plant need water" — the hand-rolled plural only added the s.
+    eq(i18n.tn("myGardenToday.plantsNeedWater", 1), "1 plant needs water");
+    eq(i18n.tn("myGardenToday.plantsNeedWater", 3), "3 plants need water");
+  });
+  it("fills in the weather figures in every language", () => {
+    for (const code of ["en", "es", "fr", "de", "pt", "it", "zh", "ja", "ko", "hi"]) {
+      i18n.setLocale(code);
+      const text = i18n.t("myGardenToday.wxRainText", { pct: 80 });
+      ok(text.includes("80") && !text.includes("{pct}"), `${code}: ${text}`);
+    }
+    i18n.setLocale("en");
+  });
+});
