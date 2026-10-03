@@ -1926,6 +1926,8 @@ onResumeRef.current = () => {
     lastWeatherRefreshRef.current = Date.now();
     setWeatherRefreshToken((value) => value + 1);
   }
+  // A photo that failed to upload goes up as soon as there's a connection again.
+  if (user) retryPendingPhotoUploads(user);
 };
 useEffect(() => {
   const sub = AppState.addEventListener("change", (state) => {
@@ -2920,6 +2922,47 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
     );
   }, [streakRecoveryOffer]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Compresses a local image and uploads it to this account's journal folder.
+  // Resolves to { imageUrl, storagePath }, or null when it could not be sent.
+  async function uploadJournalImage(localUri, mimeType) {
+    if (!user?.id || !localUri) return null;
+    try {
+      // Compress + resize before upload to cut Supabase storage/bandwidth ~5-10x.
+      // Falls back to the original if the native image module isn't in the build yet.
+      let uploadUri = localUri;
+      try {
+        const manip = await ImageManipulator.manipulateAsync(
+          localUri,
+          [{ resize: { width: 1080 } }],
+          { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG }
+        );
+        if (manip?.uri) uploadUri = manip.uri;
+      } catch (e) {
+        console.log("Image compression skipped:", e?.message);
+      }
+      const compressed = uploadUri !== localUri;
+      const response = await fetch(uploadUri);
+      const arrayBuffer = await response.arrayBuffer();
+      const fileExt = compressed ? "jpg" : (localUri.split(".").pop()?.toLowerCase() || "jpg");
+      const contentType = compressed ? "image/jpeg" : (mimeType || "image/jpeg");
+      const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from("journal-photos")
+        .upload(filePath, arrayBuffer, { contentType, upsert: false });
+      if (uploadError) {
+        console.log("JOURNAL PHOTO UPLOAD ERROR:", uploadError?.message);
+        return null;
+      }
+      const { data: publicUrlData } = supabase.storage.from("journal-photos").getPublicUrl(filePath);
+      if (!publicUrlData?.publicUrl) return null;
+      console.log("Journal photo uploaded ✅");
+      return { imageUrl: publicUrlData.publicUrl, storagePath: filePath };
+    } catch (error) {
+      console.log("Journal upload failed:", error?.message);
+      return null;
+    }
+  }
+
   async function pickJournalPhoto(plantName) {
   if (!user) {
     Alert.alert(
@@ -2969,91 +3012,21 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
       currentMonthEarly >= 9 && currentMonthEarly <= 10 ? "Fruit Forming" :
       "Harvest Ready";
 
-    // Compress + resize before upload to cut Supabase storage/bandwidth ~5-10x.
-    // Falls back to the original if the native image module isn't in the build yet.
-    let uploadUri = asset.uri;
-    try {
-      const manip = await ImageManipulator.manipulateAsync(
-        asset.uri,
-        [{ resize: { width: 1080 } }],
-        { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG }
-      );
-      if (manip?.uri) uploadUri = manip.uri;
-    } catch (e) {
-      console.log("Image compression skipped:", e?.message);
-    }
-    const compressed = uploadUri !== asset.uri;
-
-    const response = await fetch(uploadUri);
-const arrayBuffer = await response.arrayBuffer();
-
-const fileExt = compressed
-  ? "jpg"
-  : (asset.uri.split(".").pop()?.toLowerCase() || "jpg");
-
-const contentType = compressed
-  ? "image/jpeg"
-  : (asset.mimeType || "image/jpeg");
-
-const filePath = `${user.id}/${Date.now()}.${fileExt}`;
-
-const { error: uploadError } =
-  await supabase.storage
-    .from("journal-photos")
-    .upload(filePath, arrayBuffer, {
-      contentType,
-      upsert: false,
-    });
-
-    if (uploadError) {
-      console.log(
-        "JOURNAL PHOTO UPLOAD ERROR:",
-        uploadError
-      );
-      // Fall back to local URI so entry still saves
-      const imageUrl = asset.uri;
-      const entry = {
-        id: Date.now().toString(),
-        plantName,
-        imageUri: imageUrl,
-        storagePath: null,
-        createdAt: new Date().toISOString(),
-        mood,
-        growthStage,
-        daysSincePlanting: 1,
-      };
-      setJournalEntries((current) => [entry, ...current]);
-      maybePromptPremium(t("ui4.promptPhoto"));
-      return;
-    }
-    const { data: publicUrlData } =
-      supabase.storage
-        .from("journal-photos")
-        .getPublicUrl(filePath);
-
-    const imageUrl =
-      publicUrlData?.publicUrl || asset.uri;
-
-const entry = {
-  id: Date.now().toString(),
-  plantName,
-  imageUri: imageUrl,
-  storagePath: filePath,
-  createdAt: new Date().toISOString(),
-  mood,
-  growthStage,
-  daysSincePlanting: 1,
-};
-
-setJournalEntries((current) => [
-  entry,
-  ...current,
-]);
-maybePromptPremium(t("ui4.promptPhoto"));
-
-console.log(
-  "Journal photo uploaded ✅"
-);
+    const uploaded = await uploadJournalImage(asset.uri, asset.mimeType);
+    const entry = {
+      id: Date.now().toString(),
+      plantName,
+      // Not uploaded (offline, storage error): keep the local file;
+      // retryPendingPhotoUploads sends it once the connection is back.
+      imageUri: uploaded ? uploaded.imageUrl : asset.uri,
+      storagePath: uploaded ? uploaded.storagePath : null,
+      createdAt: new Date().toISOString(),
+      mood,
+      growthStage,
+      daysSincePlanting: 1,
+    };
+    setJournalEntries((current) => [entry, ...current]);
+    maybePromptPremium(t("ui4.promptPhoto"));
 } catch (error) {
   console.log(
     "Journal upload crash:",
