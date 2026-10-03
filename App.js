@@ -54,6 +54,7 @@ import {
   canPlantInArea,
   collectModuleBackup,
   countKnownPlants,
+  formatReminderTime,
   formatTemp,
   getAchievementBadges,
   getActivationSteps,
@@ -2725,7 +2726,7 @@ useEffect(() => {
       return new Promise((resolve) => {
         Alert.alert(
           t("notify.offTitle"),
-          "Turn on notifications for Pocket Planter in your phone's Settings to get watering, frost, and harvest reminders.",
+          t("garden.notifyOffBody"),
           [
             { text: t("common.notNow"), style: "cancel", onPress: () => resolve(false) },
             { text: t("common.openSettings"), onPress: () => { Linking.openSettings().catch(() => {}); resolve(false); } },
@@ -2739,7 +2740,7 @@ useEffect(() => {
     const wantsIt = await new Promise((resolve) => {
       Alert.alert(
         t("notify.promptTitle"),
-        "Pocket Planter can remind you when to water, warn you before frost or heat, and tell you when plants are ready to harvest. Turn on notifications?",
+        t("garden.notifyPromptBody"),
         [
           { text: t("common.notNow"), style: "cancel", onPress: () => resolve(false) },
           { text: t("common.turnOn"), onPress: () => resolve(true) },
@@ -2830,7 +2831,7 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
     if (!streakFreeze.available) { setStreakRecoveryOffer(null); return; }
     Alert.alert(
       t("streak.saveTitle"),
-      `You missed a day, so your streak reset. Use your weekly Streak Freeze to restore your ${prevCount}-day streak?`,
+      t("garden.streakSaveBody", { count: prevCount }),
       [
         { text: t("common.noThanks"), style: "cancel", onPress: () => setStreakRecoveryOffer(null) },
         {
@@ -2840,7 +2841,7 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
             setStreakFreeze((f) => ({ ...f, available: false, lastUsed: today }));
             setStreakData({ count: prevCount, lastOpened: today });
             successHaptic();
-            const popup = { id: Date.now().toString(), amount: `❄️ ${prevCount}-day streak restored!` };
+            const popup = { id: Date.now().toString(), amount: t("garden.streakRestored", { count: prevCount }) };
             setXpPopups((popups) => [...popups, popup]);
             setTimeout(() => setXpPopups((popups) => popups.filter((p) => p.id !== popup.id)), 2500);
             setStreakRecoveryOffer(null);
@@ -3341,7 +3342,7 @@ async function scheduleFertilizerReminder(plantName, days) {
         date: fireDate,
       },
     });
-    Alert.alert(t("notify.reminderSetFertilizer"), `You'll get a reminder to fertilize ${plantName} in ${days} days.`);
+    Alert.alert(t("notify.reminderSetFertilizer"), tn("garden.fertilizerReminderBody", days, { plant: plantName }));
   }
 
   async function checkHarvestNotifications() {
@@ -3441,7 +3442,7 @@ async function scheduleReminder(plantName, hour, minute) {
 
     Alert.alert(
       t("notify.reminderSet"),
-      `You'll get a daily ${plantName} check-in at ${hour}:${minute === 0 ? "00" : minute} AM every morning.`
+      t("garden.reminderSetBody", { plant: plantName, time: formatReminderTime({ hour, minute }) })
     );
   } catch (error) {
     console.log("Reminder error:", error);
@@ -3659,7 +3660,7 @@ function markPlantWatered(plantName) {
     if (!alreadyLoggedToday && milestones.includes(newStreak)) {
       vibrate([0, 80, 60, 120]);
       successHaptic();
-      const popup = { id: Date.now().toString(), amount: `🔥 ${newStreak}-day streak!` };
+      const popup = { id: Date.now().toString(), amount: t("garden.streakPopup", { count: newStreak }) };
       setXpPopups((popups) => [...popups, popup]);
       setTimeout(() => {
         setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
@@ -3700,7 +3701,7 @@ function markPlantWatered(plantName) {
     });
     unwatered.forEach((name) => schedulePlantWaterReminder(name));
     clearSnoozes(unwatered);
-    const popup = { id: Date.now().toString(), amount: `💧 Watered ${unwatered.length} plants!` };
+    const popup = { id: Date.now().toString(), amount: tn("garden.wateredCount", unwatered.length) };
     setXpPopups((popups) => [...popups, popup]);
     setTimeout(() => {
       setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
@@ -3722,7 +3723,7 @@ function markPlantWatered(plantName) {
     });
     schedulePlantWaterReminder(plantName);
     clearSnoozes([plantName]);
-    const popup = { id: Date.now().toString(), amount: `💧 Watered ${plantName}!` };
+    const popup = { id: Date.now().toString(), amount: t("garden.wateredPlant", { plant: plantName }) };
     setXpPopups((popups) => [...popups, popup]);
     setTimeout(() => {
       setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
@@ -3753,7 +3754,7 @@ function logHarvest(plantName, amount, unit, note) {
   logZoneActivity(user, zone, plantName, "harvested");
   successHaptic();
   vibrate([0, 80, 60, 120]);
-  Alert.alert(t("garden.harvestLogged"), `${plantName} harvest saved to your garden record.`);
+  Alert.alert(t("garden.harvestLogged"), t("garden.harvestSavedBody", { plant: plantName }));
   // A logged harvest is the app's best moment to ask. Unconditional — every
   // harvest, not just the first; reviewPrompt owns all the gating. Delayed so
   // the alert and haptics land first, and unawaited so nothing here blocks on
@@ -3808,13 +3809,13 @@ function clearGardenSlot(slotId) {
 }
 function useStreakFreeze() {
   if (!streakFreeze.available) {
-    Alert.alert(t("streak.noFreezeTitle"), "You've already used your streak freeze this week. It refreshes at the start of next week. ❄️");
+    Alert.alert(t("streak.noFreezeTitle"), t("garden.noFreezeBody"));
     return;
   }
   const today = getTodayKey();
   successHaptic();
   setStreakFreeze((current) => ({ ...current, available: false, lastUsed: today }));
-  Alert.alert(t("streak.frozenTitle"), "Your streak is protected for today. Even if you miss watering, it won't reset. Come back tomorrow!");
+  Alert.alert(t("streak.frozenTitle"), t("garden.frozenBody"));
 }
 // Watering a snoozed plant, or removing it, ends its snooze. Neither used to:
 // the morning summary went out anyway — "Tomato is ready for water" about a
@@ -3857,7 +3858,7 @@ function waterArea(areaId) {
   const names = Array.from(new Set(Object.values(area.plots || {}).filter(Boolean)));
   const unwatered = names.filter((name) => wateredPlants[name] !== today);
   if (!unwatered.length) {
-    Alert.alert(t("garden.allWateredTitle"), `Every plant in ${area.name} is already watered today. 🌱`);
+    Alert.alert(t("garden.allWateredTitle"), t("garden.areaAllWatered", { area: area.name }));
     return;
   }
   successHaptic();
@@ -3880,7 +3881,7 @@ function waterArea(areaId) {
   // so plants kept in beds — most of a planned garden — went without one.
   unwatered.forEach((name) => schedulePlantWaterReminder(name));
   clearSnoozes(unwatered);
-  const popup = { id: Date.now().toString(), amount: `💧 Watered ${area.name}!` };
+  const popup = { id: Date.now().toString(), amount: t("garden.wateredArea", { area: area.name }) };
   setXpPopups((popups) => [...popups, popup]);
   setTimeout(() => {
     setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
@@ -3998,7 +3999,7 @@ function assignPlantToAreaSlot(areaId, slotId, plantName, opts = {}) {
       setTimeout(() => {
         Alert.alert(
           t("garden.conflictTitle"),
-          `${plantName} doesn't pair well with ${conflictList} in the same bed — they can compete or attract the same pests. It's still planted; just something to keep in mind. Open Companion Check for a one-tap fix.`,
+          t("garden.conflictBody", { plant: plantName, others: conflictList }),
           [{ text: t("common.gotIt") }]
         );
       }, 300);
@@ -4090,7 +4091,7 @@ function placeFromPlacementPrompt(bed) {
   // already fires its own heads-up and we don't want two stacked alerts.
   if (!(bed.clashes && bed.clashes.length)) {
     setTimeout(() => {
-      Alert.alert(t("garden.addedTitle"), `${plantName} was placed in ${bed.areaName}.`, [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab(flowerKind ? "flowers" : "garden") }]);
+      Alert.alert(t("garden.addedTitle"), t("garden.placedBody", { plant: plantName, bed: bed.areaName }), [{ text: t("garden.done") }, { text: t("garden.openGarden"), onPress: () => jumpToTab(flowerKind ? "flowers" : "garden") }]);
     }, 250);
   }
 }
@@ -4238,7 +4239,7 @@ function autoOptimizeGarden() {
 
   Alert.alert(
     t("garden.optimizeTitle"),
-    `This will move ${moved} plant${moved === 1 ? "" : "s"} and resolve ${resolved} of ${before} conflict${before === 1 ? "" : "s"}${after > 0 ? ` (${after} would need more space)` : ""}. Apply it?`,
+    t("garden.optimizePrompt", { moved: tn("garden.nPlants", moved), resolved, conflicts: tn("garden.nConflicts", before), extra: after > 0 ? ` ${tn("garden.needMoreSpace", after)}` : "" }),
     [
       { text: t("common.cancel"), style: "cancel" },
       {
@@ -4250,8 +4251,8 @@ function autoOptimizeGarden() {
           Alert.alert(
             t("garden.optimizedTitle"),
             after > 0
-              ? `Moved ${moved} plant${moved === 1 ? "" : "s"} to better beds. ${after} conflict${after === 1 ? "" : "s"} remain — you'll need more bed space to fix ${after === 1 ? "it" : "them"}.`
-              : `Moved ${moved} plant${moved === 1 ? "" : "s"} — every companion conflict is now resolved!`
+              ? t("garden.optimizedSome", { moved: tn("garden.nPlants", moved), remain: tn("garden.conflictsRemain", after) })
+              : t("garden.optimizedAll", { moved: tn("garden.nPlants", moved) })
           );
         },
       },
@@ -4736,7 +4737,7 @@ useEffect(() => {
     // where they can now manage or cancel their plan.
     if (activeTab === "premium") setActiveTab("settings");
     await AsyncStorage.setItem(STORAGE_KEYS.seenPremiumIntro, JSON.stringify(true));
-    if (!quiet) Alert.alert(t("premium.unlocked"), `Pocket Planter ${plan} activated successfully.`);
+    if (!quiet) Alert.alert(t("premium.unlocked"), t("garden.premiumActivated", { plan: plan === "Monthly" ? t("garden.planMonthly") : plan === "Yearly" ? t("garden.planYearly") : plan }));
   }
   function dismissPremiumIntro() {
     setShowPremiumIntro(false);

@@ -816,3 +816,21 @@ describe("notifications speak the gardener's language", () => {
     i18n.setLocale("en");
   });
 });
+
+describe("the app's own alerts speak the gardener's language", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("has none of its English sentences left", () => {
+    for (const phrase of ["Turn on notifications for Pocket Planter", "You missed a day, so your streak reset", "streak restored!`", "You'll get a reminder to fertilize ${", "check-in at ${hour}", "-day streak!`", "Watered ${", "harvest saved to your garden record", "is already watered today", "was placed in ${", "activated successfully.`", "already used your streak freeze", "Your streak is protected", "doesn't pair well with ${", "This will move ${", "Moved ${moved}"]) {
+      ok(!app.includes(phrase), `App.js still says "${phrase}"`);
+    }
+  });
+  it("composes the auto-fix summary from real plurals", () => {
+    const msg = i18n.t("garden.optimizePrompt", {
+      moved: i18n.tn("garden.nPlants", 1), resolved: 2, conflicts: i18n.tn("garden.nConflicts", 3),
+      extra: ` ${i18n.tn("garden.needMoreSpace", 1)}`,
+    });
+    eq(msg, "This will move 1 plant and resolve 2 of 3 conflicts (1 would need more space). Apply it?");
+    eq(i18n.tn("garden.wateredCount", 1), "💧 Watered 1 plant!");
+  });
+});
