@@ -435,3 +435,31 @@ describe("repeating reminders", () => {
     ok(!/ensureNotificationPermission/.test(block), "a re-arm must never prompt");
   });
 });
+
+describe("the streak freeze week", () => {
+  const core10 = require(path.join(ROOT, "core.js"));
+  const wk = (y, m, d, h = 12, min = 0) => core10.getWeekStartKey(new Date(y, m, d, h, min));
+  it("runs Monday to Sunday", () => {
+    // The hand-rolled week number rolled over going into Saturday in 2026.
+    for (let d = 5; d <= 11; d += 1) eq(wk(2026, 0, d), "2026-01-05", `Jan ${d}`);
+    eq(wk(2026, 0, 4, 23, 59), "2025-12-29", "Sunday night is still last week");
+    eq(wk(2026, 0, 5, 0, 1), "2026-01-05", "Monday just after midnight is the new one");
+    eq(wk(2026, 9, 3, 0, 5), wk(2026, 9, 2, 12), "Saturday 00:05 is not a new week");
+  });
+  it("keeps one key across New Year", () => {
+    // Year-prefixed week numbers reset on January 1st, mid-week, and handed out
+    // a second freeze for the same week.
+    eq(wk(2026, 11, 31), wk(2027, 0, 1));
+    eq(wk(2026, 11, 31), "2026-12-28");
+  });
+  it("is not moved by a clock change", () => {
+    eq(wk(2026, 2, 8, 3), "2026-03-02");   // US spring forward, a Sunday
+    eq(wk(2026, 2, 9, 0, 30), "2026-03-09");
+    eq(wk(2026, 9, 25, 2, 30), "2026-10-19"); // Europe falls back, a Sunday
+  });
+  it("is what the freeze refresh compares", () => {
+    const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+    ok(/const currentWeek = getWeekStartKey\(\);/.test(app));
+    ok(!/oneJan\.getDay\(\)/.test(app), "the hand-rolled week number should be gone");
+  });
+});

@@ -77,6 +77,7 @@ import {
   getSuccessionInterval,
   getSuggestionsForMonth,
   getTodayKey,
+  getWeekStartKey,
   getTomorrowKey,
   getTotalWaterings,
   getUpcomingFrost,
@@ -2562,10 +2563,11 @@ useEffect(() => {
     if (val) {
       try { loaded = JSON.parse(val); } catch (e) {}
     }
-    // Refresh the freeze at the start of each ISO week
-    const now = new Date();
-    const oneJan = new Date(now.getFullYear(), 0, 1);
-    const currentWeek = `${now.getFullYear()}-W${Math.ceil((((now - oneJan) / 86400000) + oneJan.getDay() + 1) / 7)}`;
+    // Refresh the freeze at the start of each week, Monday. The week number this
+    // used to compute by hand rolled over at midnight going into a weekday set
+    // by January 1st — Saturday, in 2026 — and reset again on New Year's Day
+    // mid-week, handing out a second freeze for the same week.
+    const currentWeek = getWeekStartKey();
     if (loaded.weekKey !== currentWeek) {
       setStreakFreeze({ available: true, lastUsed: loaded.lastUsed, weekKey: currentWeek });
     } else {

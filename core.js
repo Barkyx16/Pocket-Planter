@@ -3411,6 +3411,17 @@ export function getTomorrowKey(from = new Date()) {
   return getDateKey(d);
 }
 
+// The day key of the Monday that starts the week containing `date`. Weeks that
+// straddle New Year keep one key, and the key changes at local midnight going
+// into Monday — not partway through a week, wherever January 1st happened to
+// fall. Built by the calendar (setDate), so a clock change cannot move it.
+export function getWeekStartKey(date = new Date()) {
+  const d = new Date(date);
+  d.setHours(12, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return getDateKey(d);
+}
+
 export function getTodayKey() {
   return getDateKey(new Date());
 }
