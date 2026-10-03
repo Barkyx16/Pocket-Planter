@@ -178,7 +178,7 @@ export function HomeTab({ activationSteps, claimDailyBonus, combinedGardenMap, c
         <Text style={{ color: theme.text, fontSize: 20, fontWeight: "900", marginTop: 6 }}>{t("home.freshUpdates")}</Text>
         <View style={{ marginTop: 12, gap: 8 }}>
           {WHATS_NEW_ITEMS.map((item) => (
-            <Text key={item} style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "700", lineHeight: 20 }}>{item}</Text>
+            <Text key={item} style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "700", lineHeight: 20 }}>{t(`whatsNew.${item}`)}</Text>
           ))}
         </View>
         <Pressable

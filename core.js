@@ -4093,14 +4093,8 @@ export const WATERING_STREAK_GAP_DAYS = 4;
 // was ever shown the notes again.
 export const WHATS_NEW_VERSION = "1.0.14";
 
-export const WHATS_NEW_ITEMS = [
-  "173 flowers and houseplants, with a garden of their own",
-  "Plant a whole companion combo in one tap, bed and all",
-  "Pick which bed a plant goes in, or swap one out",
-  "Pest Watch now has its own tab",
-  "Your daily plan stays put until every task is done",
-  "Fixed plants that were planted but never showed up",
-];
+// Keys in the whatsNew namespace; the card shows them in the app language.
+export const WHATS_NEW_ITEMS = ["flowers", "combo", "pickBed", "pestTab", "dailyPlan", "fixedPlants"];
 
 export function getWateringStreak(plantName, wateringHistory) {
   const history = wateringHistory?.[plantName];
