@@ -181,3 +181,12 @@ describe("a plant's page lists companions the way the pair check sees them", () 
     ok(core.getCompanionLists("Potato").avoid.includes("Tomato"));
   });
 });
+
+describe("the garden map suggests what the pair check approves", () => {
+  it("reads companions through getCompanionLists, not a raw chart", () => {
+    // The raw chart suggested Basil for a bed of Sage, then flagged the pair.
+    const src = require("fs").readFileSync(require("path").join(ROOT, "components/AreaPlannerMap.js"), "utf8");
+    ok(/getCompanionLists\(plantName\)\.excellent/.test(src));
+    ok(!/getCompanionInfo\(/.test(src), "no suggestion should read a chart directly");
+  });
+});
