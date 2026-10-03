@@ -595,3 +595,25 @@ describe("day length", () => {
     eq(core23.getDaylightHours(78.2, new Date(2026, 11, 21, 12)), 0);
   });
 });
+
+describe("the forecast", () => {
+  const core29 = require(path.join(ROOT, "core.js"));
+  it("drops days without both temperatures instead of reading null as 0°F", () => {
+    // null <= 35 is true: a missing low was a frost night everywhere.
+    const days = core29.parseForecast({
+      time: ["2026-07-01", "2026-07-02", "2026-07-03"],
+      temperature_2m_max: [88, null, 90],
+      temperature_2m_min: [65, 64, null],
+      precipitation_probability_max: [10, 20, null],
+    });
+    eq(days.map((d) => d.date), ["2026-07-01"]);
+    eq(core29.getUpcomingFrost({ forecast: days }), null);
+  });
+  it("defaults a missing rain chance to none", () => {
+    const [day] = core29.parseForecast({ time: ["2026-07-01"], temperature_2m_max: [70], temperature_2m_min: [50], precipitation_probability_max: [null] });
+    eq(day.precipChance, 0);
+  });
+  it("is what the weather loader uses", () => {
+    ok(/const forecast = parseForecast\(weatherData\?\.daily\);/.test(require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8")));
+  });
+});

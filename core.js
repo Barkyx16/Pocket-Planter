@@ -2613,6 +2613,24 @@ export const HEAT_THRESHOLD_F = 95;
 export const EXTREME_HEAT_THRESHOLD_F = 98;
 export const WARM_DAY_THRESHOLD_F = 90;
 
+// Open-Meteo's daily arrays, as forecast days the app can compare against its
+// thresholds. A day can come back with null temperatures (it happens at the far
+// end of the range), and null compares as zero: null <= 35 is true. A missing
+// low read as a frost night on Home and in the week-ahead cards, and Math.max
+// and Math.min over the week treated it as 0°F. Days without both readings are
+// dropped; a missing rain chance reads as none.
+export function parseForecast(daily) {
+  const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+  return (daily?.time || [])
+    .map((date, index) => ({
+      date,
+      maxTempF: num(daily?.temperature_2m_max?.[index]),
+      minTempF: num(daily?.temperature_2m_min?.[index]),
+      precipChance: num(daily?.precipitation_probability_max?.[index]) ?? 0,
+    }))
+    .filter((day) => day.maxTempF !== null && day.minTempF !== null);
+}
+
 export function getUpcomingFrost(weather) {
   const forecast = Array.isArray(weather?.forecast) ? weather.forecast : [];
   for (let i = 0; i < forecast.length; i += 1) {

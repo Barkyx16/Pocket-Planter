@@ -82,6 +82,7 @@ import {
   getTomorrowKey,
   getTotalWaterings,
   getUpcomingFrost,
+  parseForecast,
   getWateringRhythm,
   getWateringStreak,
   getZipRecord,
@@ -4524,12 +4525,7 @@ const weatherResponse = await fetch(
   `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&forecast_days=7`
 );
 const weatherData = await weatherResponse.json();
-const forecast = (weatherData?.daily?.time || []).map((date, index) => ({
-  date,
-  maxTempF: weatherData?.daily?.temperature_2m_max?.[index] ?? null,
-  minTempF: weatherData?.daily?.temperature_2m_min?.[index] ?? null,
-  precipChance: weatherData?.daily?.precipitation_probability_max?.[index] ?? 0,
-}));
+const forecast = parseForecast(weatherData?.daily);
 const freshWeather = {
   maxTempF: forecast[0]?.maxTempF ?? null,
   minTempF: forecast[0]?.minTempF ?? null,
