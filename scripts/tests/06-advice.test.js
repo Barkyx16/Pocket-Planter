@@ -601,3 +601,22 @@ describe("the watering queue", () => {
     }
   });
 });
+
+describe("weather advice in the app language", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("keeps the English recommendation and translates it", () => {
+    const frost = { minTempF: 28, maxTempF: 45, precipChance: 10 };
+    eq(core.getSmartWeatherRecommendation("6", frost, []).title, "Frost protection night");
+    eq(core.getSmartWeatherRecommendation("6", { minTempF: 50, maxTempF: 70, precipChance: 10 }, []).body,
+      "Several zone-matched plants look reasonable right now. Focus on soil moisture and steady starts.");
+    eq(core.getWateringTip(null), "Water deeply and consistently while monitoring soil moisture.");
+    try {
+      i18n.setLocale("fr");
+      eq(core.getSmartWeatherRecommendation("6", frost, []).title, "Nuit de protection contre le gel");
+      ok(!core.getWateringTip(null).startsWith("advice."), "watering tip");
+      ok(core.FROST_TASKS.every((task) => !i18n.t(`advice.${task.text}`).startsWith("advice.")), "frost tasks");
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});

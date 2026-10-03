@@ -1451,13 +1451,11 @@ return compatiblePlants
 ]);
 
 const smartRecommendation = useMemo(
-  () =>
-    getSmartWeatherRecommendation(
-      zone,
-      weather,
-      compatiblePlants
-    ),
-  [zone, weather, compatiblePlants]
+  () => {
+    void language; // the recommendation is translated text
+    return getSmartWeatherRecommendation(zone, weather, compatiblePlants);
+  },
+  [zone, weather, compatiblePlants, language]
 );
 
 const rarityStyle = selectedPlant

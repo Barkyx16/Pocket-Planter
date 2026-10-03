@@ -47,12 +47,12 @@ export const FrostChecklistCard = memo(function FrostChecklistCard({ theme, weat
         <View style={{ flex: 1 }}>
           <Text style={{ color: "#a3d5ff", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>{t("frostChecklist.coldWeatherPrep")}</Text>
           <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900", marginTop: 2 }}>
-            {allDone ? t("frostChecklist.youreColdready") : `Protect your garden — cold ${isTonight ? "tonight" : "coming"}`}
+            {allDone ? t("frostChecklist.youreColdready") : t(isTonight ? "advice.frostProtectTonight" : "advice.frostProtectComing")}
           </Text>
         </View>
       </View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 8 }}>
-        {t("frostChecklist.lowOf")} {Math.round(coldestF)}{t("frostChecklist.f")}{coldestC}{t("frostChecklist.cExpectedCheckTheseOff")} {doneCount}/{FROST_TASKS.length} done.
+        {t("advice.frostLow", { temp: `${Math.round(coldestF)}°F (${coldestC}°C)`, done: doneCount, total: FROST_TASKS.length })}
       </Text>
 
       {/* progress bar */}
@@ -76,7 +76,7 @@ export const FrostChecklistCard = memo(function FrostChecklistCard({ theme, weat
               </View>
               <Text style={{ fontSize: 18 }}>{task.icon}</Text>
               <Text style={{ color: checked ? theme.secondaryText : theme.text, fontSize: 12, fontWeight: "800", flex: 1, textDecorationLine: checked ? "line-through" : "none" }}>
-                {task.text}
+                {t(`advice.${task.text}`)}
               </Text>
             </Pressable>
           );

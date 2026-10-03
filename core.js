@@ -1981,9 +1981,9 @@ export function getFirstPlantingMonth(item) {
 export function getPlantingWindowText(item) {
   const months = localPlantMonths(item);
   if (!months.length) {
-    return "Best months vary by zone. Use the Planting Calendar above for seasonal timing.";
+    return t("advice.windowVaries");
   }
-  return months.map((month) => MONTH_LABELS[month - 1]?.slice(0, 3)).filter(Boolean).join(" • ");
+  return months.map((month) => formatDate(new Date(2026, month - 1, 1), { month: "short" })).filter(Boolean).join(" • ");
 }
 
 export function getPlantSeasonLabel(item, zone, monthOverride = null) {
@@ -2872,19 +2872,19 @@ export function getSeedStartInfo(item, zone) {
 }
 
 export function getSmartWeatherRecommendation(zone, weather, plants = []) {
-  if (!weather) return { title: "Weather scan loading", body: "Once your forecast loads, Pocket Planter will suggest what to water, protect, or plant next.", level: "Common" };
+  if (!weather) return { title: t("advice.recLoadingTitle"), body: t("advice.recLoadingBody"), level: "Common" };
   const plantNowCount = plants.filter((item) => getPlantSeasonLabel(item, zone) === "Plant now").length;
-  if (weather.minTempF <= FROST_THRESHOLD_F) return { title: "Frost protection night", body: "Cover tender plants, move containers near shelter, and wait on transplanting until lows warm back up.", level: "Epic" };
-  if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { title: "Heat stress warning", body: "Water deeply before the afternoon, shade young starts, and skip transplanting today.", level: "Rare" };
-  if (weather.precipChance >= 70) return { title: "Rain-friendly garden day", body: "Let rain handle watering. Check drainage and avoid soaking containers twice.", level: "Rare" };
-  return { title: "Prime Garden Window!", body: `${plantNowCount || "Several"} zone-matched plants look reasonable right now. Focus on soil moisture and steady starts.`, level: "Common" };
+  if (weather.minTempF <= FROST_THRESHOLD_F) return { title: t("advice.recFrostTitle"), body: t("advice.recFrostBody"), level: "Epic" };
+  if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { title: t("advice.recHeatTitle"), body: t("advice.recHeatBody"), level: "Rare" };
+  if (weather.precipChance >= 70) return { title: t("advice.recRainTitle"), body: t("advice.recRainBody"), level: "Rare" };
+  return { title: t("advice.recPrimeTitle"), body: plantNowCount ? tn("advice.recPrimeBody", plantNowCount) : t("advice.recPrimeBodySeveral"), level: "Common" };
 }
 
 export function getWateringTip(weather) {
-  if (!weather) return "Water deeply and consistently while monitoring soil moisture.";
-  if (weather.maxTempF >= HEAT_THRESHOLD_F) return "Hot weather is coming. Deep morning watering will help reduce stress and evaporation.";
-  if (weather.precipChance >= 65) return "Rain is likely this week. Check the soil before watering again.";
-  return "Keep the soil lightly moist and avoid shallow watering.";
+  if (!weather) return t("advice.waterDefault");
+  if (weather.maxTempF >= HEAT_THRESHOLD_F) return t("advice.waterHot");
+  if (weather.precipChance >= 65) return t("advice.waterRain");
+  return t("advice.waterNormal");
 }
 
 export function getShouldGrowText(item, zone, weather) {
@@ -3039,10 +3039,10 @@ export function getWhereToPlantText(item) {
 
 export function getPlantSpecificTip(item, zone, weather) {
   const seasonLabel = getPlantSeasonLabel(item, zone);
-  if (seasonLabel === "Plant now" && weather?.maxTempF >= HEAT_THRESHOLD_F) return "This plant is in season, but the heat is high. Plant early in the morning, mulch well, and keep watering consistent.";
-  if (seasonLabel === "Plant now" && weather?.minTempF <= 38) return "This plant is in season, but nights are still chilly. Protect young starts until temperatures stay warmer.";
-  if (seasonLabel === "Plant now") return "This is a good time to grow it in your area. Focus on soil moisture, spacing, and steady care during the first few weeks.";
-  return "Save or follow this plant so you can come back when its planting window gets closer.";
+  if (seasonLabel === "Plant now" && weather?.maxTempF >= HEAT_THRESHOLD_F) return t("advice.tipHeat");
+  if (seasonLabel === "Plant now" && weather?.minTempF <= 38) return t("advice.tipChilly");
+  if (seasonLabel === "Plant now") return t("advice.tipGood");
+  return t("advice.tipFollow");
 }
 
 export function getPlantingSteps(item) {
@@ -5358,11 +5358,12 @@ export function getWeatherIconFromDay(day) {
 }
 
 export const FROST_TASKS = [
-  { id: "cover", icon: "🛡️", text: "Cover tender plants with sheets, row cover, or cloches" },
-  { id: "containers", icon: "🪴", text: "Move potted plants into a garage or against the house" },
-  { id: "water", icon: "💧", text: "Water soil before the freeze — moist soil holds heat" },
-  { id: "mulch", icon: "🍂", text: "Add mulch around roots for insulation" },
-  { id: "harvest", icon: "🧺", text: "Harvest anything ripe that frost could damage" },
+  // text is a key in the advice namespace.
+  { id: "cover", icon: "🛡️", text: "frostCover" },
+  { id: "containers", icon: "🪴", text: "frostContainers" },
+  { id: "water", icon: "💧", text: "frostWater" },
+  { id: "mulch", icon: "🍂", text: "frostMulch" },
+  { id: "harvest", icon: "🧺", text: "frostHarvest" },
 ];
 
 export const COLD_THRESHOLD_F = 40;
