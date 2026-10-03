@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { getTodayKey, tapHaptic } from "../core";
+import { getTodayKey, parseDecimal, tapHaptic } from "../core";
 import { formatDate } from "../lib/i18n";
 import { SkeletonSection } from "./Skeleton";
 import { touchSlop } from "../lib/a11y";
@@ -53,7 +53,7 @@ export const SoilTempSection = memo(function SoilTempSection({ theme }) {
   const unitLabel = metric ? "°C" : "°F";
 
   const add = () => {
-    const n = parseFloat(draft);
+    const n = parseDecimal(draft);
     if (Number.isNaN(n)) return;
     tapHaptic("light");
     const tempF = metric ? cToF(n) : n;

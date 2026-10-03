@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
-import { estimateHarvestValue, tapHaptic } from "../core";
+import { estimateHarvestValue, parseDecimal, tapHaptic } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const GardenROICard = memo(function GardenROICard({ theme, harvestLog, suppliesSpent, setSuppliesSpent }) {
@@ -17,7 +17,7 @@ export const GardenROICard = memo(function GardenROICard({ theme, harvestLog, su
   const hasData = grownTotal > 0 || spent > 0;
 
   const saveSpent = () => {
-    const n = parseFloat(draft);
+    const n = parseDecimal(draft);
     if (Number.isNaN(n) || n < 0) {
       Alert.alert(t("alerts.enterAmountTitle"), t("alerts.enterAmountSuppliesBody"));
       return;

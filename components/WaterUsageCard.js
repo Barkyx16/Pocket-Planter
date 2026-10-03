@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { WATER_UNITS, getTodayKey, tapHaptic, toGallons } from "../core";
+import { getTodayKey, parseDecimal, tapHaptic, toGallons, WATER_UNITS } from "../core";
 import { useTranslation, formatDate } from "../lib/i18n";
 import { IconText } from "./IconText";
 
@@ -29,7 +29,7 @@ export const WaterUsageCard = memo(function WaterUsageCard({ theme, savedPlants,
   const thirstiest = Object.entries(byPlant).sort((a, b) => b[1] - a[1])[0];
 
   const addEntry = () => {
-    const n = parseFloat(amount);
+    const n = parseDecimal(amount);
     if (Number.isNaN(n) || n <= 0) {
       Alert.alert(t("alerts.enterAmountTitle"), t("alerts.enterAmountWaterBody"));
       return;

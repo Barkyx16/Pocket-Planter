@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { tapHaptic } from "../core";
+import { parseDecimal, tapHaptic } from "../core";
 import { useTranslation } from "../lib/i18n";
 import { touchSlop } from "../lib/a11y";
 
@@ -33,7 +33,7 @@ export const BudgetTrackerCard = memo(function BudgetTrackerCard({ theme }) {
 
   const persist = (next) => { setExpenses(next); AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)).catch(() => {}); };
   const add = () => {
-    const amt = parseFloat(amount);
+    const amt = parseDecimal(amount);
     if (Number.isNaN(amt) || amt <= 0) return;
     tapHaptic("light");
     persist([{ id: Date.now().toString(), amount: Math.round(amt * 100) / 100, label: label.trim(), cat, date: new Date().toISOString() }, ...expenses]);

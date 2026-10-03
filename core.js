@@ -3716,6 +3716,21 @@ export function fToC(f) {
 
 // Rounded temperature with degree symbol, e.g. "72°" or "22°". Pass withUnit
 // to append F/C, e.g. "72°F" / "22°C".
+// A number typed into a decimal field, in whatever convention the keyboard
+// uses. In German, French, Spanish, Italian or Portuguese the iOS decimal pad
+// types a comma, and parseFloat("4,99") is 4 — so a €4.99 packet of seeds was
+// logged as 4, and a soil pH of "6,5" as 6. The last separator is the decimal
+// mark; any earlier ones group thousands. NaN for anything else.
+export function parseDecimal(input) {
+  const raw = String(input ?? "").trim().replace(/\s/g, "");
+  if (!raw) return NaN;
+  const last = Math.max(raw.lastIndexOf(","), raw.lastIndexOf("."));
+  const normalized = last < 0
+    ? raw
+    : raw.slice(0, last).replace(/[.,]/g, "") + "." + raw.slice(last + 1);
+  return /^-?(\d+\.?\d*|\.\d+)$/.test(normalized) ? Number(normalized) : NaN;
+}
+
 export function formatTemp(fahrenheit, units, withUnit = false) {
   if (fahrenheit == null || Number.isNaN(Number(fahrenheit))) return "—";
   const metric = units === "metric";

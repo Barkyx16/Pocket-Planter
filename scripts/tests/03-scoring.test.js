@@ -117,3 +117,36 @@ describe("harvest and fertilizer timing", () => {
     ok(core.isFertilizerDue("Tomato", null), "never fed is due");
   });
 });
+
+describe("parseDecimal", () => {
+  const P = (x) => core.parseDecimal(x);
+  it("reads a decimal comma the way it reads a decimal point", () => {
+    // The decimal pad types a comma in most of Europe; parseFloat("4,99") is 4.
+    eq(P("4,99"), 4.99);
+    eq(P("4.99"), 4.99);
+    eq(P("6,5"), 6.5);
+    eq(P("-2,5"), -2.5);
+  });
+  it("treats earlier separators as thousands", () => {
+    eq(P("1.234,56"), 1234.56);
+    eq(P("1,234.56"), 1234.56);
+  });
+  it("accepts what parseFloat accepted from a keypad", () => {
+    eq(P("12"), 12);
+    eq(P("5."), 5);
+    eq(P(".5"), 0.5);
+    eq(P(" 3 "), 3);
+  });
+  it("is NaN for anything that is not a number", () => {
+    for (const bad of ["", "abc", "1,2,x", "--1", null, undefined]) ok(Number.isNaN(P(bad)), `${bad}`);
+  });
+  it("is what every decimal field uses", () => {
+    const fs20 = require("fs");
+    const offenders = [];
+    for (const f of fs20.readdirSync(path.join(ROOT, "components")).filter((x) => x.endsWith(".js"))) {
+      const src = fs20.readFileSync(path.join(ROOT, "components", f), "utf8");
+      if (/keyboardType="(decimal-pad|numeric)"/.test(src) && /parseFloat\(/.test(src)) offenders.push(f);
+    }
+    eq(offenders, []);
+  });
+});

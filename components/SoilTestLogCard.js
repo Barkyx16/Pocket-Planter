@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { getTodayKey, tapHaptic } from "../core";
+import { getTodayKey, parseDecimal, tapHaptic } from "../core";
 import { useTranslation, formatDate } from "../lib/i18n";
 import { SoilTempSection } from "./SoilTempSection";
 import { touchSlop } from "../lib/a11y";
@@ -37,7 +37,7 @@ export const SoilTestLogCard = memo(function SoilTestLogCard({ theme }) {
   };
 
   const addTest = () => {
-    const phNum = parseFloat(ph);
+    const phNum = parseDecimal(ph);
     if (Number.isNaN(phNum)) return;
     tapHaptic("light");
     persist([{ id: Date.now().toString(), date: getTodayKey(), ph: phNum, note: note.trim() }, ...tests]);

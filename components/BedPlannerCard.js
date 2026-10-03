@@ -1,7 +1,7 @@
 import { memo, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import produceData from "../data/produceData";
-import { getPlantingGuide } from "../core";
+import { getPlantingGuide, parseDecimal } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 // Pull a usable inches value from spacing strings like '18"–24"' or '10–20 ft'.
@@ -22,7 +22,7 @@ export const BedPlannerCard = memo(function BedPlannerCard({ theme, savedPlants 
 
   const plant = options.find((p) => p.name === selected);
   const spacing = plant ? spacingInches(getPlantingGuide(plant).spacing) : null;
-  const w = parseFloat(widthFt), l = parseFloat(lengthFt);
+  const w = parseDecimal(widthFt), l = parseDecimal(lengthFt);
   const perRow = spacing && w > 0 ? Math.floor((w * 12) / spacing) : 0;
   const rows = spacing && l > 0 ? Math.floor((l * 12) / spacing) : 0;
   const total = perRow * rows;

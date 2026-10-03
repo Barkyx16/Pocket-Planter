@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { successHaptic, tapHaptic } from "../core";
+import { parseDecimal, successHaptic, tapHaptic } from "../core";
 
 // ── Unit + mixing constants ──────────────────────────────────────────────────
 const GAL_TO_L = 3.785;
@@ -50,7 +50,7 @@ function FertilizerCalc({ theme, metric }) {
   const [ratePerGal, setRatePerGal] = useState(1); // tbsp per gallon (label rate)
   const [strength, setStrength] = useState(1);
 
-  const containerVol = parseFloat(containerSize) || 0; // litres (metric) or gallons
+  const containerVol = parseDecimal(containerSize) || 0; // litres (metric) or gallons
   const gallons = metric ? containerVol / GAL_TO_L : containerVol;
   const tbsp = ratePerGal * gallons * strength;
   const valid = containerVol > 0;
@@ -124,7 +124,7 @@ function WateringCalc({ theme, metric }) {
 
   let weeklyGal = 0;
   if (mode === "bed") {
-    const a = parseFloat(area) || 0;
+    const a = parseDecimal(area) || 0;
     if (metric) {
       // litres/week = area(m²) × mm  (1 mm over 1 m² = 1 L) → convert to gal for shared display math
       weeklyGal = (a * inchesWeek) / GAL_TO_L;
@@ -137,7 +137,7 @@ function WateringCalc({ theme, metric }) {
   // soak ≈ 20% of that volume (enough to wet through and get a little run-off).
   let potGal = 0;
   if (mode === "pot") {
-    const d = parseFloat(diam) || 0;
+    const d = parseDecimal(diam) || 0;
     if (metric) {
       const volCm3 = 0.707 * d * d * d; // 0.9 × π/4 ≈ 0.707
       potGal = (volCm3 / 1000) * 0.2 / GAL_TO_L;
@@ -302,7 +302,7 @@ function PottingMixCalc({ theme, metric }) {
   const [vol, setVol] = useState(metric ? "10" : "5"); // display units (L or gal)
   const [recipeId, setRecipeId] = useState("seed");
   const recipe = MIX_RECIPES.find((r) => r.id === recipeId) || MIX_RECIPES[0];
-  const container = parseFloat(vol) || 0;
+  const container = parseDecimal(vol) || 0;
   const totalParts = Object.values(recipe.parts).reduce((a, b) => a + b, 0);
   const unit = metric ? "L" : "gal";
 
