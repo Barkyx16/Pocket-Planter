@@ -200,7 +200,7 @@ export function GardenTab({ addGardenArea, assignPlantToAreaSlot, careLog, clear
       <ToggleSection label={t("garden.gardenTools")} closeLabel={t("garden.closeGardenTools")} marginTop={0}>
         <SegmentedCard theme={theme} accent="#8effab" tabs={[
           { id: "inventory", label: t("garden.inventory"), node: <SeedInventoryCard theme={theme} /> },
-          { id: "bed", label: t("garden.bedCalc"), node: <BedPlannerCard theme={theme} savedPlants={savedPlants} /> },
+          { id: "bed", label: t("garden.bedCalc"), node: <BedPlannerCard theme={theme} savedPlants={savedPlants} unitSystem={unitSystem} /> },
           { id: "calc", label: "🧮 Calc", node: <GardenCalculatorsSection theme={theme} unitSystem={unitSystem} /> },
           { id: "pairs", label: "🤝 Pairs", node: <PairCheckSection theme={theme} savedPlants={savedPlants} /> },
           { id: "toolcare", label: "🔧 Care", node: <ToolMaintenanceSection theme={theme} embedded /> },

@@ -606,3 +606,14 @@ describe("temperatures follow the unit setting", () => {
     eq(offenders, []);
   });
 });
+
+describe("the bed planner", () => {
+  const card = require("fs").readFileSync(path.join(ROOT, "components/BedPlannerCard.js"), "utf8");
+  it("measures in metres for metric gardeners", () => {
+    // It only ever asked for feet.
+    ok(/const toInches = \(v\) => v \* \(metric \? INCHES_PER_M : 12\)/.test(card));
+    ok(/bedPlanner\.widthM/.test(card) && /bedPlanner\.mBed/.test(card));
+    ok(/<BedPlannerCard theme=\{theme\} savedPlants=\{savedPlants\} unitSystem=\{unitSystem\} \/>/.test(
+      require("fs").readFileSync(path.join(ROOT, "screens/GardenTab.js"), "utf8")));
+  });
+});
