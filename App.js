@@ -2434,8 +2434,8 @@ useEffect(() => {
   vibrate([0, 80, 60, 120]);
   setMilestoneCelebration({
     emoji: "🎯",
-    title: "GOAL REACHED!",
-    text: `You hit your season goal of ${harvestGoal.target} harvest${harvestGoal.target === 1 ? "" : "s"}. What a season! 🌻`,
+    title: t("garden.goalReachedTitle"),
+    text: tn("garden.goalReachedBody", harvestGoal.target),
   });
   setFiredMilestones((current) => [...current, goalId]);
   setTimeout(() => setMilestoneCelebration(null), 4000);
@@ -3115,14 +3115,14 @@ function deleteJournalEntriesOlderThan(days) {
     Alert.alert(t("alerts.nothingToClearTitle"), t("alerts.nothingToClearBody"));
     return;
   }
-  const label = days >= 365 ? "1 year" : "6 months";
+  const label = days >= 365 ? t("garden.olderThanYear") : t("garden.olderThanSixMonths");
   Alert.alert(
     t("alerts.deleteOldPhotosTitle"),
     tn("alerts.deleteOldPhotosBody", toRemove.length, { label }),
     [
       { text: t("common.cancel"), style: "cancel" },
       {
-        text: `Delete ${toRemove.length}`,
+        text: tn("garden.deleteCount", toRemove.length),
         style: "destructive",
         onPress: () => {
           setJournalEntries((current) => current.filter((e) => new Date(e.createdAt).getTime() >= cutoff));
@@ -4036,7 +4036,7 @@ function quickAddPlantToGarden(plantName) {
       t("alerts.saveItFirstBody", { plant: plantName }),
       [
         { text: t("common.cancel"), style: "cancel" },
-        { text: "Save plant", onPress: () => toggleSavedPlant(plantName) },
+        { text: t("garden.savePlant"), onPress: () => toggleSavedPlant(plantName) },
       ]
     );
     return;
@@ -4107,7 +4107,7 @@ function replaceFromPlacementPrompt(bed, conflict) {
   assignPlantToAreaSlot(bed.areaId, conflict.slotId, plantName, { silent: true });
   successHaptic();
   setTimeout(() => {
-    Alert.alert(t("alerts.swappedTitle"), t("alerts.swappedBody", { plant: plantName, other: conflict.plant, bed: bed.areaName }), [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab(flowerKind ? "flowers" : "garden") }]);
+    Alert.alert(t("alerts.swappedTitle"), t("alerts.swappedBody", { plant: plantName, other: conflict.plant, bed: bed.areaName }), [{ text: t("garden.done") }, { text: t("garden.openGarden"), onPress: () => jumpToTab(flowerKind ? "flowers" : "garden") }]);
   }, 250);
 }
 
@@ -4131,7 +4131,7 @@ function createBedFromPlacementPrompt() {
   successHaptic();
   const tab = flowerKind ? "flowers" : "garden";
   setTimeout(() => {
-    Alert.alert(t("alerts.newGardenTitle"), t("alerts.newGardenBody", { plant: plantName, kind: t(flowerKind ? "alerts.newGardenKindFlower" : "alerts.newGardenKindEdible") }), [{ text: "Done" }, { text: t("garden.openGarden"), onPress: () => jumpToTab(tab) }]);
+    Alert.alert(t("alerts.newGardenTitle"), t("alerts.newGardenBody", { plant: plantName, kind: t(flowerKind ? "alerts.newGardenKindFlower" : "alerts.newGardenKindEdible") }), [{ text: t("garden.done") }, { text: t("garden.openGarden"), onPress: () => jumpToTab(tab) }]);
   }, 300);
 }
 
@@ -4144,13 +4144,13 @@ function focusGardenConflict(conflict) {
   tapHaptic("light");
   const s = conflict.suggestion;
   const fixLine = s
-    ? `Move ${s.move} to ${s.toAreaName} — it has room and no conflicts there.`
-    : `Move ${conflict.plantA} or ${conflict.plantB} to a different bed to give them space.`;
-  const message = `${conflict.plantA} and ${conflict.plantB} shouldn't share ${conflict.areaName} — they compete for nutrients and root space, or attract the same pests.\n\n✅ Fix: ${fixLine}`;
+    ? t("garden.conflictFixMove", { plant: s.move, bed: s.toAreaName })
+    : t("garden.conflictFixEither", { plantA: conflict.plantA, plantB: conflict.plantB });
+  const message = t("garden.bedConflictBody", { plantA: conflict.plantA, plantB: conflict.plantB, bed: conflict.areaName, fix: fixLine });
   const buttons = [];
   if (s) {
     buttons.push({
-      text: `Move ${s.move}`,
+      text: t("garden.conflictMoveButton", { plant: s.move }),
       onPress: () => {
         clearAreaSlot(s.fromAreaId, s.fromSlot);
         assignPlantToAreaSlot(s.toAreaId, s.toSlot, s.move, { silent: true });
@@ -4761,20 +4761,6 @@ useEffect(() => {
         ]
       );
     }, 400);
-  }
-
-  // Immediate, uncapped prompt for when a free user taps a locked feature (a
-  // locked tab, etc.). Explains what's locked, then routes to the paywall.
-  function promptPremiumFeature(featureName) {
-    if (premiumUnlocked) { jumpToTab("premium"); return; }
-    Alert.alert(
-      featureName ? `${featureName} is a Premium feature` : "Premium feature",
-      "Upgrade to Premium to unlock this, plus unlimited saved plants, the garden dashboard, planting, sowing & frost calendars, pest watch, plant picks, and the Flowers & Home tab.",
-      [
-        { text: t("common.maybeLater"), style: "cancel" },
-        { text: t("premium.viewPremium"), onPress: () => jumpToTab("premium") },
-      ]
-    );
   }
 
   // Premium access ending while the user sits on a paid tab (lapse, failed
