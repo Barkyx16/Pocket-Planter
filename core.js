@@ -2737,7 +2737,12 @@ export function getDaylightHours(lat, date = new Date()) {
   const latRad = (lat * Math.PI) / 180;
   // Solar declination (radians)
   const decl = 0.4093 * Math.sin((2 * Math.PI / 365) * (n - 81));
-  const cosH = -Math.tan(latRad) * Math.tan(decl);
+  // Sunrise and sunset are when the sun's centre is 0.833° below the horizon:
+  // half a degree for its disc, the rest for refraction. The bare geometric
+  // form (altitude 0°) ran 10 to 15 minutes short — 16h24m for London's
+  // longest day against the 16h38m on every almanac.
+  const h0 = (-0.833 * Math.PI) / 180;
+  const cosH = (Math.sin(h0) - Math.sin(latRad) * Math.sin(decl)) / (Math.cos(latRad) * Math.cos(decl));
   // Polar day / polar night guards
   if (cosH <= -1) return 24;
   if (cosH >= 1) return 0;

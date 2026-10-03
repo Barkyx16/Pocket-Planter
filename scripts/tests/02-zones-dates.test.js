@@ -571,3 +571,25 @@ describe("lengths in the gardener's units", () => {
     ok(/value: temps\(quickFacts\.spacing\)/.test(page));
   });
 });
+
+describe("day length", () => {
+  const core23 = require(path.join(ROOT, "core.js"));
+  const hm = (h) => Math.round(h * 60);
+  it("matches the almanac to within a couple of minutes", () => {
+    // The geometric formula ran 10-15 minutes short everywhere.
+    for (const [lat, y, m, d, minutes, where] of [
+      [51.5074, 2026, 5, 21, 16 * 60 + 38, "London, midsummer"],
+      [51.5074, 2026, 11, 21, 7 * 60 + 49, "London, midwinter"],
+      [40.71, 2026, 5, 21, 15 * 60 + 5, "New York, midsummer"],
+      [-33.87, 2026, 11, 21, 14 * 60 + 25, "Sydney, midsummer"],
+      [-0.18, 2026, 2, 20, 12 * 60 + 7, "Quito, equinox"],
+    ]) {
+      const got = hm(core23.getDaylightHours(lat, new Date(y, m, d, 12)));
+      ok(Math.abs(got - minutes) <= 3, `${where}: ${got} min, expected ${minutes}`);
+    }
+  });
+  it("still knows the midnight sun and the polar night", () => {
+    eq(core23.getDaylightHours(69.65, new Date(2026, 5, 21, 12)), 24);
+    eq(core23.getDaylightHours(78.2, new Date(2026, 11, 21, 12)), 0);
+  });
+});
