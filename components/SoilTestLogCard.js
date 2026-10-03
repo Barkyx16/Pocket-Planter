@@ -10,9 +10,9 @@ const STORAGE_KEY = "pp_soilTests";
 
 const phAdvice = (ph) => {
   if (ph == null || Number.isNaN(ph)) return null;
-  if (ph < 6.0) return { color: "#ff9f43", text: "Acidic — add garden lime or wood ash to raise pH toward 6.5." };
-  if (ph > 7.5) return { color: "#6bc7ff", text: "Alkaline — add elemental sulfur, peat, or compost to lower pH." };
-  return { color: "#5cff89", text: "Ideal range (6.0–7.5) for most vegetables. Nice soil!" };
+  if (ph < 6.0) return { color: "#ff9f43", text: "ui5.phAcid" };
+  if (ph > 7.5) return { color: "#6bc7ff", text: "ui5.phAlk" };
+  return { color: "#5cff89", text: "ui5.phIdeal" };
 };
 
 export const SoilTestLogCard = memo(function SoilTestLogCard({ theme }) {
@@ -64,7 +64,7 @@ export const SoilTestLogCard = memo(function SoilTestLogCard({ theme }) {
             <Text style={{ color: advice?.color, fontSize: 24, fontWeight: "900" }}>pH {latest.ph}</Text>
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>{t("soilTestLog.latestReading")}</Text>
           </View>
-          {advice ? <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18, marginTop: 6 }}>{advice.text}</Text> : null}
+          {advice ? <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18, marginTop: 6 }}>{t(advice.text)}</Text> : null}
         </View>
       ) : null}
 

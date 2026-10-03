@@ -99,37 +99,18 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
   };
 
   const getSmartCaptions = (entry) => {
-    const plant = entry.plantName || "plant";
+    const plant = entry.plantName || t("ui5.capPlant");
     const stage = entry.growthStage || "Seedling";
-    const mood = entry.mood || "";
-    const suggestions = {
-      "Seedling": [
-        `${plant} is just getting started 🌱 Day ${entry.daysSincePlanting || 1} and already showing signs of life!`,
-        `Tiny but mighty 💚 Watching ${plant} push through the soil is pure magic.`,
-        `Day ${entry.daysSincePlanting || 1} — ${plant} seedling looking healthy and ready to grow!`,
-      ],
-      "Leaf Growth": [
-        `${plant} is really taking off now 🌿 The leaf growth this week has been incredible.`,
-        `Green and thriving! ${plant} is in full leaf growth mode 💪`,
-        `Look at those leaves! ${plant} is loving the conditions right now.`,
-      ],
-      "Flowering": [
-        `${plant} is flowering! 🌸 This is the moment I've been waiting for.`,
-        `Bloom time! ${plant} is showing off its beautiful flowers today.`,
-        `Flowers on the ${plant} — pollinators are going to love this 🐝`,
-      ],
-      "Fruit Forming": [
-        `Fruit is forming on the ${plant}! 🍅 Almost there — can't wait for harvest!`,
-        `${plant} is putting all its energy into this fruit. Looking plump and perfect!`,
-        `Day ${entry.daysSincePlanting || 1} — the ${plant} fruit is coming along beautifully.`,
-      ],
-      "Harvest Ready": [
-        `Harvest day! 🎉 ${plant} has been an incredible grower this season.`,
-        `It's time! ${plant} is ready to harvest and it looks absolutely perfect.`,
-        `From seed to harvest — ${plant} has been an amazing journey 🌱➡️🍽️`,
-      ],
+    const day = entry.daysSincePlanting || 1;
+    // Stage keys stay English (they are stored); the captions are translated.
+    const keys = {
+      "Seedling": ["capSeed1", "capSeed2", "capSeed3"],
+      "Leaf Growth": ["capLeaf1", "capLeaf2", "capLeaf3"],
+      "Flowering": ["capFlower1", "capFlower2", "capFlower3"],
+      "Fruit Forming": ["capFruit1", "capFruit2", "capFruit3"],
+      "Harvest Ready": ["capHarvest1", "capHarvest2", "capHarvest3"],
     };
-    return suggestions[stage] || suggestions["Seedling"];
+    return (keys[stage] || keys["Seedling"]).map((k) => t(`ui5.${k}`, { plant, day }));
   };
 
   const sharePhoto = async (imageUri) => {
