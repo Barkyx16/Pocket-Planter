@@ -526,3 +526,24 @@ describe("the growing season", () => {
     ok(/getGrowingSeason\(zone\)/.test(fs15.readFileSync(path.join(ROOT, "components/FrostWindowCard.js"), "utf8")));
   });
 });
+
+describe("advice text in the gardener's units", () => {
+  const core18 = require(path.join(ROOT, "core.js"));
+  const L = core18.localizeTemperatures;
+  it("rewrites Fahrenheit figures for metric, and leaves imperial alone", () => {
+    eq(L("Direct sow when soil reaches 60°F.", "metric"), "Direct sow when soil reaches 16°C.");
+    eq(L("Warm (60–80°F) days", "metric"), "Warm (16–27°C) days");
+    eq(L("below 32°F", "metric"), "below 0°C");
+    eq(L("below 32°F", "imperial"), "below 32°F");
+    eq(L(undefined, "metric"), undefined);
+  });
+  it("is applied where the tips are shown", () => {
+    const fs18 = require("fs");
+    const page = fs18.readFileSync(path.join(ROOT, "screens/PlantDetailScreen.js"), "utf8");
+    for (const fn of ["getShouldGrowText", "getWateringTip", "getWhereToPlantText", "getPlantSpecificTip"]) {
+      ok(new RegExp(`temps\\(${fn}\\(`).test(page), `${fn} is shown raw`);
+    }
+    ok(/getPlantingSteps\(selectedPlant\)\.map\(\(step\) => \(typeof step === "string" \? temps\(step\)/.test(page));
+    ok(/localizeTemperatures\(disease\.spreads, unitSystem\)/.test(fs18.readFileSync(path.join(ROOT, "components/DiseaseDetailScreen.js"), "utf8")));
+  });
+});

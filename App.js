@@ -5112,6 +5112,7 @@ const jumpToTab = useCallback((tab) => {
         <BackgroundDecoration isDark={isDark} />
         <DiseaseDetailScreen
           theme={theme}
+          unitSystem={unitSystem}
           disease={selectedDisease}
           onBack={handleBackFromDisease}
           onOpenPlant={(name) => { setSelectedDisease(null); openPlantByName(name); }}
@@ -5122,6 +5123,7 @@ const jumpToTab = useCallback((tab) => {
   if (selectedPlant) {
     return (
       <PlantDetailScreen
+        unitSystem={unitSystem}
         createBedFromPlacementPrompt={createBedFromPlacementPrompt}
         fadeAnimation={fadeAnimation}
         fertilizerTrackers={visibleFertilizerTrackers}

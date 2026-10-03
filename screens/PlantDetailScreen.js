@@ -6,7 +6,7 @@ import { PlantGrowthTimeline } from "../components/PlantGrowthTimeline";
 import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { PremiumLockedSection } from "../components/PremiumLockedSection";
 import { WeatherParticles } from "../components/WeatherParticles";
-import { getCompanionLists, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, normalizeType, resolvePlantImageSource } from "../core";
+import { getCompanionLists, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeTemperatures, normalizeType, resolvePlantImageSource } from "../core";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { getPestImage } from "../data/pestImageMap";
 import { formatDate, t } from "../lib/i18n";
@@ -18,7 +18,7 @@ import { Alert, Animated, Image, Linking, Pressable, SafeAreaView, ScrollView, S
 // early return inside AppInner — a big part of why that file passed 6,000 lines.
 // Behaviour is unchanged; the closure variables it relied on are now explicit props.
 export function PlantDetailScreen({
-  createBedFromPlacementPrompt, fadeAnimation, fertilizerTrackers, followedPlants, gardenPlacementPrompt, gardenXP, getCompanionDisplayName, getCompanionImage, glowOpacity, handleBackFromPlant, harvestTrackers, isDark, journalEntries, jumpToTab, markPlantWatered, openDisease, openPest, openPlantByName, pickJournalPhoto, placeFromPlacementPrompt, plantNotes, premiumUnlocked, quickAddPlantToGarden, rarityStyle, replaceFromPlacementPrompt, resolveCompanionPlant, savedPlants, schedulePlantReminder, selectedPlant, setGardenPlacementPrompt, setHarvestLogPlant, setHarvestLogText, setHarvestTrackers, setPlantNotes, showLevelUp, theme, toggleFertilizerTracker, toggleSavedPlant, wateredPlants, wateringHistory, weather, xpPopups, zip, zone,
+  createBedFromPlacementPrompt, fadeAnimation, fertilizerTrackers, followedPlants, gardenPlacementPrompt, gardenXP, getCompanionDisplayName, getCompanionImage, glowOpacity, handleBackFromPlant, harvestTrackers, isDark, journalEntries, jumpToTab, markPlantWatered, openDisease, openPest, openPlantByName, pickJournalPhoto, placeFromPlacementPrompt, plantNotes, premiumUnlocked, quickAddPlantToGarden, rarityStyle, replaceFromPlacementPrompt, resolveCompanionPlant, savedPlants, schedulePlantReminder, selectedPlant, setGardenPlacementPrompt, setHarvestLogPlant, setHarvestLogText, setHarvestTrackers, setPlantNotes, showLevelUp, theme, toggleFertilizerTracker, toggleSavedPlant, unitSystem, wateredPlants, wateringHistory, weather, xpPopups, zip, zone,
 }) {
     const plantImage = resolvePlantImageSource(selectedPlant);
     const inCatalog = (item) => resolveCompanionPlant(item) !== null;
@@ -32,7 +32,9 @@ export function PlantDetailScreen({
     const quickFacts = getPlantQuickFacts(selectedPlant);
     const plantHealth = getPlantHealth(selectedPlant);
     const plantingWindow = getPlantingWindowText(selectedPlant);
-    const plantingSteps = getPlantingSteps(selectedPlant);
+    // Tips are written in Fahrenheit; show them in the gardener's own units.
+    const temps = (text) => localizeTemperatures(text, unitSystem);
+    const plantingSteps = getPlantingSteps(selectedPlant).map((step) => (typeof step === "string" ? temps(step) : step));
     const isSaved = savedPlants.includes(selectedPlant.name);
     const isFollowed = followedPlants.includes(selectedPlant.name);
     const wateringCompletedToday = wateredPlants[selectedPlant.name] === getTodayKey();
@@ -248,7 +250,7 @@ export function PlantDetailScreen({
 
 <View style={styles.card}>
   <Text style={styles.cardEyebrow}>Smart Care</Text>
-  <Text style={styles.cardText}>{getShouldGrowText(selectedPlant, zone, weather)}</Text>
+  <Text style={styles.cardText}>{temps(getShouldGrowText(selectedPlant, zone, weather))}</Text>
   <View style={styles.detailMiniGrid}>
     {[
       { icon: "☀️", label: "Sun", value: quickFacts.sun },
@@ -259,9 +261,9 @@ export function PlantDetailScreen({
       { icon: "📅", label: "Planting window", value: plantingWindow },
       // Premium users already get a rich Watering Forecast in Daily controls above,
       // so only show the generic weather-based watering tip to free users (no duplicate).
-      ...(!premiumUnlocked ? [{ icon: "🚿", label: "Watering today", value: getWateringTip(weather) }] : []),
-      { icon: "📍", label: "Best spot", value: getWhereToPlantText(selectedPlant) },
-      { icon: "🌤️", label: "Weather advice", value: getPlantSpecificTip(selectedPlant, zone, weather) },
+      ...(!premiumUnlocked ? [{ icon: "🚿", label: "Watering today", value: temps(getWateringTip(weather)) }] : []),
+      { icon: "📍", label: "Best spot", value: temps(getWhereToPlantText(selectedPlant)) },
+      { icon: "🌤️", label: "Weather advice", value: temps(getPlantSpecificTip(selectedPlant, zone, weather)) },
     ].map((fact) => (
       <View key={fact.label} style={styles.detailMiniCard}>
         <Text style={styles.detailMiniIcon}>{fact.icon}</Text>

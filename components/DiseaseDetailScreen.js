@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
+import { localizeTemperatures } from "../core";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { IconText } from "./IconText";
 
@@ -11,7 +12,7 @@ import { IconText } from "./IconText";
 // calendar, since diseases are condition-driven, not calendar-driven.
 const AMBER = "#ffcf8b";
 
-export const DiseaseDetailScreen = memo(function DiseaseDetailScreen({ theme, disease, onBack, onOpenPlant }) {
+export const DiseaseDetailScreen = memo(function DiseaseDetailScreen({ theme, disease, onBack, onOpenPlant, unitSystem }) {
   if (!disease) return null;
 
   // Affected = the user's own plants this disease hits (passed in from the plant
@@ -59,7 +60,7 @@ export const DiseaseDetailScreen = memo(function DiseaseDetailScreen({ theme, di
       <Section icon="💥" title="Damage it causes" text={disease.damage} color="#ff9f9f" />
       <Section icon="🛡️" title="How to prevent it" text={disease.prevent} color="#8effab" />
       <Section icon="✅" title="How to treat it" text={disease.treat} color="#5cff89" />
-      <Section icon="🌡️" title="Favorable conditions" text={disease.spreads} color={AMBER} />
+      <Section icon="🌡️" title="Favorable conditions" text={localizeTemperatures(disease.spreads, unitSystem)} color={AMBER} />
 
       {/* PLANTS AT RISK */}
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>

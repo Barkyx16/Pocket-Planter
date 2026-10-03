@@ -3724,6 +3724,17 @@ export function formatTemp(fahrenheit, units, withUnit = false) {
 }
 
 // Rainfall/length: inches → mm for metric.
+// Rewrites the Fahrenheit figures written into advice text ("soil reaches 60°F",
+// "warm (60–80°F) days") into Celsius for a metric gardener. The tips are prose
+// authored in Fahrenheit, and threading the unit through every generator would
+// touch dozens of them, so the conversion happens where the text is shown.
+export function localizeTemperatures(text, units) {
+  if (units !== "metric" || typeof text !== "string") return text;
+  const c = (f) => Math.round((Number(f) - 32) * 5 / 9);
+  return text.replace(/(-?\d+)(\s?[–-]\s?)(-?\d+)°F/g, (_, a, sep, b) => `${c(a)}${sep}${c(b)}°C`)
+    .replace(/(-?\d+)°F/g, (_, f) => `${c(f)}°C`);
+}
+
 export function formatLength(inches, units) {
   if (inches == null || Number.isNaN(Number(inches))) return "—";
   if (units === "metric") return `${Math.round(Number(inches) * 25.4)} mm`;
