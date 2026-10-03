@@ -120,6 +120,7 @@ import { LoadingScreen } from "./components/LoadingScreen";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { PremiumLockedSection } from "./components/PremiumLockedSection";
 import { MAX_FONT_SCALE_COMPACT, touchSlop } from "./lib/a11y";
+import { createBatchedReader } from "./lib/batchedReader";
 import { OnboardingCard } from "./components/OnboardingCard";
 import { PestDetailScreen } from "./components/PestDetailScreen";
 import { DiseaseDetailScreen } from "./components/DiseaseDetailScreen";
@@ -314,7 +315,14 @@ const persist = (key, value) => {
 // rejection during startup — the noisiest possible moment. A missing cached
 // value just means the state keeps its default, which is already the
 // first-launch behaviour.
-const hydrate = (key, apply) => AsyncStorage.getItem(key).then(apply).catch(() => {});
+//
+// Reads requested in the same tick go out as one multiGet. About thirty mount
+// effects each read a key; one getItem apiece was thirty native round trips
+// (thirty SQLite queries on Android), and thirty separate resolutions each
+// re-rendered all of App. Batched, they resolve together and React folds the
+// state updates into one render. Each apply still runs on its own, so one that
+// throws cannot stop the rest.
+const hydrate = createBatchedReader(AsyncStorage);
 
 // The key inside the cloud row's module_data blob that carries progress with no
 // column of its own. applyModuleBackup only restores MODULE_STORAGE_KEYS, so an
