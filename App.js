@@ -5745,6 +5745,7 @@ const jumpToTab = useCallback((tab) => {
   <GardenTab
   unitSystem={unitSystem}
   recordFertilized={recordFertilized}
+  wateringHistory={wateringHistory}
   onAutoOptimize={autoOptimizeGarden}
   onSavePlant={toggleSavedPlant}
   onSaveMany={saveManyPlants}

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Alert, Image, Modal, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { areaCapacity, canPlantInArea, getAreaTag, getCompanionInfo, getCompatibilityScore, getPairReason, getTodayKey, resolveCompanionName, resolvePlantImageSource } from "../core";
+import { areaCapacity, canPlantInArea, getAreaTag, getCompanionInfo, getCompatibilityScore, getPairReason, getTodayKey, isWaterDue, resolveCompanionName, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
 import { PlantPickerModal } from "./PlantPickerModal";
 import { useTranslation } from "../lib/i18n";
@@ -16,7 +16,7 @@ import { useTranslation } from "../lib/i18n";
 const catalogCompanions = (info) =>
   Array.from(new Set(((info && info.excellent) || []).map(resolveCompanionName).filter(Boolean)));
 
-export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas, savedPlants, wateredPlants, onAssignSlot, onClearSlot, onWaterArea, zone, weather, harvestTrackers, onOpenPlant, onPickPhoto, onDeleteArea, focusAreaId, focusNonce }) {
+export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas, savedPlants, wateredPlants, wateringHistory, onAssignSlot, onClearSlot, onWaterArea, zone, weather, harvestTrackers, onOpenPlant, onPickPhoto, onDeleteArea, focusAreaId, focusNonce }) {
   const { t } = useTranslation();
   const [selectedAreaId, setSelectedAreaId] = useState(null);
   const [pickerSlot, setPickerSlot] = useState(null); // { areaId, slotId } while the plant picker is open
@@ -357,7 +357,8 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                 const imageSource = plant ? resolvePlantImageSource(plant) : null;
                 const hasConflict = plantName && areaPlants.some((c) => c !== plantName && getCompatibilityScore(plantName, c).label === "Avoid");
                 const hasExcellent = plantName && areaPlants.some((c) => c !== plantName && getCompatibilityScore(plantName, c).label === t("areaPlannerMap.excellentPair"));
-                const needsWater = plantName && wateredPlants?.[plantName] !== getTodayKey();
+                // By the plant's own schedule — the badge's rule, not "not watered since midnight".
+                const needsWater = plantName && isWaterDue(plantName, plant, wateredPlants, wateringHistory, weather);
                 return (
                   <Pressable
                     key={`${area.id}-${slotId}`}

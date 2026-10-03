@@ -113,6 +113,7 @@ export function FlowerTab({
             gardenAreas={flowerAreas}
             savedPlants={flowerSaved}
             wateredPlants={wateredPlants}
+            wateringHistory={wateringHistory}
             onAssignSlot={assignPlantToAreaSlot}
             onClearSlot={clearAreaSlot}
             onWaterArea={waterArea}

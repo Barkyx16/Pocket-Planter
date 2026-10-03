@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { getLastWateredText, getPlantHealthStatus, getTodayKey, getWateringStreak, resolvePlantImageSource } from "../core";
+import { getLastWateredText, getPlantHealthStatus, getTodayKey, getWateringStreak, isWaterDue, resolvePlantImageSource } from "../core";
 import { touchSlop } from "../lib/a11y";
 import { useTranslation } from "../lib/i18n";
 
@@ -32,14 +32,18 @@ const [sortMode, setSortMode] = useState("recent");
       if (aPin !== bPin) return aPin - bPin; // pinned always first
       if (sortMode === "alpha") return a.name.localeCompare(b.name);
       if (sortMode === "water") {
-        const aNeeds = wateredPlants?.[a.name] !== today ? 0 : 1;
-        const bNeeds = wateredPlants?.[b.name] !== today ? 0 : 1;
+        // The badge's rule, so the sort agrees with the badges it sorts.
+        const aNeeds = isWaterDue(a.name, a, wateredPlants, wateringHistory, weather) ? 0 : 1;
+        const bNeeds = isWaterDue(b.name, b, wateredPlants, wateringHistory, weather) ? 0 : 1;
         if (aNeeds !== bNeeds) return aNeeds - bNeeds;
         return a.name.localeCompare(b.name);
       }
       return savedPlants.indexOf(b.name) - savedPlants.indexOf(a.name);
     });
-  }, [savedPlants, pinnedPlants, sortMode, wateredPlants, today]);
+  // `today` is read inside isWaterDue, out of the linter's sight; it is here so
+  // the "needs water" order is worked out again when the day turns over.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedPlants, pinnedPlants, sortMode, wateredPlants, wateringHistory, weather, today]);
 
   if (!savedItems.length) {
     return null;

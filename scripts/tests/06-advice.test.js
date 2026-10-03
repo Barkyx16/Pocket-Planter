@@ -408,3 +408,19 @@ describe("one rule for 'needs water today'", () => {
     eq(snap.waterDue.names, ["Tomato"], "the widget counts the never-watered tomato, not the rosemary");
   });
 });
+
+describe("the 'needs water' sort and map border use the same rule", () => {
+  const fs14 = require("fs");
+  it("Plants sorted by 'Needs water' agree with their own badges", () => {
+    const src = fs14.readFileSync(path.join(ROOT, "components/SavedPlantsCard.js"), "utf8");
+    ok(/const aNeeds = isWaterDue\(a\.name, a, wateredPlants, wateringHistory, weather\)/.test(src));
+    ok(!/wateredPlants\?\.\[a\.name\] !== today/.test(src));
+  });
+  it("the garden map's blue border follows the schedule", () => {
+    const src = fs14.readFileSync(path.join(ROOT, "components/AreaPlannerMap.js"), "utf8");
+    ok(/const needsWater = plantName && isWaterDue\(plantName, plant, wateredPlants, wateringHistory, weather\)/.test(src));
+    for (const tab of ["screens/GardenTab.js", "screens/FlowerTab.js"]) {
+      ok(/wateringHistory=\{wateringHistory\}/.test(fs14.readFileSync(path.join(ROOT, tab), "utf8")), `${tab} passes the history`);
+    }
+  });
+});
