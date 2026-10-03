@@ -71,7 +71,7 @@ export const AchievementCard = memo(function AchievementCard({ theme, badges, ea
             ) : (
               <Text style={{ fontSize: 64, marginBottom: 6 }}>{selectedBadge.icon}</Text>
             )}
-            <Text style={{ color: "#5cff89", fontSize: 12, fontWeight: "900", letterSpacing: 1, marginBottom: 6 }}>ACHIEVEMENT</Text>
+            <Text style={{ color: "#5cff89", fontSize: 12, fontWeight: "900", letterSpacing: 1, marginBottom: 6 }}>{t("ui4.achievementEyebrow")}</Text>
             <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "900", textAlign: "center" }}>{selectedBadge.title}</Text>
             <Text style={{ color: "#d7ebdc", fontSize: 14, fontWeight: "700", textAlign: "center", lineHeight: 20, marginTop: 10 }}>{selectedBadge.text}</Text>
             {fmtDate(earnedDates?.[selectedBadge.id]) ? (

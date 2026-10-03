@@ -12,7 +12,7 @@ export const PremiumIntroCard = memo(function PremiumIntroCard({ onClose, onUnlo
       <View style={styles.premiumGlowOrbTwo} />
       <View style={styles.premiumTopRow}>
         <View style={styles.premiumBadge}><IconText label={t("premiumIntro.pocketPlanterPremium")} style={styles.premiumBadgeText} /></View>
-        <View style={styles.premiumRibbon}><Text style={styles.premiumRibbonIcon}>👑</Text><Text style={styles.premiumRibbonText}>PREMIUM</Text></View>
+        <View style={styles.premiumRibbon}><Text style={styles.premiumRibbonIcon}>👑</Text><Text style={styles.premiumRibbonText}>{t("ui4.premiumRibbon")}</Text></View>
       </View>
       <Text style={styles.premiumHeadline}>{t("premiumIntro.turnYourBackyardIntoA")} <Text style={styles.premiumHeadlineGreen}>{t("premiumIntro.thrivingGarden")}</Text></Text>
       <Text style={styles.premiumSubheadline}>{t("premiumIntro.unlockCompanionPlantingIntelligenceSmart")}</Text>

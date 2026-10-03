@@ -255,11 +255,12 @@ const PREMIUM_TAB_IDS = new Set(["garden", "weather", "games", "journal"]);
 
 // What a free user sees in place of a paid tab. Copy sells the tab they just
 // tried to open, rather than repeating one generic "upgrade" line four times.
+// title and description are keys in the ui4 namespace.
 const LOCKED_TAB_COPY = {
-  garden: { icon: "🌱", title: "Your garden, mapped", description: "Lay out beds, track what's planted where, and get watering and spacing guidance for every area." },
-  weather: { icon: "🌤️", title: "Weather intelligence", description: "Frost alerts, rainfall tracking, and daily water-or-don't calls based on your actual forecast." },
-  games: { icon: "🎮", title: "Garden games", description: "Play, learn your plants, and earn XP toward your gardener level." },
-  journal: { icon: "📔", title: "Your garden journal", description: "A dated, photo-backed record of every harvest, planting, and note across your seasons." },
+  garden: { icon: "🌱", title: "lockGardenTitle", description: "lockGardenDesc" },
+  weather: { icon: "🌤️", title: "lockWeatherTitle", description: "lockWeatherDesc" },
+  games: { icon: "🎮", title: "lockGamesTitle", description: "lockGamesDesc" },
+  journal: { icon: "📔", title: "lockJournalTitle", description: "lockJournalDesc" },
 };
 
 const OVERFLOW_TAB_IDS = ["flowers", "games", "pests", "journal", "profile", "settings", "premium"];
@@ -2408,12 +2409,12 @@ useEffect(() => {
     0
   );
   const checks = [
-    { id: "first_harvest", hit: (harvestLog || []).length >= 1, emoji: "🎉", title: "FIRST HARVEST!", text: "You harvested your very first crop. This is what it's all about! 🥗" },
-    { id: "plants_10", hit: (savedPlants || []).length >= 10, emoji: "🌿", title: "10 PLANTS!", text: "Your garden collection just hit 10 plants. You're building something special. 🌱" },
-    { id: "plants_25", hit: (savedPlants || []).length >= 25, emoji: "🏡", title: "25 PLANTS!", text: "Twenty-five plants! That's a serious garden. 🌻" },
-    { id: "water_50", hit: totalWaterings >= 50, emoji: "💧", title: "50 WATERINGS!", text: "Fifty waterings logged. Your plants are lucky to have you. 💚" },
-    { id: "water_100", hit: totalWaterings >= 100, emoji: "🌊", title: "100 WATERINGS!", text: "One hundred waterings! Your dedication is next level. 🔥" },
-    { id: "harvest_10", hit: (harvestLog || []).length >= 10, emoji: "🧺", title: "10 HARVESTS!", text: "Ten harvests in the books. Your garden is truly producing. 🍅" },
+    { id: "first_harvest", hit: (harvestLog || []).length >= 1, emoji: "🎉", title: t("ui4.msFirstHarvestT"), text: t("ui4.msFirstHarvestB") },
+    { id: "plants_10", hit: (savedPlants || []).length >= 10, emoji: "🌿", title: t("ui4.msPlants10T"), text: t("ui4.msPlants10B") },
+    { id: "plants_25", hit: (savedPlants || []).length >= 25, emoji: "🏡", title: t("ui4.msPlants25T"), text: t("ui4.msPlants25B") },
+    { id: "water_50", hit: totalWaterings >= 50, emoji: "💧", title: t("ui4.msWater50T"), text: t("ui4.msWater50B") },
+    { id: "water_100", hit: totalWaterings >= 100, emoji: "🌊", title: t("ui4.msWater100T"), text: t("ui4.msWater100B") },
+    { id: "harvest_10", hit: (harvestLog || []).length >= 10, emoji: "🧺", title: t("ui4.msHarvest10T"), text: t("ui4.msHarvest10B") },
   ];
 
   // Fire only the first newly-crossed milestone (avoid stacking overlays)
@@ -2965,7 +2966,7 @@ const { error: uploadError } =
         daysSincePlanting: 1,
       };
       setJournalEntries((current) => [entry, ...current]);
-      maybePromptPremium("Photo added to your journal. Upgrade to Premium to save unlimited plants and unlock every tab, calendar, and insight.");
+      maybePromptPremium(t("ui4.promptPhoto"));
       return;
     }
     const { data: publicUrlData } =
@@ -2991,7 +2992,7 @@ setJournalEntries((current) => [
   entry,
   ...current,
 ]);
-maybePromptPremium("Photo added to your journal. Upgrade to Premium to save unlimited plants and unlock every tab, calendar, and insight.");
+maybePromptPremium(t("ui4.promptPhoto"));
 
 console.log(
   "Journal photo uploaded ✅"
@@ -3972,7 +3973,7 @@ function assignPlantToAreaSlot(areaId, slotId, plantName, opts = {}) {
         : area
     )
   );
-  maybePromptPremium("Nice — that plant's in your garden. Upgrade to Premium to save unlimited plants and unlock the garden dashboard, calendars, pest watch, and the Flowers & Home tab.");
+  maybePromptPremium(t("ui4.promptPlanted"));
   // Record this planting into rotation history (families only).
   try {
     const family = getPlantFamily(plantName);
@@ -5339,7 +5340,7 @@ const jumpToTab = useCallback((tab) => {
     {syncFailed ? (
       <View style={{ position: "absolute", top: 8, left: 16, right: 16, zIndex: 950, flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255, 159, 67, 0.96)", borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14, shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 18 }}>
         <Text style={{ fontSize: 14 }}>☁️</Text>
-        <Text style={{ color: "#3d2c00", fontSize: 12, fontWeight: "900", flex: 1 }}>Changes aren't syncing to the cloud right now — they'll retry automatically.</Text>
+        <Text style={{ color: "#3d2c00", fontSize: 12, fontWeight: "900", flex: 1 }}>{t("ui4.syncFailed")}</Text>
       </View>
     ) : null}
 
@@ -6149,8 +6150,8 @@ const jumpToTab = useCallback((tab) => {
 {PREMIUM_TAB_IDS.has(activeTab) && !premiumUnlocked ? (
   <PremiumLockedSection
     icon={(LOCKED_TAB_COPY[activeTab] || {}).icon || "🔒"}
-    title={(LOCKED_TAB_COPY[activeTab] || {}).title || "Premium feature"}
-    description={(LOCKED_TAB_COPY[activeTab] || {}).description || "Upgrade to unlock this part of Pocket Planter."}
+    title={t(`ui4.${(LOCKED_TAB_COPY[activeTab] || {}).title || "lockGenericTitle"}`)}
+    description={t(`ui4.${(LOCKED_TAB_COPY[activeTab] || {}).description || "lockGenericDesc"}`)}
     onUnlock={() => jumpToTab("premium")}
   />
 ) : null}

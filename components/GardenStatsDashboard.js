@@ -320,7 +320,7 @@ return (
                 {[
                   wateringsThisWeek > 0 ? `💧 ${tn("counts.wateringsN", wateringsThisWeek)}` : null,
                   photosThisWeek > 0 ? `📸 ${tn("counts.photosN", photosThisWeek)}` : null,
-                  (streakData?.count || 0) > 0 ? `🔥 ${streakData.count}-day streak` : null,
+                  (streakData?.count || 0) > 0 ? tn("share.lStreak", streakData.count) : null,
                 ].filter(Boolean).join("  •  ")}
               </Text>
             </View>

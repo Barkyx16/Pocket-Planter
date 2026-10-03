@@ -52,6 +52,12 @@ const TOOLKIT = [
 const ALL_ITEMS = TOOLKIT.flatMap((g) => g.items);
 const TOTAL = ALL_ITEMS.length;
 
+// Display names in the app language. `name` stays English: it keys what the
+// gardener marked as owned, which is stored.
+const TOOL_KEYS = {"Garden Gloves": "gloves", "Hand Trowel": "trowel", "Shovel / Spade": "shovel", "Hand Cultivator": "cultivator", "Garden Hose": "hose", "Spray Nozzle": "nozzle", "Watering Can": "can", "Pruning Shears": "shears", "Garden Rake": "rake", "Harvest Basket": "basket", "Plant Labels": "labels", "Kneeling Pad": "kneeler", "Moisture Meter": "meter", "Row Cover": "rowcover"};
+const TOOLKIT_CAT_KEYS = {"Digging & Planting": "catDigging", "Watering": "catWatering", "Care & Harvest": "catCare", "Comfort & Protection": "catComfort"};
+const toolName = (t, name) => (TOOL_KEYS[name] ? t(`ui4.${TOOL_KEYS[name]}N`) : name);
+
 export const GardenToolkitCard = memo(function GardenToolkitCard({ theme, onCompletionChange }) {
   const { t } = useTranslation();
   const [owned, setOwned] = useState({});
@@ -121,7 +127,7 @@ export const GardenToolkitCard = memo(function GardenToolkitCard({ theme, onComp
         return (
           <View key={group.cat} style={{ marginTop: 14 }}>
             <Text style={{ color: group.color, fontSize: 10, fontWeight: "900", letterSpacing: 0.8, marginBottom: 8, marginLeft: 2 }}>
-              {group.cat.toUpperCase()}
+              {(TOOLKIT_CAT_KEYS[group.cat] ? t(`ui4.${TOOLKIT_CAT_KEYS[group.cat]}`) : group.cat).toUpperCase()}
             </Text>
             <View style={{ gap: 8 }}>
               {items.map((item) => (
@@ -129,17 +135,17 @@ export const GardenToolkitCard = memo(function GardenToolkitCard({ theme, onComp
                   <Pressable
                     onPress={() => markOwned(item.name)}
                     accessibilityRole="checkbox"
-                    accessibilityLabel={t("extra.markOwned", { name: item.name })}
+                    accessibilityLabel={t("extra.markOwned", { name: toolName(t, item.name) })}
                     hitSlop={touchSlop(24)}
                     style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: "rgba(92, 255, 137, 0.5)" }}
                   />
                   <Text style={{ flex: 1, color: theme.text, fontSize: 14, fontWeight: "800" }} numberOfLines={1}>
-                    {item.icon}  {item.name}
+                    {item.icon}  {toolName(t, item.name)}
                   </Text>
                   <Pressable
                     onPress={() => shop(item.q)}
                     accessibilityRole="button"
-                    accessibilityLabel={t("extra.shopFor", { name: item.name })}
+                    accessibilityLabel={t("extra.shopFor", { name: toolName(t, item.name) })}
                     style={{ backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 8, paddingVertical: 8, paddingHorizontal: 10, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
                   >
                     <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900" }}>{t("gardenToolkit.shop")}</Text>
@@ -166,14 +172,14 @@ export const GardenToolkitCard = memo(function GardenToolkitCard({ theme, onComp
                   <Pressable
                     onPress={() => unmark(item.name)}
                     accessibilityRole="checkbox"
-                    accessibilityLabel={t("extra.removeOwned", { name: item.name })}
+                    accessibilityLabel={t("extra.removeOwned", { name: toolName(t, item.name) })}
                     hitSlop={touchSlop(24)}
                     style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: "#5cff89", alignItems: "center", justifyContent: "center" }}
                   >
                     <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "900" }}>✓</Text>
                   </Pressable>
                   <Text style={{ flex: 1, color: theme.secondaryText, fontSize: 12, fontWeight: "700", textDecorationLine: "line-through" }}>
-                    {item.icon}  {item.name}
+                    {item.icon}  {toolName(t, item.name)}
                   </Text>
                 </View>
               ))}

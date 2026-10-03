@@ -19,7 +19,7 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
         "",
         t("stats.shareLevel", { level: gardenXP.level, title: gardenXP.title }),
         tn("stats.shareGrowing", savedPlants.length),
-        plotCount > 0 ? `🗺️ ${plotCount} plots planted` : null,
+        plotCount > 0 ? tn("ui2.plotsPlanted", plotCount) : null,
         harvests > 0 ? tn("counts.harvestsLogged", harvests) : null,
         photos > 0 ? tn("counts.gardenPhotos", photos) : null,
         streak > 0 ? tn("ui2.careStreak", streak) : null,
@@ -56,7 +56,7 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
     { value: `${streak}d`, label: t("ui2.streak"), color: "#ff9f43" },
   ];
   const extras = [
-    plotCount > 0 ? `🗺️ ${plotCount} plots planted` : null,
+    plotCount > 0 ? tn("ui2.plotsPlanted", plotCount) : null,
     photos > 0 ? tn("counts.gardenPhotos", photos) : null,
   ].filter(Boolean);
 

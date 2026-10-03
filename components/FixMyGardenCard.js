@@ -71,7 +71,7 @@ return (
 
                 {onFocusConflict ? (
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 2, marginLeft: 4, backgroundColor: "rgba(92, 255, 137, 0.12)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 }}>
-                    <Text style={{ color: "#8effab", fontSize: 11, fontWeight: "900" }}>Fix</Text>
+                    <Text style={{ color: "#8effab", fontSize: 11, fontWeight: "900" }}>{t("ui4.fix")}</Text>
                     <Text style={{ color: "#8effab", fontSize: 13, fontWeight: "900" }}>›</Text>
                   </View>
                 ) : (

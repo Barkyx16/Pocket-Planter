@@ -79,7 +79,7 @@ return (
           </View>
         ))}
         <View style={{ width: 46, alignItems: "flex-end" }}>
-          <Text style={{ color: theme.secondaryText, fontSize: 9.5, fontWeight: "900" }}>LAST</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 9.5, fontWeight: "900" }}>{t("ui4.last")}</Text>
         </View>
       </View>
 

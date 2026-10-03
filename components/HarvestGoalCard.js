@@ -47,7 +47,7 @@ if (!harvestGoal) {
             style={{ flex: 1, backgroundColor: "rgba(255, 255, 255, 0.08)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255, 216, 107, 0.2)", color: "#ffffff", fontSize: 16, fontWeight: "800", paddingHorizontal: 16, paddingVertical: 14 }}
           />
           <Pressable onPress={setGoal} style={{ backgroundColor: "#ffd86b", borderRadius: 12, paddingHorizontal: 22, alignItems: "center", justifyContent: "center" }}>
-            <Text style={{ color: "#3d2c00", fontSize: 14, fontWeight: "900" }}>Set</Text>
+            <Text style={{ color: "#3d2c00", fontSize: 14, fontWeight: "900" }}>{t("ui4.set")}</Text>
           </Pressable>
         </View>
       </View>
