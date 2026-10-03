@@ -1097,3 +1097,59 @@ describe("translation keys", () => {
     eq([...new Set(missing)], []);
   });
 });
+
+describe("translation placeholders", () => {
+  it("every {placeholder} in an English string is passed at its call site", () => {
+    // A call passing { plant } to a string written with {name} shows "{name}".
+    const i18n = require(path.join(ROOT, "lib/i18n.js"));
+    const en = i18n.DICTIONARY_MAP.en;
+    const lookup = (key) => key.split(".").reduce((n, p) => (n && typeof n === "object" ? n[p] : undefined), en);
+    const placeholders = (v) => {
+      const texts = typeof v === "string" ? [v] : v && typeof v === "object" ? Object.values(v).filter((x) => typeof x === "string") : [];
+      return new Set(texts.flatMap((s) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1])));
+    };
+    // The text of a balanced (...) or {...} group starting at `open`.
+    const group = (src, open) => {
+      const close = { "(": ")", "{": "}" }[src[open]];
+      let depth = 0;
+      for (let i = open; i < src.length; i++) {
+        if (src[i] === src[open]) depth++;
+        else if (src[i] === close && --depth === 0) return src.slice(open + 1, i);
+      }
+      return null;
+    };
+    const topLevelKeys = (body) => {
+      let flat = "", depth = 0;
+      for (const ch of body) {
+        if ("({[`".includes(ch)) depth++;
+        if (depth === 0) flat += ch;
+        if (")}]`".includes(ch)) depth = Math.max(0, depth - 1);
+      }
+      return new Set([...flat.matchAll(/(?:^|,)\s*([A-Za-z_$][\w$]*)\s*(?=[:,]|$)/g)].map((m) => m[1]));
+    };
+    const files = ["App.js", "core.js"].map((f) => path.join(ROOT, f));
+    for (const dir of ["components", "screens", "lib"]) {
+      for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith(".js"))) files.push(path.join(ROOT, dir, f));
+    }
+    const problems = [];
+    for (const f of files) {
+      const src = fs.readFileSync(f, "utf8");
+      for (const m of src.matchAll(/\b(tn?)\(\s*"([a-zA-Z0-9_]+\.[a-zA-Z0-9_.]+)"/g)) {
+        const want = placeholders(lookup(m[2]));
+        if (!want.size) continue;
+        const args = group(src, m.index + m[1].length);
+        if (args == null) continue;
+        const brace = args.indexOf("{");
+        const given = brace >= 0 ? topLevelKeys(group(args, brace) || "") : new Set();
+        if (m[1] === "tn") given.add("count");
+        // Only check calls that pass an inline object (or none): a variable may hold anything.
+        const rest = args.slice(args.indexOf(",") + 1).trim();
+        if (rest && brace < 0 && m[1] === "t") continue;
+        if (m[1] === "tn" && rest.includes(",") && brace < 0) continue;
+        const absent = [...want].filter((p) => !given.has(p));
+        if (absent.length) problems.push(`${path.relative(ROOT, f)}: ${m[2]} needs {${absent.join(", ")}}`);
+      }
+    }
+    eq([...new Set(problems)], []);
+  });
+});
