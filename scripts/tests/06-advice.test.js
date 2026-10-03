@@ -525,3 +525,19 @@ describe("plant types in the gardener's language", () => {
     eq(core.normalizeType("Vegetable", "Carrot"), "Vegetables", "the data stays English");
   });
 });
+
+describe("difficulty in the gardener's language", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("translates for display and keeps the English the filter uses", () => {
+    i18n.setLocale("es");
+    try {
+      const d = core.getPlantDifficulty(plant("Basil"));
+      eq([d.label, d.labelText, d.text], ["Easy", "Fácil", "Ideal para principiantes"]);
+      eq(core.difficultyLabel("Hard"), "Difícil");
+      eq(core.difficultyLabel("All"), "Todas");
+    } finally {
+      i18n.setLocale("en");
+    }
+    eq(core.getPlantDifficulty(plant("Basil")).labelText, "Easy");
+  });
+});

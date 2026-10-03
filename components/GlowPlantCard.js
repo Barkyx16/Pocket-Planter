@@ -34,7 +34,7 @@ export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone,
           </Text>
           <View style={{ flexDirection: "row", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
             <View style={{ backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}>
-              <Text style={{ color: "#8effab", fontSize: 10, fontWeight: "900" }}>{difficulty.icon} {difficulty.label}</Text>
+              <Text style={{ color: "#8effab", fontSize: 10, fontWeight: "900" }}>{difficulty.icon} {difficulty.labelText}</Text>
             </View>
             <View style={{ backgroundColor: "rgba(255, 255, 255, 0.08)", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 }}>
               <Text style={{ color: "#d7ebdc", fontSize: 10, fontWeight: "800" }}>🚜 {getHarvestCountdown(plant)}</Text>

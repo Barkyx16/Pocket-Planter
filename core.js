@@ -2480,9 +2480,17 @@ export function isFertilizerDue(plantName, tracker) {
 export function getPlantDifficulty(item) {
   const type = normalizeType(item.type, item.name);
   const name = String(item.name || "").toLowerCase();
-  if (type === "Herbs" || ["lettuce","radish","spinach","kale","green bean"].some((w) => plantNameMatchesKey(name, w))) return { label: "Easy", icon: "🟢", text: "Beginner friendly" };
-  if (type === "Tree Fruits" || type === "Tropical Fruits" || ["garlic","pumpkin","watermelon","pomegranate","avocado"].some((w) => plantNameMatchesKey(name, w))) return { label: "Hard", icon: "🔴", text: "Needs more care" };
-  return { label: "Medium", icon: "🟡", text: "Moderate care" };
+  // `label` stays English for the filters and compares; `labelText` and `text`
+  // are for display, in the gardener's language.
+  if (type === "Herbs" || ["lettuce","radish","spinach","kale","green bean"].some((w) => plantNameMatchesKey(name, w))) return { label: "Easy", labelText: t("plantTypes.easy"), icon: "🟢", text: t("plantTypes.beginnerFriendly") };
+  if (type === "Tree Fruits" || type === "Tropical Fruits" || ["garlic","pumpkin","watermelon","pomegranate","avocado"].some((w) => plantNameMatchesKey(name, w))) return { label: "Hard", labelText: t("plantTypes.hard"), icon: "🔴", text: t("plantTypes.needsMoreCare") };
+  return { label: "Medium", labelText: t("plantTypes.medium"), icon: "🟡", text: t("plantTypes.moderateCare") };
+}
+
+// "Easy" / "Medium" / "Hard" (and the filter's "All") for display.
+export function difficultyLabel(label) {
+  const key = { All: "all", Easy: "easy", Medium: "medium", Hard: "hard" }[label];
+  return key ? t(`plantTypes.${key}`) : String(label || "");
 }
 
 export function getPlantSunNeed(item) {
@@ -2563,7 +2571,7 @@ export function getPlantQuickFacts(item) {
     soil: type === "Tree Fruits" || type === "Tropical Fruits" ? "Deep, well-draining soil" : "Loose, compost-rich soil",
     spacing,
     harvest: getHarvestCountdown(item),
-    difficulty: `${difficulty.icon} ${difficulty.label}`,
+    difficulty: `${difficulty.icon} ${difficulty.labelText}`,
     containerFriendly: d ? d.containerFriendly : null,
     perennial: d ? d.perennial : null,
   };

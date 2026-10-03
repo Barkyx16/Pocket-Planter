@@ -50,7 +50,7 @@ return (
         </Text>
         <View style={styles.plantTodayTagRow}>
           <View style={styles.plantTodayTag}>
-            <Text style={styles.plantTodayTagText}>{difficulty.icon} {difficulty.label}</Text>
+            <Text style={styles.plantTodayTagText}>{difficulty.icon} {difficulty.labelText}</Text>
           </View>
           <View style={styles.plantTodayTag}>
             <Text style={styles.plantTodayTagText}>🚜 {harvest}</Text>

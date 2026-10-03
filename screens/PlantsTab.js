@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Image, InteractionManager, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { getHarvestCountdown, getMonthEmoji, getPlantDifficulty, getPlantSeasonLabel, getSearchSuggestions, getTomorrowKey, MONTH_NAMES, normalizeType, PLANT_TYPES, plantsBuddyImage, resolvePlantImageSource, SCREEN_WIDTH, tapHaptic, translateSeasonLabel, typeLabel } from "../core";
+import { difficultyLabel, getHarvestCountdown, getMonthEmoji, getPlantDifficulty, getPlantSeasonLabel, getSearchSuggestions, getTomorrowKey, MONTH_NAMES, normalizeType, PLANT_TYPES, plantsBuddyImage, resolvePlantImageSource, SCREEN_WIDTH, tapHaptic, translateSeasonLabel, typeLabel } from "../core";
 import { getMonthImage } from "../data/monthImageMap";
 import { CollapsibleCard } from "../components/CollapsibleCard";
 import { PremiumLockedCard } from "../components/PremiumLockedCard";
@@ -281,10 +281,10 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
               onPress={() => { tapHaptic("light"); setPlantDifficultyFilter(d); }}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
-              accessibilityLabel={d === "All" ? t("plants.showAllDifficulties") : `Filter by ${d} difficulty`}
+              accessibilityLabel={d === "All" ? t("plants.showAllDifficulties") : difficultyLabel(d)}
               style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}
             >
-              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{icon ? icon + " " : ""}{d}</Text>
+              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{icon ? icon + " " : ""}{difficultyLabel(d)}</Text>
             </Pressable>
           );
         })}
@@ -345,7 +345,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
                   <Text style={styles.comparePlantName}>{right.name}</Text>
                 </View>
                 {[
-                  ["Difficulty", getPlantDifficulty(left).label, getPlantDifficulty(right).label],
+                  ["Difficulty", getPlantDifficulty(left).labelText, getPlantDifficulty(right).labelText],
                   ["Harvest", getHarvestCountdown(left), getHarvestCountdown(right)],
                   ["Zones", `${left.minZone}-${left.maxZone}`, `${right.minZone}-${right.maxZone}`],
                   ["Type", typeLabel(normalizeType(left.type, left.name)), typeLabel(normalizeType(right.type, right.name))],
