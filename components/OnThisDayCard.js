@@ -5,7 +5,7 @@ import { getTodayKey, resolvePlantImageSource } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries, harvestLog, onOpenPlant, seen, onShown }) {
-  const { t, growthStageLabel } = useTranslation();
+  const { t, tn, growthStageLabel } = useTranslation();
   const now = new Date();
   now.setHours(12, 0, 0, 0);
 
@@ -21,12 +21,12 @@ export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries
     // Year anniversary — exact month + day, a year or more back.
     if (then.getMonth() === now.getMonth() && then.getDate() === now.getDate()) {
       const years = now.getFullYear() - then.getFullYear();
-      if (years >= 1) return { label: years === 1 ? "1 year ago" : `${years} years ago`, years };
+      if (years >= 1) return { label: tn("myGardenToday.yearsAgo", years), years };
     }
     // Month milestone — same day-of-month, at least a month back.
     if (then.getDate() === now.getDate()) {
       const months = (now.getFullYear() - then.getFullYear()) * 12 + (now.getMonth() - then.getMonth());
-      if (months >= 1) return { label: months === 1 ? "1 month ago" : `${months} months ago`, months };
+      if (months >= 1) return { label: tn("myGardenToday.monthsAgo", months), months };
     }
     return null;
   };

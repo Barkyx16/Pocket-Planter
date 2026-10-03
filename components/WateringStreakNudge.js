@@ -6,7 +6,7 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const WateringStreakNudge = memo(function WateringStreakNudge({ theme, savedPlants, wateringHistory, snoozedPlants, onOpenPlant, onWater }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const tomorrowKey = getTomorrowKey();
   const atRisk = (savedPlants || [])
     .filter((name) => snoozedPlants?.[name] !== tomorrowKey)
@@ -23,8 +23,8 @@ export const WateringStreakNudge = memo(function WateringStreakNudge({ theme, sa
   const urgentToday = atRisk.filter((p) => p.daysLeft === 1);
   const accent = urgentToday.length ? "#ff9f43" : "#ffd86b";
   const headline = urgentToday.length
-    ? `Water ${urgentToday.length === 1 ? urgentToday[0].name : `${urgentToday.length} plants`} today to keep your streak`
-    : `${atRisk.length} watering streak${atRisk.length === 1 ? "" : "s"} winding down`;
+    ? (urgentToday.length === 1 ? t("myGardenToday.streakWaterOne", { plant: urgentToday[0].name }) : tn("myGardenToday.streakWaterMany", urgentToday.length))
+    : tn("myGardenToday.streaksWinding", atRisk.length);
 
   return (
     <View style={{ borderRadius: 24, padding: 18, marginBottom: 18, borderWidth: 1.5, backgroundColor: `${accent}12`, borderColor: accent }}>

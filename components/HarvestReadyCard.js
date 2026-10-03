@@ -5,7 +5,7 @@ import { HARVEST_SOON_DAYS, getHarvestDaysLeft, resolvePlantImageSource } from "
 import { useTranslation } from "../lib/i18n";
 
 export const HarvestReadyCard = memo(function HarvestReadyCard({ theme, harvestTrackers, onOpenPlant }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const entries = Object.entries(harvestTrackers || {})
     .map(([name, tracker]) => {
       return { name, daysLeft: getHarvestDaysLeft(tracker) };
@@ -18,8 +18,8 @@ export const HarvestReadyCard = memo(function HarvestReadyCard({ theme, harvestT
   const ready = entries.filter((e) => e.daysLeft === 0);
   const accent = ready.length ? "#ffd86b" : "#8effab";
   const headline = ready.length
-    ? `${ready.length} plant${ready.length === 1 ? "" : "s"} ready to harvest!`
-    : "Harvest coming up";
+    ? tn("myGardenToday.harvestReadyCount", ready.length)
+    : t("myGardenToday.harvestComingUp");
 
   return (
     <View style={{ borderRadius: 24, padding: 18, marginBottom: 18, borderWidth: 1.5, backgroundColor: `${accent}12`, borderColor: accent }}>

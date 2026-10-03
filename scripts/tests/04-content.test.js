@@ -657,3 +657,35 @@ describe("My Garden Today speaks the gardener's language", () => {
     i18n.setLocale("en");
   });
 });
+
+describe("the Home cards speak the gardener's language", () => {
+  const fs22 = require("fs");
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  const leftovers = {
+    "components/PlantTodayHero.js": ["prime planting window", "forgiving grower"],
+    "components/DaylightCard.js": ["Long days now", "Good daylight"],
+    "components/SuccessionSowingCard.js": ["Last sown", "Next round in"],
+    "components/OnThisDayCard.js": ["years ago`", "\"1 month ago\""],
+    "components/WaterTriageCard.js": ["start at the top", "on deck"],
+    "components/HarvestReadyCard.js": ["ready to harvest!`", "\"Harvest coming up\""],
+    "components/WateringStreakNudge.js": ["to keep your streak`", "winding down`"],
+  };
+  it("has no English sentences left in them", () => {
+    const found = [];
+    for (const [f, phrases] of Object.entries(leftovers)) {
+      const src = fs22.readFileSync(path.join(ROOT, f), "utf8");
+      phrases.forEach((p) => { if (src.includes(p)) found.push(`${f}: ${p}`); });
+    }
+    eq(found, []);
+  });
+  it("no longer says 'Zone your area'", () => {
+    eq(i18n.t("myGardenToday.heroPrimeArea"), "This is a prime planting window in your area right now.");
+  });
+  it("counts with real plurals", () => {
+    eq(i18n.tn("myGardenToday.harvestReadyCount", 1), "1 plant ready to harvest!");
+    eq(i18n.tn("myGardenToday.streaksWinding", 2), "2 watering streaks winding down");
+    i18n.setLocale("fr");
+    eq(i18n.tn("myGardenToday.yearsAgo", 2), "il y a 2 ans");
+    i18n.setLocale("en");
+  });
+});

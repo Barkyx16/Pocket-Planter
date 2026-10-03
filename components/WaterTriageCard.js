@@ -11,19 +11,19 @@ export const WaterTriageCard = memo(function WaterTriageCard({ theme, savedPlant
   if (!rows.length) return null;
 
   const BUCKET = {
-    overdue: { color: "#ff7b7b", icon: "🔴", label: "Overdue" },
-    today: { color: "#ffd86b", icon: "🟡", label: "Due today" },
-    tomorrow: { color: "#6bc7ff", icon: "🔵", label: "Tomorrow" },
+    overdue: { color: "#ff7b7b", icon: "🔴", label: t("myGardenToday.bucketOverdue") },
+    today: { color: "#ffd86b", icon: "🟡", label: t("myGardenToday.bucketToday") },
+    tomorrow: { color: "#6bc7ff", icon: "🔵", label: t("myGardenToday.bucketTomorrow") },
   };
   const overdueCount = rows.filter((r) => r.bucket === "overdue").length;
   const todayCount = rows.filter((r) => r.bucket === "today").length;
 
   const summary =
     overdueCount > 0
-      ? `${overdueCount} overdue${todayCount ? `, ${todayCount} due today` : ""} — start at the top.`
+      ? (todayCount ? t("myGardenToday.triageOverdueToday", { overdue: overdueCount, today: todayCount }) : t("myGardenToday.triageOverdue", { overdue: overdueCount }))
       : todayCount > 0
-      ? `${todayCount} due today, plus tomorrow's coming up.`
-      : "Nothing overdue — just tomorrow's on deck.";
+      ? t("myGardenToday.triageToday", { today: todayCount })
+      : t("myGardenToday.triageNone");
 
   return (
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: overdueCount ? "#ff7b7b" : "rgba(107, 199, 255, 0.3)" }]}>

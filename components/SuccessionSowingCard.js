@@ -41,10 +41,10 @@ export const SuccessionSowingCard = memo(function SuccessionSowingCard({ theme, 
           const actionable = info.status !== "waiting";
           const detail =
             info.status === "due"
-              ? `Last sown ${info.daysSince}d ago · every ~${info.interval}d`
+              ? t("myGardenToday.sowLast", { days: info.daysSince, interval: info.interval })
               : info.status === "waiting"
-              ? `Next round in ~${info.daysUntil}d · every ~${info.interval}d`
-              : `Recommended every ~${info.interval}d in season`;
+              ? t("myGardenToday.sowNext", { days: info.daysUntil, interval: info.interval })
+              : t("myGardenToday.sowRecommended", { interval: info.interval });
           return (
             <View
               key={`succ-${name}`}
