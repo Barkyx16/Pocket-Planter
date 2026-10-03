@@ -89,7 +89,7 @@ export const PlantRoomsSection = memo(function PlantRoomsSection({ theme, savedP
                 {[{ label: t("ui7.none"), value: null }, ...rooms.map((r) => ({ label: r, value: r }))].map((opt) => {
                   const active = (data.assign[h.name] || null) === opt.value;
                   return (
-                    <Pressable accessibilityRole="button" key={opt.label} onPress={() => assign(h.name, opt.value)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: active ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#8effab" : "rgba(255,255,255,0.12)" }}>
+                    <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button" key={opt.label} onPress={() => assign(h.name, opt.value)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: active ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#8effab" : "rgba(255,255,255,0.12)" }}>
                       <Text style={{ color: active ? "#07120b" : theme.secondaryText, fontSize: 11, fontWeight: "900" }}>{opt.label}</Text>
                     </Pressable>
                   );

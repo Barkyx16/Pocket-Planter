@@ -347,7 +347,7 @@ return (
                   const hasLog = hasEntries(day);
                   const dotColor = getEntryColor(day);
                   return (
-                    <Pressable accessibilityRole="button"
+                    <Pressable accessibilityState={{ selected: !!isSelected }} accessibilityRole="button"
                       key={day}
                       onPress={() => setSelectedDate(dateKey)}
                       style={[styles.careLogCalendarCell, {

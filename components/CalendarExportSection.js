@@ -152,7 +152,7 @@ export const CalendarExportSection = memo(function CalendarExportSection({ theme
         {TASKS.map((tk) => {
           const active = task.id === tk.id;
           return (
-            <Pressable accessibilityRole="button" key={tk.id} onPress={() => setTask(tk)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? tk.color + "26" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? tk.color : "rgba(255,255,255,0.1)" }}>
+            <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button" key={tk.id} onPress={() => setTask(tk)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? tk.color + "26" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? tk.color : "rgba(255,255,255,0.1)" }}>
               <Text style={{ color: active ? tk.color : theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{t(`misc.${tk.title}`)}</Text>
             </Pressable>
           );
@@ -164,7 +164,7 @@ export const CalendarExportSection = memo(function CalendarExportSection({ theme
         {FREQS.map((f) => {
           const active = freq.id === f.id;
           return (
-            <Pressable accessibilityRole="button" key={f.id} onPress={() => setFreq(f)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? "#6bc7ff" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#6bc7ff" : "rgba(255,255,255,0.1)" }}>
+            <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button" key={f.id} onPress={() => setFreq(f)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? "#6bc7ff" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#6bc7ff" : "rgba(255,255,255,0.1)" }}>
               <Text style={{ color: active ? "#07120b" : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{t(`misc.${f.label}`)}</Text>
             </Pressable>
           );

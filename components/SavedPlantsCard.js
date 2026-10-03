@@ -80,7 +80,7 @@ const [sortMode, setSortMode] = useState("recent");
           {SORT_OPTIONS.map((opt) => {
             const active = sortMode === opt.id;
             return (
-              <Pressable accessibilityRole="button"
+              <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button"
                 key={opt.id}
                 onPress={() => setSortMode(opt.id)}
                 style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.08)" }}

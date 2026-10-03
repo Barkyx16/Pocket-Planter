@@ -57,7 +57,7 @@ export const GrowthTimelapseCard = memo(function GrowthTimelapseCard({ theme, jo
         {playable.map(([name, entries]) => {
           const active = selected === name;
           return (
-            <Pressable accessibilityRole="button" key={name} onPress={() => setSelected(name)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}>
+            <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button" key={name} onPress={() => setSelected(name)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}>
               <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{name} · {entries.length}</Text>
             </Pressable>
           );

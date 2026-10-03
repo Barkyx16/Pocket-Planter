@@ -95,7 +95,7 @@ export const PlantLabelsSection = memo(function PlantLabelsSection({ theme, save
             {names.map((n) => {
               const active = qrPlant === n;
               return (
-                <Pressable accessibilityRole="button" key={n} onPress={() => { tapHaptic("light"); setQrPlant(active ? null : n); }} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: active ? "#ffd86b" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#ffd86b" : "rgba(255,255,255,0.12)" }}>
+                <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button" key={n} onPress={() => { tapHaptic("light"); setQrPlant(active ? null : n); }} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: active ? "#ffd86b" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#ffd86b" : "rgba(255,255,255,0.12)" }}>
                   <Text style={{ color: active ? "#07120b" : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{n}</Text>
                 </Pressable>
               );

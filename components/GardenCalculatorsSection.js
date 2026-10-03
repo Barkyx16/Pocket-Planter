@@ -22,7 +22,7 @@ const eg = (n) => t("calc.eg", { n: formatNumber(n) });
 
 function Chip({ label, active, onPress, color = "#8effab" }) {
   return (
-    <Pressable
+    <Pressable accessibilityState={{ selected: !!active }}
       onPress={onPress}
       accessibilityRole="button"
       style={{ flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 10, backgroundColor: active ? color : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? color : "rgba(255,255,255,0.1)" }}

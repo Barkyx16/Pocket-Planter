@@ -100,7 +100,7 @@ export const CutFlowerGuideCard = memo(function CutFlowerGuideCard({ theme, save
         {flowers.map((item) => {
           const active = bouquet.includes(item.name);
           return (
-            <Pressable accessibilityRole="button" key={item.name} onPress={() => toggle(item.name)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: active ? "#ffb6c1" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#ffb6c1" : "rgba(255,255,255,0.12)" }}>
+            <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button" key={item.name} onPress={() => toggle(item.name)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: active ? "#ffb6c1" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#ffb6c1" : "rgba(255,255,255,0.12)" }}>
               <Text style={{ color: active ? "#07120b" : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{active ? "✓ " : ""}{item.name}</Text>
             </Pressable>
           );

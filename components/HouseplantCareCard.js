@@ -81,7 +81,7 @@ export const HouseplantCareCard = memo(function HouseplantCareCard({ theme, save
         {LEVELS.map((l) => {
           const active = room === l.v;
           return (
-            <Pressable accessibilityRole="button" key={l.v} onPress={() => { tapHaptic("light"); setRoom(l.v); }} style={{ flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 10, backgroundColor: active ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#8effab" : "rgba(255,255,255,0.1)" }}>
+            <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button" key={l.v} onPress={() => { tapHaptic("light"); setRoom(l.v); }} style={{ flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 10, backgroundColor: active ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#8effab" : "rgba(255,255,255,0.1)" }}>
               <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{t(`care.${l.label}`)}</Text>
             </Pressable>
           );

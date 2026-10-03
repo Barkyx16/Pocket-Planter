@@ -106,7 +106,7 @@ return (
             {plantOptions.map((p) => {
               const active = plant === p;
               return (
-                <Pressable accessibilityRole="button" key={p} onPress={() => setPlant(p)}
+                <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button" key={p} onPress={() => setPlant(p)}
                   style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: active ? "#6bc7ff" : "rgba(255, 255, 255, 0.08)", borderWidth: 1, borderColor: active ? "#6bc7ff" : "rgba(255, 255, 255, 0.1)" }}>
                   <Text style={{ color: active ? "#07120b" : "#ffffff", fontSize: 12, fontWeight: "800" }}>
                     {p === "Garden" ? t("waterUsage.wholeGarden") : p}
@@ -130,7 +130,7 @@ return (
               {WATER_UNITS.map((u) => {
                 const active = unit === u.id;
                 return (
-                  <Pressable accessibilityRole="button" key={u.id} onPress={() => setUnit(u.id)}
+                  <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button" key={u.id} onPress={() => setUnit(u.id)}
                     style={{ borderRadius: 12, paddingHorizontal: 12, justifyContent: "center", backgroundColor: active ? "#6bc7ff" : "rgba(255, 255, 255, 0.08)", borderWidth: 1, borderColor: active ? "#6bc7ff" : "rgba(255, 255, 255, 0.1)" }}>
                     <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{unitLabel(u.id)}</Text>
                   </Pressable>

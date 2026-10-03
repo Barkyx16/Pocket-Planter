@@ -101,7 +101,7 @@ export const SeedInventoryCard = memo(function SeedInventoryCard({ theme }) {
         {CATEGORIES.map((c) => {
           const active = draftCat === c.id;
           return (
-            <Pressable accessibilityRole="button" key={c.id} onPress={() => setDraftCat(c.id)} style={{ borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: active ? c.color + "22" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? c.color : "rgba(255, 255, 255, 0.1)" }}>
+            <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button" key={c.id} onPress={() => setDraftCat(c.id)} style={{ borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: active ? c.color + "22" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? c.color : "rgba(255, 255, 255, 0.1)" }}>
               <Text style={{ color: active ? c.color : theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{c.label}</Text>
             </Pressable>
           );

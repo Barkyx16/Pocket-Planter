@@ -81,7 +81,7 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
         {INTERVALS.map((iv) => {
           const active = interval === iv.days;
           return (
-            <Pressable accessibilityRole="button" key={iv.days} onPress={() => setIntervalDays(iv.days)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}>
+            <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button" key={iv.days} onPress={() => setIntervalDays(iv.days)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}>
               <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{t(`ui7.${iv.label}`)}</Text>
             </Pressable>
           );

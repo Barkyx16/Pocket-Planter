@@ -72,7 +72,7 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
               {categories.map((c) => {
                 const active = category === c;
                 return (
-                  <Pressable accessibilityRole="button"
+                  <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button"
                     key={c}
                     onPress={() => setCategory(c)}
                     style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255,255,255,0.12)" }}

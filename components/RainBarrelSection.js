@@ -129,7 +129,7 @@ export const RainBarrelSection = memo(function RainBarrelSection({ theme, unitSy
         {capacityOpts.map((opt) => {
           const active = Math.round(data.capacityL) === Math.round(opt.l);
           return (
-            <Pressable accessibilityRole="button" key={opt.label} onPress={() => setCapacity(Math.round(opt.l))} style={{ flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 10, backgroundColor: active ? "#6bc7ff" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#6bc7ff" : "rgba(255,255,255,0.1)" }}>
+            <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button" key={opt.label} onPress={() => setCapacity(Math.round(opt.l))} style={{ flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 10, backgroundColor: active ? "#6bc7ff" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#6bc7ff" : "rgba(255,255,255,0.1)" }}>
               <Text style={{ color: active ? "#07120b" : theme.secondaryText, fontSize: 11, fontWeight: "900" }}>{opt.label}</Text>
             </Pressable>
           );

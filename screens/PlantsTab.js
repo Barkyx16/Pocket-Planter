@@ -96,7 +96,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
           const monthNumber = index + 1;
           const active = selectedMonth === monthNumber;
           return (
-            <Pressable accessibilityRole="button"
+            <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button"
               key={month}
               onPress={() => { tapHaptic("light"); setSelectedMonth(monthNumber); }}
               onLayout={(e) => {

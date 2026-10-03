@@ -80,7 +80,7 @@ export const PropagationTrackerCard = memo(function PropagationTrackerCard({ the
         {METHODS.map((m) => {
           const active = method === m.id;
           return (
-            <Pressable accessibilityRole="button" key={m.id} onPress={() => setMethod(m.id)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: active ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#8effab" : "rgba(255,255,255,0.12)" }}>
+            <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button" key={m.id} onPress={() => setMethod(m.id)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: active ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#8effab" : "rgba(255,255,255,0.12)" }}>
               <Text style={{ color: active ? "#07120b" : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{m.label}</Text>
             </Pressable>
           );

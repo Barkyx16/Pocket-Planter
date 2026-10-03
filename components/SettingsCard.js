@@ -190,7 +190,7 @@ async function choosePlan(plan) {
           ].map(({ plan, badge, badgeBg, badgeColor, price, per, savings }) => {
             const isSelected = selectedPlan === plan;
             return (
-              <Pressable accessibilityRole="button"
+              <Pressable accessibilityState={{ selected: !!isSelected }} accessibilityRole="button"
                 key={plan}
                 onPress={() => choosePlan(plan)}
                 style={[

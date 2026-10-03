@@ -55,7 +55,7 @@ export const VaseTrackerSection = memo(function VaseTrackerSection({ theme }) {
         {LIFE_OPTS.map((d) => {
           const active = days === d;
           return (
-            <Pressable accessibilityRole="button" key={d} onPress={() => setDays(d)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 10, backgroundColor: active ? "#ffb6c1" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#ffb6c1" : "rgba(255,255,255,0.1)" }}>
+            <Pressable accessibilityState={{ selected: !!active }} accessibilityRole="button" key={d} onPress={() => setDays(d)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 10, backgroundColor: active ? "#ffb6c1" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#ffb6c1" : "rgba(255,255,255,0.1)" }}>
               <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{d}d</Text>
             </Pressable>
           );
