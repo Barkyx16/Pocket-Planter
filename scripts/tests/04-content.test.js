@@ -1044,3 +1044,17 @@ describe("dates", () => {
     eq(offenders, []);
   });
 });
+
+describe("day labels", () => {
+  it("are translated, not English literals", () => {
+    const offenders = [];
+    for (const dir of ["components", "screens"]) {
+      for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith(".js"))) {
+        const src = fs.readFileSync(path.join(ROOT, dir, f), "utf8");
+        const m = src.match(/(return |\? |: )"(Today|Tomorrow|Tmrw|Yesterday)"/);
+        if (m) offenders.push(`${dir}/${f}: ${m[2]}`);
+      }
+    }
+    eq(offenders, []);
+  });
+});

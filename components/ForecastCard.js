@@ -22,8 +22,8 @@ export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, s
     const todayDate = new Date();
     todayDate.setHours(12, 0, 0, 0);
     const diff = Math.round((date - todayDate) / (1000 * 60 * 60 * 24));
-    if (diff === 0) return "Today";
-    if (diff === 1) return "Tmrw";
+    if (diff === 0) return t("ui6.today");
+    if (diff === 1) return t("ui6.tmrw");
     return formatDate(date, {
   weekday: "short"
 });

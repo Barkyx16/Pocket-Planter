@@ -35,7 +35,7 @@ export const WateringForecastCard = memo(function WateringForecastCard({ theme, 
 
   const maxCount = Math.max(1, ...days.map((d) => d.plants.length));
   const weekdayFmt = (date, offset) =>
-    offset === 0 ? "Today" : offset === 1 ? "Tmrw" : formatDate(date, {
+    offset === 0 ? t("ui6.today") : offset === 1 ? t("ui6.tmrw") : formatDate(date, {
   weekday: "short"
 });
 

@@ -2,7 +2,7 @@ import { memo, useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { buildGardenTimeline, daysBetweenKeys, getDateKey, getTimelineMonthRecap, getTimelineOnThisDay, getTodayKey, resolvePlantImageSource } from "../core";
-import { formatDate, useTranslation } from "../lib/i18n";
+import { formatDate, t, tn, useLanguage, useTranslation } from "../lib/i18n";
 
 // One unified, auto-generated feed of the garden's life — plantings, sowings,
 // photos, harvests, care, waterings, and badges — plus a monthly recap and an
@@ -11,12 +11,12 @@ function relTime(ts) {
   // Both ends via the shared day count: subtracting midnights and flooring loses
   // a day across a clock change, so yesterday's entries read "Today".
   const days = daysBetweenKeys(getDateKey(new Date(ts)), getTodayKey());
-  if (days <= 0) return "Today";
-  if (days === 1) return "Yesterday";
-  if (days < 7) return `${days}d ago`;
-  if (days < 30) return `${Math.floor(days / 7)}w ago`;
-  if (days < 365) return `${Math.floor(days / 30)}mo ago`;
-  return `${Math.floor(days / 365)}y ago`;
+  if (days <= 0) return t("ui6.today");
+  if (days === 1) return t("ui6.yesterday");
+  if (days < 7) return tn("harvestLog.daysAgo", days);
+  if (days < 30) return tn("ui6.weeksAgo", Math.floor(days / 7));
+  if (days < 365) return tn("ui6.monthsAgo", Math.floor(days / 30));
+  return tn("ui6.yearsAgo", Math.floor(days / 365));
 }
 
 const plantThumb = (name) => {
@@ -26,6 +26,7 @@ const plantThumb = (name) => {
 };
 
 const EventRow = memo(function EventRow({ ev, theme, onOpenPlant, isLast }) {
+  useLanguage(); // memo() skips a language switch without this (see lib/i18n)
   const img = ev.imageUri ? { uri: ev.imageUri } : plantThumb(ev.plantName);
   const tappable = !!ev.plantName;
   const Wrap = tappable ? Pressable : View;

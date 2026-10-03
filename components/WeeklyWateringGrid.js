@@ -49,10 +49,10 @@ export const WeeklyWateringGrid = memo(function WeeklyWateringGrid({ theme, save
       .sort((a, b) => b - a)[0];
     if (!last) return { label: "—", color: theme.secondaryText };
     const daysAgo = Math.round((now - last) / 86400000);
-    if (daysAgo <= 0) return { label: "Today", color: "#5cff89" };
-    if (daysAgo === 1) return { label: "1d", color: "#8effab" };
-    if (daysAgo <= 3) return { label: `${daysAgo}d`, color: "#ffd86b" };
-    return { label: `${daysAgo}d`, color: "#ff9f43" };
+    if (daysAgo <= 0) return { label: t("ui6.today"), color: "#5cff89" };
+    if (daysAgo === 1) return { label: t("ui6.inDaysShort", { count: 1 }), color: "#8effab" };
+    if (daysAgo <= 3) return { label: t("ui6.inDaysShort", { count: daysAgo }), color: "#ffd86b" };
+    return { label: t("ui6.inDaysShort", { count: daysAgo }), color: "#ff9f43" };
   };
 
   // Show up to 6 plants as rows to keep it compact
