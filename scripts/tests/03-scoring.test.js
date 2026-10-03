@@ -146,6 +146,8 @@ describe("parseDecimal", () => {
     for (const f of fs20.readdirSync(path.join(ROOT, "components")).filter((x) => x.endsWith(".js"))) {
       const src = fs20.readFileSync(path.join(ROOT, "components", f), "utf8");
       if (/keyboardType="(decimal-pad|numeric)"/.test(src) && /parseFloat\(/.test(src)) offenders.push(f);
+      // Filtering keystrokes down to digits and "." turns a typed "1,5" into 15.
+      if (/keyboardType="decimal-pad"/.test(src) && /\[\^0-9\.\]/.test(src)) offenders.push(`${f} (drops the decimal comma)`);
     }
     eq(offenders, []);
   });

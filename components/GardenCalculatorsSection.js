@@ -32,7 +32,7 @@ function numInput(theme, value, onChange, placeholder) {
   return (
     <TextInput
       value={value}
-      onChangeText={(txt) => onChange(txt.replace(/[^0-9.]/g, ""))}
+      onChangeText={(txt) => onChange(txt.replace(/[^0-9.,]/g, ""))}
       keyboardType="decimal-pad"
       placeholder={placeholder}
       placeholderTextColor="#8fbf9d"

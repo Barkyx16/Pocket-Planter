@@ -117,7 +117,7 @@ export const SoilTempSection = memo(function SoilTempSection({ theme }) {
       <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
         <TextInput
           value={draft}
-          onChangeText={(txt) => setDraft(txt.replace(/[^0-9.]/g, ""))}
+          onChangeText={(txt) => setDraft(txt.replace(/[^0-9.,]/g, ""))}
           onSubmitEditing={add}
           keyboardType="decimal-pad"
           placeholder={`Soil temp (${unitLabel})`}
