@@ -445,3 +445,25 @@ describe("the 'needs water' sort and map border use the same rule", () => {
     }
   });
 });
+
+describe("getPlantSeasonLabel", () => {
+  const zoneFor = (item) => `${item.minZone}a`;
+  it("names next year's window once this year's has passed", () => {
+    // It said "Out of season" from the last window to New Year.
+    const produceList = items.filter((i) => i.minZone && i.maxZone);
+    let checked = 0;
+    for (const p of produceList.slice(0, 80)) {
+      const zone = zoneFor(p);
+      const label12 = core.getPlantSeasonLabel(p, zone, 12);
+      if (label12 === "Outside your zone" || label12 === "Zone fit") continue;
+      ok(label12 === "Plant now" || /^Starts in [A-Z][a-z]+$/.test(label12), `${p.name} in December: ${label12}`);
+      checked += 1;
+    }
+    ok(checked > 10, `only ${checked} plants were checked`);
+  });
+  it("points a tomato in December at next spring", () => {
+    const tomato = plant("Tomato");
+    const label = core.getPlantSeasonLabel(tomato, zoneFor(tomato), 12);
+    ok(/^Starts in (January|February|March|April|May)$/.test(label), `got ${label}`);
+  });
+});

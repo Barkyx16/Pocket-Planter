@@ -1952,9 +1952,12 @@ export function getPlantSeasonLabel(item, zone, monthOverride = null) {
   // The next window to open, not the earliest of the year: a plant sown in both
   // spring and fall read "Out of season" all summer because this took month 3
   // and compared it against the current month.
-  const nextMonth = [...plantMonths].sort((a, b) => a - b).find((m) => m > currentMonth);
-  if (nextMonth) return `Starts in ${MONTH_NAMES[nextMonth - 1]}`;
-  return "Out of season";
+  // And past the year's last window it wraps to next year's first. A spring
+  // crop read "Out of season" from June to December, which told the gardener
+  // nothing about when to come back to it.
+  const sorted = [...plantMonths].sort((a, b) => a - b);
+  const nextMonth = sorted.find((m) => m > currentMonth) || sorted[0];
+  return `Starts in ${MONTH_NAMES[nextMonth - 1]}`;
 }
 
 export const PERENNIALS = new Set([
