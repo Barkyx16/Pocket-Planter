@@ -109,19 +109,6 @@ export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas,
     Alert.alert(t("alerts.viewPlantTitle"), t("alerts.viewPlantBody"), buttons);
   }
 
-  function suggestCompanionsForPlant(areaId, plantName) {
-    const area = gardenAreas.find((a) => a.id === areaId);
-const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).filter(Boolean);
-    // Only greet the FIRST plant in a bed — stay quiet for every plant after.
-    if (bedPlants.length > 1) return;
-    const suggestions = catalogCompanions(plantName).filter((comp) =>
-      comp.toLowerCase() !== plantName.toLowerCase() &&
-      !bedPlants.some((p) => p.toLowerCase() === comp.toLowerCase())
-    );
-    if (!suggestions.length) return;
-    const list = suggestions.slice(0, 4).join(", ");
-  }
-
   function choosePlantForSlot(areaId, slotId) {
     const area = gardenAreas.find((a) => a.id === areaId);
     const valid = savedPlants
@@ -218,7 +205,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
             bedName={pArea?.name}
             plants={pArea ? validPlantsForArea(pArea) : []}
             currentPlant={pArea ? getPlantName(pArea.plots?.[pickerSlot.slotId]) : null}
-            onPick={(name) => { const s = pickerSlot; setPickerSlot(null); if (s) { onAssignSlot(s.areaId, s.slotId, name); maybeShowPerfectGarden(s.areaId, name); suggestCompanionsForPlant(s.areaId, name); } }}
+            onPick={(name) => { const s = pickerSlot; setPickerSlot(null); if (s) { onAssignSlot(s.areaId, s.slotId, name); maybeShowPerfectGarden(s.areaId, name); } }}
             onClear={() => { const s = pickerSlot; setPickerSlot(null); if (s) onClearSlot(s.areaId, s.slotId); }}
             onClose={() => setPickerSlot(null)}
           />

@@ -15,7 +15,6 @@ function shuffle(arr) {
   for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
   return a;
 }
-function sample(arr, n) { return shuffle(arr).slice(0, n); }
 const findPlant = (name) => produceData.find((p) => p.name.toLowerCase() === String(name || "").toLowerCase());
 
 // ── Game 1: Sun or Shade? (how much light does this plant want) ───────────────

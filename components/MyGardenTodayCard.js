@@ -43,7 +43,6 @@ export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weathe
   // Local day, not the UTC prefix: an evening photo used to leave the daily plan
   // stuck one task short.
   const todayPhotos = journalEntries.filter((e) => e.createdAt && getDateKey(new Date(e.createdAt)) === today).length;
-  const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
 
   const getTimeOfDayGreeting = () => {
     if (currentHour < 12) return { greeting: t("myGardenToday.greetMorning"), tip: t("myGardenToday.tipMorning") };

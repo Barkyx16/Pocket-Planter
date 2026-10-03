@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, flipMonth, formatTemp, getClimateBucket, getTodayKey, isFertilizerDue } from "../core";
+import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, flipMonth, formatTemp, getClimateBucket, isFertilizerDue } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
@@ -16,7 +16,6 @@ export const FertilizerIntelligenceCard = memo(function FertilizerIntelligenceCa
   // reference one. Otherwise a southern gardener is told to skip feeding "for
   // winter" in the middle of their growing season.
   const currentMonth = flipMonth(new Date().getMonth() + 1);
-  const today = getTodayKey();
 
   const getSeasonalFertilizerTip = () => {
   const climate = getClimateBucket(zone);

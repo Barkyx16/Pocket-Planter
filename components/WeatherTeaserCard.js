@@ -1,14 +1,12 @@
 import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
-import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, WARM_DAY_THRESHOLD_F, formatTemp, getClimateBucket } from "../core";
+import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, WARM_DAY_THRESHOLD_F, formatTemp } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const WeatherTeaserCard = memo(function WeatherTeaserCard({ theme, weather, zone, onUnlock, unitSystem }) {
   const { t } = useTranslation();
-  const climate = getClimateBucket(zone);
-  const currentMonth = new Date().getMonth() + 1;
 
   const getConditionPreview = () => {
     if (!weather) return { icon: "🌤️", label: t("ui8.loadingForecast"), color: "#8effab" };

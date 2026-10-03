@@ -16,14 +16,12 @@ export const CollapsibleCard = memo(function CollapsibleCard({ theme, storageKey
   // Titles still carry a leading emoji ("🌿 Companion Check"); render it as a
   // tinted Ionicons glyph so every card header uses one icon language.
   const { icon, text: titleText } = splitLeadingIcon(title);
-  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     let alive = true;
     AsyncStorage.getItem(`pp_collapse_${storageKey}`).then((val) => {
       if (alive && val !== null) setOpen(val === "1");
-      if (alive) setLoaded(true);
-    }).catch(() => { if (alive) setLoaded(true); });
+    }).catch(() => {});
     return () => { alive = false; };
   }, [storageKey]);
 

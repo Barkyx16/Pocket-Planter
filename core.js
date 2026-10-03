@@ -4636,7 +4636,6 @@ export function getProfileBanners({ gardenXP, savedPlants, journalEntries, garde
   const streakCount = streakData?.count || 0;
   const harvestCount = Object.keys(harvestTrackers || {}).length;
   const careLogCount = (careLog || []).length;
-  const comparePlantCount = (comparePlants || []).length;
 
   return localizeBanners([
     // ORIGINAL 7

@@ -36,9 +36,6 @@ export const PlantTodayHero = memo(function PlantTodayHero({ theme, monthlySugge
     return zone ? t("myGardenToday.heroSeasonalZone", { zone }) : t("myGardenToday.heroSeasonalArea");
   };
 
-  const getDayLabel = () => {
-    return "This Week";
-  };
 
 return (
     <Pressable accessibilityRole="button" onPress={() => onOpen(plant)} style={styles.plantTodayHero}>

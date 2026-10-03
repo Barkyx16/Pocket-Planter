@@ -37,7 +37,6 @@ export function PlantDetailScreen({
     const temps = (text) => localizeUnits(text, unitSystem);
     const plantingSteps = getPlantingSteps(selectedPlant).map((step) => (typeof step === "string" ? temps(step) : step));
     const isSaved = savedPlants.includes(selectedPlant.name);
-    const isFollowed = followedPlants.includes(selectedPlant.name);
     const wateringCompletedToday = wateredPlants[selectedPlant.name] === getTodayKey();
     const harvestTracker = harvestTrackers[selectedPlant.name];
     const harvestDaysLeft = getHarvestDaysLeft(harvestTracker);
