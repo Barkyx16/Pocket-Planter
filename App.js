@@ -130,6 +130,7 @@ import { GamesTab } from "./screens/GamesTab";
 import { PremiumTab } from "./screens/PremiumTab";
 import { ProfileTab } from "./screens/ProfileTab";
 import { SettingsTab } from "./screens/SettingsTab";
+import { armFrostSeasonChecks, armMonthlyPlantingGuides } from "./lib/reminders";
 import { WeatherTab } from "./screens/WeatherTab";
 import { IconText } from "./components/IconText";
 import { AppIntroCard } from "./components/AppIntroCard";
@@ -2437,6 +2438,64 @@ useEffect(() => {
   scheduleWeeklyRecap({ silent: true });
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [weeklyRecapOn, journalEntries.length, harvestLog.length, streakData?.count, getTotalWaterings(wateringHistory)]);
+
+// Re-arm the repeating reminders a switch asked for. The switches sync with the
+// account; the notifications behind them live on the device and nowhere else.
+// They were only ever scheduled from the toggle itself, so a new phone, a
+// reinstall, or signing out (which cancels every notification) and back in
+// restored each switch as on with nothing scheduled behind it — frost checks,
+// monthly guides, the plant pick and every per-plant check-in went quiet for
+// good while Settings said otherwise. The weekly recap and the daily watering
+// check already re-armed themselves; these now do the same. Silent: they act
+// only when permission is already granted, never prompt, and only for a switch
+// that is on — each is a cancel-then-set by fixed id, so repeating is free.
+const notificationsAllowed = async () => {
+  try { return (await Notifications.getPermissionsAsync()).granted === true; } catch { return false; }
+};
+useEffect(() => {
+  if (!frostAlertsOn || !zone) return;
+  (async () => { if (await notificationsAllowed()) await armFrostSeasonChecks(zone).catch(() => {}); })();
+  // latitude: the frost months flip with the hemisphere it sets.
+}, [frostAlertsOn, zone, latitude]);
+useEffect(() => {
+  if (!monthlyPlantingOn) return;
+  (async () => { if (await notificationsAllowed()) await armMonthlyPlantingGuides().catch(() => {}); })();
+}, [monthlyPlantingOn]);
+useEffect(() => {
+  if (!plantOfDayOn) return;
+  (async () => {
+    if (!(await notificationsAllowed())) return;
+    await Notifications.cancelScheduledNotificationAsync("plant-of-day").catch(() => {});
+    await Notifications.scheduleNotificationAsync({
+      identifier: "plant-of-day",
+      content: { title: t("notify.plantPickTitle"), body: t("notify.plantPickBody"), sound: true },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: 8, minute: 30 },
+    }).catch(() => {});
+  })();
+}, [plantOfDayOn]);
+useEffect(() => {
+  if (!remindersOn) return;
+  const entries = Object.entries(wateringReminders || {}).filter(
+    ([name, r]) => r?.enabled && savedPlants.includes(name) && Number.isInteger(r.hour) && Number.isInteger(r.minute)
+  );
+  if (!entries.length) return;
+  (async () => {
+    if (!(await notificationsAllowed())) return;
+    for (const [plantName, r] of entries) {
+      const id = `plant-${plantName}`;
+      await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
+      await Notifications.scheduleNotificationAsync({
+        identifier: id,
+        content: {
+          title: `🌱 Good morning! Check on your ${plantName}`,
+          body: `Time for your daily ${plantName} check-in. Water if the top inch of soil feels dry.`,
+          sound: true,
+        },
+        trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: r.hour, minute: r.minute },
+      }).catch(() => {});
+    }
+  })();
+}, [remindersOn, wateringReminders, savedPlants]);
 
 useEffect(() => {
   hydrate("pp_weeklyRecapOn", (val) => {

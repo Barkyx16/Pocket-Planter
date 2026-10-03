@@ -1,8 +1,8 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Alert, Pressable, Switch, Text, View } from "react-native";
-import * as Notifications from "expo-notifications";
 import { LANGUAGES, t } from "../lib/i18n";
-import { MONTH_NAMES, formatReminderTime, formatTemp, getFrostSeasonMonths, getUpcomingFrost } from "../core";
+import { formatReminderTime, formatTemp, getUpcomingFrost } from "../core";
+import { armFrostSeasonChecks, armMonthlyPlantingGuides, cancelFrostSeasonChecks, cancelMonthlyPlantingGuides } from "../lib/reminders";
 import { AccountCloudCard } from "../components/AccountCloudCard";
 import { CollapsibleCard } from "../components/CollapsibleCard";
 import { CustomTasksCard } from "../components/CustomTasksCard";
@@ -76,27 +76,7 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn
                   setFrostAlertsOn(false);
                   return;
                 }
-                const months = getFrostSeasonMonths(zone);
-                for (const month of months) {
-                  const id = `frost-daily-${month}`;
-                  await cancelReminder(id);
-                  await Notifications.scheduleNotificationAsync({
-                    identifier: id,
-                    content: {
-                      title: "❄️ Frost Check",
-                      body: "Cold season is here — open Pocket Planter to see if frost is coming and protect your tender plants.",
-                      sound: true,
-                    },
-                    trigger: {
-                      type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
-                      repeats: true,
-                      month,
-                      day: 1,
-                      hour: 18,
-                      minute: 0,
-                    },
-                  });
-                }
+                await armFrostSeasonChecks(zone);
                 const frost = getUpcomingFrost(weather);
                 Alert.alert(
                   t("alerts.frostOnTitle"),
@@ -106,16 +86,9 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn
                 );
               } else {
                 // Every month, not a list of the ones a northern frost season
-                // uses. getFrostSeasonMonths flips for the southern hemisphere,
-                // where frost falls in June, July and August — none of which
-                // this used to name. A gardener in southern zone 10a has frost
-                // months of exactly [6, 7, 8], so turning the switch off
-                // cancelled nothing at all and the alerts kept coming right
-                // through their frost season. Cancelling an id that was never
-                // scheduled costs nothing, so the safe set is all twelve.
-                for (let month = 1; month <= 12; month += 1) {
-                  await cancelReminder(`frost-daily-${month}`);
-                }
+                // uses — getFrostSeasonMonths flips for the southern hemisphere,
+                // and a southern zone 10a's frost months are exactly [6, 7, 8].
+                await cancelFrostSeasonChecks();
                 await cancelReminder("frost-detected");
                 Alert.alert(t("alerts.frostOffTitle"), t("alerts.frostOffBody"));
               }
@@ -124,33 +97,17 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn
               setMonthlyPlantingOn(value);
               if (value) {
                 const granted = await ensureNotificationPermission();
-                if (granted) {
-                  for (let month = 1; month <= 12; month++) {
-                    const id = `monthly-planting-${month}`;
-                    await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
-                    await Notifications.scheduleNotificationAsync({
-                      identifier: id,
-                      content: {
-                        title: `🌱 ${MONTH_NAMES[month - 1]} Planting Guide`,
-                        body: `Open Pocket Planter to see what to plant this month in your zone.`,
-                        sound: true,
-                      },
-                      trigger: {
-                        type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
-                        repeats: true,
-                        month,
-                        day: 1,
-                        hour: 9,
-                        minute: 0,
-                      },
-                    });
-                  }
-                  Alert.alert(t("alerts.monthlyOnTitle"), t("alerts.monthlyOnBody"));
+                if (!granted) {
+                  // Off again, as the frost switch does: left on, it showed
+                  // guides as enabled with nothing scheduled behind it.
+                  Alert.alert(t("alerts.notificationsDisabledTitle"), t("alerts.notificationsDisabledBody"));
+                  setMonthlyPlantingOn(false);
+                  return;
                 }
+                await armMonthlyPlantingGuides();
+                Alert.alert(t("alerts.monthlyOnTitle"), t("alerts.monthlyOnBody"));
               } else {
-                for (let month = 1; month <= 12; month++) {
-                  await cancelReminder(`monthly-planting-${month}`);
-                }
+                await cancelMonthlyPlantingGuides();
                 Alert.alert(t("alerts.monthlyOffTitle"), t("alerts.monthlyOffBody"));
               }
             }}

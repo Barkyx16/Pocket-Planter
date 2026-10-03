@@ -77,14 +77,24 @@ function describe(name, fn) {
   fn();
   currentSuite = "";
 }
+// Async tests run one at a time, in order, after the synchronous ones — they
+// share module state (the hemisphere, a recorder's call log), so letting them
+// interleave mixes one test's calls into another's. Each settles before the
+// results print, so a rejection counts as a failure rather than vanishing.
+let pending = Promise.resolve();
 function it(name, fn) {
   const label = currentSuite ? `${currentSuite} › ${name}` : name;
+  const pass = () => { results.pass += 1; };
+  const failWith = (error) => { results.fail += 1; results.failures.push({ label, error }); };
+  if (fn.constructor.name === "AsyncFunction") {
+    pending = pending.then(() => fn()).then(pass, failWith);
+    return;
+  }
   try {
     fn();
-    results.pass += 1;
+    pass();
   } catch (error) {
-    results.fail += 1;
-    results.failures.push({ label, error });
+    failWith(error);
   }
 }
 function fail(message) { throw new Error(message); }
@@ -106,11 +116,13 @@ const files = fs.readdirSync(dir).filter((f) => f.endsWith(".test.js")).sort()
 console.log("");
 for (const f of files) require(path.join(dir, f));
 
-for (const { label, error } of results.failures) {
-  console.log(`  ✗ ${label}`);
-  console.log(`      ${error.message.split("\n")[0]}`);
-}
-const total = results.pass + results.fail;
-console.log(`\n  ${results.fail ? "✗" : "✓"} ${results.pass}/${total} assertions passed` +
-  `  (${files.length} file${files.length === 1 ? "" : "s"})\n`);
-process.exit(results.fail ? 1 : 0);
+pending.then(() => {
+  for (const { label, error } of results.failures) {
+    console.log(`  ✗ ${label}`);
+    console.log(`      ${error.message.split("\n")[0]}`);
+  }
+  const total = results.pass + results.fail;
+  console.log(`\n  ${results.fail ? "✗" : "✓"} ${results.pass}/${total} assertions passed` +
+    `  (${files.length} file${files.length === 1 ? "" : "s"})\n`);
+  process.exit(results.fail ? 1 : 0);
+});

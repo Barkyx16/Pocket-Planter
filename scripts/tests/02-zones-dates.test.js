@@ -273,9 +273,10 @@ describe("frost alert scheduling", () => {
     // The off path listed [1,2,3,4,5,9,10,11,12], which never names June, July
     // or August — the whole of a southern frost season. For southern zone 10a,
     // whose months are exactly [6,7,8], turning the switch off did nothing.
+    // The switch now goes through lib/reminders; the behaviour is checked in
+    // "repeating reminders" below. Here: Settings still calls it on the way off.
     const src = require("fs").readFileSync(path.join(ROOT, "screens/SettingsTab.js"), "utf8");
-    ok(/for \(let month = 1; month <= 12; month \+= 1\) \{\s*\n\s*await cancelReminder\(`frost-daily-\$\{month\}`\)/.test(src),
-      "the off path must cancel all twelve months");
+    ok(/await cancelFrostSeasonChecks\(\);/.test(src), "the off path must cancel through the shared helper");
     ok(!/const allMonths = \[1, 2, 3, 4, 5, 9, 10, 11, 12\]/.test(src),
       "the hardcoded northern month list must be gone");
   });
@@ -373,5 +374,64 @@ describe("the garden timeline", () => {
   it("seasonal challenges count day keys through it too", () => {
     const src = require("fs").readFileSync(path.join(ROOT, "components/SeasonalChallengesCard.js"), "utf8");
     ok(/const raw = parseStoredDate\(dateVal\)/.test(src));
+  });
+});
+
+describe("repeating reminders", () => {
+  // lib/reminders talks to expo-notifications; load it against a recorder.
+  const Module = require("module");
+  const calls = [];
+  const recorder = {
+    cancelScheduledNotificationAsync: async (id) => { calls.push(["cancel", id]); },
+    scheduleNotificationAsync: async (req) => { calls.push(["set", req.identifier, req.trigger]); },
+    SchedulableTriggerInputTypes: { CALENDAR: "calendar", DAILY: "daily" },
+  };
+  const prevLoad = Module._load;
+  Module._load = function (request, ...rest) {
+    return request === "expo-notifications" ? recorder : prevLoad.call(this, request, ...rest);
+  };
+  const reminders = require(path.join(ROOT, "lib/reminders.js"));
+  Module._load = prevLoad;
+  const core9 = require(path.join(ROOT, "core.js"));
+  const set = () => calls.filter((c) => c[0] === "set").map((c) => c[1]);
+  const cancelled = () => calls.filter((c) => c[0] === "cancel").map((c) => c[1]);
+
+  it("arms only the frost months for the zone, and clears the rest first", async () => {
+    core9.setHemisphereFromLatitude(-33.87);
+    calls.length = 0;
+    await reminders.armFrostSeasonChecks("10a");
+    eq(set(), ["frost-daily-6", "frost-daily-7", "frost-daily-8"]);
+    eq(cancelled().length, 12, "a month that left the season must stop firing");
+    // Moving north flips the season; the southern months go.
+    core9.setHemisphereFromLatitude(40.7);
+    calls.length = 0;
+    await reminders.armFrostSeasonChecks("10a");
+    eq(set(), ["frost-daily-1", "frost-daily-2", "frost-daily-12"]);
+    ok(cancelled().includes("frost-daily-7"));
+  });
+  it("cancels every frost month on the way off", async () => {
+    calls.length = 0;
+    await reminders.cancelFrostSeasonChecks();
+    eq(cancelled(), Array.from({ length: 12 }, (_, i) => `frost-daily-${i + 1}`));
+  });
+  it("arms a planting guide on the 1st of every month", async () => {
+    calls.length = 0;
+    await reminders.armMonthlyPlantingGuides();
+    eq(set().length, 12);
+    for (const c of calls.filter((x) => x[0] === "set")) eq([c[2].day, c[2].hour, c[2].repeats], [1, 9, true]);
+  });
+  it("re-arms what a synced switch says is on, on any device", () => {
+    // The switches sync; the notifications do not. A new phone, a reinstall, or
+    // signing out (which cancels everything) and back in left each switch on
+    // with nothing scheduled.
+    const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+    const at = app.indexOf("const notificationsAllowed = async");
+    const block = app.slice(at, app.indexOf("}, [remindersOn, wateringReminders, savedPlants]);", at));
+    ok(at > 0, "there should be a re-arm on launch");
+    ok(/armFrostSeasonChecks\(zone\)/.test(block), "frost checks");
+    ok(/armMonthlyPlantingGuides\(\)/.test(block), "monthly guides");
+    ok(/identifier: "plant-of-day"/.test(block), "the daily plant pick");
+    ok(/const id = `plant-\$\{plantName\}`/.test(block), "per-plant check-ins");
+    ok(!/ensureNotificationPermission/.test(block), "a re-arm must never prompt");
   });
 });
