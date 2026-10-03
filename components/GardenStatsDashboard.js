@@ -1,7 +1,8 @@
 import { memo, useMemo } from "react";
 import { Pressable, Share, Text, View } from "react-native";
 import { styles } from "../styles";
-import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, calculateGardenHealth, formatTemp, getConsistencyBonus, getTodayKey, getTotalWaterings, isFertilizerDue, isHarvestReady, tapHaptic } from "../core";
+import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, calculateGardenHealth, formatTemp, getConsistencyBonus, getTodayKey, getTotalWaterings, isFertilizerDue, isHarvestReady, isWaterDue, tapHaptic } from "../core";
+import produceData from "../data/produceData";
 import { AnimatedBar } from "./AnimatedBar";
 import { IconText } from "./IconText";
 import { formatDate, useTranslation } from "../lib/i18n";
@@ -23,7 +24,7 @@ export const GardenStatsDashboard = memo(function GardenStatsDashboard({
   onWaterAll,
   unitSystem,
 }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
   const today = getTodayKey();
 
@@ -45,7 +46,14 @@ export const GardenStatsDashboard = memo(function GardenStatsDashboard({
   // plants can push the count above the total (e.g. "16/11").
   const wateredTodayCount = (savedPlants || []).filter((name) => wateredPlants?.[name] === today).length;
   const totalWatered = getTotalWaterings(wateringHistory);
-  const plantsNeedingWater = savedPlants.length - wateredTodayCount;
+  // "Need watering" by each plant's own schedule, the rule the badges, Home and
+  // the widget use; this counted every plant not watered since midnight. The
+  // Water All button still waters every plant not yet watered today, so its
+  // count is that, and says so.
+  const plantsNeedingWater = savedPlants.filter((name) =>
+    isWaterDue(name, produceData.find((p) => p.name === name), wateredPlants, wateringHistory, weather)
+  ).length;
+  const plantsUnwateredToday = savedPlants.length - wateredTodayCount;
 
   const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).length;
 
@@ -208,14 +216,14 @@ return (
       {/* TODAY'S ACTION ITEMS — only what still needs doing */}
       {hasTodos ? (
       <View style={styles.dashActionSection}>
-        <Text style={styles.dashActionTitle}>To-Do</Text>
+        <Text style={styles.dashActionTitle}>{t("gardenStatsDashboard.dashTodo")}</Text>
 
         {plantsNeedingWater > 0 ? (
           <View style={[styles.dashActionRow, { backgroundColor: "rgba(107, 199, 255, 0.1)", borderColor: "rgba(107, 199, 255, 0.24)", flexDirection: "column", alignItems: "stretch", gap: 12 }]}>
             <Pressable onPress={() => onNavigate && onNavigate("plants")} style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
               <Text style={styles.dashActionIcon}>💧</Text>
               <View style={{ flex: 1 }}>
-                <Text style={styles.dashActionLabel}>{plantsNeedingWater} plant{plantsNeedingWater === 1 ? "" : "s"} {t("gardenStatsDashboard.needWatering")}</Text>
+                <Text style={styles.dashActionLabel}>{tn("gardenStatsDashboard.dashPlantsNeedWater", plantsNeedingWater)}</Text>
                 <Text style={[styles.dashActionSub, { color: "#6bc7ff" }]}>{t("gardenStatsDashboard.tapToOpenThePlants")}</Text>
               </View>
               <View style={[styles.dashActionBadge, { backgroundColor: "rgba(107, 199, 255, 0.2)" }]}>
@@ -228,7 +236,7 @@ return (
               accessibilityLabel={t("gardenStatsDashboard.waterAllPlantsThatNeed")}
               style={{ backgroundColor: "#6bc7ff", borderRadius: 12, paddingVertical: 14, alignItems: "center" }}
             >
-              <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 14 }}>{t("gardenStatsDashboard.waterAll")} {plantsNeedingWater} now</Text>
+              <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 14 }}>{tn("gardenStatsDashboard.dashWaterAllNow", plantsUnwateredToday)}</Text>
             </Pressable>
           </View>
         ) : null}

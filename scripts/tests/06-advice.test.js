@@ -559,3 +559,16 @@ describe("the Plants tab and harvest countdown in the gardener's language", () =
     }
   });
 });
+
+describe("the stats dashboard's watering to-do", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("counts plants that are due, by the shared rule", () => {
+    const src = require("fs").readFileSync(path.join(ROOT, "components/GardenStatsDashboard.js"), "utf8");
+    ok(/const plantsNeedingWater = savedPlants\.filter\(\(name\) =>\s*isWaterDue\(/.test(src));
+    ok(!/const plantsNeedingWater = savedPlants\.length - wateredTodayCount/.test(src));
+    ok(/tn\("gardenStatsDashboard\.dashWaterAllNow", plantsUnwateredToday\)/.test(src), "the button counts what it waters");
+  });
+  it("says 'needs' for one plant", () => {
+    eq(i18n.tn("gardenStatsDashboard.dashPlantsNeedWater", 1), "1 plant needs watering");
+  });
+});
