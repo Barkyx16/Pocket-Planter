@@ -3,5 +3,6 @@
   "NSCameraUsageDescription": "Pocket Planter utilise l'appareil photo pour capturer des photos de jardin pour ton journal.",
   "NSLocationWhenInUseUsageDescription": "Pocket Planter utilise ta position pour détecter ton code postal et ta zone de culture locale.",
   "NSFaceIDUsageDescription": "Pocket Planter utilise Face ID pour te connecter rapidement et en toute sécurité.",
-  "NSCalendarsUsageDescription": "Pocket Planter ajoute tes rappels de semis et de récolte à ton calendrier pour ne manquer aucune fenêtre."
+  "NSCalendarsUsageDescription": "Pocket Planter ajoute tes rappels de semis et de récolte à ton calendrier pour ne manquer aucune fenêtre.",
+  "NSCalendarsFullAccessUsageDescription": "Pocket Planter ajoute tes rappels de semis et de récolte à ton calendrier pour ne manquer aucune fenêtre."
 }

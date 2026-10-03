@@ -1,0 +1,8 @@
+{
+  "NSPhotoLibraryUsageDescription": "Pocket Planter usa la tua libreria foto per aggiungere foto dei progressi al diario dell'orto. Ad esempio, puoi documentare come cresce la tua pianta di pomodoro.",
+  "NSCameraUsageDescription": "Pocket Planter usa la fotocamera per scattare foto dell'orto per il tuo diario.",
+  "NSLocationWhenInUseUsageDescription": "Pocket Planter usa la tua posizione per rilevare il codice postale e la zona di coltivazione locale.",
+  "NSFaceIDUsageDescription": "Pocket Planter usa Face ID per farti accedere in modo rapido e sicuro.",
+  "NSCalendarsUsageDescription": "Pocket Planter aggiunge al calendario i promemoria di semina e raccolta, così non perdi nessuna finestra.",
+  "NSCalendarsFullAccessUsageDescription": "Pocket Planter aggiunge al calendario i promemoria di semina e raccolta, così non perdi nessuna finestra."
+}

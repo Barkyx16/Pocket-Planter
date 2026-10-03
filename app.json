@@ -40,7 +40,8 @@
         "NSCameraUsageDescription": "Pocket Planter uses your camera to capture garden photos for your journal.",
         "NSLocationWhenInUseUsageDescription": "Pocket Planter uses your location to detect your postal code and local growing zone.",
         "NSFaceIDUsageDescription": "Pocket Planter uses Face ID to let you sign in quickly and securely with your face.",
-        "NSCalendarsUsageDescription": "Pocket Planter adds your planting and harvest reminders to your calendar so you never miss a sow or harvest window."
+        "NSCalendarsUsageDescription": "Pocket Planter adds your planting and harvest reminders to your calendar so you never miss a sow or harvest window.",
+        "NSCalendarsFullAccessUsageDescription": "Pocket Planter adds your planting and harvest reminders to your calendar so you never miss a sow or harvest window."
       }
     },
     "android": {
@@ -61,6 +62,19 @@
           "color": "#8effab"
         }
       ],
+      [
+        "expo-camera",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "microphonePermission": false
+        }
+      ],
       "expo-font",
       "expo-secure-store",
       "expo-localization",
@@ -77,7 +91,10 @@
       "de": "./locales/ios/de.json",
       "pt": "./locales/ios/pt.json",
       "zh": "./locales/ios/zh.json",
-      "hi": "./locales/ios/hi.json"
+      "hi": "./locales/ios/hi.json",
+      "ja": "./locales/ios/ja.json",
+      "ko": "./locales/ios/ko.json",
+      "it": "./locales/ios/it.json"
     }
   }
 }

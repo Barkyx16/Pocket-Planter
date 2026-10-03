@@ -1346,3 +1346,27 @@ describe("a failed weather refresh", () => {
     ok(/fetchWithTimeout\(/.test(body) && !/[^.\w]fetch\(/.test(body), "a weather request can hang forever");
   });
 });
+
+describe("iOS permission prompts", () => {
+  const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, "app.json"), "utf8")).expo;
+  const usage = Object.keys(cfg.ios.infoPlist).filter((k) => /UsageDescription$/.test(k));
+  it("are written for every shipped language", () => {
+    // CFBundleLocalizations promises these languages; a missing strings file
+    // shows that language's users the permission prompt in English.
+    const missing = [];
+    for (const lang of ["es", "fr", "de", "pt", "zh", "hi", "ja", "ko", "it"]) {
+      const file = cfg.locales && cfg.locales[lang];
+      if (!file) { missing.push(`${lang}: not registered`); continue; }
+      const strings = JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
+      for (const k of usage) if (!strings[k]) missing.push(`${lang}: ${k}`);
+    }
+    eq(missing, []);
+  });
+  it("include the iOS 17 calendar prompt and no microphone", () => {
+    // iOS 17+ asks with the full-access string; without it the auto-applied
+    // calendar plugin filled in a generic line. Nothing records audio.
+    ok(cfg.ios.infoPlist.NSCalendarsFullAccessUsageDescription, "no full-access calendar prompt");
+    const opts = (name) => (cfg.plugins.find((p) => Array.isArray(p) && p[0] === name) || [])[1] || {};
+    eq([opts("expo-camera").microphonePermission, opts("expo-camera").recordAudioAndroid, opts("expo-image-picker").microphonePermission], [false, false, false]);
+  });
+});

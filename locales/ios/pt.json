@@ -3,5 +3,6 @@
   "NSCameraUsageDescription": "O Pocket Planter usa a câmera para capturar fotos da horta para o seu diário.",
   "NSLocationWhenInUseUsageDescription": "O Pocket Planter usa sua localização para detectar seu código postal e sua zona de cultivo local.",
   "NSFaceIDUsageDescription": "O Pocket Planter usa o Face ID para você entrar de forma rápida e segura.",
-  "NSCalendarsUsageDescription": "O Pocket Planter adiciona seus lembretes de plantio e colheita ao calendário para você não perder nenhuma janela."
+  "NSCalendarsUsageDescription": "O Pocket Planter adiciona seus lembretes de plantio e colheita ao calendário para você não perder nenhuma janela.",
+  "NSCalendarsFullAccessUsageDescription": "O Pocket Planter adiciona seus lembretes de plantio e colheita ao calendário para você não perder nenhuma janela."
 }

@@ -1,0 +1,8 @@
+{
+  "NSPhotoLibraryUsageDescription": "Pocket Planter は、ガーデン日記に成長の記録写真を追加するために写真ライブラリを使用します。たとえば、トマトが育っていく様子を記録できます。",
+  "NSCameraUsageDescription": "Pocket Planter は、日記用のガーデン写真を撮るためにカメラを使用します。",
+  "NSLocationWhenInUseUsageDescription": "Pocket Planter は、郵便番号と地域の栽培ゾーンを調べるために位置情報を使用します。",
+  "NSFaceIDUsageDescription": "Pocket Planter は、Face ID ですばやく安全にサインインするために使用します。",
+  "NSCalendarsUsageDescription": "Pocket Planter は、種まきや収穫の時期を逃さないよう、リマインダーをカレンダーに追加します。",
+  "NSCalendarsFullAccessUsageDescription": "Pocket Planter は、種まきや収穫の時期を逃さないよう、リマインダーをカレンダーに追加します。"
+}

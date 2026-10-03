@@ -3,5 +3,6 @@
   "NSCameraUsageDescription": "Pocket Planter 使用相机为你的日志拍摄菜园照片。",
   "NSLocationWhenInUseUsageDescription": "Pocket Planter 使用你的位置来识别邮政编码和当地种植区。",
   "NSFaceIDUsageDescription": "Pocket Planter 使用面容 ID，让你快速安全地登录。",
-  "NSCalendarsUsageDescription": "Pocket Planter 会把播种和收获提醒添加到你的日历，以免错过时机。"
+  "NSCalendarsUsageDescription": "Pocket Planter 会把播种和收获提醒添加到你的日历，以免错过时机。",
+  "NSCalendarsFullAccessUsageDescription": "Pocket Planter 会把播种和收获提醒添加到你的日历，以免错过时机。"
 }
