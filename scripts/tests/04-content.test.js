@@ -1183,3 +1183,19 @@ describe("translated placeholders", () => {
     eq(problems, []);
   });
 });
+
+describe("feature search", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  const idx = require(path.join(ROOT, "data/featureIndex.js"));
+  it("finds tools by their name in the app language and in English", () => {
+    try {
+      i18n.setLocale("de");
+      const hits = idx.searchFeatures("kompost");
+      ok(hits.some((h) => h.id === "compost" && h.name === "Kompost-Tracker"), JSON.stringify(hits.map((h) => h.name)));
+      ok(idx.searchFeatures("compost").some((h) => h.id === "compost"), "English name still matches");
+      ok(idx.FEATURE_INDEX.every((f) => !idx.localizeFeature(f).name.startsWith("features.")), "every feature has a name");
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});

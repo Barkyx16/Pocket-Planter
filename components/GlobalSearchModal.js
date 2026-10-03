@@ -3,7 +3,7 @@ import { Image, Modal, Pressable, ScrollView, Text, TextInput, View } from "reac
 import produceData from "../data/produceData";
 import { PEST_WATCH_DATA, resolvePlantImageSource, tapHaptic } from "../core";
 import { getPestImage } from "../data/pestImageMap";
-import { FEATURE_INDEX, searchFeatures } from "../data/featureIndex";
+import { FEATURE_INDEX, localizeFeature, searchFeatures } from "../data/featureIndex";
 import { useTranslation, formatDate } from "../lib/i18n";
 import { IconText } from "./IconText";
 import { touchSlop } from "../lib/a11y";
@@ -32,7 +32,7 @@ export const GlobalSearchModal = memo(function GlobalSearchModal({ visible, onCl
 
   const features = query.length >= 1 ? searchFeatures(query, 8) : [];
   // A handful of jump suggestions before the user types anything.
-  const suggestions = FEATURE_INDEX.slice(0, 6);
+  const suggestions = FEATURE_INDEX.slice(0, 6).map(localizeFeature);
 
   const noResults = query.length >= 1 && !plants.length && !pests.length && !journals.length && !features.length;
 
