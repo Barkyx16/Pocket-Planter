@@ -41,7 +41,7 @@ export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, on
       <View style={styles.detailHeader}>
         <Pressable onPress={onBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={22} color="#ffffff" />
-          <Text style={styles.backButtonText}>Back</Text>
+          <Text style={styles.backButtonText}>{t("common.back")}</Text>
         </Pressable>
       </View>
 

@@ -179,7 +179,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
     <View onLayout={(event) => { plantsListY.current = event.nativeEvent.layout.y; }} style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <View style={styles.cardHeaderRow}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>Plants</Text>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>{t("stats.plants")}</Text>
         </View>
         <Pressable
           style={styles.smallJumpButton}
@@ -192,7 +192,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
             setPlantAttrFilters([]);
           }}
         >
-          <Text style={styles.smallJumpButtonText}>Reset</Text>
+          <Text style={styles.smallJumpButtonText}>{t("common.reset")}</Text>
         </Pressable>
       </View>
       <ScrollView
@@ -385,10 +385,10 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
             <Text style={{ color: bulkSel.length ? "#07120b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>Save {bulkSel.length || ""}</Text>
           </Pressable>
           <Pressable onPress={bulkCompare} disabled={bulkSel.length !== 2} style={{ backgroundColor: bulkSel.length === 2 ? "rgba(255, 216, 107, 0.16)" : "rgba(255, 255, 255, 0.08)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: bulkSel.length === 2 ? "#ffd86b" : "transparent" }}>
-            <Text style={{ color: bulkSel.length === 2 ? "#ffd86b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>Compare</Text>
+            <Text style={{ color: bulkSel.length === 2 ? "#ffd86b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>{t("common.compare")}</Text>
           </Pressable>
           <Pressable onPress={exitSelect} style={{ paddingHorizontal: 6, paddingVertical: 10 }}>
-            <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "900" }}>Cancel</Text>
+            <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "900" }}>{t("common.cancel")}</Text>
           </Pressable>
         </View>
       ) : filteredPlants.length > 0 ? (

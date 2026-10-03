@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
 import { getDaysSince, getTodayKey, tapHaptic } from "../core";
-import { formatDate } from "../lib/i18n";
+import { formatDate, t } from "../lib/i18n";
 import { SkeletonSection } from "./Skeleton";
 
 export const TOOL_MAINT_STORAGE_KEY = "pp_toolMaint";
@@ -85,7 +85,7 @@ export const ToolMaintenanceSection = memo(function ToolMaintenanceSection({ the
               accessibilityLabel={`Mark ${r.label} done`}
               style={{ backgroundColor: r.due ? "#ffd86b" : "rgba(255,255,255,0.08)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}
             >
-              <Text style={{ color: r.due ? "#07120b" : theme.secondaryText, fontSize: 11, fontWeight: "900" }}>Done</Text>
+              <Text style={{ color: r.due ? "#07120b" : theme.secondaryText, fontSize: 11, fontWeight: "900" }}>{t("common.done")}</Text>
             </Pressable>
           </View>
         ))}

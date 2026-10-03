@@ -104,7 +104,7 @@ async function choosePlan(plan) {
         <View style={styles.premiumHeroStatRow}>
           <View style={styles.premiumHeroStat}>
             <Text style={styles.premiumHeroStatValue}>600+</Text>
-            <Text style={styles.premiumHeroStatLabel}>Plants</Text>
+            <Text style={styles.premiumHeroStatLabel}>{t("stats.plants")}</Text>
           </View>
           <View style={styles.premiumHeroStatDivider} />
           <View style={styles.premiumHeroStat}>
@@ -113,8 +113,8 @@ async function choosePlan(plan) {
           </View>
           <View style={styles.premiumHeroStatDivider} />
           <View style={styles.premiumHeroStat}>
-            <Text style={styles.premiumHeroStatValue}>Cancel</Text>
-            <Text style={styles.premiumHeroStatLabel}>Anytime</Text>
+            <Text style={styles.premiumHeroStatValue}>{t("stats.cancelValue")}</Text>
+            <Text style={styles.premiumHeroStatLabel}>{t("stats.anytime")}</Text>
           </View>
         </View>
       </View>

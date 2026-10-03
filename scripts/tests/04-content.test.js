@@ -904,3 +904,17 @@ describe("garden games in the app language", () => {
     }
   });
 });
+
+describe("common buttons", () => {
+  it("are translated wherever they appear", () => {
+    const offenders = [];
+    for (const dir of ["components", "screens"]) {
+      for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith(".js"))) {
+        const src = fs.readFileSync(path.join(ROOT, dir, f), "utf8");
+        const m = src.match(/>\s*(Cancel|Done|Reset|Save|Back|Compare|Claim|Streak|Health|Plants|Harvests)\s*<\/Text>/);
+        if (m) offenders.push(`${dir}/${f}: ${m[1]}`);
+      }
+    }
+    eq(offenders, []);
+  });
+});

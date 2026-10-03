@@ -138,11 +138,11 @@ return (
 
       {/* Legend */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 14, justifyContent: "flex-end" }}>
-        <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700" }}>Less</Text>
+        <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700" }}>{t("stats.less")}</Text>
         {["rgba(255, 255, 255, 0.06)", "rgba(92, 255, 137, 0.4)", "#5cff89", "#2fbf5f"].map((c) => (
           <View key={c} style={{ width: 13, height: 13, borderRadius: 4, backgroundColor: c }} />
         ))}
-        <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700" }}>More</Text>
+        <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700" }}>{t("stats.more")}</Text>
       </View>
     </View>
   );

@@ -37,7 +37,7 @@ return (
         <View style={styles.careLogStatDivider} />
         <View style={styles.careLogStatTile}>
           <Text style={styles.careLogStatValue}>{plantsHarvested}</Text>
-          <Text style={[styles.careLogStatLabel, { color: theme.secondaryText }]}>Plants</Text>
+          <Text style={[styles.careLogStatLabel, { color: theme.secondaryText }]}>{t("stats.plants")}</Text>
         </View>
         <View style={styles.careLogStatDivider} />
         <View style={styles.careLogStatTile}>

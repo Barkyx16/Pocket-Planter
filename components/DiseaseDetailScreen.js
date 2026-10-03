@@ -5,6 +5,7 @@ import { styles } from "../styles";
 import { localizeTemperatures } from "../core";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { IconText } from "./IconText";
+import { t } from "../lib/i18n";
 
 // Disease counterpart of PestDetailScreen. Same layout and section rhythm, but
 // amber-themed (matching the "Common Diseases" section) and with disease-shaped
@@ -35,7 +36,7 @@ export const DiseaseDetailScreen = memo(function DiseaseDetailScreen({ theme, di
       <View style={styles.detailHeader}>
         <Pressable onPress={onBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={22} color="#ffffff" />
-          <Text style={styles.backButtonText}>Back</Text>
+          <Text style={styles.backButtonText}>{t("common.back")}</Text>
         </Pressable>
       </View>
 
@@ -64,11 +65,11 @@ export const DiseaseDetailScreen = memo(function DiseaseDetailScreen({ theme, di
 
       {/* PLANTS AT RISK */}
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-        <IconText label={"🌿 Plants at risk"} style={styles.cardEyebrow} />
+        <IconText label={t("stats.plantsAtRisk")} style={styles.cardEyebrow} />
         {affected.length ? (
           <>
             <Text style={[styles.cardText, { color: theme.secondaryText, marginTop: 6 }]}>
-              In your garden, these could be affected — tap to open.
+              {t("stats.plantsAtRiskBody")}
             </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
               {affected.slice(0, 6).map((name) => (
@@ -98,7 +99,7 @@ export const DiseaseDetailScreen = memo(function DiseaseDetailScreen({ theme, di
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
         <Pressable onPress={onBack} style={styles.bottomBackButton}>
           <Ionicons name="chevron-back" size={22} color="#07120b" />
-          <Text style={styles.bottomBackButtonText}>Back to plant</Text>
+          <Text style={styles.bottomBackButtonText}>{t("stats.backToPlant")}</Text>
         </Pressable>
       </View>
     </ScrollView>

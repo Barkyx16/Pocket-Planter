@@ -188,7 +188,7 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
               onPress={() => { tapHaptic(); onClose(); }}
               style={{ marginHorizontal: 20, marginTop: 8, borderRadius: 16, paddingVertical: 13, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.12)" }}
             >
-              <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>Cancel</Text>
+              <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>{t("common.cancel")}</Text>
             </Pressable>
           </ScrollView>
         </View>

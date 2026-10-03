@@ -54,7 +54,7 @@ export const GardenPlanExportCard = memo(function GardenPlanExportCard({ theme, 
       <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
         <View style={{ flex: 1, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, paddingVertical: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
           <Text style={{ color: "#5cff89", fontSize: 20, fontWeight: "900" }}>{areas.length}</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "800", marginTop: 2 }}>Beds</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "800", marginTop: 2 }}>{t("stats.beds")}</Text>
         </View>
         <View style={{ flex: 1, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, paddingVertical: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
           <Text style={{ color: "#8effab", fontSize: 20, fontWeight: "900" }}>{totalPlanted}</Text>

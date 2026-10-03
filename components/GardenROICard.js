@@ -2,7 +2,7 @@ import { memo } from "react";
 import { useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { estimateHarvestValue, parseDecimal, tapHaptic } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { formatMoney, useTranslation } from "../lib/i18n";
 
 export const GardenROICard = memo(function GardenROICard({ theme, harvestLog, suppliesSpent, setSuppliesSpent }) {
   const { t } = useTranslation();
@@ -54,20 +54,20 @@ return (
       <View style={{ flexDirection: "row", gap: 12, marginTop: 14 }}>
         <View style={{ flex: 1, borderRadius: 16, paddingVertical: 16, alignItems: "center", backgroundColor: "rgba(92, 255, 137, 0.1)", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}>
           <Text style={{ fontSize: 20 }}>🌱</Text>
-          <Text style={{ color: "#8effab", fontSize: 24, fontWeight: "900", marginTop: 6 }}>${grownTotal}</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 2 }}>Grown</Text>
+          <Text style={{ color: "#8effab", fontSize: 24, fontWeight: "900", marginTop: 6 }}>{formatMoney(grownTotal, { decimals: 0 })}</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 2 }}>{t("stats.grown")}</Text>
         </View>
         <View style={{ flex: 1, borderRadius: 16, paddingVertical: 16, alignItems: "center", backgroundColor: "rgba(255, 159, 67, 0.1)", borderWidth: 1, borderColor: "rgba(255, 159, 67, 0.24)" }}>
           <Text style={{ fontSize: 20 }}>🧾</Text>
-          <Text style={{ color: "#ff9f43", fontSize: 24, fontWeight: "900", marginTop: 6 }}>${spent}</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 2 }}>Spent</Text>
+          <Text style={{ color: "#ff9f43", fontSize: 24, fontWeight: "900", marginTop: 6 }}>{formatMoney(spent, { decimals: 0 })}</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 2 }}>{t("stats.spent")}</Text>
         </View>
       </View>
 
       {/* TOP EARNER */}
       {grown.topPlant ? (
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 14, textAlign: "center" }}>
-          {t("gardenROI.yourTopEarner")} <Text style={{ color: "#8effab", fontWeight: "900" }}>{grown.topPlant.name}</Text> (~${grown.topPlant.value})
+          {t("gardenROI.yourTopEarner")} <Text style={{ color: "#8effab", fontWeight: "900" }}>{grown.topPlant.name}</Text> (~{formatMoney(grown.topPlant.value, { decimals: 0 })})
         </Text>
       ) : null}
 
@@ -84,7 +84,7 @@ return (
             style={{ flex: 1, backgroundColor: "rgba(255, 255, 255, 0.08)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)", color: "#ffffff", fontSize: 16, fontWeight: "800", paddingHorizontal: 16, paddingVertical: 14 }}
           />
           <Pressable onPress={saveSpent} style={{ backgroundColor: "#5cff89", borderRadius: 12, paddingHorizontal: 22, alignItems: "center", justifyContent: "center" }}>
-            <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>Save</Text>
+            <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{t("common.save")}</Text>
           </Pressable>
         </View>
       ) : (

@@ -174,7 +174,7 @@ return (
           <View style={[styles.journalDashTile, { borderColor: "rgba(255, 107, 107, 0.24)" }]}>
             <Text style={styles.journalDashTileIcon}>🚜</Text>
             <Text style={styles.journalDashTileValue}>{harvestEntries}</Text>
-            <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>Harvests</Text>
+            <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>{t("stats.harvests")}</Text>
           </View>
         </View>
       ) : null}
@@ -563,7 +563,7 @@ return (
                                         <Text style={styles.journalCaptionSaveBtnText}>{t("journal.saveCaption")}</Text>
                                       </Pressable>
                                       <Pressable onPress={() => setEditingCaption(null)} style={styles.journalCaptionCancelBtn}>
-                                        <Text style={styles.journalCaptionCancelBtnText}>Cancel</Text>
+                                        <Text style={styles.journalCaptionCancelBtnText}>{t("common.cancel")}</Text>
                                       </Pressable>
                                     </View>
                                   </View>

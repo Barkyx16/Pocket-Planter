@@ -97,7 +97,7 @@ export const DailyQuestsCard = memo(function DailyQuestsCard({ theme, dailyQuest
                   </View>
                 ) : (
                   <View style={{ backgroundColor: c, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 }}>
-                    <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "800" }}>Claim</Text>
+                    <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "800" }}>{t("common.claim")}</Text>
                   </View>
                 )
               ) : null}

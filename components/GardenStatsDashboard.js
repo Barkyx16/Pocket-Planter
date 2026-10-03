@@ -145,12 +145,12 @@ return (
         <View style={[styles.dashTopCard, { borderColor: streakData?.count >= 7 ? "#ff9f4355" : "rgba(255, 255, 255, 0.08)" }]}>
           <Text style={styles.dashTopCardIcon}>{getStreakEmoji(streakData?.count || 0)}</Text>
           <Text style={[styles.dashTopCardLabel, { color: streakData?.count >= 7 ? "#ff9f43" : theme.text }]}>{streakData?.count || 0} Days</Text>
-          <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>Streak</Text>
+          <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>{t("stats.streak")}</Text>
         </View>
         <View style={[styles.dashTopCard, { borderColor: getHealthColor(gardenHealth.score) + "55" }]}>
           <Text style={styles.dashTopCardIcon}>🌿</Text>
           <Text style={[styles.dashTopCardLabel, { color: getHealthColor(gardenHealth.score) }]}>{gardenHealth.score}%</Text>
-          <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>Health</Text>
+          <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>{t("stats.health")}</Text>
         </View>
       </View>
 
@@ -161,7 +161,7 @@ return (
         <View style={[styles.dashMainCard, { borderColor: "rgba(92, 255, 137, 0.2)" }]}>
           <IconText label={t("gardenStatsDashboard.plants")} style={styles.dashMainCardEyebrow} />
           <Text style={styles.dashMainCardValue}>{savedPlants.length}</Text>
-          <Text style={[styles.dashMainCardLabel, { color: theme.secondaryText }]}>Saved</Text>
+          <Text style={[styles.dashMainCardLabel, { color: theme.secondaryText }]}>{t("stats.saved")}</Text>
           <View style={styles.dashMainCardDivider} />
           <Text style={[styles.dashMainCardSub, { color: theme.secondaryText }]}>
             {gardenPlotCount} {t("gardenStatsDashboard.inGardenMap")}
@@ -332,11 +332,11 @@ return (
                 const lines = [
                   t("gardenStatsDashboard.myPocketPlanterGardenThis"),
                   "",
-                  `🪴 ${savedPlants.length} plants growing`,
-                  wateringsThisWeek > 0 ? `💧 ${wateringsThisWeek} watering${wateringsThisWeek === 1 ? "" : "s"} this week` : null,
-                  photosThisWeek > 0 ? `📸 ${photosThisWeek} garden photo${photosThisWeek === 1 ? "" : "s"} logged` : null,
-                  (streakData?.count || 0) > 0 ? `🔥 ${streakData.count}-day streak going strong` : null,
-                  `⭐ Level ${gardenXP.level} — ${gardenXP.title}`,
+                  tn("stats.shareGrowing", savedPlants.length),
+                  wateringsThisWeek > 0 ? tn("stats.shareWaterings", wateringsThisWeek) : null,
+                  photosThisWeek > 0 ? tn("stats.sharePhotos", photosThisWeek) : null,
+                  (streakData?.count || 0) > 0 ? tn("stats.shareStreak", streakData.count) : null,
+                  t("stats.shareLevel", { level: gardenXP.level, title: gardenXP.title }),
                   "",
                   t("gardenStatsDashboard.growingSmarterWithPocketPlanter"),
                 ].filter(Boolean);

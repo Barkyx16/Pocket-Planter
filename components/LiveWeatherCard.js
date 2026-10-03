@@ -123,21 +123,21 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
       <View style={styles.liveWeatherGrid}>
         <View style={[styles.liveWeatherBox, { borderColor: weather ? `${getTempColor(weather.maxTempF)}30` : "rgba(255, 255, 255, 0.08)" }]}>
           <Text style={styles.liveWeatherIcon}>☀️</Text>
-          <Text style={styles.liveWeatherLabel}>High</Text>
+          <Text style={styles.liveWeatherLabel}>{t("stats.high")}</Text>
           <Text style={[styles.liveWeatherValue, { color: weather ? getTempColor(weather.maxTempF) : "#ffffff" }]}>
             {weather ? formatTemp(weather.maxTempF, unitSystem) : "—"}
           </Text>
         </View>
         <View style={[styles.liveWeatherBox, { borderColor: weather ? `${getTempColor(weather.minTempF)}30` : "rgba(255, 255, 255, 0.08)" }]}>
           <Text style={styles.liveWeatherIcon}>🌙</Text>
-          <Text style={styles.liveWeatherLabel}>Low</Text>
+          <Text style={styles.liveWeatherLabel}>{t("stats.low")}</Text>
           <Text style={[styles.liveWeatherValue, { color: weather ? getTempColor(weather.minTempF) : "#ffffff" }]}>
             {weather ? formatTemp(weather.minTempF, unitSystem) : "—"}
           </Text>
         </View>
         <View style={[styles.liveWeatherBox, { borderColor: weather?.precipChance >= 70 ? "rgba(107, 199, 255, 0.3)" : "rgba(255, 255, 255, 0.08)" }]}>
           <Text style={styles.liveWeatherIcon}>🌧️</Text>
-          <Text style={styles.liveWeatherLabel}>Rain</Text>
+          <Text style={styles.liveWeatherLabel}>{t("stats.rain")}</Text>
           <Text style={[styles.liveWeatherValue, { color: weather?.precipChance >= 70 ? "#6bc7ff" : weather?.precipChance >= 40 ? "#8effab" : "#ffffff" }]}>
             {weather ? `${Math.round(weather.precipChance)}%` : "—"}
           </Text>

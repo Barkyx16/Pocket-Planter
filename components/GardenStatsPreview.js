@@ -25,7 +25,7 @@ export const GardenStatsPreview = memo(function GardenStatsPreview({
   unitSystem,
   onUnlock,
 }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
 
   const getStreakEmoji = (count) => {
     if (count >= 30) return "🏆";
@@ -89,12 +89,12 @@ export const GardenStatsPreview = memo(function GardenStatsPreview({
         <View style={[styles.dashTopCard, { borderColor: streakCount >= 7 ? "#ff9f4355" : "rgba(255, 255, 255, 0.08)" }]}>
           <Text style={styles.dashTopCardIcon}>{getStreakEmoji(streakCount)}</Text>
           <Text style={[styles.dashTopCardLabel, { color: streakCount >= 7 ? "#ff9f43" : theme.text }]}>{streakCount} Days</Text>
-          <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>Streak</Text>
+          <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>{t("stats.streak")}</Text>
         </View>
         <View style={[styles.dashTopCard, { borderColor: getHealthColor(gardenHealth.score) + "55" }]}>
           <Text style={styles.dashTopCardIcon}>🌿</Text>
           <Text style={[styles.dashTopCardLabel, { color: getHealthColor(gardenHealth.score) }]}>{gardenHealth.score}%</Text>
-          <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>Health</Text>
+          <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>{t("stats.health")}</Text>
         </View>
       </View>
 
@@ -107,7 +107,7 @@ export const GardenStatsPreview = memo(function GardenStatsPreview({
             <View style={[styles.dashMainCard, { borderColor: "rgba(92, 255, 137, 0.2)" }]}>
               <IconText label={t("gardenStatsDashboard.plants")} style={styles.dashMainCardEyebrow} />
               <Text style={styles.dashMainCardValue}>{Math.max(savedPlants.length, 8)}</Text>
-              <Text style={[styles.dashMainCardLabel, { color: theme.secondaryText }]}>Saved</Text>
+              <Text style={[styles.dashMainCardLabel, { color: theme.secondaryText }]}>{t("stats.saved")}</Text>
               <View style={styles.dashMainCardDivider} />
               <Text style={[styles.dashMainCardSub, { color: theme.secondaryText }]}>5 {t("gardenStatsDashboard.inGardenMap")}</Text>
             </View>
@@ -127,7 +127,7 @@ export const GardenStatsPreview = memo(function GardenStatsPreview({
             </View>
             <View style={[styles.dashMainCard, { borderColor: "rgba(255, 216, 107, 0.4)" }]}>
               <IconText label={t("gardenStatsDashboard.harvest")} style={styles.dashMainCardEyebrow} />
-              <Text style={[styles.dashMainCardValue, { color: "#ffd86b" }]}>2 Ready!</Text>
+              <Text style={[styles.dashMainCardValue, { color: "#ffd86b" }]}>{t("stats.previewReady", { count: 2 })}</Text>
               <Text style={[styles.dashMainCardLabel, { color: theme.secondaryText }]}>{t("gardenStatsDashboard.toHarvest")}</Text>
               <View style={styles.dashMainCardDivider} />
               <Text style={[styles.dashMainCardSub, { color: theme.secondaryText }]}>3 {t("gardenStatsDashboard.plantsTracked")}</Text>
@@ -137,8 +137,8 @@ export const GardenStatsPreview = memo(function GardenStatsPreview({
           <View style={[styles.dashActionRow, { backgroundColor: "rgba(107, 199, 255, 0.1)", borderColor: "rgba(107, 199, 255, 0.24)" }]}>
             <Text style={styles.dashActionIcon}>💧</Text>
             <View style={{ flex: 1 }}>
-              <Text style={styles.dashActionLabel}>3 plants need watering</Text>
-              <Text style={[styles.dashActionSub, { color: "#6bc7ff" }]}>Water all with one tap</Text>
+              <Text style={styles.dashActionLabel}>{tn("stats.previewNeedWater", 3)}</Text>
+              <Text style={[styles.dashActionSub, { color: "#6bc7ff" }]}>{t("stats.previewWaterAll")}</Text>
             </View>
             <View style={[styles.dashActionBadge, { backgroundColor: "rgba(107, 199, 255, 0.2)" }]}>
               <Text style={[styles.dashActionBadgeText, { color: "#6bc7ff" }]}>3</Text>
@@ -151,13 +151,13 @@ export const GardenStatsPreview = memo(function GardenStatsPreview({
         <Pressable
           onPress={() => { tapHaptic(); onUnlock && onUnlock(); }}
           accessibilityRole="button"
-          accessibilityLabel="Unlock the full garden dashboard with Premium"
+          accessibilityLabel={t("stats.previewA11y")}
           style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, alignItems: "center", justifyContent: "center", padding: 16, backgroundColor: "rgba(7, 18, 11, 0.35)" }}
         >
           <View style={styles.weatherLockCircle}><Text style={styles.weatherLockIcon}>🔒</Text></View>
-          <Text style={[styles.weatherPremiumTitle, { textAlign: "center", marginTop: 10 }]}>See your full dashboard</Text>
+          <Text style={[styles.weatherPremiumTitle, { textAlign: "center", marginTop: 10 }]}>{t("stats.previewTitle")}</Text>
           <Text style={[styles.weatherPremiumText, { textAlign: "center", maxWidth: 300 }]}>
-            Unlock Premium for watering, harvests, journal stats and today's to-do list — all in one place.
+            {t("stats.previewBody")}
           </Text>
           <View style={[styles.weatherUnlockButton, { paddingHorizontal: 28 }]}>
             <IconText label={t("premiumLocked.unlockPremium")} style={styles.weatherUnlockText} />

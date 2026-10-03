@@ -181,7 +181,7 @@ export const FrostOverrideCard = memo(function FrostOverrideCard({ theme, zone, 
               onPress={handleClear}
               style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 999, paddingVertical: 12, paddingHorizontal: 18, alignItems: "center", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.12)" }}
             >
-              <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>Reset</Text>
+              <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>{t("common.reset")}</Text>
             </Pressable>
           </View>
         </View>

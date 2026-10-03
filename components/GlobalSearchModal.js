@@ -73,7 +73,7 @@ export const GlobalSearchModal = memo(function GlobalSearchModal({ visible, onCl
             {q ? <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.clearSearch")} onPress={() => setQ("")} hitSlop={touchSlop(14)}><Text style={{ color: "#8fbf9d", fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable> : null}
           </View>
           <Pressable onPress={close} accessibilityRole="button" hitSlop={touchSlop(14)}>
-            <Text style={{ color: "#8effab", fontSize: 14, fontWeight: "900" }}>Done</Text>
+            <Text style={{ color: "#8effab", fontSize: 14, fontWeight: "900" }}>{t("common.done")}</Text>
           </Pressable>
         </View>
 
@@ -83,7 +83,7 @@ export const GlobalSearchModal = memo(function GlobalSearchModal({ visible, onCl
               <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", textAlign: "center", marginTop: 28, marginBottom: 22 }}>
                 {t("globalSearchModal.searchAcrossYourPlantsPest")}
               </Text>
-              <IconText label={"JUMP TO A TOOL"} style={{ color: "#8effab", fontSize: 10, fontWeight: "900", letterSpacing: 0.8, marginBottom: 8 }} />
+              <IconText label={t("stats.jumpToTool")} style={{ color: "#8effab", fontSize: 10, fontWeight: "900", letterSpacing: 0.8, marginBottom: 8 }} />
               <View style={{ gap: 8, marginBottom: 18 }}>
                 {suggestions.map((f) => (
                   <Row key={`sg-${f.name}`} emoji={f.emoji} title={f.name} subtitle={f.where} accent="#8effab" onPress={() => jumpTo(f.tab)} />
@@ -94,7 +94,7 @@ export const GlobalSearchModal = memo(function GlobalSearchModal({ visible, onCl
 
           {features.length ? (
             <>
-              <IconText label={"TOOLS & FEATURES"} style={{ color: "#8effab", fontSize: 10, fontWeight: "900", letterSpacing: 0.8, marginBottom: 8 }} />
+              <IconText label={t("stats.toolsFeatures")} style={{ color: "#8effab", fontSize: 10, fontWeight: "900", letterSpacing: 0.8, marginBottom: 8 }} />
               <View style={{ gap: 8, marginBottom: 18 }}>
                 {features.map((f) => (
                   <Row key={`ft-${f.name}`} emoji={f.emoji} title={f.name} subtitle={f.where} accent="#8effab" onPress={() => jumpTo(f.tab)} />

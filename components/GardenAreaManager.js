@@ -92,7 +92,7 @@ export const GardenAreaManager = memo(function GardenAreaManager({ theme, garden
 
             <ScrollView showsVerticalScrollIndicator={false}>
               {/* Design */}
-              <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "900", letterSpacing: 0.6, marginBottom: 8 }}>DESIGN</Text>
+              <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "900", letterSpacing: 0.6, marginBottom: 8 }}>{t("stats.design")}</Text>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                 {DESIGNS.map((d) => {
                   const active = design === d.id;
@@ -141,7 +141,7 @@ export const GardenAreaManager = memo(function GardenAreaManager({ theme, garden
                 <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 15 }}>{label}</Text>
               </Pressable>
               <Pressable onPress={close} style={{ paddingVertical: 14, alignItems: "center" }}>
-                <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "800" }}>Cancel</Text>
+                <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "800" }}>{t("common.cancel")}</Text>
               </Pressable>
             </ScrollView>
           </Pressable>

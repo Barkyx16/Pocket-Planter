@@ -70,9 +70,9 @@ export const GardenTimelineCard = memo(function GardenTimelineCard({ theme, jour
     return (
       <View style={{ alignItems: "center", paddingVertical: 22, paddingHorizontal: 12 }}>
         <Text style={{ fontSize: 34, marginBottom: 8 }}>📖</Text>
-        <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900", textAlign: "center" }}>Your garden's story starts here</Text>
+        <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900", textAlign: "center" }}>{t("stats.timelineEmptyTitle")}</Text>
         <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "600", textAlign: "center", marginTop: 6, lineHeight: 19 }}>
-          Add a photo, log a harvest, water a plant, or save something new — it all shows up here as a living timeline.
+          {t("stats.timelineEmptyBody")}
         </Text>
       </View>
     );
@@ -111,7 +111,7 @@ export const GardenTimelineCard = memo(function GardenTimelineCard({ theme, jour
       {/* On this day */}
       {onThisDay.length ? (
         <View style={{ backgroundColor: "rgba(255, 216, 107, 0.08)", borderRadius: 16, borderWidth: 1, borderColor: "rgba(255, 216, 107, 0.24)", padding: 14, marginBottom: 16 }}>
-          <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 8 }}>⏳ ON THIS DAY</Text>
+          <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 8 }}>{t("stats.onThisDay")}</Text>
           {onThisDay.slice(0, 3).map((ev, i) => (
             <Text key={`otd-${i}`} style={{ color: theme.text, fontSize: 13, fontWeight: "700", marginTop: i ? 4 : 0 }}>
               {ev.icon} {ev.title} <Text style={{ color: theme.secondaryText, fontWeight: "600" }}>· {relTime(ev.ts)}</Text>
