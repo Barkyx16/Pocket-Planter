@@ -84,7 +84,7 @@ export const DiseaseDetailScreen = memo(function DiseaseDetailScreen({ theme, di
               ))}
               {affected.length > 6 ? (
                 <View style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, justifyContent: "center" }}>
-                  <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800" }}>+{affected.length - 6} more</Text>
+                  <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{t("ui8.plusMore", { count: affected.length - 6 })}</Text>
                 </View>
               ) : null}
             </View>

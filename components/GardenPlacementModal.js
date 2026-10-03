@@ -61,7 +61,7 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
     >
       <Thumb name={occ.plant} size={34} />
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }} numberOfLines={1}>Replace {occ.plant}</Text>
+        <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }} numberOfLines={1}>{t("ui8.replacePlant", { plant: occ.plant })}</Text>
         <Text style={{ color: occ.clashes ? "#ff9f9f" : theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 1 }} numberOfLines={1}>
           {occ.clashes ? t("ui2.clashesWith", { plant: plantName }) : t("ui2.swapsOut", { plant: plantName })}
         </Text>

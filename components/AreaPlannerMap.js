@@ -20,7 +20,7 @@ const catalogCompanions = (plantName) =>
   Array.from(new Set(getCompanionLists(plantName).excellent.map(resolveCompanionName).filter(Boolean)));
 
 export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas, savedPlants, wateredPlants, wateringHistory, onAssignSlot, onClearSlot, onWaterArea, zone, weather, harvestTrackers, onOpenPlant, onPickPhoto, onDeleteArea, focusAreaId, focusNonce }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const [selectedAreaId, setSelectedAreaId] = useState(null);
   const [pickerSlot, setPickerSlot] = useState(null); // { areaId, slotId } while the plant picker is open
 
@@ -180,7 +180,7 @@ export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas,
               )}
               <View style={{ flex: 1 }}>
                 <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>{area.name}</Text>
-               <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", marginTop: 2 }}>{areaPlantCount} planted</Text>
+               <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", marginTop: 2 }}>{tn("ui8.plantedN", areaPlantCount)}</Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: areaHasConflict ? "rgba(255, 123, 123, 0.12)" : "rgba(92, 255, 137, 0.12)", borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderColor: areaHasConflict ? "rgba(255, 123, 123, 0.3)" : "rgba(92, 255, 137, 0.3)" }}>
                 <Text style={{ fontSize: 12 }}>{areaHasConflict ? "⚠️" : "✓"}</Text>
@@ -288,7 +288,7 @@ export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas,
                   )}
                 </Pressable>
                 <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900", flex: 1 }}>
-                  {area.name} <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700" }}>· {areaPlants.length} planted</Text>
+                  {area.name} <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700" }}>· {tn("ui8.plantedN", areaPlants.length)}</Text>
                 </Text>
                 </View>
               {areaPlants.length > 0 && onWaterArea ? (

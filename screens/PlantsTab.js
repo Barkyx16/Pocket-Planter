@@ -380,9 +380,9 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
 
       {selectMode ? (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, padding: 10, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", marginBottom: 8 }}>
-          <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", flex: 1, paddingLeft: 4 }}>{bulkSel.length} selected</Text>
+          <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", flex: 1, paddingLeft: 4 }}>{tn("ui8.selectedN", bulkSel.length)}</Text>
           <Pressable accessibilityRole="button" onPress={bulkSave} disabled={!bulkSel.length} style={{ backgroundColor: bulkSel.length ? "#5cff89" : "rgba(255, 255, 255, 0.08)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 }}>
-            <Text style={{ color: bulkSel.length ? "#07120b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>Save {bulkSel.length || ""}</Text>
+            <Text style={{ color: bulkSel.length ? "#07120b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>{bulkSel.length ? t("ui8.saveN", { count: bulkSel.length }) : t("common.save")}</Text>
           </Pressable>
           <Pressable accessibilityRole="button" onPress={bulkCompare} disabled={bulkSel.length !== 2} style={{ backgroundColor: bulkSel.length === 2 ? "rgba(255, 216, 107, 0.16)" : "rgba(255, 255, 255, 0.08)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: bulkSel.length === 2 ? "#ffd86b" : "transparent" }}>
             <Text style={{ color: bulkSel.length === 2 ? "#ffd86b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>{t("common.compare")}</Text>

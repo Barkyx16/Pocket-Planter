@@ -88,7 +88,7 @@ export const GardenStatsPreview = memo(function GardenStatsPreview({
         ) : null}
         <View style={[styles.dashTopCard, { borderColor: streakCount >= 7 ? "#ff9f4355" : "rgba(255, 255, 255, 0.08)" }]}>
           <Text style={styles.dashTopCardIcon}>{getStreakEmoji(streakCount)}</Text>
-          <Text style={[styles.dashTopCardLabel, { color: streakCount >= 7 ? "#ff9f43" : theme.text }]}>{streakCount} Days</Text>
+          <Text style={[styles.dashTopCardLabel, { color: streakCount >= 7 ? "#ff9f43" : theme.text }]}>{tn("ui8.streakDays", streakCount)}</Text>
           <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>{t("stats.streak")}</Text>
         </View>
         <View style={[styles.dashTopCard, { borderColor: getHealthColor(gardenHealth.score) + "55" }]}>

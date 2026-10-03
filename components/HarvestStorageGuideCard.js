@@ -67,7 +67,7 @@ export const HarvestStorageGuideCard = memo(function HarvestStorageGuideCard({ t
               )}
               <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900", flex: 1 }}>{name}</Text>
               <View style={{ backgroundColor: "rgba(92, 255, 137, 0.12)", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 }}>
-                <Text style={{ color: "#8effab", fontSize: 10, fontWeight: "900" }}>Keeps {g.keeps}</Text>
+                <Text style={{ color: "#8effab", fontSize: 10, fontWeight: "900" }}>{t("ui8.keepsFor", { time: g.keeps })}</Text>
               </View>
             </View>
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 17, marginTop: 8 }}>🧊 {g.store}</Text>

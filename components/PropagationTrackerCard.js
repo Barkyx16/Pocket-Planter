@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { getDaysSince, getTodayKey, tapHaptic } from "../core";
-import { formatDate, t, useLanguage } from "../lib/i18n";
+import { formatDate, t, tn, useLanguage } from "../lib/i18n";
 import { SkeletonSection } from "./Skeleton";
 import { touchSlop } from "../lib/a11y";
 
@@ -114,7 +114,7 @@ export const PropagationTrackerCard = memo(function PropagationTrackerCard({ the
       ) : null}
       {rooting ? (
         <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 10, fontStyle: "italic" }}>
-          {rooting} still rooting — tap the circle when roots appear.
+          {tn("ui8.stillRooting", rooting)}
         </Text>
       ) : null}
     </View>

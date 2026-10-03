@@ -347,7 +347,7 @@ return (
           {/* ── RESULTS COUNT ── */}
           {(searchQuery || filterPlant !== "All" || filterStage !== "All") ? (
             <View style={styles.journalResultsRow}>
-              <Text style={styles.journalResultsText}>{filteredEntries.length} {filteredEntries.length === 1 ? "entry" : "entries"} found</Text>
+              <Text style={styles.journalResultsText}>{tn("ui8.entriesFound", filteredEntries.length)}</Text>
               <Pressable accessibilityRole="button" onPress={() => { setSearchQuery(""); setFilterPlant("All"); setFilterStage("All"); }}>
                 <Text style={styles.journalResultsClear}>{t("journal.clearFilters")}</Text>
               </Pressable>

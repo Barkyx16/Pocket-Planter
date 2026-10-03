@@ -1290,3 +1290,23 @@ describe("English translation keys", () => {
     eq(unused, []);
   });
 });
+
+describe("text around a value", () => {
+  it("is translated, not an English word written into the JSX", () => {
+    // "{count} planted", "Harvested {plant}": the value is localised and the
+    // word around it stays English in every language.
+    const offenders = [];
+    const files = [path.join(ROOT, "App.js")];
+    for (const dir of ["components", "screens"]) {
+      for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith(".js"))) files.push(path.join(ROOT, dir, f));
+    }
+    const after = /\}[ ]+[A-Za-z]{3,}[^<{}"`]*<\/Text>/;
+    const before = />[ ]*[A-Z][a-z]{2,}[^<>{}]* \{[^}]+\}<\/Text>/;
+    for (const f of files) {
+      const src = fs.readFileSync(f, "utf8");
+      const m = src.match(after) || src.match(before);
+      if (m) offenders.push(`${path.relative(ROOT, f)}: ${m[0].slice(0, 50)}`);
+    }
+    eq(offenders, []);
+  });
+});

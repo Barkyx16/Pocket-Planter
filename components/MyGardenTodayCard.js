@@ -111,7 +111,7 @@ return (
         <View style={styles.myGardenProgressWrap}>
           <View style={styles.myGardenProgressHeader}>
             <Text style={styles.myGardenProgressLabel}>{t("myGardenToday.dailyGardenTasks")}</Text>
-            <Text style={styles.myGardenProgressCount}>{completedCount}/{totalTasks} done</Text>
+            <Text style={styles.myGardenProgressCount}>{t("ui8.doneOf", { done: completedCount, total: totalTasks })}</Text>
           </View>
           <View style={styles.myGardenProgressTrack}>
             <View style={[styles.myGardenProgressFill, {
@@ -183,7 +183,7 @@ return (
                   })}
                   {unwateredPlants.length > 4 ? (
                     <View style={styles.myGardenPlantPill}>
-                      <Text style={styles.myGardenPlantPillText}>+{unwateredPlants.length - 4} more</Text>
+                      <Text style={styles.myGardenPlantPillText}>{t("ui8.plusMore", { count: unwateredPlants.length - 4 })}</Text>
                     </View>
                   ) : null}
                 </ScrollView>

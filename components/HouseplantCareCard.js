@@ -134,7 +134,7 @@ export const HouseplantCareCard = memo(function HouseplantCareCard({ theme, save
             <View key={p.name} style={{ backgroundColor: "rgba(255,159,67,0.08)", borderRadius: 10, padding: 10, borderWidth: 1, borderColor: "rgba(255,159,67,0.24)" }}>
               <Text style={{ color: theme.text, fontSize: 12, fontWeight: "900" }}>{p.icon} {p.name}</Text>
               <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", lineHeight: 15, marginTop: 2 }}>{p.sign}</Text>
-              <Text style={{ color: "#8effab", fontSize: 11, fontWeight: "800", lineHeight: 15, marginTop: 2 }}>Fix: {p.fix}</Text>
+              <Text style={{ color: "#8effab", fontSize: 11, fontWeight: "800", lineHeight: 15, marginTop: 2 }}>{t("ui8.fixLabel", { fix: p.fix })}</Text>
             </View>
           ))}
         </View>

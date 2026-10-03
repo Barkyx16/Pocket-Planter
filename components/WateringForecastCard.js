@@ -105,7 +105,7 @@ return (
           {active ? (
             <View style={{ marginTop: 14, backgroundColor: "rgba(107, 199, 255, 0.08)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.2)" }}>
               <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: active.plants.length ? 10 : 0 }}>
-                {weekdayFmt(active.date, active.offset).toUpperCase()} · {active.plants.length} DUE
+                {weekdayFmt(active.date, active.offset).toUpperCase()} · {tn("ui8.dueN", active.plants.length)}
               </Text>
               {active.plants.length === 0 ? (
                 <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>{t("wateringForecast.nothingDueAFreeDay")}</Text>

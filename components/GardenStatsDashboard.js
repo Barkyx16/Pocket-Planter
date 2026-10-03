@@ -144,7 +144,7 @@ return (
         ) : null}
         <View style={[styles.dashTopCard, { borderColor: streakData?.count >= 7 ? "#ff9f4355" : "rgba(255, 255, 255, 0.08)" }]}>
           <Text style={styles.dashTopCardIcon}>{getStreakEmoji(streakData?.count || 0)}</Text>
-          <Text style={[styles.dashTopCardLabel, { color: streakData?.count >= 7 ? "#ff9f43" : theme.text }]}>{streakData?.count || 0} Days</Text>
+          <Text style={[styles.dashTopCardLabel, { color: streakData?.count >= 7 ? "#ff9f43" : theme.text }]}>{tn("ui8.streakDays", streakData?.count || 0)}</Text>
           <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>{t("stats.streak")}</Text>
         </View>
         <View style={[styles.dashTopCard, { borderColor: getHealthColor(gardenHealth.score) + "55" }]}>
