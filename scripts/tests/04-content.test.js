@@ -834,3 +834,12 @@ describe("the app's own alerts speak the gardener's language", () => {
     eq(i18n.tn("garden.wateredCount", 1), "💧 Watered 1 plant!");
   });
 });
+
+describe("the plant page speaks the gardener's language", () => {
+  it("has no English labels or sentences left in its chrome", () => {
+    const src = require("fs").readFileSync(path.join(ROOT, "screens/PlantDetailScreen.js"), "utf8");
+    for (const phrase of ["LEVEL UP!", ">Daily controls<", "title=\"Garden Actions\"", "Harvest Tracker<", "\"Ready to harvest!\"", "Fertilizer Tracker<", "\"Mark watered\"", "label: \"Sun\"", "Problems & Protection\"", "Common Pests<", "Watch for: <", "steps to get {selectedPlant", "Plant Together<", "No companion data for", "Where to Buy\"", "Seeds on Amazon<", "Back to plants<"]) {
+      ok(!src.includes(phrase), `PlantDetailScreen still has "${phrase}"`);
+    }
+  });
+});

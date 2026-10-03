@@ -9,7 +9,7 @@ import { WeatherParticles } from "../components/WeatherParticles";
 import { getCompanionLists, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantingSteps, getPlantingWindowText, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeUnits, normalizeType, resolvePlantImageSource, translateSeasonLabel, typeLabel } from "../core";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { getPestImage } from "../data/pestImageMap";
-import { formatDate, t } from "../lib/i18n";
+import { formatDate, t, tn } from "../lib/i18n";
 import { styles } from "../styles";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Alert, Animated, Image, Linking, Pressable, SafeAreaView, ScrollView, StatusBar, Text, TextInput, View } from "react-native";
@@ -55,11 +55,11 @@ export function PlantDetailScreen({
       <Text style={styles.levelUpEmoji}>🎉</Text>
 
       <Text style={styles.levelUpTitle}>
-        LEVEL UP!
+        {t("plantPage.levelUp")}
       </Text>
 
       <Text style={styles.levelUpText}>
-        🎉 Level {gardenXP.level} Reached!
+        {t("plantPage.levelReached", { level: gardenXP.level })}
       </Text>
     </View>
   </View>
@@ -82,7 +82,7 @@ export function PlantDetailScreen({
       />
 
       <Text style={styles.backButtonText}>
-        Back
+        {t("plantPage.back")}
       </Text>
     </Pressable>
   </View>
@@ -128,7 +128,7 @@ export function PlantDetailScreen({
       </View>
     </View>
             <Text style={styles.detailTitle}>{selectedPlant.name}</Text>
-            <Text style={styles.detailSubtitle}>{typeLabel(normalizeType(selectedPlant.type, selectedPlant.name))} • Zones {selectedPlant.minZone}–{selectedPlant.maxZone}</Text>
+            <Text style={styles.detailSubtitle}>{typeLabel(normalizeType(selectedPlant.type, selectedPlant.name))} • {t("plantPage.zonesRange", { min: selectedPlant.minZone, max: selectedPlant.maxZone })}</Text>
           </Animated.View>
           <View style={styles.detailQuickActions}>
             <Pressable onPress={() => toggleSavedPlant(selectedPlant.name)} style={[styles.quickActionButton, isSaved && styles.quickActionButtonActive]}>
@@ -137,12 +137,12 @@ export function PlantDetailScreen({
             </Pressable>
           </View>
 <View style={styles.card}>
-  <Text style={styles.cardEyebrow}>Daily controls</Text>
+  <Text style={styles.cardEyebrow}>{t("plantPage.dailyControls")}</Text>
   {!premiumUnlocked ? (
     <PremiumLockedSection
       icon="💧"
-      title="Garden Actions"
-      description="Mark watering, set reminders, and log progress photos for every plant in your garden."
+      title={t("plantPage.gardenActions")}
+      description={t("plantPage.gardenActionsBody")}
       onUnlock={() => jumpToTab("premium")}
     />
   ) : (
@@ -152,12 +152,12 @@ export function PlantDetailScreen({
       <View style={styles.harvestTrackerCard}>
         <Text style={styles.harvestTrackerEmoji}>🚜</Text>
         <View style={{ flex: 1 }}>
-          <Text style={styles.harvestTrackerTitle}>Harvest Tracker</Text>
+          <Text style={styles.harvestTrackerTitle}>{t("plantPage.harvestTracker")}</Text>
           <Text style={styles.harvestTrackerText}>
             {harvestTracker
               ? harvestDaysLeft === 0
-                ? "Ready to harvest!"
-                : `Ready in ${harvestDaysLeft} days`
+                ? t("plantPage.readyToHarvest")
+                : tn("plantPage.readyInDays", harvestDaysLeft)
               : getHarvestCountdown(selectedPlant)}
           </Text>
         </View>
@@ -175,7 +175,7 @@ export function PlantDetailScreen({
           }}
         >
           <Text style={styles.harvestTrackerButtonText}>
-            {harvestTracker ? "Restart" : "Start"}
+            {harvestTracker ? t("plantPage.restart") : t("plantPage.start")}
           </Text>
         </Pressable>
       </View>
@@ -183,7 +183,7 @@ export function PlantDetailScreen({
         onPress={() => { setHarvestLogText(""); setHarvestLogPlant(selectedPlant.name); }}
         style={{ marginTop: 10, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 12, alignItems: "center" }}
       >
-        <IconText label={"🎉 Log a Harvest"} style={{
+        <IconText label={t("plantPage.logHarvest")} style={{
   color: "#07120b",
   fontWeight: "900",
   fontSize: 14
@@ -194,11 +194,11 @@ export function PlantDetailScreen({
       <View style={styles.harvestTrackerCard}>
         <Text style={styles.harvestTrackerEmoji}>🌾</Text>
         <View style={{ flex: 1 }}>
-          <Text style={styles.harvestTrackerTitle}>Fertilizer Tracker</Text>
+          <Text style={styles.harvestTrackerTitle}>{t("plantPage.fertilizerTracker")}</Text>
           <Text style={styles.harvestTrackerText}>
             {fertilizerTrackers[selectedPlant.name]
-              ? `Last fed ${formatDate(new Date(fertilizerTrackers[selectedPlant.name].lastFertilized))}`
-              : "Track fertilizer applications"}
+              ? t("plantPage.lastFed", { date: formatDate(new Date(fertilizerTrackers[selectedPlant.name].lastFertilized)) })
+              : t("plantPage.trackFertilizer")}
           </Text>
         </View>
         <Pressable
@@ -206,7 +206,7 @@ export function PlantDetailScreen({
           onPress={() => toggleFertilizerTracker(selectedPlant.name)}
         >
           <Text style={styles.harvestTrackerButtonText}>
-            {fertilizerTrackers[selectedPlant.name] ? "Tracking" : "Start"}
+            {fertilizerTrackers[selectedPlant.name] ? t("plantPage.tracking") : t("plantPage.start")}
           </Text>
         </Pressable>
       </View>
@@ -217,7 +217,7 @@ export function PlantDetailScreen({
         >
           <Text style={styles.controlTileIcon}>💧</Text>
           <Text style={[styles.controlTileTitle, wateringCompletedToday && styles.controlTileTitleActive]}>
-            {wateringCompletedToday ? "Watered" : "Mark watered"}
+            {wateringCompletedToday ? t("plantPage.watered") : t("plantPage.markWatered")}
           </Text>
           <Text style={styles.controlTileSubtext}>
             {getLastWateredText(selectedPlant.name, wateredPlants, wateringHistory)}
@@ -225,15 +225,15 @@ export function PlantDetailScreen({
         </Pressable>
         <Pressable onPress={() => quickAddPlantToGarden(selectedPlant.name)} style={styles.controlTile}>
           <Text style={styles.controlTileIcon}>🗺️</Text>
-          <Text style={styles.controlTileTitle}>Add to garden</Text>
+          <Text style={styles.controlTileTitle}>{t("plantPage.addToGarden")}</Text>
         </Pressable>
         <Pressable onPress={() => schedulePlantReminder(selectedPlant.name)} style={styles.controlTile}>
           <Text style={styles.controlTileIcon}>🔔</Text>
-          <Text style={styles.controlTileTitle}>Reminder</Text>
+          <Text style={styles.controlTileTitle}>{t("plantPage.reminder")}</Text>
         </Pressable>
         <Pressable onPress={() => pickJournalPhoto(selectedPlant.name)} style={styles.controlTile}>
           <Text style={styles.controlTileIcon}>📸</Text>
-          <Text style={styles.controlTileTitle}>Add photo</Text>
+          <Text style={styles.controlTileTitle}>{t("plantPage.addPhoto")}</Text>
         </Pressable>
       </View>
     </>
@@ -250,21 +250,21 @@ export function PlantDetailScreen({
 />
 
 <View style={styles.card}>
-  <Text style={styles.cardEyebrow}>Smart Care</Text>
+  <Text style={styles.cardEyebrow}>{t("plantPage.smartCare")}</Text>
   <Text style={styles.cardText}>{temps(getShouldGrowText(selectedPlant, zone, weather))}</Text>
   <View style={styles.detailMiniGrid}>
     {[
-      { icon: "☀️", label: "Sun", value: quickFacts.sun },
-      { icon: "💧", label: "Water needs", value: quickFacts.water },
-      { icon: "📏", label: "Spacing", value: temps(quickFacts.spacing) },
-      { icon: "🌱", label: "Soil", value: quickFacts.soil },
-      { icon: "🏆", label: "Difficulty", value: quickFacts.difficulty },
-      { icon: "📅", label: "Planting window", value: plantingWindow },
+      { icon: "☀️", label: t("plantPage.factSun"), value: quickFacts.sun },
+      { icon: "💧", label: t("plantPage.factWater"), value: quickFacts.water },
+      { icon: "📏", label: t("plantPage.factSpacing"), value: temps(quickFacts.spacing) },
+      { icon: "🌱", label: t("plantPage.factSoil"), value: quickFacts.soil },
+      { icon: "🏆", label: t("plantPage.factDifficulty"), value: quickFacts.difficulty },
+      { icon: "📅", label: t("plantPage.factWindow"), value: plantingWindow },
       // Premium users already get a rich Watering Forecast in Daily controls above,
       // so only show the generic weather-based watering tip to free users (no duplicate).
-      ...(!premiumUnlocked ? [{ icon: "🚿", label: "Watering today", value: temps(getWateringTip(weather)) }] : []),
-      { icon: "📍", label: "Best spot", value: temps(getWhereToPlantText(selectedPlant)) },
-      { icon: "🌤️", label: "Weather advice", value: temps(getPlantSpecificTip(selectedPlant, zone, weather)) },
+      ...(!premiumUnlocked ? [{ icon: "🚿", label: t("plantPage.factWateringToday"), value: temps(getWateringTip(weather)) }] : []),
+      { icon: "📍", label: t("plantPage.factBestSpot"), value: temps(getWhereToPlantText(selectedPlant)) },
+      { icon: "🌤️", label: t("plantPage.factWeather"), value: temps(getPlantSpecificTip(selectedPlant, zone, weather)) },
     ].map((fact) => (
       <View key={fact.label} style={styles.detailMiniCard}>
         <Text style={styles.detailMiniIcon}>{fact.icon}</Text>
@@ -278,15 +278,15 @@ export function PlantDetailScreen({
 </View>
 {plantHealth ? (
 <View style={styles.card}>
-  <IconText label={"🐛 Problems & Protection"} style={styles.cardEyebrow} />
+  <IconText label={t("plantPage.problems")} style={styles.cardEyebrow} />
   <Text style={[styles.cardText, { marginTop: 2 }]}>
-    Pests and diseases to watch for on {selectedPlant.name} — tap any one for its full guide.
+    {t("plantPage.problemsBody", { plant: selectedPlant.name })}
   </Text>
   {plantHealth.pests?.length ? (
     <>
       <View style={styles.companionSectionHeader}>
         <Text style={styles.companionSectionEmoji}>🐛</Text>
-        <Text style={styles.companionSectionTitle}>Common Pests</Text>
+        <Text style={styles.companionSectionTitle}>{t("plantPage.commonPests")}</Text>
         <View style={{ backgroundColor: "rgba(255, 123, 123, 0.18)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
           <Text style={{ color: "#ff9f9f", fontSize: 10, fontWeight: "900" }}>{plantHealth.pests.length}</Text>
         </View>
@@ -322,7 +322,7 @@ export function PlantDetailScreen({
     <>
       <View style={styles.companionSectionHeader}>
         <Text style={styles.companionSectionEmoji}>🦠</Text>
-        <Text style={styles.companionSectionTitle}>Common Diseases</Text>
+        <Text style={styles.companionSectionTitle}>{t("plantPage.commonDiseases")}</Text>
         <View style={{ backgroundColor: "rgba(255, 207, 139, 0.16)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
           <Text style={{ color: "#ffcf8b", fontSize: 10, fontWeight: "900" }}>{plantHealth.diseases.length}</Text>
         </View>
@@ -358,7 +358,7 @@ export function PlantDetailScreen({
     <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
       <Text style={{ fontSize: 13 }}>⚠️</Text>
       <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "600", lineHeight: 19, flex: 1 }}>
-        <Text style={{ color: "#ff9f9f", fontWeight: "900" }}>Watch for: </Text>{plantHealth.symptoms}
+        <Text style={{ color: "#ff9f9f", fontWeight: "900" }}>{t("plantPage.watchFor")}</Text>{plantHealth.symptoms}
       </Text>
     </View>
   ) : null}
@@ -366,25 +366,25 @@ export function PlantDetailScreen({
     <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
       <Text style={{ fontSize: 13 }}>✅</Text>
       <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "600", lineHeight: 19, flex: 1 }}>
-        <Text style={{ color: "#8effab", fontWeight: "900" }}>Prevent & treat: </Text>{plantHealth.prevent}
+        <Text style={{ color: "#8effab", fontWeight: "900" }}>{t("plantPage.preventTreat")}</Text>{plantHealth.prevent}
       </Text>
     </View>
   ) : null}
 </View>
 ) : null}
 <View style={styles.card}>
-  <Text style={styles.cardEyebrow}>Step by step</Text>
+  <Text style={styles.cardEyebrow}>{t("plantPage.stepByStep")}</Text>
   {!premiumUnlocked ? (
     <PremiumLockedSection
       icon="🌱"
-      title="How to Plant"
-      description="Get step-by-step planting guides tailored to every plant in your zone."
+      title={t("plantPage.howToPlant")}
+      description={t("plantPage.howToPlantBody")}
       onUnlock={() => jumpToTab("premium")}
     />
   ) : (
     <>
       <Text style={[styles.cardText, { marginTop: 2 }]}>
-        {plantingSteps.length} steps to get {selectedPlant.name} in the ground. Check your seed packet for variety-specific timing.
+        {tn("plantPage.stepsIntro", plantingSteps.length, { plant: selectedPlant.name })}
       </Text>
       <View style={{ marginTop: 12 }}>
         {plantingSteps.map((step, index) => (
@@ -409,18 +409,18 @@ export function PlantDetailScreen({
 </View>
 
 <View style={styles.card}>
-  <IconText label={"🌿 Companion Intelligence"} style={styles.cardEyebrow} />
+  <IconText label={t("plantPage.companionIntel")} style={styles.cardEyebrow} />
   {!premiumUnlocked ? (
    <PremiumLockedCard
       theme={theme}
-      title="Companion planting locked"
-      body="Unlock premium to see excellent pairs, plants to avoid, pest prevention tips, and companion search."
+      title={t("plantPage.companionLocked")}
+      body={t("plantPage.companionLockedBody")}
       onUnlock={() => jumpToTab("premium")}
     />
   ) : (
     <>
       <Text style={[styles.cardText, { marginTop: 2 }]}>
-        Who to plant near {selectedPlant.name} — and who to keep apart. Tap any plant to open it.
+        {t("plantPage.whoToPlantNear", { plant: selectedPlant.name })}
       </Text>
 
       {/* EXCELLENT PAIRS */}
@@ -428,7 +428,7 @@ export function PlantDetailScreen({
         <>
           <View style={styles.companionSectionHeader}>
             <Text style={styles.companionSectionEmoji}>🟢</Text>
-            <Text style={styles.companionSectionTitle}>Plant Together</Text>
+            <Text style={styles.companionSectionTitle}>{t("plantPage.plantTogether")}</Text>
             <View style={{ backgroundColor: "rgba(92, 255, 137, 0.2)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
               <Text style={{ color: "#5cff89", fontSize: 10, fontWeight: "900" }}>{excellentCompanions.length}</Text>
             </View>
@@ -455,7 +455,7 @@ export function PlantDetailScreen({
         <>
           <View style={styles.companionSectionHeader}>
             <Text style={styles.companionSectionEmoji}>🟡</Text>
-            <Text style={styles.companionSectionTitle}>OK Nearby</Text>
+            <Text style={styles.companionSectionTitle}>{t("plantPage.okNearby")}</Text>
             <View style={{ backgroundColor: "rgba(255, 216, 107, 0.16)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
               <Text style={{ color: "#ffd86b", fontSize: 10, fontWeight: "900" }}>{neutralCompanions.length}</Text>
             </View>
@@ -482,7 +482,7 @@ export function PlantDetailScreen({
         <>
           <View style={styles.companionSectionHeader}>
             <Text style={styles.companionSectionEmoji}>🔴</Text>
-            <Text style={styles.companionSectionTitle}>Keep Apart</Text>
+            <Text style={styles.companionSectionTitle}>{t("plantPage.keepApart")}</Text>
             <View style={{ backgroundColor: "rgba(255, 123, 123, 0.16)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
               <Text style={{ color: "#ff7b7b", fontSize: 10, fontWeight: "900" }}>{avoidCompanions.length}</Text>
             </View>
@@ -506,7 +506,7 @@ export function PlantDetailScreen({
 
       {excellentCompanions.length === 0 && neutralCompanions.length === 0 && avoidCompanions.length === 0 ? (
         <Text style={[styles.cardText, { marginTop: 10, fontStyle: "italic" }]}>
-          No companion data for {selectedPlant.name} yet — it's an easygoing neighbor for most plants.
+          {t("plantPage.noCompanionData", { plant: selectedPlant.name })}
         </Text>
       ) : null}
     </>
@@ -514,18 +514,18 @@ export function PlantDetailScreen({
 </View>
 
 <View style={styles.card}>
-  <Text style={styles.cardEyebrow}>Shop & Supply</Text>
+  <Text style={styles.cardEyebrow}>{t("plantPage.shopSupply")}</Text>
   {!premiumUnlocked ? (
     <PremiumLockedSection
       icon="🛒"
-      title="Where to Buy"
-      description="Find seeds, fertilizer, and supplies for this plant — with links to Amazon, Park Seed, Home Depot, and local garden centers."
+      title={t("plantPage.whereToBuy")}
+      description={t("plantPage.whereToBuyBody")}
       onUnlock={() => jumpToTab("premium")}
     />
   ) : (
     <>
       <Text style={styles.cardText}>
-        Find seeds, fertilizer, and supplies for {selectedPlant.name} near ZIP code {zip || "your area"}.
+        {zip ? t("plantPage.findSuppliesZip", { plant: selectedPlant.name, zip }) : t("plantPage.findSuppliesArea", { plant: selectedPlant.name })}
       </Text>
       <Pressable
         style={styles.shopLinkButton}
@@ -533,8 +533,8 @@ export function PlantDetailScreen({
       >
         <Text style={styles.shopLinkIcon}>📦</Text>
         <View style={{ flex: 1 }}>
-          <Text style={styles.shopLinkTitle}>Buy {selectedPlant.name} Seeds on Amazon</Text>
-          <Text style={styles.shopLinkSub}>Ships to your door</Text>
+          <Text style={styles.shopLinkTitle}>{t("plantPage.buySeedsAmazon", { plant: selectedPlant.name })}</Text>
+          <Text style={styles.shopLinkSub}>{t("plantPage.shipsToDoor")}</Text>
         </View>
         <Text style={styles.shopLinkArrow}>›</Text>
       </Pressable>
@@ -544,8 +544,8 @@ export function PlantDetailScreen({
       >
         <Text style={styles.shopLinkIcon}>🧪</Text>
         <View style={{ flex: 1 }}>
-          <Text style={styles.shopLinkTitle}>Buy {selectedPlant.name} Fertilizer on Amazon</Text>
-          <Text style={styles.shopLinkSub}>Specific nutrients for this plant</Text>
+          <Text style={styles.shopLinkTitle}>{t("plantPage.buyFertAmazon", { plant: selectedPlant.name })}</Text>
+          <Text style={styles.shopLinkSub}>{t("plantPage.specificNutrients")}</Text>
         </View>
         <Text style={styles.shopLinkArrow}>›</Text>
       </Pressable>
@@ -555,8 +555,8 @@ export function PlantDetailScreen({
       >
         <Text style={styles.shopLinkIcon}>🪴</Text>
         <View style={{ flex: 1 }}>
-          <Text style={styles.shopLinkTitle}>Shop {selectedPlant.name} at Park Seed</Text>
-          <Text style={styles.shopLinkSub}>Trusted seed catalog since 1868</Text>
+          <Text style={styles.shopLinkTitle}>{t("plantPage.shopParkSeed", { plant: selectedPlant.name })}</Text>
+          <Text style={styles.shopLinkSub}>{t("plantPage.trustedSince")}</Text>
         </View>
         <Text style={styles.shopLinkArrow}>›</Text>
       </Pressable>
@@ -566,8 +566,8 @@ export function PlantDetailScreen({
       >
         <Text style={styles.shopLinkIcon}>📍</Text>
         <View style={{ flex: 1 }}>
-          <Text style={styles.shopLinkTitle}>Find Garden Centers Near {zip || "You"}</Text>
-          <Text style={styles.shopLinkSub}>Local stores near your ZIP code</Text>
+          <Text style={styles.shopLinkTitle}>{zip ? t("plantPage.findCentersNear", { zip }) : t("plantPage.findCentersNearYou")}</Text>
+          <Text style={styles.shopLinkSub}>{t("plantPage.localStores")}</Text>
         </View>
         <Text style={styles.shopLinkArrow}>›</Text>
       </Pressable>
@@ -577,8 +577,8 @@ export function PlantDetailScreen({
       >
         <Text style={styles.shopLinkIcon}>🏠</Text>
         <View style={{ flex: 1 }}>
-          <Text style={styles.shopLinkTitle}>Shop at Home Depot Garden Center</Text>
-          <Text style={styles.shopLinkSub}>Check local availability</Text>
+          <Text style={styles.shopLinkTitle}>{t("plantPage.shopHomeDepot")}</Text>
+          <Text style={styles.shopLinkSub}>{t("plantPage.checkLocal")}</Text>
         </View>
         <Text style={styles.shopLinkArrow}>›</Text>
       </Pressable>
@@ -587,10 +587,10 @@ export function PlantDetailScreen({
 </View>
 
 <View style={styles.card}>
-  <Text style={styles.cardEyebrow}>Personal garden notes</Text>
+  <Text style={styles.cardEyebrow}>{t("plantPage.personalNotes")}</Text>
   <TextInput
     multiline
-    placeholder={`Write notes about ${selectedPlant.name}...`}
+    placeholder={t("plantPage.notesPlaceholder", { plant: selectedPlant.name })}
     placeholderTextColor="#8fbf9d"
     value={plantNotes[selectedPlant.name] || ""}
     onChangeText={(text) => setPlantNotes((current) => ({ ...current, [selectedPlant.name]: text }))}
@@ -601,7 +601,7 @@ export function PlantDetailScreen({
 <View style={styles.card}>
   <Pressable onPress={handleBackFromPlant} style={styles.bottomBackButton}>
     <Ionicons name="chevron-back" size={22} color="#07120b" />
-    <Text style={styles.bottomBackButtonText}>Back to plants</Text>
+    <Text style={styles.bottomBackButtonText}>{t("plantPage.backToPlants")}</Text>
   </Pressable>
 </View>
 </ScrollView>
