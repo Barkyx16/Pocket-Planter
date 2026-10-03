@@ -5307,6 +5307,10 @@ const jumpToTab = useCallback((tab) => {
       <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
         <StatusBar barStyle="light-content" />
         <BackgroundDecoration isDark={isDark} />
+        {/* Android draws edge to edge (Expo SDK 54), so the window no longer
+            resizes for the keyboard; pad for it here. iOS uses the ScrollView's
+            keyboard insets below. */}
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "android" ? "padding" : undefined}>
         <ScrollView
           contentContainerStyle={{ flexGrow: 1, justifyContent: "center", padding: 24 }}
           keyboardShouldPersistTaps="handled"
@@ -5411,6 +5415,7 @@ const jumpToTab = useCallback((tab) => {
             ) : null}
           </View>
         </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     );
   }
@@ -5458,7 +5463,7 @@ const jumpToTab = useCallback((tab) => {
     />
 
     <Modal visible={!!harvestLogPlant} animationType="fade" transparent onRequestClose={() => setHarvestLogPlant(null)}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <Pressable accessible={false} style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", alignItems: "center", justifyContent: "center", padding: 24 }} onPress={() => setHarvestLogPlant(null)}>
         <Pressable accessible={false} onPress={(e) => e.stopPropagation?.()} style={{ width: "100%", maxWidth: 420, backgroundColor: theme.card, borderRadius: 24, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", padding: 22 }}>
           <IconText label={t("harvestLog.modalTitle")} style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 10 }} />
@@ -5489,7 +5494,7 @@ const jumpToTab = useCallback((tab) => {
 
     {showResetPassword ? (
       <Modal visible transparent animationType="fade" onRequestClose={() => setShowResetPassword(false)}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <View style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.85)", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <View style={{ width: "100%", maxWidth: 420, backgroundColor: "#0e2414", borderRadius: 24, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", padding: 22 }}>
             <IconText label={t("auth.resetEyebrow")} style={{
