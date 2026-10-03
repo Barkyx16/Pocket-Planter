@@ -198,7 +198,12 @@ const populatedProps = (() => {
   const produce = require(path.join(ROOT, "data/produceData.js"));
   const catalog = produce.default || produce;
   const names = catalog.slice(0, 40).map((i) => i.name);
-  const key = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
+  // Local day keys, as the app writes them. toISOString is the UTC date, which is
+  // tomorrow every evening in the Americas.
+  const key = (n) => {
+    const d = new Date(); d.setDate(d.getDate() - n);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
   const iso = (n) => new Date(Date.now() - n * 86400000).toISOString();
   const history = {}; names.forEach((n, i) => { history[n] = [key(9), key(6), key(3), key(i % 4)]; });
   const watered = {}; names.slice(0, 12).forEach((n) => { watered[n] = key(0); });
