@@ -375,9 +375,6 @@ registerNotificationChannel();
 
 function AppInner({ language, setLanguage }) {
   const safeInsets = useSafeAreaInsets();
-  // How far the Android navigation bar pushes the tab bar up; everything that
-  // floats above the tab bar moves with it. Zero on iOS.
-  const androidBottomLift = Platform.OS === "android" ? safeInsets.bottom : 0;
   const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -5555,7 +5552,7 @@ const jumpToTab = useCallback((tab) => {
     ) : null}
 
     {undoToast ? (
-      <View style={{ position: "absolute", bottom: 96 + androidBottomLift, left: 16, right: 16, zIndex: 900, flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(16, 41, 23, 0.98)", borderRadius: 16, paddingVertical: 14, paddingHorizontal: 18, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 20 }}>
+      <View style={{ position: "absolute", bottom: 96, left: 16, right: 16, zIndex: 900, flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(16, 41, 23, 0.98)", borderRadius: 16, paddingVertical: 14, paddingHorizontal: 18, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 20 }}>
         <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800", flex: 1 }}>{undoToast.message}</Text>
         <Pressable accessibilityRole="button" onPress={undoToast.onUndo} hitSlop={10} style={{ marginLeft: 12, backgroundColor: "#5cff89", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10 }}>
           <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "900" }}>{t("garden.undo")}</Text>
@@ -6268,7 +6265,7 @@ const jumpToTab = useCallback((tab) => {
 {record && showScrollTop ? (
   <Pressable
     onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
-    style={[styles.scrollTopButton, androidBottomLift ? { bottom: 96 + androidBottomLift } : null]}
+    style={styles.scrollTopButton}
     accessibilityRole="button"
     accessibilityLabel={t("extra.scrollTop")}
   >
@@ -6284,7 +6281,7 @@ const jumpToTab = useCallback((tab) => {
     ])}
     accessibilityRole="button"
     accessibilityLabel={t("extra.quickLog")}
-    style={{ position: "absolute", right: 18, bottom: 156 + androidBottomLift, width: 52, height: 52, borderRadius: 24, backgroundColor: "#6bc7ff", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 16, zIndex: 51 }}
+    style={{ position: "absolute", right: 18, bottom: 156, width: 52, height: 52, borderRadius: 24, backgroundColor: "#6bc7ff", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 16, zIndex: 51 }}
   >
     <Text style={{ fontSize: 24 }}>⚡</Text>
   </Pressable>
@@ -6344,11 +6341,8 @@ const jumpToTab = useCallback((tab) => {
   </Pressable>
 </Modal>
 
-{/* The tab bar is absolute, so it ignores the safe area's padding. On Android
-    the system navigation bar now overlaps the window, so lift the bar clear of
-    it; iOS keeps the position it was designed at. */}
 {record ? (
-  <View style={[styles.bottomTabs, androidBottomLift ? { bottom: 16 + androidBottomLift } : null]}>
+  <View style={styles.bottomTabs}>
   {TABS.map((tab) => {
       const label = t(tab.labelKey);
       // "More" reads as selected while any of the destinations behind it is open.
