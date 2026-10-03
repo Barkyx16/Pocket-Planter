@@ -810,6 +810,11 @@ const saveProfileToSupabase = async () => {
     [CLOUD_PROGRESS_KEY]: {
       plantSaveDates, harvestGoal, monthlyChecklist, frostChecklist,
       badgeEarnedDates, bannerEarnedDates, streakFreeze, pinnedPlants,
+      // Also sent to their own columns by the optional-prefs update below, which
+      // gives up for the session if any one of its columns is missing. Country
+      // is the one that hurts: without it a new device reads "SW1A 1AA" as a US
+      // ZIP. The columns win on load where they exist; this is the fallback.
+      country, latitude, unitSystem, weeklyRecapOn,
     },
   };
   const profileRow = {
@@ -973,16 +978,19 @@ if (data?.module_data && typeof data.module_data === "object") {
 // Country and latitude come first: the zip_code below is meaningless without
 // knowing which country's format it is, and the hemisphere has to be applied
 // before the seasonal helpers run in the next render pass.
-const cloudCountry = findCountry(data?.country);
+// The columns where they exist, else the copy saved in module_data.
+const synced = (data?.module_data && data.module_data[CLOUD_PROGRESS_KEY]) || {};
+const cloudCountry = findCountry(data?.country) || findCountry(synced.country);
 if (cloudCountry) setCountry(cloudCountry.code);
 
-if (typeof data?.latitude === "number" && !Number.isNaN(data.latitude)) {
-  setLatitude(data.latitude);
-  setHemisphereFromLatitude(data.latitude);
+const cloudLatitude = typeof data?.latitude === "number" ? data.latitude : synced.latitude;
+if (typeof cloudLatitude === "number" && !Number.isNaN(cloudLatitude)) {
+  setLatitude(cloudLatitude);
+  setHemisphereFromLatitude(cloudLatitude);
 }
 
 if (data?.zip_code)
-  setZip(normalizePostal(data.zip_code, data?.country || country));
+  setZip(normalizePostal(data.zip_code, cloudCountry?.code || country));
 if (data?.profile_name)
   setProfileName(data.profile_name);
 if (data?.profile_photo)
@@ -1022,6 +1030,8 @@ if (typeof data?.plant_of_day_on === "boolean")
 
 if (typeof data?.weekly_recap_on === "boolean")
   setWeeklyRecapOn(data.weekly_recap_on);
+else if (typeof synced.weeklyRecapOn === "boolean")
+  setWeeklyRecapOn(synced.weeklyRecapOn);
 
   if (Array.isArray(data?.saved_plants))
     setSavedPlants(data.saved_plants);
@@ -1088,6 +1098,8 @@ if (data?.appearance_mode)
 
 if (data?.unit_system === "metric" || data?.unit_system === "imperial")
   setUnitSystem(data.unit_system);
+else if (synced.unitSystem === "metric" || synced.unitSystem === "imperial")
+  setUnitSystem(synced.unitSystem);
 
 if (data?.badge_earned_dates && typeof data.badge_earned_dates === "object")
   setBadgeEarnedDates(data.badge_earned_dates);
@@ -1792,6 +1804,8 @@ badgeEarnedDates,
 bannerEarnedDates,
 streakFreeze,
 pinnedPlants,
+unitSystem,
+weeklyRecapOn,
 ]);
 // ── Storage load ───────────────────────────────────────────────────────────
 useEffect(() => {

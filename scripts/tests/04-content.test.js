@@ -407,3 +407,31 @@ describe("the cloud row carries the whole garden too", () => {
     ok(!core8.MODULE_STORAGE_KEYS.includes("_progress"));
   });
 });
+
+describe("settings reach a new device without the optional columns", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const saveAt = app.indexOf("const saveProfileToSupabase");
+  const save = app.slice(saveAt, app.indexOf("const profileRow", saveAt));
+  it("copies country, latitude, units and the weekly recap into module_data", () => {
+    // The optional-prefs update gives up for the session if any one of its six
+    // columns is missing. Without country a new device reads a UK postcode as a
+    // US ZIP and keeps the digits.
+    for (const f of ["country", "latitude", "unitSystem", "weeklyRecapOn"]) {
+      ok(new RegExp(`\\b${f}\\b`).test(save), `${f} has no fallback`);
+    }
+  });
+  it("reads the column first and the copy second", () => {
+    ok(/findCountry\(data\?\.country\) \|\| findCountry\(synced\.country\)/.test(app));
+    ok(/typeof data\?\.latitude === "number" \? data\.latitude : synced\.latitude/.test(app));
+    ok(/else if \(synced\.unitSystem === "metric" \|\| synced\.unitSystem === "imperial"\)/.test(app));
+    ok(/else if \(typeof synced\.weeklyRecapOn === "boolean"\)/.test(app));
+  });
+  it("reads the postcode with the country it was restored with", () => {
+    ok(/setZip\(normalizePostal\(data\.zip_code, cloudCountry\?\.code \|\| country\)\)/.test(app));
+  });
+  it("syncs when the units or the weekly recap change", () => {
+    const depsAt = app.indexOf("saveTimerRef.current = setTimeout(() => { saveProfileToSupabase(); }");
+    const deps = app.slice(depsAt, app.indexOf("]);", depsAt));
+    for (const f of ["unitSystem", "weeklyRecapOn"]) ok(new RegExp(`\\n\\s*${f},`).test(deps), `${f} never triggers a sync`);
+  });
+});
