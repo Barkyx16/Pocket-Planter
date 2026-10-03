@@ -3829,6 +3829,10 @@ function waterArea(areaId) {
     });
     return next;
   });
+  // The next reminder runs from this watering, as it does when the same plants
+  // are watered one by one or with Water All. Watering a bed scheduled nothing,
+  // so plants kept in beds — most of a planned garden — went without one.
+  unwatered.forEach((name) => schedulePlantWaterReminder(name));
   clearSnoozes(unwatered);
   const popup = { id: Date.now().toString(), amount: `💧 Watered ${area.name}!` };
   setXpPopups((popups) => [...popups, popup]);

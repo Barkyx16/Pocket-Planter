@@ -539,3 +539,19 @@ describe("a snooze ends when the plant is watered or removed", () => {
     ok(/clearSnoozes\(\[name\]\)/.test(body("toggleSavedPlant")));
   });
 });
+
+describe("every way of watering schedules the next reminder", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const body = (name) => {
+    const at = app.search(new RegExp(`function ${name}\\(`));
+    if (at < 0) return "";
+    const rest = app.slice(at + 10);
+    const end = rest.search(/\n\s*(async )?function /);
+    return app.slice(at, end < 0 ? at + 4000 : at + 10 + end);
+  };
+  it("including a whole bed at once", () => {
+    for (const fn of ["markPlantWatered", "waterAllPlants", "waterPlant", "waterArea"]) {
+      ok(/schedulePlantWaterReminder\(/.test(body(fn)), `${fn} never schedules the next reminder`);
+    }
+  });
+});
