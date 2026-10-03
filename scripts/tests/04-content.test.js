@@ -719,3 +719,17 @@ describe("sign-in links", () => {
     ok(/if \(link\.error\)/.test(body) && body.indexOf("if (link.error)") < setAt, "an expired link stops before anything else");
   });
 });
+
+describe("checking Premium after a purchase", () => {
+  it("lets the store receipt answer when the server row says inactive", () => {
+    // A lapsed plan's row read as the truth four seconds after re-subscribing,
+    // before the webhook had landed, and took Premium away from a paying user.
+    const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+    const at = app.indexOf("async function refreshEntitlement(");
+    const body = app.slice(at, app.indexOf("async function reconcileFromStore(", at));
+    ok(/if \(data\.is_active === true && notExpired\) \{\s*setPremiumUnlocked\(true\);/.test(body));
+    ok(!/setPremiumUnlocked\(data\.is_active === true && notExpired\)/.test(body), "an inactive row must not switch Premium off by itself");
+    const rowBranch = body.slice(body.indexOf("if (data) {"), body.indexOf("// No server row yet"));
+    ok(/await reconcileFromStore\(\);/.test(rowBranch));
+  });
+});

@@ -4673,7 +4673,17 @@ useEffect(() => {
       if (error) throw error;
       if (data) {
         const notExpired = !data.expires_at || new Date(data.expires_at).getTime() > Date.now();
-        setPremiumUnlocked(data.is_active === true && notExpired);
+        if (data.is_active === true && notExpired) {
+          setPremiumUnlocked(true);
+          return;
+        }
+        // An inactive row is not the last word. A returning subscriber still has
+        // the row from their lapsed plan, and the re-check four seconds after
+        // buying usually lands before the webhook does — so the stale row took
+        // Premium away from someone who had just paid, until the webhook caught
+        // up. The store's own signed receipt settles it, exactly as it does when
+        // there is no row at all. Nothing here writes to the server.
+        await reconcileFromStore();
         return;
       }
       // No server row yet (e.g. the purchase just happened and the webhook hasn't
