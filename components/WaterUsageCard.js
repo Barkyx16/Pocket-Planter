@@ -2,14 +2,18 @@ import { memo } from "react";
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { getTodayKey, parseDecimal, tapHaptic, toGallons, WATER_UNITS } from "../core";
-import { useTranslation, formatDate } from "../lib/i18n";
+import { useTranslation, formatDate, formatNumber } from "../lib/i18n";
 import { IconText } from "./IconText";
 
-export const WaterUsageCard = memo(function WaterUsageCard({ theme, savedPlants, wateringAmounts, setWateringAmounts, onUndoToast }) {
+export const WaterUsageCard = memo(function WaterUsageCard({ theme, savedPlants, wateringAmounts, setWateringAmounts, onUndoToast, unitSystem }) {
   const { t } = useTranslation();
+  // Totals were always gallons, so a metric gardener logging litres read their
+  // own water back in a unit they never use. Entries keep the unit they were
+  // logged in; totals show in the gardener's units.
+  const metric = unitSystem === "metric";
   const [plant, setPlant] = useState("Garden");
   const [amount, setAmount] = useState("");
-  const [unit, setUnit] = useState("gal");
+  const [unit, setUnit] = useState(metric ? "L" : "gal");
   const [showPanel, setShowPanel] = useState(false);
 
   const plantOptions = ["Garden", ...(savedPlants || [])];
@@ -62,7 +66,14 @@ export const WaterUsageCard = memo(function WaterUsageCard({ theme, savedPlants,
     }
   };
 
-  const fmtGal = (g) => (g >= 10 ? Math.round(g) : Math.round(g * 10) / 10);
+  const UNIT_KEYS = { cups: "waterUsage.unitCups", gal: "waterUsage.unitGal", L: "waterUsage.unitL" };
+  const unitLabel = (id) => t(UNIT_KEYS[id] || UNIT_KEYS.gal);
+  const totalUnit = unitLabel(metric ? "L" : "gal");
+  const fmtTotal = (gal) => {
+    const v = metric ? gal * 3.78541 : gal;
+    return formatNumber(v >= 10 ? Math.round(v) : Math.round(v * 10) / 10);
+  };
+  const plantLabel = (name) => (name === "Garden" ? t("waterUsage.wholeGarden") : name);
 
 return (
     <View>
@@ -71,19 +82,19 @@ return (
       <View style={{ flexDirection: "row", gap: 12, marginTop: 16 }}>
         <View style={{ flex: 1, borderRadius: 16, paddingVertical: 16, alignItems: "center", backgroundColor: "rgba(107, 199, 255, 0.1)", borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.24)" }}>
           <Text style={{ fontSize: 20 }}>📅</Text>
-          <Text style={{ color: "#6bc7ff", fontSize: 24, fontWeight: "900", marginTop: 6 }}>{fmtGal(weekGal)}</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 2 }}>{t("waterUsage.galThisWeek")}</Text>
+          <Text style={{ color: "#6bc7ff", fontSize: 24, fontWeight: "900", marginTop: 6 }}>{fmtTotal(weekGal)}</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 2 }}>{t("waterUsage.weekTotal", { unit: totalUnit })}</Text>
         </View>
         <View style={{ flex: 1, borderRadius: 16, paddingVertical: 16, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
           <Text style={{ fontSize: 20 }}>💧</Text>
-          <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "900", marginTop: 6 }}>{fmtGal(totalGal)}</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 2 }}>{t("waterUsage.galAlltime")}</Text>
+          <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "900", marginTop: 6 }}>{fmtTotal(totalGal)}</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 2 }}>{t("waterUsage.allTimeTotal", { unit: totalUnit })}</Text>
         </View>
       </View>
 
       {thirstiest && thirstiest[1] > 0 ? (
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 14, textAlign: "center" }}>
-          {t("waterUsage.thirstiest")} <Text style={{ color: "#6bc7ff", fontWeight: "900" }}>{thirstiest[0]}</Text> (~{fmtGal(thirstiest[1])} {t("waterUsage.gal")}
+          {t("waterUsage.thirstiestLine", { plant: plantLabel(thirstiest[0]), amount: fmtTotal(thirstiest[1]), unit: totalUnit })}
         </Text>
       ) : null}
 
@@ -121,7 +132,7 @@ return (
                 return (
                   <Pressable accessibilityRole="button" key={u.id} onPress={() => setUnit(u.id)}
                     style={{ borderRadius: 12, paddingHorizontal: 12, justifyContent: "center", backgroundColor: active ? "#6bc7ff" : "rgba(255, 255, 255, 0.08)", borderWidth: 1, borderColor: active ? "#6bc7ff" : "rgba(255, 255, 255, 0.1)" }}>
-                    <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{u.id}</Text>
+                    <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{unitLabel(u.id)}</Text>
                   </Pressable>
                 );
               })}
@@ -150,10 +161,10 @@ return (
             <View key={e.id} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "rgba(255, 255, 255, 0.06)" }}>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>
-                  {e.plantName === "Garden" ? t("waterUsage.wholeGarden") : e.plantName}
+                  {plantLabel(e.plantName)}
                 </Text>
                 <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", marginTop: 2 }}>
-                  {e.amount} {e.unit} · {formatDate(new Date(e.createdAt), {
+                  {t("waterUsage.entryAmount", { amount: formatNumber(e.amount), unit: unitLabel(e.unit) })} · {formatDate(new Date(e.createdAt), {
   month: "short",
   day: "numeric"
 })}

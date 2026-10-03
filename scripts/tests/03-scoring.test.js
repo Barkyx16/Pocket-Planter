@@ -278,3 +278,16 @@ describe("banners and timeline in the app language", () => {
     }
   });
 });
+
+describe("toGallons", () => {
+  const { toGallons } = core;
+  it("reads a decimal comma the way the keyboard typed it", () => {
+    eq(Math.round(toGallons("2,5", "L") * 1000) / 1000, Math.round(2.5 * 0.264172 * 1000) / 1000);
+    eq(toGallons("1,5", "gal"), 1.5);
+  });
+  it("converts each unit and treats junk as nothing", () => {
+    eq(toGallons(16, "cups"), 1);
+    eq(toGallons(2, "gal"), 2);
+    eq(toGallons("abc", "gal"), 0);
+  });
+});

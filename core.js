@@ -5597,7 +5597,9 @@ export const WATER_UNITS = [
 
 export function toGallons(amount, unit) {
   const u = WATER_UNITS.find((x) => x.id === unit) || WATER_UNITS[1];
-  const n = parseFloat(amount);
+  // parseDecimal, not parseFloat: "2,5" litres typed on a European keyboard
+  // is 2.5, not 2.
+  const n = parseDecimal(amount);
   return Number.isNaN(n) ? 0 : n * u.toGal;
 }
 
