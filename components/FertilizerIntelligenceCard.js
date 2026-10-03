@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, flipMonth, getClimateBucket, getFertilizerDaysSince, getTodayKey } from "../core";
+import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, flipMonth, getClimateBucket, getTodayKey, isFertilizerDue } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
@@ -161,13 +161,13 @@ const getWeatherWarning = () => {
   return { icon: "✅", text: "Great conditions to fertilize today. Mild temps and low rain chance means nutrients will absorb well." };
 };
 
+// The plant's own interval, through the same rule as every other "due" in the
+// app. A flat 14 days here called thyme (45) and lettuce (21) due long before the
+// Garden stats did, so one plant was due in one card and fine in the next.
 const getPlantsDueForFertilizer = () => {
-  return savedPlants.filter((plantName) => {
-    const tracker = fertilizerTrackers?.[plantName];
-    if (!tracker) return true;
-    const daysSince = getFertilizerDaysSince(tracker);
-    return daysSince === null || daysSince >= 14;
-  }).slice(0, 3);
+  return savedPlants
+    .filter((plantName) => isFertilizerDue(plantName, fertilizerTrackers?.[plantName]))
+    .slice(0, 3);
 };
 
   const tip = getSeasonalFertilizerTip();

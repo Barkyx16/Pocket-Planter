@@ -461,3 +461,17 @@ describe("logging a feeding", () => {
     eq(core12.isFertilizerDue("Tomato", { enabled: true, lastFertilized: new Date().toISOString() }), false);
   });
 });
+
+describe("one rule for fertilizer due", () => {
+  it("the feeding guide uses each plant's own interval", () => {
+    // It used a flat 14 days, so thyme (45) was due in the guide and fine in the
+    // Garden stats for a month.
+    const src = require("fs").readFileSync(path.join(ROOT, "components/FertilizerIntelligenceCard.js"), "utf8");
+    ok(/isFertilizerDue\(plantName, fertilizerTrackers\?\.\[plantName\]\)/.test(src));
+    ok(!/daysSince >= 14/.test(src));
+    const core13 = require(path.join(ROOT, "core.js"));
+    const fed = new Date(); fed.setDate(fed.getDate() - 20);
+    eq(core13.isFertilizerDue("Thyme", { lastFertilized: fed.toISOString() }), false, "thyme at 20 of 45 days");
+    eq(core13.isFertilizerDue("Tomato", { lastFertilized: fed.toISOString() }), true, "tomato at 20 of 14 days");
+  });
+});
