@@ -373,3 +373,38 @@ describe("getPlantHealthStatus", () => {
     eq(core.getPlantHealthStatus({ plantName: "Tomato", wateredPlants: { Tomato: core.getTodayKey() }, weather: null }).label, "Healthy");
   });
 });
+
+describe("one rule for 'needs water today'", () => {
+  const today = core.getTodayKey();
+  it("a plant on a long rhythm is not due the day after watering", () => {
+    // My Garden Today counted every plant not watered since midnight, so rosemary
+    // and the fruit trees "needed water" every day of their interval.
+    const rosemary = plant("Rosemary");
+    const interval = core.getBaseWaterInterval(rosemary);
+    ok(interval > 1, "rosemary should be on a multi-day rhythm");
+    eq(core.isWaterDue("Rosemary", rosemary, {}, { Rosemary: [ago(1)] }, null), false);
+    eq(core.isWaterDue("Rosemary", rosemary, {}, { Rosemary: [ago(interval)] }, null), true);
+  });
+  it("watered today is never due, and never-watered always is", () => {
+    const tomato = plant("Tomato");
+    eq(core.isWaterDue("Tomato", tomato, { Tomato: today }, { Tomato: [ago(30)] }, null), false);
+    eq(core.isWaterDue("Tomato", tomato, {}, {}, null), true);
+  });
+  it("agrees with the health badge", () => {
+    for (const [name, days] of [["Tomato", 0], ["Tomato", 3], ["Rosemary", 1], ["Rosemary", 20]]) {
+      const item = plant(name);
+      const history = { [name]: [ago(days)] };
+      const badge = core.getPlantHealthStatus({ plantName: name, item, wateredPlants: {}, wateringHistory: history, weather: null });
+      eq(badge.label === "Needs Water", core.isWaterDue(name, item, {}, history, null), `${name} ${days}d`);
+    }
+  });
+  it("is what Home and the widget ask", () => {
+    const card = require("fs").readFileSync(path.join(ROOT, "components/MyGardenTodayCard.js"), "utf8");
+    ok(/isWaterDue\(p, produceData\.find/.test(card), "My Garden Today");
+    const snap = core.buildWidgetSnapshot({
+      savedPlantObjs: [plant("Rosemary"), plant("Tomato")],
+      wateredPlants: {}, wateringHistory: { Rosemary: [ago(1)] },
+    });
+    eq(snap.waterDue.names, ["Tomato"], "the widget counts the never-watered tomato, not the rosemary");
+  });
+});

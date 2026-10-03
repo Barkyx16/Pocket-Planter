@@ -2518,14 +2518,10 @@ export function buildWidgetSnapshot({
   savedPlantObjs = [], wateredPlants = {}, wateringHistory = {},
   weather = null, harvestTrackers = {}, streakData = null, plantPick = null, zone = null,
 } = {}) {
-  const today = getTodayKey();
-
   // Plants due for water today (not yet watered).
   const dueNames = [];
   (savedPlantObjs || []).forEach((p) => {
-    if (!p || !p.name || wateredPlants[p.name] === today) return;
-    const nw = getNextWaterInfo(p.name, p, wateringHistory, wateredPlants, weather);
-    if (nw && nw.urgency === "due") dueNames.push(p.name);
+    if (p && p.name && isWaterDue(p.name, p, wateredPlants, wateringHistory, weather)) dueNames.push(p.name);
   });
 
   // Plants whose harvest tracker has reached (or passed) its window.
@@ -5143,10 +5139,18 @@ export function getPlantHealthStatus({ plantName, item, wateredPlants, wateringH
   //
   // Without an item there is no interval to reason about, so fall back to the
   // old question rather than guess.
-  const next = item ? getNextWaterInfo(plantName, item, wateringHistory, wateredPlants, weather) : null;
-  const thirsty = next ? next.daysUntil <= 0 : !wateredToday;
-  if (thirsty) return { label: "Needs Water", icon: "💧", color: "#ffd86b" };
+  if (isWaterDue(plantName, item, wateredPlants, wateringHistory, weather)) return { label: "Needs Water", icon: "💧", color: "#ffd86b" };
   return { label: "Healthy", icon: "🌿", color: "#5cff89" };
+}
+
+// Does this plant need water today? The one rule behind the health badge, the
+// "N plants need water" line on Home and the widget. Watered today: no. On a
+// schedule: when its day comes, which getNextWaterInfo pushes back for rain and
+// pulls in for heat. Never watered, or no catalog entry to schedule from: yes.
+export function isWaterDue(plantName, item, wateredPlants, wateringHistory, weather) {
+  if (wateredPlants?.[plantName] === getTodayKey()) return false;
+  const next = item ? getNextWaterInfo(plantName, item, wateringHistory, wateredPlants, weather) : null;
+  return next ? next.daysUntil <= 0 : true;
 }
 
 export const HARVEST_SOON_DAYS = 7;

@@ -333,6 +333,7 @@ harvestTrackers={harvestTrackers}
   journalEntries={journalEntries}
   snoozedPlants={snoozedPlants}
   compatiblePlants={compatiblePlants}
+  wateringHistory={wateringHistory}
 zone={zone}
   gardenMap={combinedGardenMap}
   onNavigate={jumpToTab}

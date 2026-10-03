@@ -2,11 +2,11 @@ import { memo } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, WARM_DAY_THRESHOLD_F, formatTemp, getClimateBucket, getDateKey, getSeasonForDate, getSeedStartInfo, getTodayKey, getTomorrowKey, isFertilizerDue, isHarvestReady, resolvePlantImageSource } from "../core";
+import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, WARM_DAY_THRESHOLD_F, formatTemp, getClimateBucket, getDateKey, getSeasonForDate, getSeedStartInfo, getTodayKey, getTomorrowKey, isFertilizerDue, isHarvestReady, isWaterDue, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
-export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weather, monthlySuggestions, savedPlants, wateredPlants, onOpenPlant, onAddPhoto, uploadingPhoto, harvestTrackers, fertilizerTrackers, journalEntries, zone, gardenMap, onNavigate, unitSystem, snoozedPlants, compatiblePlants }) {
+export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weather, monthlySuggestions, savedPlants, wateredPlants, onOpenPlant, onAddPhoto, uploadingPhoto, harvestTrackers, fertilizerTrackers, journalEntries, zone, gardenMap, onNavigate, unitSystem, snoozedPlants, compatiblePlants, wateringHistory }) {
   const { t } = useTranslation();
   const today = getTodayKey();
   const currentHour = new Date().getHours();
@@ -15,11 +15,18 @@ export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weathe
   // entirely, so a plant you'd deliberately put off kept showing up as "needs water".
   const tomorrowKey = getTomorrowKey();
   const wateredToday = savedPlants.filter(p => wateredPlants?.[p] === today);
-  const unwateredPlants = savedPlants.filter(
-    p => wateredPlants?.[p] !== today && snoozedPlants?.[p] !== tomorrowKey
+  // Due by each plant's own schedule, the rule the health badge uses. This was
+  // every plant not watered since midnight, so rosemary on a ten-day rhythm, the
+  // succulents and the fruit trees all "needed water" every single day, and the
+  // daily plan could not be finished without watering things that did not need it.
+  const unwateredPlants = savedPlants.filter((p) =>
+    snoozedPlants?.[p] !== tomorrowKey &&
+    isWaterDue(p, produceData.find((item) => item.name === p), wateredPlants, wateringHistory, weather)
   );
   const needsWaterCount = unwateredPlants.length;
   const allWatered = needsWaterCount === 0 && savedPlants.length > 0;
+  // "All plants watered!" only when that is literally so; otherwise nothing is due.
+  const everyPlantWatered = wateredToday.length === savedPlants.length;
 
   const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).map(([name]) => name);
 
@@ -162,7 +169,7 @@ return (
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.myGardenTaskTitle, { color: allWatered ? "#5cff89" : "#6bc7ff" }]}>
-                {allWatered ? t("myGardenToday.allPlantsWatered") : `${needsWaterCount} plant${needsWaterCount === 1 ? "" : "s"} need water`}
+                {allWatered ? (everyPlantWatered ? t("myGardenToday.allPlantsWatered") : t("myGardenToday.nothingNeedsWaterToday")) : `${needsWaterCount} plant${needsWaterCount === 1 ? "" : "s"} need water`}
               </Text>
               <Text style={[styles.myGardenTaskText, { color: theme.secondaryText }]}>
                 {allWatered
