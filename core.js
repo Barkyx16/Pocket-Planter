@@ -3633,6 +3633,25 @@ export function getDateKey(date) {
 // evening before — so anything that parsed a key that way and then asked for its
 // local day got yesterday. A day key is read here as local midday, the convention
 // daysBetweenKeys uses; anything else is parsed as the moment it is.
+// Parses one value read back from AsyncStorage, falling back when it is
+// corrupt or the wrong shape. The startup load reads every key in one pass, so
+// a single bad value used to throw there and skip every key after it — and the
+// write gate then opened and saved those empty defaults over the good data.
+export function readStoredJSON(raw, fallback) {
+  let value;
+  try {
+    value = JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+  if (Array.isArray(fallback)) return Array.isArray(value) ? value : fallback;
+  if (fallback && typeof fallback === "object") {
+    return value && typeof value === "object" && !Array.isArray(value) ? value : fallback;
+  }
+  if (typeof fallback === "boolean") return typeof value === "boolean" ? value : fallback;
+  return value === undefined ? fallback : value;
+}
+
 export function parseStoredDate(value) {
   if (value instanceof Date) return new Date(value.getTime());
   const s = String(value ?? "");

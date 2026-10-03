@@ -1,3 +1,4 @@
+const fs = require("fs");
 const path = require("path");
 const { describe, it, eq, ok, ROOT } = require("../test.js");
 const core = require(path.join(ROOT, "core.js"));
@@ -65,5 +66,31 @@ describe("nextStreakState", () => {
   it("starts a fresh streak from nothing", () => {
     const out = core.nextStreakState(null, day(0));
     eq(out.streak, { count: 1, lastOpened: day(0) });
+  });
+});
+
+describe("readStoredJSON", () => {
+  const { readStoredJSON } = core;
+  it("falls back on a corrupt value instead of throwing", () => {
+    eq(readStoredJSON("{not json", []), []);
+    eq(readStoredJSON("", {}), {});
+  });
+  it("falls back when the stored shape is wrong", () => {
+    eq(readStoredJSON("null", []), []);
+    eq(readStoredJSON('{"a":1}', []), []);
+    eq(readStoredJSON('["Tomato"]', {}), {});
+    eq(readStoredJSON("null", {}), {});
+    eq(readStoredJSON('"yes"', false), false);
+  });
+  it("returns a well-formed value", () => {
+    eq(readStoredJSON('["Tomato","Basil"]', []), ["Tomato", "Basil"]);
+    eq(readStoredJSON('{"Tomato":"2026-07-01"}', {}), { Tomato: "2026-07-01" });
+    eq(readStoredJSON("true", false), true);
+  });
+  it("guards every JSON read in the startup load", () => {
+    // One throw there skipped every key after it, then the write gate saved
+    // the empty defaults over the good data.
+    const src = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    eq((src.match(/JSON\.parse\(\s*map\[/g) || []).length, 0);
   });
 });

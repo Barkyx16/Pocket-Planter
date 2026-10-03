@@ -77,6 +77,7 @@ import {
   getSuccessionInterval,
   getSuggestionsForMonth,
   getTodayKey,
+  readStoredJSON,
   getWeekStartKey,
   getTomorrowKey,
   getTotalWaterings,
@@ -1883,31 +1884,23 @@ if (map[STORAGE_KEYS.zip])
 // key twice and overwriting any value set by the first call.
 if (map[STORAGE_KEYS.savedPlants])
   setSavedPlants(
-    JSON.parse(
-      map[STORAGE_KEYS.savedPlants]
-    )
+    readStoredJSON(map[STORAGE_KEYS.savedPlants], [])
   );
 
 if (map[STORAGE_KEYS.plantNotes])
   setPlantNotes(
-    JSON.parse(
-      map[STORAGE_KEYS.plantNotes]
-    )
+    readStoredJSON(map[STORAGE_KEYS.plantNotes], {})
   );
 
 // FIX #2: Removed duplicate setFollowedPlants call for the same reason.
 if (map[STORAGE_KEYS.followedPlants])
   setFollowedPlants(
-    JSON.parse(
-      map[STORAGE_KEYS.followedPlants]
-    )
+    readStoredJSON(map[STORAGE_KEYS.followedPlants], [])
   );
 
 if (map[STORAGE_KEYS.journalEntries])
   setJournalEntries(
-    JSON.parse(
-      map[STORAGE_KEYS.journalEntries]
-    )
+    readStoredJSON(map[STORAGE_KEYS.journalEntries], [])
   );
 
 if (map[STORAGE_KEYS.selectedMonth])
@@ -1924,16 +1917,12 @@ if (map[STORAGE_KEYS.selectedType])
 
 if (map[STORAGE_KEYS.remindersOn])
   setRemindersOn(
-    JSON.parse(
-      map[STORAGE_KEYS.remindersOn]
-    )
+    readStoredJSON(map[STORAGE_KEYS.remindersOn], false)
   );
 
 if (map[STORAGE_KEYS.frostAlertsOn])
   setFrostAlertsOn(
-    JSON.parse(
-      map[STORAGE_KEYS.frostAlertsOn]
-    )
+    readStoredJSON(map[STORAGE_KEYS.frostAlertsOn], false)
   );
 
 const today = getTodayKey();
@@ -1950,25 +1939,25 @@ if (isSameDayKey(map[STORAGE_KEYS.dailyBonusDate], today)) {
         if (map[STORAGE_KEYS.subscriptionPlan]) setSubscriptionPlan(map[STORAGE_KEYS.subscriptionPlan]);
         // Premium is intentionally NOT loaded from local cache — it is per-account
         // and comes only from the Supabase row in loadProfileFromSupabase.
-       if (map[STORAGE_KEYS.gardenMap]) setGardenMap(JSON.parse(map[STORAGE_KEYS.gardenMap]));
+       if (map[STORAGE_KEYS.gardenMap]) setGardenMap(readStoredJSON(map[STORAGE_KEYS.gardenMap], {}));
         {
           const rawAreas = map["pp_gardenAreas"];
-          const parsedAreas = rawAreas ? JSON.parse(rawAreas) : [];
-          const legacyMap = map[STORAGE_KEYS.gardenMap] ? JSON.parse(map[STORAGE_KEYS.gardenMap]) : {};
+          const parsedAreas = rawAreas ? readStoredJSON(rawAreas, []) : [];
+          const legacyMap = map[STORAGE_KEYS.gardenMap] ? readStoredJSON(map[STORAGE_KEYS.gardenMap], {}) : {};
           setGardenAreas(migrateGardenToAreas(parsedAreas, legacyMap));
         }
-       if (map[STORAGE_KEYS.wateredPlants]) setWateredPlants(JSON.parse(map[STORAGE_KEYS.wateredPlants]));
-        if (map[STORAGE_KEYS.wateringHistory]) setWateringHistory(JSON.parse(map[STORAGE_KEYS.wateringHistory]));
+       if (map[STORAGE_KEYS.wateredPlants]) setWateredPlants(readStoredJSON(map[STORAGE_KEYS.wateredPlants], {}));
+        if (map[STORAGE_KEYS.wateringHistory]) setWateringHistory(readStoredJSON(map[STORAGE_KEYS.wateringHistory], {}));
         if (map[STORAGE_KEYS.wateringReminders])
-  setWateringReminders(JSON.parse(map[STORAGE_KEYS.wateringReminders]));
+  setWateringReminders(readStoredJSON(map[STORAGE_KEYS.wateringReminders], {}));
 
 if (map[STORAGE_KEYS.fertilizerTrackers])
-  setFertilizerTrackers(JSON.parse(map[STORAGE_KEYS.fertilizerTrackers]));
+  setFertilizerTrackers(readStoredJSON(map[STORAGE_KEYS.fertilizerTrackers], {}));
 
 if (map[STORAGE_KEYS.harvestTrackers])
-  setHarvestTrackers(JSON.parse(map[STORAGE_KEYS.harvestTrackers]));
-        if (map[STORAGE_KEYS.streakData]) setStreakData(JSON.parse(map[STORAGE_KEYS.streakData]));
-        if (map[STORAGE_KEYS.seenPremiumIntro]) setShowPremiumIntro(!JSON.parse(map[STORAGE_KEYS.seenPremiumIntro]));
+  setHarvestTrackers(readStoredJSON(map[STORAGE_KEYS.harvestTrackers], {}));
+        if (map[STORAGE_KEYS.streakData]) setStreakData(readStoredJSON(map[STORAGE_KEYS.streakData], { count: 1, lastOpened: getTodayKey() }));
+        if (map[STORAGE_KEYS.seenPremiumIntro]) setShowPremiumIntro(!readStoredJSON(map[STORAGE_KEYS.seenPremiumIntro], false));
         if (map[STORAGE_KEYS.profileName]) setProfileName(map[STORAGE_KEYS.profileName]);
         if (map[STORAGE_KEYS.profilePhoto]) setProfilePhoto(map[STORAGE_KEYS.profilePhoto]);
         if (map[STORAGE_KEYS.profileTheme]) setSelectedProfileTheme(map[STORAGE_KEYS.profileTheme]);
