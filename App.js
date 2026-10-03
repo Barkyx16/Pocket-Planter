@@ -5422,7 +5422,7 @@ const jumpToTab = useCallback((tab) => {
                 if ((resetPasswordValue || "").length < 6) { Alert.alert(t("auth.tooShortTitle"), t("auth.tooShortBody")); return; }
                 try {
                   const { error } = await supabase.auth.updateUser({ password: resetPasswordValue });
-                  if (error) { Alert.alert(t("auth.updateFailedTitle"), error.message); return; }
+                  if (error) { Alert.alert(t("auth.updateFailedTitle"), authErrorMessage(error)); return; }
                   // Keep Face ID / Touch ID working: the stored password for this
                   // account is now the old one, and the next biometric sign-in
                   // would fail and switch the feature off.

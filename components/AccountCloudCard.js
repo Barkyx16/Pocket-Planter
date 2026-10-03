@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 import { disableBiometricLogin } from "../lib/biometricAuth";
 import { IconText } from "./IconText";
 import { formatDate, useTranslation } from "../lib/i18n";
+import { authErrorMessage } from "../core";
 
 export const AccountCloudCard = memo(function AccountCloudCard({
   theme,
@@ -53,7 +54,7 @@ export const AccountCloudCard = memo(function AccountCloudCard({
 
     if (error) {
       console.log("EMAIL CHANGE ERROR:", error.message);
-      Alert.alert(t("accountCloud.couldNotChangeEmail") + " " + error.message);
+      Alert.alert(t("accountCloud.couldNotChangeEmail"), authErrorMessage(error));
       return;
     }
 
@@ -81,7 +82,7 @@ const resetPassword = async () => {
 
     if (error) {
       console.log("RESET ERROR:", error.message);
-      Alert.alert(t("accountCloud.couldNotSendReset") + " " + error.message);
+      Alert.alert(t("accountCloud.couldNotSendReset"), authErrorMessage(error));
       return;
     }
 

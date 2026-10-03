@@ -784,7 +784,8 @@ describe("sign-in errors in the gardener's language", () => {
   });
   it("is what sign-in, sign-up and the reset request show", () => {
     const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
-    ok(!/Alert\.alert\(error\.message\)/.test(app), "no raw Supabase message");
+    ok(!/Alert\.alert\([^;]*error\.message/.test(app), "no raw Supabase message");
+    ok(!/Alert\.alert\([^;]*error\.message/.test(require("fs").readFileSync(path.join(ROOT, "components/AccountCloudCard.js"), "utf8")), "nor in the account card");
     ok(/Alert\.alert\(t\("auth\.resetFailed"\), authErrorMessage\(error\)\)/.test(app));
   });
 });
