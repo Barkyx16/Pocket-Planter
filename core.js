@@ -4110,10 +4110,10 @@ export const WATERING_STREAK_GAP_DAYS = 4;
 // `pp_whatsNewSeen` value, so the card only re-appears when the version differs.
 // It had been stuck on "update-1" while the items went stale, which meant nobody
 // was ever shown the notes again.
-export const WHATS_NEW_VERSION = "1.0.14";
+export const WHATS_NEW_VERSION = "1.0.15";
 
 // Keys in the whatsNew namespace; the card shows them in the app language.
-export const WHATS_NEW_ITEMS = ["flowers", "combo", "pickBed", "pestTab", "dailyPlan", "fixedPlants"];
+export const WHATS_NEW_ITEMS = ["reminderTaps", "timerLocked", "waterUnits", "offlineForecast", "screenReader", "moreLanguage"];
 
 export function getWateringStreak(plantName, wateringHistory) {
   const history = wateringHistory?.[plantName];
