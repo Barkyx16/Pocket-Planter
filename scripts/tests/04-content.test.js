@@ -689,3 +689,33 @@ describe("the Home cards speak the gardener's language", () => {
     i18n.setLocale("en");
   });
 });
+
+describe("sign-in links", () => {
+  const core24 = require(path.join(ROOT, "core.js"));
+  const b64 = (o) => Buffer.from(JSON.stringify(o)).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const token = (payload) => `${b64({ alg: "HS256" })}.${b64(payload)}.sig`;
+  it("reads whose session a link carries", () => {
+    const link = core24.readDeepLinkSession(`pocketplanter://reset-password#access_token=${token({ sub: "u-123", email: "zoë@example.com" })}&refresh_token=r&type=recovery`);
+    eq([link.userId, link.email, link.type, link.refreshToken, link.error], ["u-123", "zoë@example.com", "recovery", "r", null]);
+  });
+  it("recognises an expired link", () => {
+    const link = core24.readDeepLinkSession("pocketplanter://reset-password#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid");
+    eq([link.error, link.accessToken], ["access_denied", null]);
+  });
+  it("survives a token that is not a token", () => {
+    const link = core24.readDeepLinkSession("pocketplanter://x#access_token=garbage");
+    eq([link.accessToken, link.userId, link.email], ["garbage", null, null]);
+  });
+  it("asks before adopting a session for anyone but the signed-in gardener", () => {
+    // Any web page can open pocketplanter://…#access_token=… with a session for
+    // the sender's own account; it used to be adopted without a word.
+    const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+    const at = app.indexOf("async function handleDeepLink(url)");
+    const body = app.slice(at, app.indexOf("Linking.getInitialURL()", at));
+    const confirmAt = body.indexOf("await confirmAsync(");
+    const setAt = body.indexOf("supabase.auth.setSession(");
+    ok(confirmAt > 0 && setAt > confirmAt, "the confirmation must come before setSession");
+    ok(/current\.id === link\.userId/.test(body), "the same account needs no confirmation");
+    ok(/if \(link\.error\)/.test(body) && body.indexOf("if (link.error)") < setAt, "an expired link stops before anything else");
+  });
+});

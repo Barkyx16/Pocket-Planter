@@ -89,6 +89,7 @@ import {
   isHarvestReady,
   isPerennial,
   isSameDayKey,
+  readDeepLinkSession,
   matchesType,
   migrateGardenToAreas,
   nextFreeSlotId,
@@ -369,18 +370,47 @@ function AppInner({ language, setLanguage }) {
   // Handle password-reset / email-confirm deep links. With the implicit flow the tokens
   // arrive in the URL fragment; set the session, then open the reset-password modal.
   useEffect(() => {
+    // Resolves true only if the gardener taps the confirm button.
+    const confirmAsync = (title, body, confirmLabel) => new Promise((resolve) => {
+      Alert.alert(title, body, [
+        { text: t("common.cancel"), style: "cancel", onPress: () => resolve(false) },
+        { text: confirmLabel, onPress: () => resolve(true) },
+      ], { cancelable: true, onDismiss: () => resolve(false) });
+    });
     async function handleDeepLink(url) {
       if (!url) return;
       try {
-        const fragment = url.split("#")[1] || "";
-        const params = Object.fromEntries(new URLSearchParams(fragment));
-        if (params.access_token) {
+        const link = readDeepLinkSession(url);
+        const params = { access_token: link.accessToken, type: link.type };
+        // An expired or already-used email link carries an error, not a session.
+        // Opening the reset form anyway left the gardener typing a new password
+        // that could only fail with "Auth session missing".
+        if (link.error) {
+          Alert.alert(t("auth.linkExpiredTitle"), t("auth.linkExpiredBody"));
+          return;
+        }
+        if (link.accessToken) {
+          // Any app or web page can open pocketplanter://…#access_token=…, and a
+          // session for the sender's own account is easy to come by. Adopting it
+          // silently signed the gardener into that account, after which their
+          // photos and garden synced to it. Unless the link is for the account
+          // already signed in, say whose it is and ask first.
+          const { data } = await supabase.auth.getSession();
+          const current = data?.session?.user;
+          if (!(current && link.userId && current.id === link.userId)) {
+            const proceed = await confirmAsync(
+              t("auth.linkSignInTitle"),
+              t("auth.linkSignInBody", { email: link.email || "?" }),
+              t("auth.linkSignInConfirm"),
+            );
+            if (!proceed) return;
+          }
           await supabase.auth.setSession({
-            access_token: params.access_token,
-            refresh_token: params.refresh_token,
+            access_token: link.accessToken,
+            refresh_token: link.refreshToken,
           });
         }
-        if (params.type === "recovery" || url.includes("reset-password")) {
+        if (link.type === "recovery" || url.includes("reset-password")) {
           setShowResetPassword(true);
           return;
         }

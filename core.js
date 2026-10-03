@@ -3520,6 +3520,50 @@ export function successHaptic() {
   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
 }
 
+// What a sign-in deep link carries, read without trusting it. Supabase's email
+// links (password reset, sign-up confirmation) put a session in the URL
+// fragment; an expired or reused one puts an error there instead. The token's
+// payload names the account it belongs to, which is what the app has to show
+// before adopting it: a link is just a URL, and anyone can make one carrying a
+// session for their own account.
+function base64UrlToText(part) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  const clean = String(part || "").replace(/-/g, "+").replace(/_/g, "/").replace(/=+$/, "");
+  let bits = 0, value = 0, encoded = "";
+  for (const ch of clean) {
+    const index = alphabet.indexOf(ch);
+    if (index < 0) return null;
+    value = (value << 6) | index;
+    bits += 6;
+    if (bits >= 8) {
+      bits -= 8;
+      encoded += "%" + ((value >> bits) & 0xff).toString(16).padStart(2, "0");
+    }
+  }
+  try { return decodeURIComponent(encoded); } catch { return null; }
+}
+
+export function readDeepLinkSession(url) {
+  const fragment = String(url || "").split("#")[1] || "";
+  const params = Object.fromEntries(new URLSearchParams(fragment));
+  const out = {
+    accessToken: params.access_token || null,
+    refreshToken: params.refresh_token || null,
+    type: params.type || null,
+    error: params.error || params.error_code || null,
+    email: null,
+    userId: null,
+  };
+  if (out.accessToken) {
+    try {
+      const payload = JSON.parse(base64UrlToText(out.accessToken.split(".")[1]) || "{}");
+      out.email = typeof payload.email === "string" ? payload.email : null;
+      out.userId = typeof payload.sub === "string" ? payload.sub : null;
+    } catch { /* an unreadable token names nobody */ }
+  }
+  return out;
+}
+
 export function getDateKey(date) {
   const d = date instanceof Date ? date : new Date(date);
   const y = d.getFullYear();
