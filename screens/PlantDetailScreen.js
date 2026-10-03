@@ -310,7 +310,7 @@ export function PlantDetailScreen({
             </>
           );
           return pestObj ? (
-            <Pressable key={`pest-${pestName}`} onPress={() => openPest(pestObj)} accessibilityRole="button" accessibilityLabel={`${label} — tap for the pest guide`} style={chipStyle}>{inner}</Pressable>
+            <Pressable key={`pest-${pestName}`} onPress={() => openPest(pestObj)} accessibilityRole="button" accessibilityLabel={t("extra.pestGuide", { label })} style={chipStyle}>{inner}</Pressable>
           ) : (
             <View key={`pest-${pestName}`} style={chipStyle}>{inner}</View>
           );
@@ -346,7 +346,7 @@ export function PlantDetailScreen({
             </>
           );
           return diseaseObj ? (
-            <Pressable key={`dis-${diseaseName}`} onPress={() => openDisease(diseaseObj)} accessibilityRole="button" accessibilityLabel={`${label} — tap for the disease guide`} style={chipStyle}>{inner}</Pressable>
+            <Pressable key={`dis-${diseaseName}`} onPress={() => openDisease(diseaseObj)} accessibilityRole="button" accessibilityLabel={t("extra.diseaseGuide", { label })} style={chipStyle}>{inner}</Pressable>
           ) : (
             <View key={`dis-${diseaseName}`} style={chipStyle}>{inner}</View>
           );

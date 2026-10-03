@@ -57,7 +57,7 @@ export const GardenShoppingListCard = memo(function GardenShoppingListCard({ the
             <Pressable
               onPress={() => Linking.openURL(`https://www.amazon.com/s?k=${encodeURIComponent(name + " seeds")}`)}
               accessibilityRole="button"
-              accessibilityLabel={`Shop for ${name} seeds`}
+              accessibilityLabel={t("extra.shopSeeds", { name })}
               style={{ backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
             >
               <IconText label={t("gardenShoppingList.seeds")} style={{
@@ -69,7 +69,7 @@ export const GardenShoppingListCard = memo(function GardenShoppingListCard({ the
             <Pressable
               onPress={() => Linking.openURL(`https://www.amazon.com/s?k=${encodeURIComponent(name + " fertilizer")}`)}
               accessibilityRole="button"
-              accessibilityLabel={`Shop for ${name} fertilizer`}
+              accessibilityLabel={t("extra.shopFertilizer", { name })}
               style={{ backgroundColor: "rgba(255, 216, 107, 0.1)", borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: "rgba(255, 216, 107, 0.2)" }}
             >
               <IconText label={t("gardenShoppingList.feed")} style={{

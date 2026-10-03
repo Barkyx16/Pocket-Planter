@@ -52,17 +52,17 @@ export const DiseaseDetailScreen = memo(function DiseaseDetailScreen({ theme, di
         </View>
         <Text style={{ color: theme.text, fontSize: 24, fontWeight: "900", marginTop: 14, textAlign: "center" }}>{disease.name}</Text>
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4, textAlign: "center" }}>
-          {disease.type ? `${disease.type} disease` : "Plant disease"}
+          {disease.type ? t("extra.diseaseType", { type: disease.type }) : t("extra.plantDisease")}
         </Text>
       </View>
 
       {/* INFO SECTIONS */}
-      <Section icon="🔍" title="What it is" text={disease.description} />
-      <Section icon="👀" title="Signs & symptoms" text={disease.sign} color={AMBER} />
-      <Section icon="💥" title="Damage it causes" text={disease.damage} color="#ff9f9f" />
-      <Section icon="🛡️" title="How to prevent it" text={disease.prevent} color="#8effab" />
-      <Section icon="✅" title="How to treat it" text={disease.treat} color="#5cff89" />
-      <Section icon="🌡️" title="Favorable conditions" text={localizeTemperatures(disease.spreads, unitSystem)} color={AMBER} />
+      <Section icon="🔍" title={t("pestDetailScreen.whatItIs")} text={disease.description} />
+      <Section icon="👀" title={t("extra.diseaseSigns")} text={disease.sign} color={AMBER} />
+      <Section icon="💥" title={t("pestDetailScreen.damageItCauses")} text={disease.damage} color="#ff9f9f" />
+      <Section icon="🛡️" title={t("pestDetailScreen.howToPreventIt")} text={disease.prevent} color="#8effab" />
+      <Section icon="✅" title={t("pestDetailScreen.howToTreatIt")} text={disease.treat} color="#5cff89" />
+      <Section icon="🌡️" title={t("extra.diseaseConditions")} text={localizeTemperatures(disease.spreads, unitSystem)} color={AMBER} />
 
       {/* PLANTS AT RISK */}
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>

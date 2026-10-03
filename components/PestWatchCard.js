@@ -29,7 +29,7 @@ export const PestWatchCard = memo(function PestWatchCard({ theme, savedPlantObjs
             key={pest.name}
             onPress={() => { tapHaptic("light"); onOpenPest ? onOpenPest(pest) : null; }}
             accessibilityRole="button"
-            accessibilityLabel={`${pest.name}, threatens ${pest.affected.join(", ")}. Tap for the full pest guide.`}
+            accessibilityLabel={t("extra.pestThreatens", { pest: pest.name, plants: pest.affected.join(", ") })}
             style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10, paddingHorizontal: 12, backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 16, borderWidth: 1, borderColor: "rgba(255, 123, 123, 0.16)" }}
           >
             <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: "rgba(255, 123, 123, 0.12)", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>

@@ -175,7 +175,7 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
                       key={action.id}
                       onPress={() => markActionDone(action.id)}
                       accessibilityRole="button"
-                      accessibilityLabel={`Mark complete: ${action.text}`}
+                      accessibilityLabel={t("extra.markComplete", { action: action.text })}
                       style={[styles.liveWeatherActionRow, { backgroundColor: baseBg, borderColor: baseBorder }]}
                     >
                       <Text style={styles.liveWeatherActionIcon}>{action.icon}</Text>

@@ -103,7 +103,7 @@ return (
             key={b.label}
             onPress={b.onPress}
             accessibilityRole="button"
-            accessibilityLabel={`Export ${b.label} as CSV`}
+            accessibilityLabel={t("extra.exportCsv", { label: b.label })}
             style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: `${b.color}30` }}
           >
             <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: `${b.color}1a`, alignItems: "center", justifyContent: "center" }}>

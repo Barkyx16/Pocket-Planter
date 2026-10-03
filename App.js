@@ -6162,7 +6162,7 @@ const jumpToTab = useCallback((tab) => {
     onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
     style={styles.scrollTopButton}
     accessibilityRole="button"
-    accessibilityLabel="Scroll to top"
+    accessibilityLabel={t("extra.scrollTop")}
   >
     <Ionicons name="chevron-up" size={24} color="#07120b" />
   </Pressable>
@@ -6175,7 +6175,7 @@ const jumpToTab = useCallback((tab) => {
       { text: t("common.cancel"), style: "cancel" },
     ])}
     accessibilityRole="button"
-    accessibilityLabel="Quick log a garden action"
+    accessibilityLabel={t("extra.quickLog")}
     style={{ position: "absolute", right: 18, bottom: 156, width: 52, height: 52, borderRadius: 24, backgroundColor: "#6bc7ff", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 16, zIndex: 51 }}
   >
     <Text style={{ fontSize: 24 }}>⚡</Text>

@@ -69,7 +69,7 @@ export const WateringStreakNudge = memo(function WateringStreakNudge({ theme, sa
               <Pressable
                 onPress={() => onWater(p.name)}
                 accessibilityRole="button"
-                accessibilityLabel={`Water ${p.name} to keep its streak`}
+                accessibilityLabel={t("extra.waterKeepStreak", { name: p.name })}
                 style={{ backgroundColor: "#6bc7ff", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12 }}
               >
                 <IconText label={t("wateringStreakNudge.water")} style={{

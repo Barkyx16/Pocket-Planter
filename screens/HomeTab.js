@@ -358,8 +358,8 @@ zone={zone}
 ) : (
 <PremiumLockedCard
   theme={theme}
-  title="Plant pick locked"
-  body="Unlock Premium to get a daily plant pick matched to your zone and the weather."
+  title={t("extra.lockPickTitle")}
+  body={t("extra.lockPickBody")}
   onUnlock={() => jumpToTab("premium")}
 />
 )}
@@ -406,8 +406,8 @@ zone={zone}
 ) : (
 <PremiumLockedCard
   theme={theme}
-  title="This month's tasks locked"
-  body="Unlock Premium to see the seasonal to-do list tailored to your zone each month."
+  title={t("extra.lockTasksTitle")}
+  body={t("extra.lockTasksBody")}
   onUnlock={() => jumpToTab("premium")}
 />
 )}
@@ -434,8 +434,8 @@ zone={zone}
   {!premiumUnlocked ? (
     <PremiumLockedCard
       theme={theme}
-      title="Planting, sowing & frost locked"
-      body="Unlock Premium for your planting & harvest calendar, succession sowing, and local frost dates."
+      title={t("extra.lockPlantingTitle")}
+      body={t("extra.lockPlantingBody")}
       onUnlock={() => jumpToTab("premium")}
     />
   ) : (zone && savedPlants.length) ? (

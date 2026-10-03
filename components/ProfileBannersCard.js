@@ -67,7 +67,7 @@ export const ProfileBannersCard = memo(function ProfileBannersCard({ theme, prof
                   onPress={() => handleBannerTap(banner)}
                   accessibilityRole="button"
                   accessibilityState={{ selected: isActive }}
-                  accessibilityLabel={`${banner.title} banner${isActive ? t("profileBanners.active") : t("profileBanners.tapToSetActive")}`}
+                  accessibilityLabel={`${t("extra.bannerA11y", { title: banner.title })}${isActive ? t("profileBanners.active") : t("profileBanners.tapToSetActive")}`}
                   style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10, paddingHorizontal: 12, backgroundColor: isActive ? accent + "18" : "rgba(255, 255, 255, 0.04)", borderRadius: 16, borderWidth: isActive ? 2 : 1, borderColor: isActive ? accent : accent + "40" }}
                 >
                   <View style={{ width: 46, height: 46, borderRadius: 12, backgroundColor: accent + "22", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: accent + "55", overflow: "hidden" }}>

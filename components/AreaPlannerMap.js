@@ -308,7 +308,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                 <Pressable
                   onPress={() => onWaterArea(area.id)}
                   accessibilityRole="button"
-                  accessibilityLabel={`Water all plants in ${area.name}`}
+                  accessibilityLabel={t("extra.waterAllIn", { area: area.name })}
                   style={{ backgroundColor: "rgba(107, 199, 255, 0.16)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.3)" }}
                 >
                   <IconText label={t("areaPlannerMap.waterBed")} style={{
@@ -431,7 +431,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                           key={`${area.id}-pair-${a}-${b}`}
                           onPress={() => openPairPicker(a, b)}
                           accessibilityRole="button"
-                          accessibilityLabel={`View ${a} or ${b}`}
+                          accessibilityLabel={t("extra.viewPair", { a, b })}
                           style={{
                             flexDirection: "row",
                             alignItems: "center",
@@ -507,7 +507,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                           key={`${area.id}-comp-${s.name}`}
                           onPress={() => openPairPicker(s.pairsWith, s.name)}
                           accessibilityRole="button"
-                          accessibilityLabel={`View ${s.pairsWith} or ${s.name}`}
+                          accessibilityLabel={t("extra.viewPair", { a: s.pairsWith, b: s.name })}
                           style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
                         >
                           <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>

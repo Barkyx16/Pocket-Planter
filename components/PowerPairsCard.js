@@ -66,7 +66,7 @@ export const PowerPairsCard = memo(function PowerPairsCard({ theme, gardenAreas,
               onPress={() => setExpanded(isOpen ? null : key)}
               accessibilityRole="button"
               accessibilityState={{ expanded: isOpen }}
-              accessibilityLabel={`${a} and ${b}, great pairing. Tap for why it works.`}
+              accessibilityLabel={t("extra.powerPair", { a, b })}
               style={{ backgroundColor: "rgba(92, 255, 137, 0.08)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>

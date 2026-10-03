@@ -129,7 +129,7 @@ export const GardenToolkitCard = memo(function GardenToolkitCard({ theme, onComp
                   <Pressable
                     onPress={() => markOwned(item.name)}
                     accessibilityRole="checkbox"
-                    accessibilityLabel={`Mark ${item.name} as owned`}
+                    accessibilityLabel={t("extra.markOwned", { name: item.name })}
                     hitSlop={touchSlop(24)}
                     style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: "rgba(92, 255, 137, 0.5)" }}
                   />
@@ -139,7 +139,7 @@ export const GardenToolkitCard = memo(function GardenToolkitCard({ theme, onComp
                   <Pressable
                     onPress={() => shop(item.q)}
                     accessibilityRole="button"
-                    accessibilityLabel={`Shop for ${item.name}`}
+                    accessibilityLabel={t("extra.shopFor", { name: item.name })}
                     style={{ backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 8, paddingVertical: 8, paddingHorizontal: 10, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
                   >
                     <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900" }}>{t("gardenToolkit.shop")}</Text>
@@ -166,7 +166,7 @@ export const GardenToolkitCard = memo(function GardenToolkitCard({ theme, onComp
                   <Pressable
                     onPress={() => unmark(item.name)}
                     accessibilityRole="checkbox"
-                    accessibilityLabel={`Remove ${item.name} from owned`}
+                    accessibilityLabel={t("extra.removeOwned", { name: item.name })}
                     hitSlop={touchSlop(24)}
                     style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: "#5cff89", alignItems: "center", justifyContent: "center" }}
                   >

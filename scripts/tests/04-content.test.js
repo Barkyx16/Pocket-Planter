@@ -1011,3 +1011,20 @@ describe("memo components and the language", () => {
     eq(offenders, []);
   });
 });
+
+describe("accessibility labels", () => {
+  it("are translated, not English literals", () => {
+    // Screen-reader users hear these; an English literal reads English in every language.
+    const offenders = [];
+    const files = [path.join(ROOT, "App.js")];
+    for (const dir of ["components", "screens"]) {
+      for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith(".js"))) files.push(path.join(ROOT, dir, f));
+    }
+    for (const f of files) {
+      const src = fs.readFileSync(f, "utf8");
+      const m = src.match(/accessibilityLabel=("[^"]*[A-Za-z]{3,}[^"]*"|\{`[^`$]*[A-Za-z]{3,} [a-z]+[^`]*`\})/);
+      if (m) offenders.push(`${path.relative(ROOT, f)}: ${m[1].slice(0, 50)}`);
+    }
+    eq(offenders, []);
+  });
+});

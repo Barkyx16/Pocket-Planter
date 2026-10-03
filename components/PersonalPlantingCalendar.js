@@ -105,7 +105,7 @@ export const PersonalPlantingCalendar = memo(function PersonalPlantingCalendar({
                 key={`cal-${item.name}`}
                 onPress={() => onOpenPlant(item)}
                 accessibilityRole="button"
-                accessibilityLabel={`Open ${item.name} care guide`}
+                accessibilityLabel={t("extra.openCareGuide", { name: item.name })}
                 style={{ backgroundColor: "rgba(92, 255, 137, 0.12)", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
               >
                 <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "800" }}>{item.name} ›</Text>

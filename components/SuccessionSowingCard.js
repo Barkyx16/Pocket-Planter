@@ -63,7 +63,7 @@ export const SuccessionSowingCard = memo(function SuccessionSowingCard({ theme, 
               <Pressable
                 onPress={() => onSow(name)}
                 accessibilityRole="button"
-                accessibilityLabel={`Log a sowing of ${name} today`}
+                accessibilityLabel={t("extra.logSowing", { name })}
                 style={{ backgroundColor: actionable ? s.color : "transparent", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10, borderWidth: 1, borderColor: actionable ? s.color : `${s.color}55` }}
               >
                 <Text style={{ color: actionable ? "#07120b" : s.color, fontSize: 12, fontWeight: "800" }}>{actionable ? "Sow" : t("successionSowing.sowAnyway")}</Text>
