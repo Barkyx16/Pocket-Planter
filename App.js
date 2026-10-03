@@ -5186,6 +5186,9 @@ const jumpToTab = useCallback((tab) => {
         <ScrollView
           contentContainerStyle={{ flexGrow: 1, justifyContent: "center", padding: 24 }}
           keyboardShouldPersistTaps="handled"
+          // iOS: inset for the keyboard and scroll the focused field into view,
+          // or the password field and sign-in button sit under it.
+          automaticallyAdjustKeyboardInsets
           showsVerticalScrollIndicator={false}
         >
           {/* HERO — matches the app's hero style */}
@@ -5502,6 +5505,7 @@ const jumpToTab = useCallback((tab) => {
       ref={scrollRef}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets
       scrollEventThrottle={16}
       onScroll={(event) => {
         const y = event.nativeEvent.contentOffset.y;

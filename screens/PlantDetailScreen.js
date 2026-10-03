@@ -67,6 +67,7 @@ export function PlantDetailScreen({
 <ScrollView
   showsVerticalScrollIndicator={false}
   keyboardShouldPersistTaps="handled"
+  automaticallyAdjustKeyboardInsets
   contentContainerStyle={{ paddingBottom: 140 }}
 >
   <View style={styles.detailHeader}>
