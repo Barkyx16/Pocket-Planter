@@ -72,7 +72,7 @@ export const PlantGrowthTimeline = memo(function PlantGrowthTimeline({ theme, pl
           {/* BEFORE & AFTER */}
           {hasBeforeAfter ? (
             <View style={{ flexDirection: "row", gap: 12, marginTop: 16 }}>
-              {[{ label: "First", e: first }, { label: "Latest", e: latest }].map(({ label, e }) => (
+              {[{ label: t("ui7.first"), e: first }, { label: t("ui7.latest"), e: latest }].map(({ label, e }) => (
                 <View key={label} style={{ flex: 1 }}>
                   <View style={{ borderRadius: 16, overflow: "hidden", borderWidth: 1, borderColor: `${stageColor(e.growthStage)}55` }}>
                     <Image source={{ uri: e.imageUri }} style={{ width: "100%", height: 150 }} resizeMode="cover" />

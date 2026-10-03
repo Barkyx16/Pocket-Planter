@@ -3,16 +3,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { tapHaptic } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 import { ChoreRotationSection } from "./ChoreRotationSection";
 import { touchSlop } from "../lib/a11y";
 
 const STORAGE_KEY = "pp_customTasks";
 const INTERVALS = [
-  { days: 3, label: "3 days" },
-  { days: 7, label: "Weekly" },
-  { days: 14, label: "2 weeks" },
-  { days: 30, label: "Monthly" },
+  { days: 3, label: "iv3" },
+  { days: 7, label: "ivWeekly" },
+  { days: 14, label: "iv2w" },
+  { days: 30, label: "ivMonthly" },
 ];
 
 export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
@@ -82,7 +82,7 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
           const active = interval === iv.days;
           return (
             <Pressable key={iv.days} onPress={() => setIntervalDays(iv.days)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}>
-              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{iv.label}</Text>
+              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{t(`ui7.${iv.label}`)}</Text>
             </Pressable>
           );
         })}
@@ -98,7 +98,7 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
               <Text style={{ fontSize: 14 }}>{task.notifId ? "🔔" : "📝"}</Text>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }} numberOfLines={1}>{task.title}</Text>
-                <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 2 }}>Every {INTERVALS.find((i) => i.days === task.interval)?.label.toLowerCase() || `${task.interval} days`}</Text>
+                <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 2 }}>{tn("ui7.everyDays", task.interval)}</Text>
               </View>
               <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.deleteTask")} onPress={() => remove(task)} hitSlop={touchSlop(14)}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
             </View>

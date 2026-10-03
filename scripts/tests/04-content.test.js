@@ -1074,3 +1074,26 @@ describe("the translation function", () => {
     eq(offenders, []);
   });
 });
+
+describe("translation keys", () => {
+  it("every literal t()/tn() key in the source exists in English", () => {
+    // check:i18n compares the locales with each other; it can't see a key the
+    // code asks for that no locale has, which renders as the raw key.
+    const i18n = require(path.join(ROOT, "lib/i18n.js"));
+    const en = i18n.DICTIONARY_MAP.en;
+    const has = (key) => key.split(".").reduce((node, part) => (node && typeof node === "object" ? node[part] : undefined), en) !== undefined;
+    const files = ["App.js", "core.js"].map((f) => path.join(ROOT, f));
+    for (const dir of ["components", "screens", "lib"]) {
+      for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith(".js"))) files.push(path.join(ROOT, dir, f));
+    }
+    const missing = [];
+    for (const f of files) {
+      // Comment lines (doc examples) don't render anything.
+      const src = fs.readFileSync(f, "utf8").split("\n").filter((l) => !/^\s*(\*|\/\/)/.test(l)).join("\n");
+      for (const m of src.matchAll(/\btn?\(\s*"([a-zA-Z0-9_]+\.[a-zA-Z0-9_.]+)"/g)) {
+        if (!has(m[1])) missing.push(`${path.relative(ROOT, f)}: ${m[1]}`);
+      }
+    }
+    eq([...new Set(missing)], []);
+  });
+});

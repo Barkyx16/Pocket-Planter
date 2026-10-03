@@ -87,9 +87,9 @@ export const WateringHeatmapCard = memo(function WateringHeatmapCard({ theme, wa
   });
 
   const stats = [
-    { value: String(thisWeek), label: "This week", color: "#5cff89" },
-    { value: busiestDay, label: "Top day", color: "#6bc7ff" },
-    { value: `${longestStreak}d`, label: "Best streak", color: "#ffd86b" },
+    { value: String(thisWeek), label: t("ui7.thisWeekLabel"), color: "#5cff89" },
+    { value: busiestDay, label: t("ui7.topDay"), color: "#6bc7ff" },
+    { value: t("ui6.inDaysShort", { count: longestStreak }), label: t("ui7.bestStreak"), color: "#ffd86b" },
   ];
 
 return (

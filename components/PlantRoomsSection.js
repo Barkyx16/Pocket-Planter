@@ -86,7 +86,7 @@ export const PlantRoomsSection = memo(function PlantRoomsSection({ theme, savedP
             <View key={h.name} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 10, borderWidth: 1, borderColor: "rgba(255,255,255,0.06)" }}>
               <Text style={{ color: theme.text, fontSize: 12, fontWeight: "800", marginBottom: 6 }}>🪴 {h.name}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
-                {[{ label: "None", value: null }, ...rooms.map((r) => ({ label: r, value: r }))].map((opt) => {
+                {[{ label: t("ui7.none"), value: null }, ...rooms.map((r) => ({ label: r, value: r }))].map((opt) => {
                   const active = (data.assign[h.name] || null) === opt.value;
                   return (
                     <Pressable key={opt.label} onPress={() => assign(h.name, opt.value)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: active ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#8effab" : "rgba(255,255,255,0.12)" }}>

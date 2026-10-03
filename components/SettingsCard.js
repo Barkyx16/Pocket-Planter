@@ -296,9 +296,9 @@ async function choosePlan(plan) {
       {/* TRUST BADGES */}
       <View style={[styles.premiumTrustRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
         {[
-          { icon: "🔒", label: "Secure" },
+          { icon: "🔒", label: t("ui7.secure") },
           { icon: "↩️", label: t("settings.cancelAnytime") },
-          { icon: "📱", label: "iOS" },
+          { icon: "📱", label: Platform.OS === "android" ? "Android" : "iOS" },
           { icon: "☁️", label: t("settings.cloudSync") },
         ].map((t) => (
           <View key={t.label} style={styles.premiumTrustTile}>

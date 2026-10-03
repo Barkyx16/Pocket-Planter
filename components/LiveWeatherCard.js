@@ -38,14 +38,14 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
   const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).length;
 
   const getConditionDetails = () => {
-    if (!weather) return { icon: "🌤️", label: "Loading", color: "#8effab", urgency: null };
-    if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", label: "Frost Risk", color: "#6bc7ff", urgency: "high" };
-    if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", label: "Extreme Heat", color: "#ff7b7b", urgency: "high" };
-    if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) return { icon: "☀️", label: "Hot Day", color: "#ff7b7b", urgency: "medium" };
-    if (weather.precipChance >= 70) return { icon: "🌧️", label: "Heavy Rain", color: "#6bc7ff", urgency: "medium" };
-    if (weather.precipChance >= 40) return { icon: "🌦️", label: "Possible Rain", color: "#8effab", urgency: null };
-    if (weather.maxTempF >= 65 && weather.maxTempF <= 85) return { icon: "✅", label: "Perfect Day", color: "#5cff89", urgency: null };
-    return { icon: "🌤️", label: "Mild Conditions", color: "#8effab", urgency: null };
+    if (!weather) return { icon: "🌤️", label: t("ui7.wLoading"), color: "#8effab", urgency: null };
+    if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", label: t("ui7.wFrost"), color: "#6bc7ff", urgency: "high" };
+    if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", label: t("ui7.wExtreme"), color: "#ff7b7b", urgency: "high" };
+    if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) return { icon: "☀️", label: t("ui7.wHot"), color: "#ff7b7b", urgency: "medium" };
+    if (weather.precipChance >= 70) return { icon: "🌧️", label: t("ui7.wHeavyRain"), color: "#6bc7ff", urgency: "medium" };
+    if (weather.precipChance >= 40) return { icon: "🌦️", label: t("ui7.wPossibleRain"), color: "#8effab", urgency: null };
+    if (weather.maxTempF >= 65 && weather.maxTempF <= 85) return { icon: "✅", label: t("ui7.wPerfect"), color: "#5cff89", urgency: null };
+    return { icon: "🌤️", label: t("ui7.wMild"), color: "#8effab", urgency: null };
   };
 
   const getSmartActions = () => {

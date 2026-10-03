@@ -2,7 +2,7 @@ import { memo } from "react";
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { styles } from "../styles";
-import { getDateKey, getTodayKey, tapHaptic } from "../core";
+import { careActionLabel, getDateKey, getTodayKey, tapHaptic } from "../core";
 import { useTranslation, formatDate } from "../lib/i18n";
 import { IconText } from "./IconText";
 import { CompostTrackerSection } from "./CompostTrackerSection";
@@ -73,7 +73,7 @@ export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlant
         ]
       );
     } else {
-      Alert.alert(t("alerts.careLoggedTitle"), t("alerts.careLoggedBody", { icon: action.icon, label: action.label, plant: selectedPlant }));
+      Alert.alert(t("alerts.careLoggedTitle"), t("alerts.careLoggedBody", { icon: action.icon, label: careActionLabel({ actionId: action.id, actionLabel: action.label }), plant: selectedPlant }));
     }
   };
 
@@ -178,7 +178,7 @@ return (
         <View style={{ marginBottom: 12, flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(107, 199, 255, 0.08)", borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.2)" }}>
           <Text style={{ fontSize: 16 }}>🕒</Text>
           <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "800", flex: 1, lineHeight: 17 }}>
-            {t("soilCareLog.last")} {lastEntry.actionIcon} {lastEntry.actionLabel} · {lastEntry.plant === "Garden" ? t("soilCareLog.wholeGarden") : lastEntry.plant} · {lastAgo}
+            {t("soilCareLog.last")} {lastEntry.actionIcon} {careActionLabel(lastEntry)} · {lastEntry.plant === "Garden" ? t("soilCareLog.wholeGarden") : lastEntry.plant} · {lastAgo}
           </Text>
         </View>
       ) : null}
@@ -231,7 +231,7 @@ return (
               >
                 <Text style={styles.careLogActionIcon}>{action.icon}</Text>
                 <Text style={[styles.careLogActionLabel, { color: selectedAction === action.id ? action.color : "#d7ebdc" }]}>
-                  {action.label}
+                  {careActionLabel({ actionId: action.id, actionLabel: action.label })}
                 </Text>
                 {selectedAction === action.id ? (
                   <View style={[styles.careLogActionCheck, { backgroundColor: action.color }]}>
@@ -395,7 +395,7 @@ return (
                       <View key={entry.id} style={[styles.careLogEntryRow, { borderColor: entry.actionColor + "40", backgroundColor: entry.actionColor + "0D" }]}>
                         <Text style={styles.careLogEntryIcon}>{entry.actionIcon}</Text>
                         <View style={{ flex: 1 }}>
-                          <Text style={styles.careLogEntryLabel}>{entry.actionLabel}</Text>
+                          <Text style={styles.careLogEntryLabel}>{careActionLabel(entry)}</Text>
                           {entry.plant !== "Garden" ? (
                             <Text style={[styles.careLogEntryPlant, { color: entry.actionColor }]}>🌱 {entry.plant}</Text>
                           ) : (
@@ -428,7 +428,7 @@ return (
                   <View key={entry.id} style={[styles.careLogEntryRow, { borderColor: entry.actionColor + "40", backgroundColor: entry.actionColor + "0D" }]}>
                     <Text style={styles.careLogEntryIcon}>{entry.actionIcon}</Text>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.careLogEntryLabel}>{entry.actionLabel}</Text>
+                      <Text style={styles.careLogEntryLabel}>{careActionLabel(entry)}</Text>
                       <Text style={[styles.careLogEntryPlant, { color: entry.actionColor }]}>
                         {entry.plant === "Garden" ? t("soilCareLog.wholeGarden2") : `🌱 ${entry.plant}`}
                       </Text>

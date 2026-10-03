@@ -88,11 +88,11 @@ export const DataExportCard = memo(function DataExportCard({ theme, harvestLog, 
   };
 
   const buttons = [
-    { icon: "🚜", label: "Harvest Log", count: (harvestLog || []).length, onPress: exportHarvests, color: "#ffd86b" },
-    { icon: "🧪", label: "Care Log", count: (careLog || []).length, onPress: exportCareLog, color: "#6bc7ff" },
-    { icon: "📸", label: "Journal", count: (journalEntries || []).length, onPress: exportJournal, color: "#8effab" },
-    { icon: "♻️", label: "Compost Log", count: moduleCounts.compost, onPress: exportCompost, color: "#bf7a12" },
-    { icon: "🌱", label: "Germination Tests", count: moduleCounts.germ, onPress: exportGermination, color: "#5cff89" },
+    { icon: "🚜", label: t("ui7.exHarvest"), count: (harvestLog || []).length, onPress: exportHarvests, color: "#ffd86b" },
+    { icon: "🧪", label: t("ui7.exCare"), count: (careLog || []).length, onPress: exportCareLog, color: "#6bc7ff" },
+    { icon: "📸", label: t("ui7.exJournal"), count: (journalEntries || []).length, onPress: exportJournal, color: "#8effab" },
+    { icon: "♻️", label: t("ui7.exCompost"), count: moduleCounts.compost, onPress: exportCompost, color: "#bf7a12" },
+    { icon: "🌱", label: t("ui7.exGerm"), count: moduleCounts.germ, onPress: exportGermination, color: "#5cff89" },
   ];
 
 return (

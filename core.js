@@ -5250,6 +5250,18 @@ export function countInSeason(items, dateField, year, seasonMonths) {
 // ── Garden Timeline ──────────────────────────────────────────────────────────
 // Merges every dated garden signal the app already tracks into one newest-first
 // feed for the Journal. Waterings are grouped per day so they don't flood it.
+// A care-log action's name in the app language. Entries keep the English
+// label they were saved with; the id picks the translation, so old entries
+// follow a language switch too.
+const CARE_ACTION_KEYS = {
+  compost: "caCompost", repot: "caRepot", pests: "caPests", ph: "caPh", fertilize: "caFertilize", pruned: "caPruned",
+  mulch: "caMulch", transplant: "caTransplant", watered: "caWatered", staked: "caStaked", harvest: "caHarvest", custom: "caCustom",
+};
+export function careActionLabel(entry) {
+  const key = CARE_ACTION_KEYS[entry?.actionId];
+  return key ? t(`ui7.${key}`) : String(entry?.actionLabel || "");
+}
+
 export function buildGardenTimeline({
   journalEntries = [], harvestLog = [], wateringHistory = {}, careLog = [],
   sowLog = {}, plantSaveDates = {}, badgeEarnedDates = {}, achievementBadges = [],
@@ -5283,7 +5295,7 @@ export function buildGardenTimeline({
     if (!c) return;
     const when = c.createdAt || c.date;
     const who = c.plant && c.plant !== "Garden" ? c.plant : t("timeline.tlWholeGarden");
-    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "care", icon: c.actionIcon || "🌿", color: c.actionColor || "#8effab", title: c.actionLabel || t("timeline.tlGardenCare"), subtitle: c.note ? c.note : who, plantName: c.plant && c.plant !== "Garden" ? c.plant : null });
+    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "care", icon: c.actionIcon || "🌿", color: c.actionColor || "#8effab", title: careActionLabel(c) || t("timeline.tlGardenCare"), subtitle: c.note ? c.note : who, plantName: c.plant && c.plant !== "Garden" ? c.plant : null });
   });
   const waterByDay = {};
   Object.entries(wateringHistory || {}).forEach(([plant, dates]) => {
