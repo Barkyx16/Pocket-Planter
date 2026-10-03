@@ -34,8 +34,10 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
   const persist = (next) => { setTasks(next); AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)).catch(() => {}); };
 
   const add = async () => {
-    const t = title.trim();
-    if (!t) return;
+    // Not `t`: that name is the translation function, which this used to shadow,
+    // so the "task saved" alert below threw "t is not a function" instead.
+    const text = title.trim();
+    if (!text) return;
     tapHaptic("light");
     let notifId = null;
     try {
@@ -44,12 +46,12 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
       if (!granted) granted = (await Notifications.requestPermissionsAsync()).granted;
       if (granted) {
         notifId = await Notifications.scheduleNotificationAsync({
-          content: { title: "🌿 Garden Task", body: t, sound: true },
+          content: { title: t("ui7.taskNotifTitle"), body: text, sound: true },
           trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: interval * 86400, repeats: true },
         });
       }
     } catch (e) { /* scheduling may be limited in Expo Go */ }
-    persist([{ id: Date.now().toString(), title: t, interval, notifId }, ...tasks]);
+    persist([{ id: Date.now().toString(), title: text, interval, notifId }, ...tasks]);
     setTitle("");
     if (!notifId) Alert.alert(t("alerts.taskSavedTitle"), t("alerts.taskSavedBody"));
   };

@@ -31,9 +31,9 @@ export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weathe
   const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).map(([name]) => name);
 
   const fertDuePlants = savedPlants.filter(p => {
-    const t = fertilizerTrackers?.[p];
-    if (!t) return false;
-    return isFertilizerDue(p, t);
+    const tracker = fertilizerTrackers?.[p];
+    if (!tracker) return false;
+    return isFertilizerDue(p, tracker);
   });
 
   // Seeds it's time to start indoors for this zone (from the old game-plan card).

@@ -30,14 +30,14 @@ export const GardenStatsDashboard = memo(function GardenStatsDashboard({
 
   const weekAgoTime = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const photosThisWeek = (journalEntries || []).filter((e) => {
-    const t = new Date(e.createdAt).getTime();
-    return !Number.isNaN(t) && t >= weekAgoTime;
+    const ms = new Date(e.createdAt).getTime();
+    return !Number.isNaN(ms) && ms >= weekAgoTime;
   }).length;
   const wateringsThisWeek = Object.values(wateringHistory || {}).reduce((sum, dates) => {
     if (!Array.isArray(dates)) return sum;
     return sum + dates.filter((d) => {
-      const t = new Date(`${String(d).slice(0, 10)}T12:00:00`).getTime();
-      return !Number.isNaN(t) && t >= weekAgoTime;
+      const ms = new Date(`${String(d).slice(0, 10)}T12:00:00`).getTime();
+      return !Number.isNaN(ms) && ms >= weekAgoTime;
     }).length;
   }, 0);
   const hasWeeklyMomentum = photosThisWeek > 0 || wateringsThisWeek > 0;

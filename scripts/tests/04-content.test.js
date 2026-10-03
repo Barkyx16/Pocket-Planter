@@ -1058,3 +1058,19 @@ describe("day labels", () => {
     eq(offenders, []);
   });
 });
+
+describe("the translation function", () => {
+  it("is never shadowed by a local `t`", () => {
+    // CustomTasksCard named the task title `t`, so its "task saved" alert called
+    // a string and threw. `t` means the translator everywhere in the UI.
+    const offenders = [];
+    const files = [path.join(ROOT, "App.js")];
+    for (const dir of ["components", "screens"]) {
+      for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith(".js"))) files.push(path.join(ROOT, dir, f));
+    }
+    for (const f of files) {
+      if (/\b(const|let|var) t\s*=/.test(fs.readFileSync(f, "utf8"))) offenders.push(path.relative(ROOT, f));
+    }
+    eq(offenders, []);
+  });
+});

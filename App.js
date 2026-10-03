@@ -4942,8 +4942,8 @@ useEffect(() => {
   // level) never triggers a false "Level Up". Only genuine level gains after settle pop.
   const levelUpReadyRef = useRef(false);
   useEffect(() => {
-    const t = setTimeout(() => { levelUpReadyRef.current = true; }, 3500);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => { levelUpReadyRef.current = true; }, 3500);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
