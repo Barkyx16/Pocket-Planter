@@ -1323,3 +1323,15 @@ describe("a pending cloud save", () => {
     ok(/saveProfileNowRef\.current = saveProfileToSupabase;/.test(app), "flush would send a stale save");
   });
 });
+
+describe("returning to the app on a new day", () => {
+  it("counts the day for the streak and refreshes stale weather", () => {
+    const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    const at = app.indexOf("onResumeRef.current = () => {");
+    ok(at > 0, "no resume handler");
+    const body = app.slice(at, app.indexOf("\n};", at));
+    ok(/today !== lastActiveDayRef\.current/.test(body) && /updateDailyStreak\(\)/.test(body), "a new day on resume skips the streak");
+    ok(/setWeatherRefreshToken/.test(body), "resume never refreshes the weather");
+    ok(/state === "active"\) onResumeRef\.current/.test(app), "resume handler is not wired to AppState");
+  });
+});

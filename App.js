@@ -1857,6 +1857,36 @@ useEffect(() => {
   });
   return () => sub.remove();
 }, []);
+
+// Coming back to the app. A phone can hold it in memory overnight, and the
+// daily streak was only counted by the startup load, so opening it the next
+// morning from the background never counted that day and the streak broke a
+// day later. Weather likewise refreshed only on launch or a pull. The ref holds
+// this render's handler so the streak update sees current state.
+const lastActiveDayRef = useRef(getTodayKey());
+const lastWeatherRefreshRef = useRef(Date.now());
+const onResumeRef = useRef(null);
+onResumeRef.current = () => {
+  if (!storageHydrated) return;
+  const today = getTodayKey();
+  if (today !== lastActiveDayRef.current) {
+    lastActiveDayRef.current = today;
+    updateDailyStreak();
+    checkHarvestNotifications();
+    // Claimed is worked out at launch too; yesterday's claim must not lock today.
+    setDailyBonusClaimed(isSameDayKey(dailyBonusDate, today));
+  }
+  if (Date.now() - lastWeatherRefreshRef.current > 60 * 60 * 1000) {
+    lastWeatherRefreshRef.current = Date.now();
+    setWeatherRefreshToken((value) => value + 1);
+  }
+};
+useEffect(() => {
+  const sub = AppState.addEventListener("change", (state) => {
+    if (state === "active") onResumeRef.current?.();
+  });
+  return () => sub.remove();
+}, []);
 // ── Storage load ───────────────────────────────────────────────────────────
 useEffect(() => {
   async function loadStoredData() {
