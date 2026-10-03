@@ -955,6 +955,9 @@ describe("tool sections", () => {
       RainfallLogCard: ["Dry week so far", ">Clear<"],
       VaseTrackerSection: ["Started a fresh vase?"],
       PropagationTrackerCard: ["What are you propagating?"],
+      CutFlowerGuideCard: ["BUILD A BOUQUET", "stem type{"],
+      GuildTemplatesCard: ["Plant this setup in my garden"],
+      HouseplantCareCard: ["MATCH A ROOM'S LIGHT", 'label: "Medium"', "Repot every ~{repot}"],
     };
     for (const [f, strings] of Object.entries(checks)) {
       const src = fs.readFileSync(path.join(ROOT, "components", `${f}.js`), "utf8");

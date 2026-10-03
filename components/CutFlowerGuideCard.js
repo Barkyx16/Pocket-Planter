@@ -1,5 +1,6 @@
 import { memo, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { t, tn } from "../lib/i18n";
 import produceData from "../data/produceData";
 import { normalizeType, resolvePlantImageSource, tapHaptic } from "../core";
 import { DRIES_WELL } from "../data/flowerHomeData";
@@ -52,7 +53,7 @@ export const CutFlowerGuideCard = memo(function CutFlowerGuideCard({ theme, save
   if (!flowers.length) {
     return (
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Save a few flowers from the Plants tab and their vase life and cutting tips will show up here.
+        {t("care.cutEmpty")}
       </Text>
     );
   }
@@ -60,7 +61,7 @@ export const CutFlowerGuideCard = memo(function CutFlowerGuideCard({ theme, save
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        How long each of your flowers lasts in a vase — and how to make them last.
+        {t("care.cutIntro")}
       </Text>
 
       {/* Vase-life list */}
@@ -80,11 +81,11 @@ export const CutFlowerGuideCard = memo(function CutFlowerGuideCard({ theme, save
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                   <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{item.name}</Text>
-                  <Text style={{ color: "#ffb6c1", fontSize: 12, fontWeight: "900" }}>🏺 {days} days</Text>
+                  <Text style={{ color: "#ffb6c1", fontSize: 12, fontWeight: "900" }}>{tn("care.cutDays", days)}</Text>
                 </View>
                 <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 16, marginTop: 2 }}>{tip}</Text>
                 {DRIES_WELL[item.name] ? (
-                  <Text style={{ color: "#bf7a12", fontSize: 11, fontWeight: "800", lineHeight: 15, marginTop: 3 }}>🌾 Dries well — {DRIES_WELL[item.name]}</Text>
+                  <Text style={{ color: "#bf7a12", fontSize: 11, fontWeight: "800", lineHeight: 15, marginTop: 3 }}>{t("care.cutDries", { how: DRIES_WELL[item.name] })}</Text>
                 ) : null}
               </View>
             </Pressable>
@@ -93,7 +94,7 @@ export const CutFlowerGuideCard = memo(function CutFlowerGuideCard({ theme, save
       </View>
 
       {/* Bouquet builder */}
-      <Text style={{ color: "#ffb6c1", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginTop: 18, marginBottom: 8 }}>💐 BUILD A BOUQUET</Text>
+      <Text style={{ color: "#ffb6c1", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginTop: 18, marginBottom: 8 }}>{t("care.cutBouquet")}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 2 }}>
         {flowers.map((item) => {
           const active = bouquet.includes(item.name);
@@ -109,11 +110,11 @@ export const CutFlowerGuideCard = memo(function CutFlowerGuideCard({ theme, save
           <>
             <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }}>{bouquet.join(" · ")}</Text>
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4 }}>
-              {bouquet.length} stem type{bouquet.length === 1 ? "" : "s"} · stays fresh about {bouquetLife} days. Mix heights and one focal bloom for balance.
+              {t("care.cutBouquetSummary", { types: tn("care.cutStemTypes", bouquet.length), days: tn("care.cutDaysPlain", bouquetLife) })}
             </Text>
           </>
         ) : (
-          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>Tap a few flowers to design a bouquet (up to 5).</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>{t("care.cutTapFew")}</Text>
         )}
       </View>
     </View>

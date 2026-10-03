@@ -123,19 +123,19 @@ export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, save
                     <Pressable
                       onPress={() => onAddSetup(guild.name, plants)}
                       accessibilityRole="button"
-                      accessibilityLabel={`Plant the ${guild.name} setup as a new garden bed`}
+                      accessibilityLabel={t("care.guildPlantA11y", { guild: guild.name })}
                       style={{ marginBottom: 12, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 11, alignItems: "center" }}
                     >
-                      <Text style={{ color: "#07120b", fontSize: 13, fontWeight: "900" }}>🌱 Plant this setup in my garden</Text>
+                      <Text style={{ color: "#07120b", fontSize: 13, fontWeight: "900" }}>{t("care.guildPlant")}</Text>
                     </Pressable>
                   ) : onSaveMany && plants.some((p) => !owned.has(p.toLowerCase())) ? (
                     <Pressable
                       onPress={() => onSaveMany(plants)}
                       accessibilityRole="button"
-                      accessibilityLabel={`Add all ${guild.name} plants to your plants`}
+                      accessibilityLabel={t("care.guildAddA11y", { guild: guild.name })}
                       style={{ marginBottom: 12, backgroundColor: "#5cff89", borderRadius: 12, paddingVertical: 11, alignItems: "center" }}
                     >
-                      <Text style={{ color: "#07120b", fontSize: 13, fontWeight: "900" }}>＋ Add all to my plants</Text>
+                      <Text style={{ color: "#07120b", fontSize: 13, fontWeight: "900" }}>{t("care.guildAddAll")}</Text>
                     </Pressable>
                   ) : null}
                   <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>

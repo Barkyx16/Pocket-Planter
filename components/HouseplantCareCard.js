@@ -1,5 +1,6 @@
 import { memo, useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
+import { t, tn } from "../lib/i18n";
 import produceData from "../data/produceData";
 import { normalizeType, resolvePlantImageSource, tapHaptic } from "../core";
 import { AIR_PURIFYING, HOUSEPLANT_PESTS } from "../data/flowerHomeData";
@@ -41,8 +42,11 @@ const CARE = {
 };
 const DEFAULT_CARE = [2, 9, "Average", 2, "Bright, indirect light; water when the top inch is dry."];
 
-const LIGHT_LABEL = { 1: "Low light", 2: "Bright indirect", 3: "Bright / direct" };
-const LEVELS = [{ v: 1, label: "Low" }, { v: 2, label: "Medium" }, { v: 3, label: "Bright" }];
+// Keys in the care namespace.
+const LIGHT_LABEL = { 1: "hpLightLow", 2: "hpLightIndirect", 3: "hpLightDirect" };
+const HUMIDITY_LABEL = { Low: "hpHumLow", Average: "hpHumAverage", High: "hpHumHigh" };
+const THRIVES = { 1: "hpThrivesLow", 2: "hpThrivesMedium", 3: "hpThrivesBright" };
+const LEVELS = [{ v: 1, label: "hpLow" }, { v: 2, label: "hpMedium" }, { v: 3, label: "hpBright" }];
 
 export const HouseplantCareCard = memo(function HouseplantCareCard({ theme, savedPlants, onOpenPlant }) {
   const houseplants = useMemo(() => {
@@ -67,23 +71,23 @@ export const HouseplantCareCard = memo(function HouseplantCareCard({ theme, save
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Light, water and repotting at a glance for your indoor plants.
+        {t("care.hpIntro")}
       </Text>
 
       {/* Light matcher */}
-      <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginTop: 14, marginBottom: 8 }}>💡 MATCH A ROOM'S LIGHT</Text>
+      <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginTop: 14, marginBottom: 8 }}>{t("care.hpMatchLight")}</Text>
       <View style={{ flexDirection: "row", gap: 6 }}>
         {LEVELS.map((l) => {
           const active = room === l.v;
           return (
             <Pressable key={l.v} onPress={() => { tapHaptic("light"); setRoom(l.v); }} style={{ flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 10, backgroundColor: active ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#8effab" : "rgba(255,255,255,0.1)" }}>
-              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{l.label}</Text>
+              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{t(`care.${l.label}`)}</Text>
             </Pressable>
           );
         })}
       </View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 17, marginTop: 8 }}>
-        Thrives in {LEVELS.find((l) => l.v === room).label.toLowerCase()} light: <Text style={{ color: "#8effab", fontWeight: "900" }}>{suggestions.join(", ") || "—"}</Text>
+        {t(`care.${THRIVES[room]}`)} <Text style={{ color: "#8effab", fontWeight: "900" }}>{suggestions.join(", ") || "—"}</Text>
       </Text>
 
       {/* Owned houseplant care */}
@@ -101,27 +105,27 @@ export const HouseplantCareCard = memo(function HouseplantCareCard({ theme, save
                   <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                       <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{item.name}</Text>
-                      {AIR_PURIFYING.has(item.name) ? <Text style={{ color: "#8effab", fontSize: 9, fontWeight: "900" }}>🌿 AIR</Text> : null}
+                      {AIR_PURIFYING.has(item.name) ? <Text style={{ color: "#8effab", fontSize: 9, fontWeight: "900" }}>{t("care.hpAir")}</Text> : null}
                     </View>
                     <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 2 }}>
-                      💡 {LIGHT_LABEL[light]} · 💧 every ~{waterDays}d · 💦 {humidity}
+                      💡 {t(`care.${LIGHT_LABEL[light]}`)} · 💧 {t("care.hpEvery", { count: waterDays })} · 💦 {HUMIDITY_LABEL[humidity] ? t(`care.${HUMIDITY_LABEL[humidity]}`) : humidity}
                     </Text>
                   </View>
                 </View>
-                <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 16, marginTop: 8 }}>{note} Repot every ~{repot} yr{repot === 1 ? "" : "s"}.</Text>
+                <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 16, marginTop: 8 }}>{note} {tn("care.hpRepot", repot)}</Text>
               </Pressable>
             );
           })}
         </View>
       ) : (
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", fontStyle: "italic", marginTop: 16 }}>
-          Save some houseplants from the Plants tab to see their care here.
+          {t("care.hpEmpty")}
         </Text>
       )}
 
       {/* Common houseplant pests — quick reference */}
       <Pressable onPress={() => setShowPests((v) => !v)} style={{ marginTop: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 8 }}>
-        <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "900" }}>{showPests ? "▾" : "▸"} 🫧 Common houseplant pests</Text>
+        <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "900" }}>{showPests ? "▾" : "▸"} 🫧 {t("care.hpPests")}</Text>
       </Pressable>
       {showPests ? (
         <View style={{ gap: 6 }}>
