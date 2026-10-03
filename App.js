@@ -4632,6 +4632,11 @@ useEffect(() => {
         return next;
       });
       cancelFertilizerReminder(name);
+      // The "Set reminder" check-in is a daily repeat that names the plant, and
+      // only the reminders master switch ever cancelled it — so with reminders
+      // left on, a removed plant went on saying good morning for ever.
+      cancelReminder(`plant-${name}`);
+      dropKey(setWateringReminders);
       dropKey(setHarvestTrackers);
       dropKey(setFertilizerTrackers);
       dropKey(setSnoozedPlants);

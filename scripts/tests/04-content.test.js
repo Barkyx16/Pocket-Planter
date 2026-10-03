@@ -351,3 +351,28 @@ describe("a backup carries the whole garden", () => {
     ok(core.MODULE_STORAGE_KEYS.length >= 20, "every self-persisting card must be listed");
   });
 });
+
+describe("removing a plant", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const start = app.indexOf("function toggleSavedPlant(");
+  const body = start < 0 ? "" : app.slice(start, app.indexOf("// Counted by what the gardener can see", start));
+
+  it("cancels every reminder that names the plant", () => {
+    // `plant-<name>` is the daily check-in from "Set reminder". It repeats every
+    // morning and only the master switch cancelled it, so a removed plant kept
+    // its reminder for as long as reminders stayed on.
+    ok(start > 0, "toggleSavedPlant should exist");
+    for (const [label, re] of [
+      ["the daily check-in", /cancelReminder\(`plant-\$\{name\}`\)/],
+      ["the next-watering reminder", /cancelPlantWaterReminder\(name\)/],
+      ["the fertilizer reminder", /cancelFertilizerReminder\(name\)/],
+    ]) ok(re.test(body), `removing a plant must cancel ${label}`);
+  });
+  it("forgets the plant's reminder setting", () => {
+    ok(/dropKey\(setWateringReminders\)/.test(body),
+      "a removed plant should not stay listed as having a daily reminder");
+  });
+  it("uses the same id the reminder is scheduled under", () => {
+    ok(/id: `plant-\$\{plantName\}`/.test(app), "scheduleReminder's id should still be plant-<name>");
+  });
+});
