@@ -3694,19 +3694,29 @@ export function getBaseWaterInterval(item) {
   return 3; // vegetables default
 }
 
+export const RHYTHM_RECENT_GAPS = 8;
+
 export function getWateringRhythm(plantName, item, wateringHistory) {
   const raw = wateringHistory?.[plantName];
   if (!Array.isArray(raw)) return null;
   // Unique day-keys, sorted oldest → newest.
   const dates = Array.from(new Set(raw.map((d) => String(d).slice(0, 10)))).sort();
   if (dates.length < 3) return null; // need a few data points for a meaningful average
-  let totalGap = 0;
+  // The typical gap lately: the median of the most recent RHYTHM_RECENT_GAPS.
+  // This was the mean of every gap ever, and it drives the next-watering reminder.
+  // One winter off — a single 90-day gap among twenty 2-day ones — turned a
+  // tomato's rhythm into 6.2 days, and every summer reminder after it came a
+  // week apart. The median shrugs off one-off breaks; the window lets an old
+  // season age out. (Still called avgGap: it is what callers read.)
+  const gaps = [];
   for (let i = 1; i < dates.length; i += 1) {
     const a = new Date(`${dates[i - 1]}T12:00:00`);
     const b = new Date(`${dates[i]}T12:00:00`);
-    totalGap += Math.round((b - a) / (1000 * 60 * 60 * 24));
+    gaps.push(Math.round((b - a) / (1000 * 60 * 60 * 24)));
   }
-  const avgGap = totalGap / (dates.length - 1);
+  const recent = gaps.slice(-RHYTHM_RECENT_GAPS).sort((x, y) => x - y);
+  const mid = Math.floor(recent.length / 2);
+  const avgGap = recent.length % 2 ? recent[mid] : (recent[mid - 1] + recent[mid]) / 2;
   const target = getBaseWaterInterval(item);
   const diff = avgGap - target; // + = watering less often than ideal, - = more often
   let status;

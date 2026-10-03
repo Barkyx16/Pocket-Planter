@@ -46,6 +46,27 @@ describe("getWateringRhythm", () => {
     eq(core.getWateringRhythm("Tomato", plant("Tomato"), { Tomato: [ago(3), ago(6)] }), null);
     eq(core.getWateringRhythm("Tomato", plant("Tomato"), {}), null);
   });
+  it("is not thrown by one long break", () => {
+    // Twenty waterings two days apart, a 90-day winter, then two more. The mean
+    // of every gap said 6 days, and the reminder waited that long in summer.
+    const days = [];
+    let d = 0;
+    days.push(d);
+    for (let i = 0; i < 2; i += 1) { d += 2; days.push(d); }
+    d += 90; days.push(d);
+    for (let i = 0; i < 19; i += 1) { d += 2; days.push(d); }
+    const history = days.map((n) => ago(d - n));
+    eq(core.getWateringRhythm("Tomato", plant("Tomato"), { Tomato: history }).avgGap, 2);
+  });
+  it("follows how the plant is watered now, not two seasons ago", () => {
+    // Ten weekly waterings, then eight every other day: the last eight gaps rule.
+    const days = [];
+    let d = 0;
+    for (let i = 0; i < 10; i += 1) { days.push(d); d += 7; }
+    for (let i = 0; i < 8; i += 1) { days.push(d); d += 2; }
+    const last = days[days.length - 1];
+    eq(core.getWateringRhythm("Tomato", plant("Tomato"), { Tomato: days.map((n) => ago(last - n)) }).avgGap, 2);
+  });
 });
 
 describe("getLastWateredText", () => {
