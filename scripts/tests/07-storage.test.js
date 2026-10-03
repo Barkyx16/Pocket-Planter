@@ -98,3 +98,24 @@ describe("fetchWithTimeout", () => {
     }
   });
 });
+
+describe("batched reads return a promise", () => {
+  it("that settles after the apply has run, so callers can chain on it", async () => {
+    // App chains .catch() onto some hydrate() calls; returning undefined made
+    // the app throw on launch.
+    const storage = fakeStorage({ a: "1" });
+    const hydrate = createBatchedReader(storage);
+    let applied = null;
+    const p = hydrate("a", (v) => { applied = v; });
+    eq(typeof (p && p.then), "function");
+    eq(typeof (p && p.catch), "function");
+    await p.catch(() => {});
+    eq(applied, "1");
+  });
+  it("and that never rejects, even when the apply throws", async () => {
+    const hydrate = createBatchedReader(fakeStorage({ a: "1" }));
+    let rejected = false;
+    await hydrate("a", () => { throw new Error("bad"); }).catch(() => { rejected = true; });
+    eq(rejected, false);
+  });
+});
