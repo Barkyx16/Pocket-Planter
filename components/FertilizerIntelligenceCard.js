@@ -2,12 +2,15 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, flipMonth, getClimateBucket, getTodayKey, isFertilizerDue } from "../core";
+import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, flipMonth, formatTemp, getClimateBucket, getTodayKey, isFertilizerDue } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
-export const FertilizerIntelligenceCard = memo(function FertilizerIntelligenceCard({ theme, weather, zone, savedPlants, fertilizerTrackers, onOpenPlant }) {
+export const FertilizerIntelligenceCard = memo(function FertilizerIntelligenceCard({ theme, weather, zone, savedPlants, fertilizerTrackers, onOpenPlant, unitSystem }) {
   const { t } = useTranslation();
+  // Temperatures in the gardener's own units; these tips used to say "95°F" to
+  // everyone, metric or not.
+  const deg = (f) => formatTemp(f, unitSystem, true);
   // The feeding tables below are authored against the northern calendar — like
   // every other month table in the app — so translate the local month back to the
   // reference one. Otherwise a southern gardener is told to skip feeding "for
@@ -27,7 +30,7 @@ export const FertilizerIntelligenceCard = memo(function FertilizerIntelligenceCa
         reason: "Warm zones start growing early. A balanced feed now kickstarts roots before summer heat arrives.",
         frequency: "Every 2 weeks",
         bestTime: "Early morning before 9am",
-        tip: "In hot zones spring is short — get nutrients in early before temperatures spike above 95°F.",
+        tip: `In hot zones spring is short — get nutrients in early before temperatures spike above ${deg(95)}.`,
       };
     }
     if (currentMonth >= 5 && currentMonth <= 9) {
@@ -38,7 +41,7 @@ export const FertilizerIntelligenceCard = memo(function FertilizerIntelligenceCa
         reason: "Summer heat in warm zones stresses plants.",
         frequency: "Once every 3-4 weeks",
         bestTime: "Early morning only — never midday",
-        tip: "Skip fertilizing on days above 98°F. Heat plus fertilizer salts can burn roots rapidly in warm climates.",
+        tip: `Skip fertilizing on days above ${deg(98)}. Heat plus fertilizer salts can burn roots rapidly in warm climates.`,
       };
     }
     if (currentMonth >= 10 && currentMonth <= 12) {
@@ -72,7 +75,7 @@ export const FertilizerIntelligenceCard = memo(function FertilizerIntelligenceCa
         reason: "Cold zones have a short growing window. High nitrogen now accelerates leafy growth before summer.",
         frequency: "Every 2 weeks",
         bestTime: "Morning after last frost risk passes",
-        tip: "Wait until soil temps reach at least 50°F before fertilizing — cold soil can't absorb nutrients properly.",
+        tip: `Wait until soil temps reach at least ${deg(50)} before fertilizing — cold soil can't absorb nutrients properly.`,
       };
     }
     if (currentMonth >= 7 && currentMonth <= 8) {
@@ -128,7 +131,7 @@ export const FertilizerIntelligenceCard = memo(function FertilizerIntelligenceCa
       reason: "Summer triggers flowering and fruiting. Phosphorus supports strong blooms and fruit set.",
       frequency: "Every 3 weeks",
       bestTime: "Early morning before heat peaks",
-      tip: "Avoid fertilizing during heat waves above 95°F — wait for a cooler day to prevent root burn.",
+      tip: `Avoid fertilizing during heat waves above ${deg(95)} — wait for a cooler day to prevent root burn.`,
     };
   }
   if (currentMonth >= 9 && currentMonth <= 11) {
@@ -155,7 +158,7 @@ export const FertilizerIntelligenceCard = memo(function FertilizerIntelligenceCa
 
 const getWeatherWarning = () => {
   if (!weather) return null;
-  if (weather.maxTempF >= HEAT_THRESHOLD_F) return { icon: "🔥", text: "Too hot to fertilize today. Wait for temps below 90°F to avoid root burn." };
+  if (weather.maxTempF >= HEAT_THRESHOLD_F) return { icon: "🔥", text: `Too hot to fertilize today. Wait for temps below ${deg(90)} to avoid root burn.` };
   if (weather.precipChance >= 70) return { icon: "🌧️", text: "Rain expected today. Hold off — heavy rain will wash away fertilizer before roots absorb it." };
   if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", text: "Frost risk tonight. Don't fertilize — cold temps slow nutrient absorption significantly." };
   return { icon: "✅", text: "Great conditions to fertilize today. Mild temps and low rain chance means nutrients will absorb well." };

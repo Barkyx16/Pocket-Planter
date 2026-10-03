@@ -589,3 +589,20 @@ describe("the companion quiz", () => {
     ok(pool.slice(firstNotAvoid).every((p) => core16.getCompatibilityScore("Tomato", p.name).label !== "Avoid"));
   });
 });
+
+describe("temperatures follow the unit setting", () => {
+  it("no screen writes a Fahrenheit figure into its text", () => {
+    // The forecast summary and the feeding tips said "95°F" to metric gardeners.
+    const fs17 = require("fs");
+    const offenders = [];
+    for (const dir of ["components", "screens"]) {
+      for (const f of fs17.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith(".js"))) {
+        const code = fs17.readFileSync(path.join(ROOT, dir, f), "utf8")
+          .replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+        const hits = code.match(/\d+\s?°F/g);
+        if (hits) offenders.push(`${dir}/${f}: ${hits.join(", ")}`);
+      }
+    }
+    eq(offenders, []);
+  });
+});

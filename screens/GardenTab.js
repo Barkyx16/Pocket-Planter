@@ -159,6 +159,7 @@ export function GardenTab({ addGardenArea, assignPlantToAreaSlot, careLog, clear
         { id: "fertilizer", label: t("garden.tabFertilizer"), node: (
           <FertilizerIntelligenceCard
             theme={theme}
+            unitSystem={unitSystem}
             weather={weather}
             zone={zone}
             savedPlants={savedPlants}
