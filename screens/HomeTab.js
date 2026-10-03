@@ -112,7 +112,7 @@ export function HomeTab({ activationSteps, claimDailyBonus, combinedGardenMap, c
                 <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900" }}>{countdownText}</Text>
               </View>
               <Text style={styles.frostBannerText}>
-                {t("home.lowOf")} {formatTemp(frost.minTempF, unitSystem, true)} {t("home.comingCoverTenderPlantsMove")}
+                {t("sent.frostLow", { temp: formatTemp(frost.minTempF, unitSystem, true) })}
               </Text>
             </View>
            <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.dismiss")} onPress={dismissBanner} hitSlop={10} style={{ padding: 4 }}>
@@ -128,7 +128,7 @@ export function HomeTab({ activationSteps, claimDailyBonus, combinedGardenMap, c
             <View style={{ flex: 1 }}>
               <Text style={[styles.frostBannerTitle, { color: "#ff7b7b" }]}>{t("home.extremeHeatToday")}</Text>
               <Text style={styles.frostBannerText}>
-                {t("home.highOf")} {formatTemp(weather.maxTempF, unitSystem, true)} {t("home.waterBefore9AmShade")}
+                {t("sent.heatHigh", { temp: formatTemp(weather.maxTempF, unitSystem, true) })}
               </Text>
             </View>
             <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.dismiss")} onPress={dismissBanner} hitSlop={10} style={{ padding: 4 }}>

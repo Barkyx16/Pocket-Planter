@@ -20,7 +20,7 @@ export const FrostBanner = memo(function FrostBanner({ theme, weather, frostAler
       <View style={{ flex: 1 }}>
         <Text style={styles.frostBannerTitle}>{t("frostBanner.frostExpected")} {whenText}</Text>
         <Text style={styles.frostBannerText}>
-          {t("frostBanner.lowOf")} {formatTemp(frost.minTempF, unitSystem, true)} {t("frostBanner.comingCoverTenderPlantsMove")}
+          {t("sent.frostLow", { temp: formatTemp(frost.minTempF, unitSystem, true) })}
         </Text>
         {!frostAlertsOn ? (
           <Text style={styles.frostBannerHint}>

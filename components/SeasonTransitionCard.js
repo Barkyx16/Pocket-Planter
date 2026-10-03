@@ -65,13 +65,13 @@ export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, 
         </View>
       ) : (
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 20, marginTop: 14 }}>
-          {t("seasonTransition.noStandout")} {seasonLabel.toLowerCase()} {t("seasonTransition.picksMatchedToZone")} {zone} {t("seasonTransition.yetBrowseAllPlantsTo")}
+          {t("sent.seasonNone", { season: next.labelMid || seasonLabel, zone })}
         </Text>
       )}
 
       {onBrowse ? (
         <Pressable accessibilityRole="button" onPress={onBrowse} style={{ marginTop: 14, backgroundColor: "#ff9f43", borderRadius: 16, paddingVertical: 14, alignItems: "center" }}>
-          <Text style={{ color: "#3d2c00", fontWeight: "900", fontSize: 14 }}>{t("seasonTransition.planMy")} {seasonLabel.toLowerCase()} {t("seasonTransition.garden")}</Text>
+          <Text style={{ color: "#3d2c00", fontWeight: "900", fontSize: 14 }}>{t("sent.seasonPlan", { season: next.labelMid || seasonLabel })}</Text>
         </Pressable>
       ) : null}
     </View>

@@ -88,7 +88,7 @@ export const GardenShoppingListCard = memo(function GardenShoppingListCard({ the
           onPress={() => setVisible((c) => c + 8)}
           style={{ marginTop: 10, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
         >
-          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("gardenShoppingList.showMorePlants")}{plantNames.length - visible} {t("gardenShoppingList.more")}</Text>
+          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("sent.showMorePlants", { count: plantNames.length - visible })}</Text>
         </Pressable>
       ) : null}
 

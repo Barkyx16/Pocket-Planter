@@ -50,7 +50,7 @@ return (
           <View style={{ height: 10, width: `${(gardenXP.progress || 0) * 100}%`, backgroundColor: "#5cff89" }} />
         </View>
         <Text style={{ color: theme.secondaryText, marginTop: 6, fontSize: 12, fontWeight: "700" }}>
-          {gardenXP.currentLevelXP} / {gardenXP.nextLevelXP} {t("gardenerProfile.xp")} {xpToNext} {t("gardenerProfile.toNextLevel")}
+          {t("sent.xpToNext", { current: gardenXP.currentLevelXP, next: gardenXP.nextLevelXP, left: xpToNext })}
         </Text>
       </View>
 

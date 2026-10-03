@@ -35,7 +35,7 @@ export const AdaptiveWateringCard = memo(function AdaptiveWateringCard({ theme, 
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        {t("adaptiveWatering.aScheduleThatAdaptsTo")} {learnedCount > 0 ? tn("counts.learnedFrom", learnedCount) : t("adaptiveWatering.startingFromTypicalNeeds")}{t("adaptiveWatering.thenAdjustedForTheWeather")}
+        {t("sent.adaptiveIntro", { source: learnedCount > 0 ? tn("counts.learnedFrom", learnedCount) : t("adaptiveWatering.startingFromTypicalNeeds") })}
       </Text>
 
       <View style={{ gap: 8, marginTop: 14 }}>
@@ -76,7 +76,7 @@ export const AdaptiveWateringCard = memo(function AdaptiveWateringCard({ theme, 
           onPress={() => setVisible((c) => c + 8)}
           style={{ marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
         >
-          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("adaptiveWatering.showMorePlants")}{rows.length - visible} {t("adaptiveWatering.more")}</Text>
+          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("sent.showMorePlants", { count: rows.length - visible })}</Text>
         </Pressable>
       ) : null}
 

@@ -48,7 +48,7 @@ export const AllNotesCard = memo(function AllNotesCard({ theme, plantNotes, onOp
 
       {filtered.length === 0 ? (
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 16, textAlign: "center", lineHeight: 20 }}>
-          {t("allNotes.noNotesMatch")}{query}{t("allNotes.tryADifferentWord")}
+          {t("sent.notesNothing", { query })}
         </Text>
       ) : (
         <View style={{ gap: 10, marginTop: 16 }}>

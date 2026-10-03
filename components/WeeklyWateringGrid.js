@@ -118,7 +118,7 @@ return (
 
       {savedPlants.length > 6 ? (
         <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 10, textAlign: "center" }}>
-          {t("weeklyWateringGrid.showing6Of")} {savedPlants.length} {t("weeklyWateringGrid.savedPlants")}
+          {t("sent.wateringShowing", { count: savedPlants.length })}
         </Text>
       ) : null}
     </View>

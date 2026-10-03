@@ -484,7 +484,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
             style={{ marginTop: 14, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
           >
             <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>
-              {t("plants.showMorePlants")}{filteredPlants.length - plantsVisibleCount} {t("plants.more")}
+              {t("sent.showMorePlants", { count: filteredPlants.length - plantsVisibleCount })}
             </Text>
           </Pressable>
         ) : null}

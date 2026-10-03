@@ -55,7 +55,7 @@ export const PestWatchCard = memo(function PestWatchCard({ theme, savedPlantObjs
           onPress={() => setVisible((c) => c + 6)}
           style={{ marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
         >
-          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("pestWatch.showMorePests")}{pests.length - visible} {t("pestWatch.more")}</Text>
+          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("sent.showMorePests", { count: pests.length - visible })}</Text>
         </Pressable>
       ) : null}
 

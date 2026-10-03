@@ -36,7 +36,7 @@ export const PollinatorPlannerCard = memo(function PollinatorPlannerCard({ theme
       {alreadyGrowing.length ? (
         <View style={{ marginTop: 14, backgroundColor: "rgba(92, 255, 137, 0.08)", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}>
           <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "800" }}>
-            {t("pollinatorPlanner.youreAlreadyGrowing")} {alreadyGrowing.map((p) => `${p.icon} ${p.name}`).join(", ")} {t("pollinatorPlanner.niceYourPollinatorsAreCovered")}
+            {t("sent.pollinatorHave", { list: alreadyGrowing.map((p) => `${p.icon} ${p.name}`).join(", ") })}
           </Text>
         </View>
       ) : null}

@@ -114,7 +114,7 @@ export const PersonalPlantingCalendar = memo(function PersonalPlantingCalendar({
           </View>
         ) : (
           <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "600", lineHeight: 20 }}>
-            {t("personalPlantingCalendar.noneOfYourSavedPlants")} {formatDate(new Date(2026, selectedMonth - 1, 1), { month: "long" })}{t("personalPlantingCalendar.tapAHighlightedMonthTo")}
+            {t("sent.personalNone", { month: formatDate(new Date(2026, selectedMonth - 1, 1), { month: "long" }) })}
           </Text>
         )}
       </View>

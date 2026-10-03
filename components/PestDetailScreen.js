@@ -115,7 +115,7 @@ export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, on
           })}
         </View>
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "600", marginTop: 10 }}>
-          {t("pestDetailScreen.peakActivity")} {activeLabel}{t("pestDetailScreen.warmerZonesOftenSeeA")}
+          {t("sent.pestPeak", { months: activeLabel })}
         </Text>
       </View>
 

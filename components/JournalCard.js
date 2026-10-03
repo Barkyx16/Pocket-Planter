@@ -574,7 +574,7 @@ return (
 })}</Text>
                                   </View>
                                   <View style={styles.journalDetailChip}>
-                                    <Text style={styles.journalDetailChipText}>{t("journal.day2")} {entry.daysSincePlanting || 1} {t("journal.sincePlanting")}</Text>
+                                    <Text style={styles.journalDetailChipText}>{t("sent.journalDay", { count: entry.daysSincePlanting || 1 })}</Text>
                                   </View>
                                   {entry.mood ? (
                                     <View style={styles.journalDetailChip}>

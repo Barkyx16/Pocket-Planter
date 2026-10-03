@@ -106,7 +106,7 @@ export const PlantingCalendarCard = memo(function PlantingCalendarCard({ theme, 
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        {t("plantingCalendar.sowTransplantAndHarvestWindows")} {zone}{t("plantingCalendar.estimatedFromYourFrostDates")}
+        {t("sent.calendarIntro", { zone })}
       </Text>
 
       <Pressable
@@ -178,7 +178,7 @@ export const PlantingCalendarCard = memo(function PlantingCalendarCard({ theme, 
           onPress={() => setVisible((c) => c + 6)}
           style={{ marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
         >
-          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("plantingCalendar.showMorePlants")}{rows.length - visible} {t("plantingCalendar.more")}</Text>
+          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("sent.showMorePlants", { count: rows.length - visible })}</Text>
         </Pressable>
       ) : null}
     </View>

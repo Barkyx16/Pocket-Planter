@@ -121,7 +121,7 @@ return (
         </View>
         <View style={styles.dashXPBarWrap}>
           <AnimatedBar progress={levelProgress} color="#5cff89" trackStyle={styles.dashXPTrack} fillStyle={styles.dashXPFill} />
-          <Text style={styles.dashXPMeta}>{gardenXP.currentLevelXP} / {gardenXP.nextLevelXP} {t("gardenStatsDashboard.xp")} {xpToNext} {t("gardenStatsDashboard.toNextLevel")}</Text>
+          <Text style={styles.dashXPMeta}>{t("sent.xpToNext", { current: gardenXP.currentLevelXP, next: gardenXP.nextLevelXP, left: xpToNext })}</Text>
           {getConsistencyBonus(streakData?.count || 0) > 0 ? (
             <Text style={{ color: "#ff9f43", fontSize: 10, fontWeight: "900", marginTop: 2 }}>
               🔥 +{getConsistencyBonus(streakData?.count || 0)} {t("gardenStatsDashboard.consistencyBonus")}

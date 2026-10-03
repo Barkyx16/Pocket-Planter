@@ -46,7 +46,7 @@ export const ThrivingNearYouCard = memo(function ThrivingNearYouCard({ theme, zo
       ) : rows.length === 0 ? (
         <View style={{ marginTop: 16, backgroundColor: "rgba(142, 255, 171, 0.08)", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "rgba(142, 255, 171, 0.2)" }}>
           <Text style={{ color: "#8effab", fontSize: 14, fontWeight: "800", lineHeight: 21 }}>
-            {t("thrivingNearYou.notEnoughGardenersInZone")} {zone || t("thrivingNearYou.yourArea")} {t("thrivingNearYou.yetAsMorePeopleGrow")}
+            {zone ? t("sent.thrivingZone", { zone }) : t("sent.thrivingArea")}
           </Text>
         </View>
       ) : (

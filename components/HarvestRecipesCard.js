@@ -57,7 +57,7 @@ export const HarvestRecipesCard = memo(function HarvestRecipesCard({ theme, save
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        {t("harvestRecipes.freshFromYourGardenQuick")} {harvestedNames.length ? "harvesting" : "growing"}{t("harvestRecipes.tapToFindRecipes")}
+        {t(harvestedNames.length ? "sent.recipesHarvesting" : "sent.recipesGrowing")}
       </Text>
 
       <View style={{ gap: 8, marginTop: 14 }}>

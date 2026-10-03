@@ -99,7 +99,7 @@ export const ProfileBannersCard = memo(function ProfileBannersCard({ theme, prof
               onPress={() => setVisible((c) => c + 3)}
               style={{ marginTop: 12, backgroundColor: "rgba(107, 199, 255, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.24)" }}
             >
-              <Text style={{ color: "#6bc7ff", fontWeight: "900", fontSize: 14 }}>{t("profileBanners.showMoreBanners")}{unlockedBanners.length - visible} {t("profileBanners.more")}</Text>
+              <Text style={{ color: "#6bc7ff", fontWeight: "900", fontSize: 14 }}>{t("sent.showMoreBanners", { count: unlockedBanners.length - visible })}</Text>
             </Pressable>
           ) : null}
 

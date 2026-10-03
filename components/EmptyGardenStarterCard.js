@@ -29,7 +29,7 @@ export const EmptyGardenStarterCard = memo(function EmptyGardenStarterCard({ the
       <IconText label={t("emptyGardenStarter.getStarted")} style={styles.cardEyebrow} />
       <Text style={[styles.cardTitle, { color: theme.text }]}>{t("emptyGardenStarter.yourGardensLookingBare")}</Text>
       <Text style={[styles.cardText, { color: theme.secondaryText }]}>
-        {t("emptyGardenStarter.hereAreAFewBeginnerfriendly")} {zone || t("emptyGardenStarter.yourArea")}{t("emptyGardenStarter.saveOneToStartYour")}
+        {zone ? t("sent.starterZone", { zone }) : t("sent.starterArea")}
       </Text>
       <View style={{ gap: 10, marginTop: 16 }}>
         {picks.map((item) => {

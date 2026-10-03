@@ -130,7 +130,7 @@ export const AchievementCard = memo(function AchievementCard({ theme, badges, ea
               onPress={() => setVisible((c) => c + 3)}
               style={{ marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
             >
-              <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("achievement.showMoreBadges")}{earnedBadges.length - visible} {t("achievement.more")}</Text>
+              <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("sent.showMoreBadges", { count: earnedBadges.length - visible })}</Text>
             </Pressable>
           ) : null}
         </>

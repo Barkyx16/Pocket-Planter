@@ -1241,3 +1241,21 @@ describe("undo toasts and premium prompts", () => {
     eq(offenders, []);
   });
 });
+
+describe("translated sentences", () => {
+  it("are one key with placeholders, not fragments glued around a value", () => {
+    // "{t(a)} {value} {t(b)}" fixes English word order into every language:
+    // Japanese, Korean and Hindi put the value somewhere else entirely.
+    const offenders = [];
+    const files = [path.join(ROOT, "App.js")];
+    for (const dir of ["components", "screens"]) {
+      for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith(".js"))) files.push(path.join(ROOT, dir, f));
+    }
+    const glued = /\{t\("[^"]+"\)\} ?\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\} ?\{t\("[^"]+"\)\}/;
+    for (const f of files) {
+      const m = fs.readFileSync(f, "utf8").match(glued);
+      if (m) offenders.push(`${path.relative(ROOT, f)}: ${m[0].slice(0, 60)}`);
+    }
+    eq(offenders, []);
+  });
+});

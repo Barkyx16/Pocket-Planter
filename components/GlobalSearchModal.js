@@ -105,7 +105,7 @@ export const GlobalSearchModal = memo(function GlobalSearchModal({ visible, onCl
 
           {noResults ? (
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", textAlign: "center", marginTop: 40 }}>
-              {t("globalSearchModal.nothingMatches")}{q}{t("globalSearchModal.tryADifferentWord")}
+              {t("sent.searchNothing", { query: q })}
             </Text>
           ) : null}
 

@@ -233,7 +233,7 @@ export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas,
   marginBottom: 4
 }} />
                   <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "900", marginBottom: 6 }}>{t("areaPlannerMap.aDreamBedWith")} {perfectGardenPlant}</Text>
-                  <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", lineHeight: 19, marginBottom: 16 }}>{t("areaPlannerMap.heresHow")} {perfectGardenPlant} {t("areaPlannerMap.thrivesSurroundedByItsBest")}</Text>
+                  <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", lineHeight: 19, marginBottom: 16 }}>{t("sent.perfectHow", { plant: perfectGardenPlant })}</Text>
                   <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 18 }}>
                     {tiles.map((name, i) => {
                       const pd = produceData.find((p) => p.name.toLowerCase() === name.toLowerCase());
@@ -401,7 +401,7 @@ export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas,
   marginBottom: 4
 }} />
                   <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18, marginBottom: 10 }}>
-                    {t("areaPlannerMap.howThePlantsIn")} {area.name} {t("areaPlannerMap.getAlong")}
+                    {t("sent.areaGetAlong", { area: area.name })}
                   </Text>
                   <View style={{ gap: 8 }}>
                     {top.map(({ a, b, score }) => {

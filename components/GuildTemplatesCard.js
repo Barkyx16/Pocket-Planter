@@ -112,7 +112,7 @@ export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, save
                 <Text style={{ fontSize: 20 }}>{guild.icon}</Text>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{guild.name}</Text>
-                  <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>{plants.length} {t("guildTemplates.plants")} {haveCount} {t("guildTemplates.inYourGarden")}</Text>
+                  <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>{t("sent.guildCount", { total: plants.length, have: haveCount })}</Text>
                 </View>
                 <Text style={{ color: "#8effab", fontSize: 16, fontWeight: "900" }}>{open ? "▾" : "▸"}</Text>
               </Pressable>
@@ -171,7 +171,7 @@ export const GuildTemplatesCard = memo(function GuildTemplatesCard({ theme, save
           onPress={() => setVisible((c) => c + 4)}
           style={{ marginTop: 12, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
         >
-          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("guildTemplates.showMoreCombos")}{guilds.length - visible} {t("guildTemplates.more")}</Text>
+          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("sent.showMoreCombos", { count: guilds.length - visible })}</Text>
         </Pressable>
       ) : null}
     </View>
