@@ -390,7 +390,7 @@ return (
                     <View style={styles.journalPlantGroupHeader}>
                       <Text style={styles.journalPlantGroupName}>{plantName}</Text>
                       <View style={styles.journalPlantGroupBadge}>
-                        <Text style={styles.journalPlantGroupBadgeText}>{plantEntries.length} photo{plantEntries.length === 1 ? "" : "s"}</Text>
+                        <Text style={styles.journalPlantGroupBadgeText}>{tn("counts.photosN", plantEntries.length)}</Text>
                       </View>
                     </View>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingVertical: 8 }}>

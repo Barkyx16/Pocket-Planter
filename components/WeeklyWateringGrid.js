@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Text, View } from "react-native";
 import { styles } from "../styles";
 import { getDateKey } from "../core";
-import { formatDate, useTranslation } from "../lib/i18n";
+import { formatDate, tn, useTranslation } from "../lib/i18n";
 import { EmptyState } from "./EmptyState";
 
 export const WeeklyWateringGrid = memo(function WeeklyWateringGrid({ theme, savedPlants, wateringHistory }) {
@@ -62,7 +62,7 @@ return (
     <View>
       {weekTotal > 0 ? (
         <Text style={[styles.cardText, { color: theme.secondaryText }]}>
-          {`${wateredTodayCount} of ${savedPlants.length} plant${savedPlants.length === 1 ? "" : "s"} watered today · ${weekTotal} logged this week.`}
+          {tn("counts.wateredToday", savedPlants.length, { watered: wateredTodayCount, week: weekTotal })}
         </Text>
       ) : (
         <EmptyState compact icon="water" title={t("empty.noWateringTitle")} body={t("empty.noWateringBody")} />

@@ -4,7 +4,7 @@ import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { getSunMismatch, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 export const SunlightMismatchCard = memo(function SunlightMismatchCard({ theme, gardenAreas, onOpenPlant }) {
   const { t } = useTranslation();
@@ -44,7 +44,7 @@ export const SunlightMismatchCard = memo(function SunlightMismatchCard({ theme, 
       <IconText label={t("sunlightMismatch.sunlightCheck")} style={styles.cardEyebrow} />
       <Text style={[styles.cardTitle, { color: theme.text }]}>{t("sunlightMismatch.sunPlacementWarnings")}</Text>
       <Text style={[styles.cardText, { color: theme.secondaryText }]}>
-        {mismatches.length} plant{mismatches.length === 1 ? "" : "s"} {t("sunlightMismatch.mayBeInTheWrong")} {mismatches.length === 1 ? t("sunlightMismatch.its") : t("sunlightMismatch.theyre")} {t("sunlightMismatch.plantedIn")}
+        {tn("counts.sunMismatch", mismatches.length)}
       </Text>
       <View style={{ gap: 10, marginTop: 16 }}>
         {mismatches.map((m) => {

@@ -3,7 +3,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
 import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, flipMonth, formatTemp, getClimateBucket, getSeasonForDate, getSuggestionsForMonth, isHarvestReady, isWaterDue } from "../core";
 import produceData from "../data/produceData";
-import { formatDate, useTranslation } from "../lib/i18n";
+import { formatDate, tn, useTranslation } from "../lib/i18n";
 
 export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ theme, weather, zone, savedPlants, wateredPlants, wateringHistory, gardenMap, harvestTrackers, onOpenPlant, unitSystem }) {
   const { t } = useTranslation();
@@ -103,7 +103,7 @@ export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ the
         <View style={[styles.gardenIntelInsightBanner, { backgroundColor: "rgba(255, 216, 107, 0.12)", borderColor: "rgba(255, 216, 107, 0.3)" }]}>
           <Text style={styles.gardenIntelInsightIcon}>🎉</Text>
           <Text style={[styles.gardenIntelInsightText, { color: "#ffd86b" }]}>
-            {harvestsReady} plant{harvestsReady === 1 ? "" : "s"} {t("gardenIntelligence.readyToHarvestToday")}
+            {tn("counts.readyToday", harvestsReady)}
           </Text>
         </View>
       ) : null}

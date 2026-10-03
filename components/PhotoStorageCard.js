@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 const DAY = 24 * 60 * 60 * 1000;
 // Rough estimate — the app doesn't read real file sizes, so we approximate.
@@ -34,7 +34,7 @@ export const PhotoStorageCard = memo(function PhotoStorageCard({ theme, journalE
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
         {total === 0
           ? t("photoStorage.noGardenPhotosYetAs")
-          : `You've saved ${total} garden photo${total === 1 ? "" : "s"} (roughly ${estMB} MB). Clear out old ones to free up space.`}
+          : tn("counts.photoStorage", total, { mb: estMB })}
       </Text>
 
       {total > 0 ? (
@@ -64,7 +64,7 @@ export const PhotoStorageCard = memo(function PhotoStorageCard({ theme, journalE
                 >
                   <Text style={{ color: disabled ? theme.secondaryText : "#ff9f9f", fontSize: 14, fontWeight: "800" }}>🗑 {opt.label}</Text>
                   <Text style={{ color: disabled ? theme.secondaryText : "#ff9f9f", fontSize: 12, fontWeight: "900" }}>
-                    {opt.count} photo{opt.count === 1 ? "" : "s"}
+                    {tn("counts.photosN", opt.count)}
                   </Text>
                 </Pressable>
               );

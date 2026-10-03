@@ -2,7 +2,7 @@ import { memo } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
 import { getDateKey } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 export const WateringHeatmapCard = memo(function WateringHeatmapCard({ theme, wateringHistory }) {
   const { t } = useTranslation();
@@ -95,7 +95,7 @@ export const WateringHeatmapCard = memo(function WateringHeatmapCard({ theme, wa
 return (
     <View>
       <Text style={[styles.cardText, { color: theme.secondaryText }]}>
-        {totalWaterings} watering{totalWaterings === 1 ? "" : "s"} across {activeDays} day{activeDays === 1 ? "" : "s"}{t("wateringHeatmap.eachSquareIsADay")}
+        {t("counts.heatmapSummary", { waterings: tn("counts.wateringsN", totalWaterings), days: tn("counts.daysN", activeDays) })}
       </Text>
 
       {/* STATS ROW */}

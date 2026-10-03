@@ -210,7 +210,7 @@ return (
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.myGardenTaskTitle, { color: "#ffd86b" }]}>
-                {harvestsReady.length} plant{harvestsReady.length === 1 ? "" : "s"} {t("myGardenToday.readyToHarvest")}
+                {tn("counts.readyToHarvest", harvestsReady.length)}
               </Text>
               <Text style={[styles.myGardenTaskText, { color: theme.secondaryText }]}>
                 {t("myGardenToday.harvestNowForPeakFlavor")}
@@ -243,7 +243,7 @@ return (
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.myGardenTaskTitle, { color: "#8effab" }]}>
-                {fertDuePlants.length} plant{fertDuePlants.length === 1 ? "" : "s"} {t("myGardenToday.dueForFertilizer")}
+                {tn("counts.dueFertilizer", fertDuePlants.length)}
               </Text>
               <Text style={[styles.myGardenTaskText, { color: theme.secondaryText }]}>
                 {t("myGardenToday.itsBeen14DaysSince")}

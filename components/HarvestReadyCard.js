@@ -52,7 +52,7 @@ export const HarvestReadyCard = memo(function HarvestReadyCard({ theme, harvestT
               <View style={{ flex: 1 }}>
                 <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{e.name}</Text>
                 <Text style={{ color: isReady ? "#ffd86b" : "#8effab", fontSize: 12, fontWeight: "900", marginTop: 2 }}>
-                  {isReady ? t("harvestReady.readyToHarvestNow") : `⏳ ~${e.daysLeft} day${e.daysLeft === 1 ? "" : "s"} to harvest`}
+                  {isReady ? t("harvestReady.readyToHarvestNow") : tn("counts.daysToHarvest", e.daysLeft)}
                 </Text>
               </View>
               <Text style={{ color: accent, fontSize: 20, fontWeight: "900" }}>›</Text>

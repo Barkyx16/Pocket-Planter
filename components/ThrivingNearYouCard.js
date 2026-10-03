@@ -5,7 +5,7 @@ import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { supabase } from "../lib/supabase";
 import { resolvePlantImageSource } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 export const ThrivingNearYouCard = memo(function ThrivingNearYouCard({ theme, zone, onOpenPlant }) {
   const { t } = useTranslation();
@@ -67,7 +67,7 @@ export const ThrivingNearYouCard = memo(function ThrivingNearYouCard({ theme, zo
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{r.plant_name}</Text>
                   <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>
-                    🌱 {r.saves} saved{r.harvests > 0 ? ` · 🎉 ${r.harvests} harvested` : ""} · {r.gardeners} gardener{r.gardeners === 1 ? "" : "s"}
+                    {t("counts.thrivingSaved", { count: r.saves })}{r.harvests > 0 ? ` · ${t("counts.thrivingHarvested", { count: r.harvests })}` : ""} · {tn("counts.thrivingGardeners", r.gardeners)}
                   </Text>
                 </View>
                 {plant ? <Text style={{ color: "#8effab", fontSize: 20, fontWeight: "900" }}>›</Text> : null}

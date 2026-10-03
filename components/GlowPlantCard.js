@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { getHarvestCountdown, getLastWateredText, getNextWaterInfo, getPlantDifficulty, getRarity, getStreakDaysLeft, getTodayKey, getWateringStreak, normalizeType, RARITY_STYLES, resolvePlantImageSource, typeLabel } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone, theme, isSaved, isCompared, isFollowed, isInGarden, isSnoozed, wateredDate, wateredPlants, wateringHistory, onOpen, onSave, onCompare, onFollow, onAddToGarden, onWater, onSnooze }) {
   const { t } = useTranslation();
@@ -133,7 +133,7 @@ export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone,
         ) : null}
         {getStreakDaysLeft(plant.name, wateringHistory) ? (
           <Text style={{ color: "#ffd86b", fontSize: 10, fontWeight: "900", marginTop: 2 }}>
-            ⏳ {getStreakDaysLeft(plant.name, wateringHistory)} day{getStreakDaysLeft(plant.name, wateringHistory) === 1 ? "" : "s"} {t("glowPlant.leftToKeepYourStreak")}
+            {tn("counts.streakLeft", getStreakDaysLeft(plant.name, wateringHistory))}
           </Text>
         ) : null}
       </View>

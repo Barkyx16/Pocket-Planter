@@ -3,7 +3,7 @@ import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { getBaseWaterInterval, getNextWaterInfo, getWateringRhythm, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 export const AdaptiveWateringCard = memo(function AdaptiveWateringCard({ theme, savedPlants, wateringHistory, wateredPlants, weather, onOpenPlant }) {
   const { t } = useTranslation();
@@ -35,7 +35,7 @@ export const AdaptiveWateringCard = memo(function AdaptiveWateringCard({ theme, 
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        {t("adaptiveWatering.aScheduleThatAdaptsTo")} {learnedCount > 0 ? `learned from your habits on ${learnedCount} plant${learnedCount === 1 ? "" : "s"}` : t("adaptiveWatering.startingFromTypicalNeeds")}{t("adaptiveWatering.thenAdjustedForTheWeather")}
+        {t("adaptiveWatering.aScheduleThatAdaptsTo")} {learnedCount > 0 ? tn("counts.learnedFrom", learnedCount) : t("adaptiveWatering.startingFromTypicalNeeds")}{t("adaptiveWatering.thenAdjustedForTheWeather")}
       </Text>
 
       <View style={{ gap: 8, marginTop: 14 }}>

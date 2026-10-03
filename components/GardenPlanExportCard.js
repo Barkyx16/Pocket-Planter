@@ -3,7 +3,7 @@ import { Pressable, Share, Text, View } from "react-native";
 import { findGardenConflicts, tapHaptic } from "../core";
 import { IconText } from "./IconText";
 import { PlantLabelsSection } from "./PlantLabelsSection";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 export const GardenPlanExportCard = memo(function GardenPlanExportCard({ theme, gardenAreas, savedPlants, zone }) {
   const { t } = useTranslation();
@@ -21,10 +21,10 @@ export const GardenPlanExportCard = memo(function GardenPlanExportCard({ theme, 
     });
     const conflicts = findGardenConflicts(gardenAreas);
     if (conflicts.length) {
-      lines.push(`⚠️ ${conflicts.length} companion conflict${conflicts.length === 1 ? "" : "s"} to review.`);
+      lines.push(tn("counts.planConflicts", conflicts.length));
       lines.push("");
     }
-    lines.push(`Total: ${totalPlanted} plants across ${areas.length} bed${areas.length === 1 ? "" : "s"}.`);
+    lines.push(tn("counts.planTotal", areas.length, { plants: totalPlanted }));
     lines.push("Planned with Pocket Planter 🌿");
     return lines.join("\n");
   };

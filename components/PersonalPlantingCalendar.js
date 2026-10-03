@@ -1,9 +1,9 @@
 import { memo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { MONTH_NAMES, getMonthEmoji, localPlantMonths, tapHaptic } from "../core";
+import { getMonthEmoji, localPlantMonths, tapHaptic } from "../core";
 import { getMonthImage } from "../data/monthImageMap";
-import { useTranslation } from "../lib/i18n";
+import { formatDate, tn, useTranslation } from "../lib/i18n";
 
 export const PersonalPlantingCalendar = memo(function PersonalPlantingCalendar({ theme, savedPlants, zone, onOpenPlant }) {
   const { t } = useTranslation();
@@ -23,7 +23,7 @@ export const PersonalPlantingCalendar = memo(function PersonalPlantingCalendar({
   const thisMonthCount = byMonth[currentMonth - 1]?.plants.length || 0;
   const activeMonths = byMonth.filter((m) => m.plants.length).length;
   const peak = byMonth.reduce((best, m) => (m.plants.length > (best?.plants.length || 0) ? m : best), null);
-  const peakLabel = peak && peak.plants.length ? MONTH_NAMES[peak.monthNum - 1].slice(0, 3) : "—";
+  const peakLabel = peak && peak.plants.length ? formatDate(new Date(2026, peak.monthNum - 1, 1), { month: "short" }) : "—";
 
   const stats = [
     { label: "To sow now", value: String(thisMonthCount), color: thisMonthCount ? "#8effab" : theme.secondaryText },
@@ -59,7 +59,7 @@ export const PersonalPlantingCalendar = memo(function PersonalPlantingCalendar({
               onPress={() => { tapHaptic("light"); setSelectedMonth(monthNum); }}
               accessibilityRole="button"
               accessibilityState={{ selected: isSelected }}
-              accessibilityLabel={`${MONTH_NAMES[monthNum - 1]}: ${has ? `${plants.length} plant${plants.length === 1 ? "" : "s"} to sow` : t("personalPlantingCalendar.nothingToSow")}`}
+              accessibilityLabel={`${formatDate(new Date(2026, monthNum - 1, 1), { month: "long" })}: ${has ? tn("counts.toSow", plants.length) : t("personalPlantingCalendar.nothingToSow")}`}
               style={{
                 width: "22.7%",
                 borderRadius: 12,
@@ -71,7 +71,7 @@ export const PersonalPlantingCalendar = memo(function PersonalPlantingCalendar({
               }}
             >
               <Text style={{ color: isSelected ? "#5cff89" : theme.text, fontSize: 12, fontWeight: "900" }}>
-                {MONTH_NAMES[monthNum - 1].slice(0, 3)}
+                {formatDate(new Date(2026, monthNum - 1, 1), { month: "short" })}
               </Text>
               <Text style={{ color: has ? "#8effab" : theme.secondaryText, fontSize: 12, fontWeight: "900", marginTop: 4 }}>
                 {has ? plants.length : "—"}
@@ -94,7 +94,7 @@ export const PersonalPlantingCalendar = memo(function PersonalPlantingCalendar({
           />
         ) : null}
         <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 10 }}>
-          {getMonthEmoji(selectedMonth)} {MONTH_NAMES[selectedMonth - 1].toUpperCase()}
+          {getMonthEmoji(selectedMonth)} {formatDate(new Date(2026, selectedMonth - 1, 1), { month: "long" }).toUpperCase()}
           {selectedMonth === currentMonth ? t("personalPlantingCalendar.thisMonth") : ""}
           {selectedPlants.length ? `  ·  ${selectedPlants.length} PLANT${selectedPlants.length === 1 ? "" : "S"}` : ""}
         </Text>
@@ -114,7 +114,7 @@ export const PersonalPlantingCalendar = memo(function PersonalPlantingCalendar({
           </View>
         ) : (
           <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "600", lineHeight: 20 }}>
-            {t("personalPlantingCalendar.noneOfYourSavedPlants")} {MONTH_NAMES[selectedMonth - 1]}{t("personalPlantingCalendar.tapAHighlightedMonthTo")}
+            {t("personalPlantingCalendar.noneOfYourSavedPlants")} {formatDate(new Date(2026, selectedMonth - 1, 1), { month: "long" })}{t("personalPlantingCalendar.tapAHighlightedMonthTo")}
           </Text>
         )}
       </View>

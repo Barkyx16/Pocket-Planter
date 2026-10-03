@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { getNextSeasonStart, getPlantDifficulty, getSeasonForDate, getSuggestionsForMonth, normalizeType, resolvePlantImageSource, typeLabel } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, zone, onOpenPlant, onBrowse }) {
   const { t } = useTranslation();
@@ -30,7 +30,7 @@ export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, 
         <View style={{ flex: 1 }}>
           <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>{t("seasonTransition.seasonChangeAhead")}</Text>
           <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900", marginTop: 2 }}>
-            {seasonLabel} {t("seasonTransition.startsIn")} {daysUntilNext} day{daysUntilNext === 1 ? "" : "s"}
+            {tn("counts.seasonStartsIn", daysUntilNext, { season: seasonLabel })}
           </Text>
         </View>
       </View>

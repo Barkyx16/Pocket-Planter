@@ -3,7 +3,7 @@ import { Image, Linking, Pressable, Share, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { resolvePlantImageSource, tapHaptic } from "../core";
 import { IconText } from "./IconText";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 const imgFor = (name) => {
   const item = produceData.find((p) => p.name === name);
@@ -38,7 +38,7 @@ export const GardenShoppingListCard = memo(function GardenShoppingListCard({ the
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "600", lineHeight: 19, marginTop: 2 }}>
-        {plantNames.length} plant{plantNames.length === 1 ? "" : "s"} {t("gardenShoppingList.plantedAcrossYourGardenRestock")}
+        {tn("counts.shoppingPlanted", plantNames.length)}
       </Text>
 
       <View style={{ gap: 6, marginTop: 12 }}>

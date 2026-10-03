@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { getSeedStartInfo, resolvePlantImageSource } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 export const SeedStartingCard = memo(function SeedStartingCard({ theme, plants, zone, onOpenPlant }) {
   const { t } = useTranslation();
@@ -22,7 +22,7 @@ export const SeedStartingCard = memo(function SeedStartingCard({ theme, plants, 
         <View style={{ flex: 1 }}>
           <Text style={{ color: accent, fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>{t("seedStarting.seedStarting")}</Text>
           <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900", marginTop: 2 }}>
-            {startNow.length ? `Start ${startNow.length} plant${startNow.length === 1 ? "" : "s"} indoors now` : t("seedStarting.comingUpToStartIndoors")}
+            {startNow.length ? tn("counts.startIndoors", startNow.length) : t("seedStarting.comingUpToStartIndoors")}
           </Text>
         </View>
       </View>

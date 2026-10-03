@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { t } from "../lib/i18n";
+import { t, tn } from "../lib/i18n";
 import { getDaysSince, getTodayKey, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
 import { touchSlop } from "../lib/a11y";
@@ -73,7 +73,7 @@ export const VaseTrackerSection = memo(function VaseTrackerSection({ theme }) {
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                   <Text style={{ fontSize: 15 }}>🏺</Text>
                   <Text style={{ flex: 1, color: theme.text, fontSize: 13, fontWeight: "800" }} numberOfLines={1}>{v.name}</Text>
-                  <Text style={{ color, fontSize: 12, fontWeight: "900" }}>{left <= 0 ? "past its best" : `${left} day${left === 1 ? "" : "s"} left`}</Text>
+                  <Text style={{ color, fontSize: 12, fontWeight: "900" }}>{left <= 0 ? t("counts.vasePast") : tn("counts.vaseLeft", left)}</Text>
                   <Pressable onPress={() => remove(v.id)} hitSlop={touchSlop(13)} accessibilityRole="button" accessibilityLabel={t("misc.vaseRemoveA11y")}><Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>✕</Text></Pressable>
                 </View>
                 <View style={{ height: 5, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden", marginTop: 8 }}>

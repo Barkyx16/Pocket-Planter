@@ -72,7 +72,7 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
       actions.push({ id: "water-remaining", icon: "💧", text: tn("liveWeather.stillNeedWater", unwateredCount), priority: weather.maxTempF >= WARM_DAY_THRESHOLD_F ? "high" : "medium" });
     }
     if (harvestsReady > 0) {
-      actions.push({ id: "harvest-ready", icon: "🎉", text: `${harvestsReady} plant${harvestsReady === 1 ? "" : "s"} ready to harvest — pick today for peak flavor`, priority: "high" });
+      actions.push({ id: "harvest-ready", icon: "🎉", text: tn("counts.liveHarvest", harvestsReady), priority: "high" });
     }
     if (weather.maxTempF >= 65 && weather.maxTempF <= 82 && weather.precipChance < 30) {
       actions.push({ id: "ideal-sow", icon: "🌱", text: "Ideal conditions for transplanting or direct sowing today", priority: "low" });

@@ -3,7 +3,7 @@ import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { PremiumLockedSection } from "./PremiumLockedSection";
 import { IconText } from "./IconText";
-import { formatDate, useTranslation } from "../lib/i18n";
+import { formatDate, tn, useTranslation } from "../lib/i18n";
 
 export const PlantGrowthTimeline = memo(function PlantGrowthTimeline({ theme, plant, journalEntries, premiumUnlocked, onAddPhoto, onUnlock }) {
   const { t, growthStageLabel, moodLabel } = useTranslation();
@@ -66,7 +66,7 @@ export const PlantGrowthTimeline = memo(function PlantGrowthTimeline({ theme, pl
       ) : (
         <>
           <Text style={styles.cardText}>
-            {entries.length} photo{entries.length === 1 ? "" : "s"} tracking {plant.name}{t("plantGrowthTimeline.sGrowth")}
+            {tn("counts.growthPhotos", entries.length, { plant: plant.name })}
           </Text>
 
           {/* BEFORE & AFTER */}

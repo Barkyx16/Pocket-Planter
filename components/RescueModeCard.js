@@ -3,7 +3,7 @@ import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { RESCUE_THRESHOLD_DAYS, getDaysSince, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 export const RescueModeCard = memo(function RescueModeCard({ theme, savedPlants, wateredPlants, wateringHistory, onOpenPlant, onWater }) {
   const { t } = useTranslation();
@@ -28,7 +28,7 @@ export const RescueModeCard = memo(function RescueModeCard({ theme, savedPlants,
         <View style={{ flex: 1 }}>
           <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>{t("rescueMode.rescueMode")}</Text>
           <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900", marginTop: 2 }}>
-            {neglected.length} plant{neglected.length === 1 ? "" : "s"} need{neglected.length === 1 ? "s" : ""} attention
+            {tn("counts.needAttention", neglected.length)}
           </Text>
         </View>
       </View>

@@ -967,3 +967,29 @@ describe("tool sections", () => {
     for (const s of ['title="Pest watch locked"', '"Browse plants"']) ok(!pests.includes(s), `PestsTab: ${s}`);
   });
 });
+
+describe("counted text", () => {
+  it("never pluralizes with an English \"s\"", () => {
+    // `${n} plant${n === 1 ? "" : "s"}` glued an English noun onto a translated
+    // sentence ("3 plants listas para cosechar"). Counted text goes through tn.
+    const offenders = [];
+    const files = ["App.js", "core.js"].map((f) => path.join(ROOT, f));
+    for (const dir of ["components", "screens"]) {
+      for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith(".js"))) files.push(path.join(ROOT, dir, f));
+    }
+    for (const f of files) {
+      if (/=== 1 \? "" : "s"|!== 1 \? "s" : ""/.test(fs.readFileSync(f, "utf8"))) offenders.push(path.relative(ROOT, f));
+    }
+    eq(offenders, []);
+  });
+  it("reads as one sentence in Spanish", () => {
+    const i18n = require(path.join(ROOT, "lib/i18n.js"));
+    try {
+      i18n.setLocale("es");
+      eq(i18n.tn("counts.readyToHarvest", 3), "¡3 plantas listas para cosechar!");
+      eq(i18n.tn("counts.readyToHarvest", 1), "¡1 planta lista para cosechar!");
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});

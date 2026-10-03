@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Linking, Pressable, Text, TextInput, View } from "react-native";
 import { tapHaptic } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 import { IconText } from "./IconText";
 import { GerminationTestSection } from "./GerminationTestSection";
 import { GrowLightSection } from "./GrowLightSection";
@@ -69,14 +69,14 @@ export const SeedInventoryCard = memo(function SeedInventoryCard({ theme }) {
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        {t("seedInventory.trackTheSeedsAndSupplies")} {items.length} item{items.length === 1 ? "" : "s"} {t("seedInventory.onHand")}
+        {t("seedInventory.trackTheSeedsAndSupplies")} {tn("counts.itemsOnHand", items.length)}
       </Text>
 
       {lowItems.length ? (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12, backgroundColor: "rgba(255, 159, 67, 0.1)", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "rgba(255, 159, 67, 0.3)" }}>
           <Text style={{ fontSize: 14 }}>⚠️</Text>
           <Text style={{ flex: 1, color: "#ff9f43", fontSize: 12, fontWeight: "800" }}>
-            {lowItems.length} item{lowItems.length === 1 ? "" : "s"} {t("seedInventory.runningLowReorderBeforePlanting")}
+            {tn("counts.itemsLow", lowItems.length)}
           </Text>
         </View>
       ) : null}

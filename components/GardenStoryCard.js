@@ -2,7 +2,7 @@ import { memo, useRef } from "react";
 import { Pressable, Share, Text, View } from "react-native";
 import { estimateHarvestValue, tapHaptic } from "../core";
 import { IconText } from "./IconText";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 export const GardenStoryCard = memo(function GardenStoryCard({ theme, savedPlants, harvestLog, journalEntries, wateringHistory, streakData, gardenXP, gardenAreas }) {
   const { t } = useTranslation();
@@ -108,7 +108,7 @@ export const GardenStoryCard = memo(function GardenStoryCard({ theme, savedPlant
 
         {areaCount > 0 ? (
           <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", marginTop: 14, textAlign: "center" }}>
-            {t("gardenStory.growingAcross")} {areaCount} {t("gardenStory.gardenArea")}{areaCount === 1 ? "" : "s"}
+            {tn("counts.storyAreas", areaCount)}
           </Text>
         ) : null}
 

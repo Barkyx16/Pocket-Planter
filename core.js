@@ -5211,7 +5211,7 @@ export function buildGardenTimeline({
   });
   Object.entries(waterByDay).forEach(([dk, set]) => {
     const n = set.size;
-    events.push({ ts: tsOf(dk), dateKey: dk, kind: "water", icon: "💧", color: "#6bc7ff", title: `Watered ${n} plant${n === 1 ? "" : "s"}`, subtitle: Array.from(set).slice(0, 3).join(", ") + (n > 3 ? ` +${n - 3}` : "") });
+    events.push({ ts: tsOf(dk), dateKey: dk, kind: "water", icon: "💧", color: "#6bc7ff", title: tn("counts.wateredPlants", n), subtitle: Array.from(set).slice(0, 3).join(", ") + (n > 3 ? ` +${n - 3}` : "") });
   });
   const badgeById = {};
   (achievementBadges || []).forEach((b) => { if (b && b.id) badgeById[b.id] = b; });

@@ -245,7 +245,7 @@ return (
           <View style={[styles.dashActionRow, { backgroundColor: "rgba(255, 216, 107, 0.1)", borderColor: "rgba(255, 216, 107, 0.3)" }]}>
             <Text style={styles.dashActionIcon}>🎉</Text>
             <View style={{ flex: 1 }}>
-              <Text style={styles.dashActionLabel}>{harvestsReady} plant{harvestsReady === 1 ? "" : "s"} {t("gardenStatsDashboard.readyToHarvest")}</Text>
+              <Text style={styles.dashActionLabel}>{tn("counts.readyToHarvest", harvestsReady)}</Text>
               <Text style={[styles.dashActionSub, { color: theme.secondaryText }]}>{t("gardenStatsDashboard.checkYourPlantCardsTo")}</Text>
             </View>
             <View style={[styles.dashActionBadge, { backgroundColor: "rgba(255, 216, 107, 0.2)" }]}>
@@ -258,7 +258,7 @@ return (
           <View style={[styles.dashActionRow, { backgroundColor: "rgba(142, 255, 171, 0.08)", borderColor: "rgba(142, 255, 171, 0.2)" }]}>
             <Text style={styles.dashActionIcon}>🌿</Text>
             <View style={{ flex: 1 }}>
-              <Text style={styles.dashActionLabel}>{fertDue} plant{fertDue === 1 ? "" : "s"} {t("gardenStatsDashboard.dueForFertilizer")}</Text>
+              <Text style={styles.dashActionLabel}>{tn("counts.dueFertilizer", fertDue)}</Text>
               <Text style={[styles.dashActionSub, { color: theme.secondaryText }]}>{t("gardenStatsDashboard.itsBeen14DaysSince")}</Text>
             </View>
             <View style={[styles.dashActionBadge, { backgroundColor: "rgba(142, 255, 171, 0.16)" }]}>
@@ -318,8 +318,8 @@ return (
               <Text style={styles.dashActionLabel}>{t("gardenStatsDashboard.thisWeeksMomentum")}</Text>
               <Text style={[styles.dashActionSub, { color: theme.secondaryText }]}>
                 {[
-                  wateringsThisWeek > 0 ? `💧 ${wateringsThisWeek} watering${wateringsThisWeek === 1 ? "" : "s"}` : null,
-                  photosThisWeek > 0 ? `📸 ${photosThisWeek} photo${photosThisWeek === 1 ? "" : "s"}` : null,
+                  wateringsThisWeek > 0 ? `💧 ${tn("counts.wateringsN", wateringsThisWeek)}` : null,
+                  photosThisWeek > 0 ? `📸 ${tn("counts.photosN", photosThisWeek)}` : null,
                   (streakData?.count || 0) > 0 ? `🔥 ${streakData.count}-day streak` : null,
                 ].filter(Boolean).join("  •  ")}
               </Text>

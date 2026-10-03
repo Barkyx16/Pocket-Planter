@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Linking, Pressable, Text, View } from "react-native";
 import { tapHaptic } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 import { touchSlop } from "../lib/a11y";
 
 const STORAGE_KEY = "pp_toolkit_owned";
@@ -105,7 +105,7 @@ export const GardenToolkitCard = memo(function GardenToolkitCard({ theme, onComp
       <View style={{ backgroundColor: "rgba(92, 255, 137, 0.08)", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
           <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>
-            {complete ? t("gardenToolkit.fullyEquipped") : `🧰 ${remaining} tool${remaining === 1 ? "" : "s"} to grab`}
+            {complete ? t("gardenToolkit.fullyEquipped") : tn("counts.toolsToGrab", remaining)}
           </Text>
           <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900" }}>{ownedCount}/{TOTAL}</Text>
         </View>
@@ -156,7 +156,7 @@ export const GardenToolkitCard = memo(function GardenToolkitCard({ theme, onComp
         <View style={{ marginTop: 14 }}>
           <Pressable onPress={() => setShowOwned((v) => !v)} style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 8 }}>
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800" }}>
-              {showOwned ? "▾" : "▸"} ✓ {ownedCount} item{ownedCount === 1 ? "" : "s"} {t("gardenToolkit.youAlreadyHave")}
+              {showOwned ? "▾" : "▸"} ✓ {tn("counts.itemsHave", ownedCount)}
             </Text>
           </Pressable>
           {showOwned ? (

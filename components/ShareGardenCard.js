@@ -2,7 +2,7 @@ import { memo, useRef } from "react";
 import { Pressable, Share, Text, View } from "react-native";
 import { tapHaptic } from "../core";
 import { IconText } from "./IconText";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, savedPlants, harvestLog, journalEntries, streakData, gardenAreas }) {
   const { t } = useTranslation();
@@ -20,8 +20,8 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
         `⭐ Level ${gardenXP.level} — ${gardenXP.title}`,
         `🪴 ${savedPlants.length} plants growing`,
         plotCount > 0 ? `🗺️ ${plotCount} plots planted` : null,
-        harvests > 0 ? `🚜 ${harvests} harvest${harvests === 1 ? "" : "s"} logged` : null,
-        photos > 0 ? `📸 ${photos} garden photo${photos === 1 ? "" : "s"}` : null,
+        harvests > 0 ? tn("counts.harvestsLogged", harvests) : null,
+        photos > 0 ? tn("counts.gardenPhotos", photos) : null,
         streak > 0 ? `🔥 ${streak}-day care streak` : null,
         "",
         "Growing smarter with Pocket Planter 🌿",

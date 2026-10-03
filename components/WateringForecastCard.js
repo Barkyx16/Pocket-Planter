@@ -4,7 +4,7 @@ import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { getNextWaterInfo } from "../core";
 import { IconText } from "./IconText";
-import { formatDate, useTranslation } from "../lib/i18n";
+import { formatDate, tn, useTranslation } from "../lib/i18n";
 
 export const WateringForecastCard = memo(function WateringForecastCard({ theme, savedPlants, wateringHistory, wateredPlants, weather, onOpenPlant }) {
   const { t } = useTranslation();
@@ -48,7 +48,7 @@ export const WateringForecastCard = memo(function WateringForecastCard({ theme, 
   const busiest = days.reduce((a, b) => (b.plants.length > a.plants.length ? b : a), days[0]);
 
   const headline = dueToday > 0
-    ? `💧 ${dueToday} plant${dueToday === 1 ? "" : "s"} to water today`
+    ? tn("counts.toWaterToday", dueToday)
     : nextDue
     ? `✅ Nothing due today — next up ${weekdayFmt(nextDue.date, nextDue.offset)}`
     : "✅ You're all caught up this week!";
@@ -91,7 +91,7 @@ return (
                   key={d.offset}
                   onPress={() => setSelectedDay(isSel ? null : d.offset)}
                   accessibilityRole="button"
-                  accessibilityLabel={`${weekdayFmt(d.date, d.offset)}: ${count} plant${count === 1 ? "" : "s"} due`}
+                  accessibilityLabel={tn("counts.dueA11y", count, { day: weekdayFmt(d.date, d.offset) })}
                   style={{ flex: 1, alignItems: "center", borderRadius: 12, paddingVertical: 10, backgroundColor: `rgba(107,199,255,${intensity})`, borderWidth: isSel ? 2 : 1, borderColor: isSel ? "#6bc7ff" : isToday ? "rgba(107, 199, 255, 0.4)" : "rgba(255, 255, 255, 0.08)" }}
                 >
                   <Text style={{ color: isToday ? "#6bc7ff" : theme.secondaryText, fontSize: 10, fontWeight: "800" }}>{weekdayFmt(d.date, d.offset)}</Text>
@@ -134,7 +134,7 @@ return (
 
           {untrackedCount > 0 ? (
             <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 12, fontStyle: "italic" }}>
-              {untrackedCount} plant{untrackedCount === 1 ? "" : "s"} {t("wateringForecast.notShownWaterOnceTo")}
+              {tn("counts.notShown", untrackedCount)}
             </Text>
           ) : null}
         </>

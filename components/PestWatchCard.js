@@ -2,7 +2,7 @@ import { memo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { getActivePests, tapHaptic } from "../core";
 import { getPestImage } from "../data/pestImageMap";
-import { formatDate, useTranslation } from "../lib/i18n";
+import { formatDate, tn, useTranslation } from "../lib/i18n";
 
 export const PestWatchCard = memo(function PestWatchCard({ theme, savedPlantObjs, zone, onOpenPlant, onOpenPest }) {
   const { t } = useTranslation();
@@ -20,7 +20,7 @@ export const PestWatchCard = memo(function PestWatchCard({ theme, savedPlantObjs
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "600", lineHeight: 19, marginTop: 2 }}>
-        {pests.length} pest{pests.length === 1 ? "" : "s"} {t("pestWatch.commonIn")} {zoneLabel} around {monthName}{t("pestWatch.tapAnyPestForA")}
+        {tn("counts.pestsCommon", pests.length, { zone: zoneLabel, month: monthName })}
       </Text>
 
       <View style={{ gap: 8, marginTop: 14 }}>

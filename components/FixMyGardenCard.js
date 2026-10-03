@@ -4,7 +4,7 @@ import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { findGardenConflicts, normalizeType, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 export const FixMyGardenCard = memo(function FixMyGardenCard({ theme, gardenAreas, onOpenPlant, onFocusConflict }) {
   const { t } = useTranslation();
@@ -29,7 +29,7 @@ return (
   color: "#ff9f9f"
 }]} />
       <Text style={[styles.cardText, { color: theme.secondaryText, marginTop: 4 }]}>
-        {conflicts.length} pair{conflicts.length === 1 ? "" : "s"} {t("fixMyGarden.ofPlantsInYourBeds")}
+        {tn("counts.pairsClash", conflicts.length)}
       </Text>
 
       <View style={{ gap: 10, marginTop: 16 }}>

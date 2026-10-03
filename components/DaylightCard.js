@@ -1,7 +1,7 @@
 import { memo, useEffect } from "react";
 import { Text, View } from "react-native";
 import { getDaylightInfo } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 export const DaylightCard = memo(function DaylightCard({ theme, zipCoords, onViewed }) {
   const { t } = useTranslation();
@@ -38,7 +38,7 @@ return (
         </View>
       </View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 20, marginTop: 12 }}>
-        {info.gaining ? t("daylight.daysAreGettingLonger") : t("daylight.daysAreGettingShorter")} {t("daylight.byAbout")} {info.deltaMin} minute{info.deltaMin === 1 ? "" : "s"} {t("daylight.aDay")} {note}
+        {tn("counts.daylightBy", info.deltaMin, { direction: info.gaining ? t("daylight.daysAreGettingLonger") : t("daylight.daysAreGettingShorter") })} {note}
       </Text>
     </View>
   );
