@@ -2,7 +2,7 @@ import { memo, useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { buildGardenTimeline, daysBetweenKeys, getDateKey, getTimelineMonthRecap, getTimelineOnThisDay, getTodayKey, resolvePlantImageSource } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { formatDate, useTranslation } from "../lib/i18n";
 
 // One unified, auto-generated feed of the garden's life — plantings, sowings,
 // photos, harvests, care, waterings, and badges — plus a monthly recap and an
@@ -92,7 +92,7 @@ export const GardenTimelineCard = memo(function GardenTimelineCard({ theme, jour
     { kind: "badge", icon: "🏆", label: "badges" },
   ].filter((c) => recap[c.kind]);
 
-  const monthName = new Date().toLocaleDateString(undefined, { month: "long" });
+  const monthName = formatDate(new Date(), { month: "long" });
 
   return (
     <View>

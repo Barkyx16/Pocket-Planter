@@ -1030,3 +1030,16 @@ describe("accessibility labels and alert buttons", () => {
     eq(offenders, []);
   });
 });
+
+describe("dates", () => {
+  it("are formatted in the app language, not the device's", () => {
+    const offenders = [];
+    for (const dir of ["components", "screens"]) {
+      for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith(".js"))) {
+        const src = fs.readFileSync(path.join(ROOT, dir, f), "utf8");
+        if (/toLocale(Date|Time)?String\((undefined)?[,)]/.test(src)) offenders.push(`${dir}/${f}`);
+      }
+    }
+    eq(offenders, []);
+  });
+});
