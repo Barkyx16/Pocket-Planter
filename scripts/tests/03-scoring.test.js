@@ -150,3 +150,34 @@ describe("parseDecimal", () => {
     eq(offenders, []);
   });
 });
+
+describe("harvest value", () => {
+  const Q = core.parseHarvestQuantity;
+  const near = (a, b, msg) => ok(Math.abs(a - b) < 0.01, `${msg}: ${a} vs ${b}`);
+  it("prices a counted harvest per item and a weighed one per pound", () => {
+    eq(Q("6 tomatoes"), 6);
+    eq(Q("2 lbs"), 2);
+    near(Q("8 oz"), 0.5, "8 oz");
+  });
+  it("converts metric weights to pounds instead of counting grams", () => {
+    near(Q("500 g"), 1.102, "500 g");
+    near(Q("500g"), 1.102, "500g");
+    near(Q("2", "kg"), 4.409, "2 + kg unit");
+    near(Q("250 gramos"), 0.551, "gramos");
+  });
+  it("reads the keyboard's decimal comma", () => {
+    near(Q("1,5 kg"), 3.307, "1,5 kg");
+    eq(Q("2,5 lbs"), 2.5);
+  });
+  it("does not mistake produce names for units", () => {
+    eq(Q("3 garlic heads"), 3);
+    eq(Q("2 grapes"), 2);
+    eq(Q("3 chili peppers"), 3);
+    eq(Q("12 onions"), 12);
+    eq(Q("a bunch"), 1);
+  });
+  it("values 500 g of tomatoes at a few dollars, not $1,500", () => {
+    const { total } = core.estimateHarvestValue([{ plantName: "Tomato", amount: "500 g" }]);
+    eq(total, 3);
+  });
+});

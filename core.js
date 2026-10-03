@@ -3763,10 +3763,25 @@ export const HARVEST_UNIT_VALUE = {
   Raspberry: 6, Basil: 2.5, Mint: 2, Parsley: 2, Cilantro: 2, Okra: 3,
 };
 
-export function parseHarvestQuantity(amount) {
-  const match = String(amount || "").match(/(\d+(\.\d+)?)/);
-  const n = match ? parseFloat(match[1]) : 0;
-  return n > 0 ? n : 1;
+// The prices above are per pound, or per item when the harvest was counted
+// ("6 tomatoes"). A weight typed in another unit is converted to pounds first:
+// "500 g" of tomatoes is about $3.30, not 500 × $3. The number is read with the
+// keyboard's decimal mark, so "1,5 kg" is one and a half kilos, not one.
+const HARVEST_POUNDS_PER_UNIT = [
+  [/^(kg|kgs|kilos?|kilograms?|kilogramm[e]?|kilogrammes?|公斤|千克|キロ|킬로그램)(?![a-z])/i, 2.20462],
+  [/^(g|gr|grams?|gramm[e]?|grammes?|gramos?|gramas?|grammi|克|グラム|그램)(?![a-z])/i, 0.00220462],
+  [/^(lbs?|pounds?|libras?|livres?|pfund|磅|ポンド|파운드)(?![a-z])/i, 1],
+  [/^(oz|ounces?|onzas?|onces?|unzen?|盎司|オンス|온스)(?![a-z])/i, 1 / 16],
+];
+
+export function parseHarvestQuantity(amount, unit = "") {
+  const text = `${amount ?? ""} ${unit ?? ""}`;
+  const match = text.match(/(\d+(?:[.,]\d+)?)\s*(\S*)/);
+  const n = match ? parseDecimal(match[1]) : 0;
+  if (!(n > 0)) return 1;
+  const word = (match[2] || String(unit || "")).trim();
+  const conversion = HARVEST_POUNDS_PER_UNIT.find(([re]) => re.test(word));
+  return conversion ? n * conversion[1] : n;
 }
 
 export function estimateHarvestValue(harvestLog) {
@@ -3775,7 +3790,7 @@ export function estimateHarvestValue(harvestLog) {
   (harvestLog || []).forEach((h) => {
     const key = Object.keys(HARVEST_UNIT_VALUE).find((k) => plantNameMatchesKey(h.plantName, k));
     const unitVal = key ? HARVEST_UNIT_VALUE[key] : 2;
-    const value = unitVal * parseHarvestQuantity(h.amount);
+    const value = unitVal * parseHarvestQuantity(h.amount, h.unit);
     total += value;
     byPlant[h.plantName] = (byPlant[h.plantName] || 0) + value;
   });
