@@ -3366,17 +3366,16 @@ async function scheduleFertilizerReminder(plantName, days) {
 
 async function scheduleReminder(plantName, hour, minute) {
   try {
-    const rainLikely = weather?.precipChance >= 65;
+    // The same words every day: this is a DAILY repeat, and it used to take
+    // today's forecast into its text — so a reminder set on a rainy afternoon
+    // announced "Rain is expected today" every morning after. The re-arm on
+    // launch schedules these words too.
     const ok = await scheduleDailyReminder({
       id: `plant-${plantName}`,
       hour,
       minute,
-      title: rainLikely
-        ? `🌧️ Check on your ${plantName}`
-        : `🌱 Good morning! Check on your ${plantName}`,
-      body: rainLikely
-        ? `Rain is expected today. Check soil moisture before watering your ${plantName}.`
-        : `Time for your daily ${plantName} check-in. Water if the top inch of soil feels dry.`,
+      title: `🌱 Good morning! Check on your ${plantName}`,
+      body: `Time for your daily ${plantName} check-in. Water if the top inch of soil feels dry.`,
     });
 
     if (!ok) {

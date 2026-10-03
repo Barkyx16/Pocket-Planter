@@ -114,15 +114,15 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn
             onToggleDailyWatering={async (value) => {
               setDailyWateringOn(value);
               if (value) {
-                const rainLikely = weather?.precipChance >= 65;
+                // Neutral words, the ones the re-arm in App.js uses: this repeats
+                // daily, so a rainy-day version said "rain is likely today" every
+                // morning after.
                 const ok = await scheduleDailyReminder({
                   id: "daily-watering",
                   hour: wateringReminderTime.hour,
                   minute: wateringReminderTime.minute,
-                  title: rainLikely ? t("settings.rainMayWaterToday") : t("settings.dailyWateringCheck"),
-                  body: rainLikely
-                    ? t("settings.rainIsLikelyTodayCheck")
-                    : t("settings.timeToCheckYourGarden"),
+                  title: t("notify.dailyWaterTitle"),
+                  body: t("notify.dailyWaterBody"),
                 });
                 if (ok) {
                   Alert.alert(t("alerts.waterOnTitle"), t("alerts.waterOnBody", { time: formatReminderTime(wateringReminderTime) }));
