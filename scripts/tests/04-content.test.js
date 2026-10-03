@@ -497,3 +497,18 @@ describe("deleting an account", () => {
       "a failed profile delete must return before the auth user is removed");
   });
 });
+
+describe("the RevenueCat webhook", () => {
+  const src = require("fs").readFileSync(path.join(ROOT, "supabase/functions/revenuecat-webhook/index.ts"), "utf8");
+  it("ignores an expiration for a period already renewed past", () => {
+    // Delivery order is not guaranteed. A late EXPIRATION for the previous
+    // period used to switch off a live subscription.
+    const guardAt = src.indexOf('if (type === "EXPIRATION" && expiresMs)');
+    const upsertAt = src.indexOf('from("premium_entitlements").upsert(');
+    ok(guardAt > 0 && guardAt < upsertAt, "the stale-expiration check must come before the write");
+    ok(/current\?\.is_active && currentMs > expiresMs/.test(src));
+  });
+  it("still refuses an unauthenticated caller", () => {
+    ok(/status: 401/.test(src) && /REVENUECAT_WEBHOOK_SECRET/.test(src));
+  });
+});

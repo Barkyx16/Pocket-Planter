@@ -112,6 +112,28 @@ Deno.serve(async (req) => {
       Deno.env.get("SERVICE_ROLE_KEY") ?? "",
     );
     const expiresMs = Number(event?.expiration_at_ms ?? 0);
+
+    // RevenueCat retries failed deliveries and does not promise order, so an
+    // EXPIRATION for last month's period can land after this month's RENEWAL.
+    // Written blindly it set is_active false over a live subscription, and the
+    // app trusts this row with no fallback, so a paying subscriber was locked
+    // out until the next renewal. An expiration for a period that ends before
+    // the one already on record is stale: acknowledge it and change nothing.
+    if (type === "EXPIRATION" && expiresMs) {
+      const { data: current } = await admin
+        .from("premium_entitlements")
+        .select("is_active, expires_at")
+        .eq("user_id", userId)
+        .maybeSingle();
+      const currentMs = current?.expires_at ? new Date(current.expires_at).getTime() : 0;
+      if (current?.is_active && currentMs > expiresMs) {
+        return new Response(JSON.stringify({ ok: true, skipped: "stale expiration" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const { error } = await admin.from("premium_entitlements").upsert({
       user_id: userId,
       is_active: isActive,
