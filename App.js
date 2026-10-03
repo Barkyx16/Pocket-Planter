@@ -1224,13 +1224,19 @@ setDailyBonusClaimed(isSameDayKey(data?.daily_bonus_date, getTodayKey()));
   // never capture empty default state. Fire-and-forget — never block the app.
   try {
     const todayKey = getTodayKey();
-    const lastSnap = await AsyncStorage.getItem("pp_lastSnapshotDate");
+    // Per account: with one shared key, a second account signing in on this
+    // phone the same day was skipped.
+    const snapKey = `pp_lastSnapshotDate_${user.id}`;
+    const lastSnap = await AsyncStorage.getItem(snapKey);
     if (lastSnap !== todayKey) {
-      await supabase.from("profile_snapshots").insert({
+      // Supabase reports a failed insert in `error` rather than throwing, and
+      // marking the day done regardless meant a failure cost that day's copy.
+      const { error: snapError } = await supabase.from("profile_snapshots").insert({
         user_id: user.id,
         snapshot: data,
       });
-      await AsyncStorage.setItem("pp_lastSnapshotDate", todayKey);
+      if (snapError) throw snapError;
+      await AsyncStorage.setItem(snapKey, todayKey);
       console.log("Profile snapshot saved 📸");
     }
   } catch (snapErr) {
