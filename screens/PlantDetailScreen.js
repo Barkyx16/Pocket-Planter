@@ -6,7 +6,7 @@ import { PlantGrowthTimeline } from "../components/PlantGrowthTimeline";
 import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { PremiumLockedSection } from "../components/PremiumLockedSection";
 import { WeatherParticles } from "../components/WeatherParticles";
-import { getCompanionLists, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeTemperatures, normalizeType, resolvePlantImageSource } from "../core";
+import { getCompanionLists, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeUnits, normalizeType, resolvePlantImageSource } from "../core";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { getPestImage } from "../data/pestImageMap";
 import { formatDate, t } from "../lib/i18n";
@@ -32,8 +32,9 @@ export function PlantDetailScreen({
     const quickFacts = getPlantQuickFacts(selectedPlant);
     const plantHealth = getPlantHealth(selectedPlant);
     const plantingWindow = getPlantingWindowText(selectedPlant);
-    // Tips are written in Fahrenheit; show them in the gardener's own units.
-    const temps = (text) => localizeTemperatures(text, unitSystem);
+    // Tips are written in Fahrenheit, inches and feet; show them in the
+    // gardener's own units.
+    const temps = (text) => localizeUnits(text, unitSystem);
     const plantingSteps = getPlantingSteps(selectedPlant).map((step) => (typeof step === "string" ? temps(step) : step));
     const isSaved = savedPlants.includes(selectedPlant.name);
     const isFollowed = followedPlants.includes(selectedPlant.name);
@@ -255,7 +256,7 @@ export function PlantDetailScreen({
     {[
       { icon: "☀️", label: "Sun", value: quickFacts.sun },
       { icon: "💧", label: "Water needs", value: quickFacts.water },
-      { icon: "📏", label: "Spacing", value: quickFacts.spacing },
+      { icon: "📏", label: "Spacing", value: temps(quickFacts.spacing) },
       { icon: "🌱", label: "Soil", value: quickFacts.soil },
       { icon: "🏆", label: "Difficulty", value: quickFacts.difficulty },
       { icon: "📅", label: "Planting window", value: plantingWindow },

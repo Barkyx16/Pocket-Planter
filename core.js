@@ -3735,6 +3735,31 @@ export function localizeTemperatures(text, units) {
     .replace(/(-?\d+)°F/g, (_, f) => `${c(f)}°C`);
 }
 
+// The same for lengths: plant spacing and depths written in inches and feet
+// ("18\" apart", "12–24 in apart", "about 6 inches", "10–20 ft"). A bare "in"
+// or a quote mark only counts as inches before "apart", so ordinary words are
+// left alone ("2 in a pot").
+export function localizeLengths(text, units) {
+  if (units !== "metric" || typeof text !== "string") return text;
+  const trim = (n) => String(Math.round(n * 10) / 10);
+  const fromCm = (lo, hi = lo) => (hi >= 100
+    ? `${lo === hi ? "" : `${trim(lo / 100)}–`}${trim(hi / 100)} m`
+    : `${lo === hi ? "" : `${hi < 10 ? trim(lo) : Math.round(lo)}–`}${hi < 10 ? trim(hi) : Math.round(hi)} cm`);
+  const IN = 2.54, FT = 30.48;
+  const num = "(\\d+(?:\\.\\d+)?)";
+  return text
+    .replace(new RegExp(`${num}"?\\s?[–-]\\s?${num}\\s?(?:inches|inch|in(?=\\s+apart)|"(?=\\s*apart))`, "g"),
+      (_, a, b) => fromCm(a * IN, b * IN))
+    .replace(new RegExp(`${num}\\s?[–-]\\s?${num}\\s?(?:ft|feet)\\b`, "g"), (_, a, b) => fromCm(a * FT, b * FT))
+    .replace(new RegExp(`${num}\\s?(?:inches|inch|in(?=\\s+apart)|"(?=\\s*apart))`, "g"), (_, a) => fromCm(a * IN))
+    .replace(new RegExp(`${num}\\s?(?:ft|feet|foot)\\b`, "g"), (_, a) => fromCm(a * FT));
+}
+
+// Both conversions, for advice text shown to the gardener.
+export function localizeUnits(text, units) {
+  return localizeLengths(localizeTemperatures(text, units), units);
+}
+
 export function formatLength(inches, units) {
   if (inches == null || Number.isNaN(Number(inches))) return "—";
   if (units === "metric") return `${Math.round(Number(inches) * 25.4)} mm`;

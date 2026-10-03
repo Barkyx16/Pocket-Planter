@@ -547,3 +547,27 @@ describe("advice text in the gardener's units", () => {
     ok(/localizeTemperatures\(disease\.spreads, unitSystem\)/.test(fs18.readFileSync(path.join(ROOT, "components/DiseaseDetailScreen.js"), "utf8")));
   });
 });
+
+describe("lengths in the gardener's units", () => {
+  const core19 = require(path.join(ROOT, "core.js"));
+  const L = (x) => core19.localizeLengths(x, "metric");
+  it("converts spacing in every form the tips use", () => {
+    eq(L('18" apart'), "46 cm apart");
+    eq(L('18"–24" apart'), "46–61 cm apart");
+    eq(L("12–24 in apart"), "30–61 cm apart");
+    eq(L("about 12 inches apart"), "about 30 cm apart");
+    eq(L("4 ft apart"), "1.2 m apart");
+    eq(L("2–4 ft apart"), "0.6–1.2 m apart");
+    eq(L("1 inch of water"), "2.5 cm of water");
+  });
+  it("leaves ordinary words and imperial gardeners alone", () => {
+    eq(L("plant 2 in a pot"), "plant 2 in a pot");
+    eq(L("when the top inch is dry"), "when the top inch is dry");
+    eq(core19.localizeLengths('18" apart', "imperial"), '18" apart');
+  });
+  it("is applied to the plant page's spacing and tips", () => {
+    const page = require("fs").readFileSync(path.join(ROOT, "screens/PlantDetailScreen.js"), "utf8");
+    ok(/const temps = \(text\) => localizeUnits\(text, unitSystem\)/.test(page));
+    ok(/value: temps\(quickFacts\.spacing\)/.test(page));
+  });
+});
