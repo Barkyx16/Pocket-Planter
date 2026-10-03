@@ -64,7 +64,6 @@ import {
   getDateKey,
   getGardenXP,
   getHarvestDays,
-  getNextWaterInfo,
   getPlantDetails,
   getPlantDifficulty,
   getPlantFamily,
@@ -74,7 +73,6 @@ import {
   getRarity,
   getSeasonForDate,
   getSmartWeatherRecommendation,
-  getSuccessionInterval,
   getSuggestionsForMonth,
   getTodayKey,
   readStoredJSON,
@@ -448,7 +446,6 @@ function AppInner({ language, setLanguage }) {
   const [user, setUser] = useState(null);
   const [dailyBonusClaimed, setDailyBonusClaimed] = useState(false);
   const [dailyBonusDate, setDailyBonusDate] = useState(null);
-  const [showDailyBonus, setShowDailyBonus] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const monthScrollRef = useRef(null);
   const monthScrollDone = useRef(false);
@@ -509,7 +506,6 @@ useEffect(() => { vacationRef.current = vacation; }, [vacation]);
   const [selectedPlant, setSelectedPlant] = useState(null);
   const [selectedPest, setSelectedPest] = useState(null);
   const [selectedDisease, setSelectedDisease] = useState(null);
-  const [returnSection, setReturnSection] = useState(null);
   const [remindersOn, setRemindersOn] = useState(false);
   const [frostAlertsOn, setFrostAlertsOn] = useState(false);
   const [monthlyPlantingOn, setMonthlyPlantingOn] = useState(false);
@@ -1624,7 +1620,6 @@ const theme = useMemo(
     const found = produceData.find((item) => String(item?.name || "").toLowerCase().replace(/_/g, " ").trim() === target);
     if (found) {
       plantReturnY.current = currentScrollY.current;
-      setReturnSection("exact");
       setSelectedPlant(found);
     } else {
       Alert.alert(t("alerts.plantNotFoundTitle"), t("alerts.plantNotFoundBody", { name }));
@@ -1653,13 +1648,11 @@ const theme = useMemo(
   }
   function openPlantFromMonthly(item) {
     plantReturnY.current = currentScrollY.current;
-    setReturnSection("exact");
     recordRecentPlant(item);
     setSelectedPlant(item);
   }
   const openPlantFromList = useCallback((item) => {
     plantReturnY.current = currentScrollY.current;
-    setReturnSection("exact");
     recordRecentPlant(item);
     setSelectedPlant(item);
   }, [recordRecentPlant]);
@@ -3570,7 +3563,6 @@ async function claimDailyBonus() {
   setBonusXP(prev => prev + xpAmount);
   setDailyBonusDate(nowIso);
   setDailyBonusClaimed(true);
-  setShowDailyBonus(true);
   successHaptic();
 
   const popup = { id: Date.now().toString(), amount: xpAmount };
@@ -3586,10 +3578,7 @@ async function claimDailyBonus() {
     );
   }
 
-  setTimeout(() => {
-    setShowDailyBonus(false);
-  }, 1800);
-  maybePromptPremium("Bonus claimed! Upgrade to Premium to save unlimited plants and unlock every tab, calendar, and insight.");
+  maybePromptPremium(t("ui4.promptBonus"));
 }
 
 function markPlantWatered(plantName) {
@@ -3644,7 +3633,7 @@ function markPlantWatered(plantName) {
       Alert.alert(t("alerts.wateredTitle"), t("alerts.wateredBody", { plant: plantName }));
     }
     schedulePlantWaterReminder(plantName);
-    maybePromptPremium("Watering tracked. Upgrade to Premium to unlock unlimited plants, the garden dashboard, planting & frost calendars, and more.");
+    maybePromptPremium(t("ui4.promptWatered"));
   }
 
   function waterAllPlants() {
@@ -3678,7 +3667,7 @@ function markPlantWatered(plantName) {
     setTimeout(() => {
       setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
     }, 2000);
-    maybePromptPremium("Watering tracked. Upgrade to Premium to unlock unlimited plants, the garden dashboard, planting & frost calendars, and more.");
+    maybePromptPremium(t("ui4.promptWatered"));
   }
 
   function waterPlant(plantName) {
@@ -3700,7 +3689,7 @@ function markPlantWatered(plantName) {
     setTimeout(() => {
       setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
     }, 2000);
-    maybePromptPremium("Watering tracked. Upgrade to Premium to unlock unlimited plants, the garden dashboard, planting & frost calendars, and more.");
+    maybePromptPremium(t("ui4.promptWatered"));
   }
 
 function logHarvest(plantName, amount, unit, note) {
@@ -3768,17 +3757,6 @@ function toggleFertilizerTracker(plantName) {
   });
 }
 
-function assignPlantToGardenSlot(slotId, plantName) {
-  setGardenMap((current) => ({ ...current, [slotId]: plantName }));
-}
-
-function clearGardenSlot(slotId) {
-  setGardenMap((current) => {
-    const copy = { ...current };
-    delete copy[slotId];
-    return copy;
-  });
-}
 function useStreakFreeze() {
   if (!streakFreeze.available) {
     Alert.alert(t("streak.noFreezeTitle"), t("garden.noFreezeBody"));
@@ -3859,40 +3837,6 @@ function waterArea(areaId) {
     setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
   }, 2000);
 }
-const SUCCESSION_INTERVALS = [
-  { match: ["radish"], days: 10 },
-  { match: ["arugula", "mesclun"], days: 10 },
-  { match: ["lettuce"], days: 14 },
-  { match: ["spinach"], days: 14 },
-  { match: ["cilantro", "coriander"], days: 14 },
-  { match: ["bean"], days: 14 },
-  { match: ["pea"], days: 14 },
-  { match: ["turnip"], days: 14 },
-  { match: ["beet"], days: 21 },
-  { match: ["carrot"], days: 21 },
-  { match: ["green onion", "scallion"], days: 21 },
-  { match: ["basil"], days: 21 },
-  { match: ["kale"], days: 21 },
-];
-function getSuccessionInterval(plantName) {
-  const n = String(plantName || "").toLowerCase();
-  const hit = SUCCESSION_INTERVALS.find((row) => row.match.some((w) => n.includes(w)));
-  return hit ? hit.days : null;
-}
-function getSuccessionInfo(name, item, zone, sowLog) {
-  const interval = getSuccessionInterval(name);
-  if (!interval) return null;
-  // Only nudge while the crop is actually in its planting window.
-  if (getPlantSeasonLabel(item, zone) !== "Plant now") return null;
-  const last = sowLog?.[name];
-  if (!last) return { interval, status: "start", daysSince: null, daysUntil: null };
-  const lastDate = new Date(`${String(last).slice(0, 10)}T12:00:00`);
-  const now = new Date(); now.setHours(12, 0, 0, 0);
-  const daysSince = Math.round((now - lastDate) / (1000 * 60 * 60 * 24));
-  if (daysSince >= interval) return { interval, status: "due", daysSince, daysUntil: 0 };
-  return { interval, status: "waiting", daysSince, daysUntil: interval - daysSince };
-}
-
 function resolveCompanionPlant(name) {
   // Aliases live in core so the garden planner resolves companions identically.
   const resolved = resolveCompanionName(name);
@@ -4763,7 +4707,7 @@ useEffect(() => {
     setCompletedQuestIds((prev) => {
       const next = typeof updater === "function" ? updater(prev) : updater;
       if (countIds(next) > countIds(prev)) {
-        maybePromptPremium("Quest complete! Upgrade to Premium to save unlimited plants and unlock every tab, calendar, and insight.");
+        maybePromptPremium(t("ui4.promptQuest"));
       }
       return next;
     });
@@ -6199,7 +6143,6 @@ const jumpToTab = useCallback((tab) => {
       const active = tab.id === "more"
         ? OVERFLOW_TAB_IDS.includes(activeTab)
         : activeTab === tab.id;
-      const locked = PREMIUM_TAB_IDS.has(tab.id) && !premiumUnlocked;
       return (
         <Pressable key={tab.id} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={label} onPress={() => { if (tab.id === "more") { tapHaptic(); setShowMoreSheet(true); return; } jumpToTab(tab.id); }} style={({ pressed }) => [styles.bottomTabButton, active && styles.bottomTabButtonActive, active && styles.bottomTabGlow, pressed && styles.bottomTabPressed]}>
           <View style={[styles.bottomTabInner, active && styles.bottomTabInnerActive]}>

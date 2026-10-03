@@ -1227,7 +1227,7 @@ describe("pressables", () => {
   });
 });
 
-describe("undo toasts", () => {
+describe("undo toasts and premium prompts", () => {
   it("are translated, not English literals", () => {
     const offenders = [];
     const files = [path.join(ROOT, "App.js")];
@@ -1235,7 +1235,7 @@ describe("undo toasts", () => {
       for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith(".js"))) files.push(path.join(ROOT, dir, f));
     }
     for (const f of files) {
-      const m = fs.readFileSync(f, "utf8").match(/(?:onUndoToast|showUndoToast)\(\s*["'`][A-Za-z]/);
+      const m = fs.readFileSync(f, "utf8").match(/(?:onUndoToast|showUndoToast|maybePromptPremium)\(\s*["'`][A-Za-z]/);
       if (m) offenders.push(path.relative(ROOT, f));
     }
     eq(offenders, []);
