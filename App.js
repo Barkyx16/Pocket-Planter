@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "./lib/supabase";
-import { isBiometricAvailable, getBiometricLabel, isBiometricEnabled, enableBiometricLogin, disableBiometricLogin, authenticateAndGetCredentials } from "./lib/biometricAuth";
+import { isBiometricAvailable, getBiometricLabel, isBiometricEnabled, enableBiometricLogin, disableBiometricLogin, authenticateAndGetCredentials, getBiometricEmail } from "./lib/biometricAuth";
 import { hydrateTabHeroes } from "./components/TabHero";
 import { ActivityIndicator, Alert, Animated, Appearance, Image, Keyboard, Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, RefreshControl, Share, StatusBar, StyleSheet, Text, TextInput, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -88,6 +88,7 @@ import {
   isFlowerBedPlant,
   isHarvestReady,
   isPerennial,
+  isRejectedCredentials,
   isSameDayKey,
   readDeepLinkSession,
   matchesType,
@@ -693,7 +694,13 @@ const handleBiometricLogin = async () => {
     password: creds.password,
   });
   if (error) {
-    // Stored password no longer works (e.g. it was changed) — clear it so the user falls back to typing.
+    // Only a rejected password means the stored one is stale (it was changed
+    // elsewhere). Everything else, offline above all, used to land here too
+    // and switched biometric sign-in off for good after one try without signal.
+    if (!isRejectedCredentials(error)) {
+      Alert.alert(t("common.somethingWrong"), t("common.pleaseTryAgain"));
+      return;
+    }
     await disableBiometricLogin();
     setBiometricEnabled(false);
     Alert.alert(t("auth.biometricFailedTitle", { label: biometricLabel }), t("auth.signInPrompt"));
@@ -5409,6 +5416,16 @@ const jumpToTab = useCallback((tab) => {
                 try {
                   const { error } = await supabase.auth.updateUser({ password: resetPasswordValue });
                   if (error) { Alert.alert(t("auth.updateFailedTitle"), error.message); return; }
+                  // Keep Face ID / Touch ID working: the stored password for this
+                  // account is now the old one, and the next biometric sign-in
+                  // would fail and switch the feature off.
+                  try {
+                    const { data: updated } = await supabase.auth.getUser();
+                    const accountEmail = updated?.user?.email;
+                    if (accountEmail && (await getBiometricEmail()) === accountEmail) {
+                      await enableBiometricLogin(accountEmail, resetPasswordValue);
+                    }
+                  } catch { /* biometric sign-in falls back to the password */ }
                   Alert.alert(t("auth.passwordUpdatedTitle"), t("auth.passwordUpdatedBody"));
                   setShowResetPassword(false);
                   setResetPasswordValue("");

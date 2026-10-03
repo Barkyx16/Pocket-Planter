@@ -3543,6 +3543,14 @@ function base64UrlToText(part) {
   try { return decodeURIComponent(encoded); } catch { return null; }
 }
 
+// True when a sign-in failed because the server rejected the email and
+// password, as opposed to the network being down or the server being busy.
+export function isRejectedCredentials(error) {
+  if (!error) return false;
+  if (error.code === "invalid_credentials") return true;
+  return Number(error.status) === 400 && /invalid login credentials/i.test(String(error.message || ""));
+}
+
 export function readDeepLinkSession(url) {
   const fragment = String(url || "").split("#")[1] || "";
   const params = Object.fromEntries(new URLSearchParams(fragment));

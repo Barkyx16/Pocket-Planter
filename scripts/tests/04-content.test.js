@@ -748,3 +748,23 @@ describe("buying and restoring Premium", () => {
     ok(/onUnlockPremium\(planFromCustomerInfo\(customerInfo\) \|\| selectedPlan, \{ quiet: true \}\)/.test(src));
   });
 });
+
+describe("biometric sign-in", () => {
+  const core25 = require(path.join(ROOT, "core.js"));
+  it("only forgets the stored password when the server rejects it", () => {
+    // One Face ID attempt without signal used to switch the feature off for good.
+    ok(core25.isRejectedCredentials({ code: "invalid_credentials", status: 400 }));
+    ok(core25.isRejectedCredentials({ status: 400, message: "Invalid login credentials" }));
+    ok(!core25.isRejectedCredentials({ name: "AuthRetryableFetchError", status: 0, message: "Network request failed" }));
+    ok(!core25.isRejectedCredentials({ status: 503, message: "Service unavailable" }));
+    ok(!core25.isRejectedCredentials(null));
+    const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+    const at = app.indexOf("const handleBiometricLogin = async");
+    const body = app.slice(at, app.indexOf("};", at));
+    ok(body.indexOf("isRejectedCredentials(error)") > 0 && body.indexOf("isRejectedCredentials(error)") < body.indexOf("disableBiometricLogin()"));
+  });
+  it("keeps the stored password current after a reset", () => {
+    const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+    ok(/\(await getBiometricEmail\(\)\) === accountEmail[\s\S]{0,80}enableBiometricLogin\(accountEmail, resetPasswordValue\)/.test(app));
+  });
+});
