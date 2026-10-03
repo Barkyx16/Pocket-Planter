@@ -2,6 +2,7 @@ import { memo, useEffect, useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { parseDecimal, successHaptic, tapHaptic } from "../core";
 import { formatNumber, t, tn, useLanguage } from "../lib/i18n";
+import * as Notifications from "expo-notifications";
 
 // ── Unit + mixing constants ──────────────────────────────────────────────────
 const GAL_TO_L = 3.785;
@@ -221,24 +222,71 @@ function WateringTimer({ theme }) {
   const [left, setLeft] = useState(120);
   const [running, setRunning] = useState(false);
   const ref = useRef(null);
+  // The countdown runs off a deadline, not a tick count. JS timers stop while
+  // the phone is locked — the usual state mid-watering — so counting ticks
+  // resumed where it paused, minutes late, and never said it was done.
+  const endAtRef = useRef(null);
+  const alertIdRef = useRef(null);
+
+  const cancelDoneAlert = () => {
+    const id = alertIdRef.current;
+    alertIdRef.current = null;
+    if (id) Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
+  };
+
+  // A notification for the moment it ends, so a locked phone still says so.
+  // Only when reminders are already allowed: a timer is no place for a
+  // permission prompt.
+  const scheduleDoneAlert = async (seconds, endAt) => {
+    try {
+      const { granted } = await Notifications.getPermissionsAsync();
+      if (!granted) return;
+      const id = await Notifications.scheduleNotificationAsync({
+        content: { title: t("notify.timerDoneTitle"), body: t("notify.timerDoneBody"), sound: true },
+        trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: Math.max(1, Math.round(seconds)) },
+      });
+      // Paused or reset while scheduling: this run is over, drop its alert.
+      if (endAtRef.current !== endAt) Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
+      else alertIdRef.current = id;
+    } catch { /* the on-screen countdown still works */ }
+  };
 
   useEffect(() => {
     if (!running) return undefined;
-    ref.current = setInterval(() => {
-      setLeft((l) => {
-        if (l <= 1) {
-          clearInterval(ref.current);
-          setRunning(false);
-          try { successHaptic(); } catch { /* ignore */ }
-          return 0;
-        }
-        return l - 1;
-      });
-    }, 1000);
+    const tick = () => {
+      // Stopped between this tick and the effect cleanup: nothing to count.
+      if (endAtRef.current == null) return;
+      const remaining = Math.max(0, Math.ceil((endAtRef.current - Date.now()) / 1000));
+      setLeft(remaining);
+      if (remaining <= 0) {
+        clearInterval(ref.current);
+        endAtRef.current = null;
+        alertIdRef.current = null; // fired, or firing now
+        setRunning(false);
+        try { successHaptic(); } catch { /* ignore */ }
+      }
+    };
+    ref.current = setInterval(tick, 250);
     return () => clearInterval(ref.current);
   }, [running]);
 
-  const setPreset = (sec) => { tapHaptic("light"); setRunning(false); setTotal(sec); setLeft(sec); };
+  // Leaving the screen ends the run and its alert.
+  useEffect(() => () => { endAtRef.current = null; cancelDoneAlert(); }, []);
+
+  const start = (seconds) => {
+    const endAt = Date.now() + seconds * 1000;
+    endAtRef.current = endAt;
+    setLeft(seconds);
+    setRunning(true);
+    scheduleDoneAlert(seconds, endAt);
+  };
+  const stop = () => {
+    endAtRef.current = null;
+    cancelDoneAlert();
+    setRunning(false);
+  };
+
+  const setPreset = (sec) => { tapHaptic("light"); stop(); setTotal(sec); setLeft(sec); };
   const adjust = (delta) => {
     if (running) return;
     const next = Math.max(15, Math.min(3600, total + delta));
@@ -246,10 +294,10 @@ function WateringTimer({ theme }) {
   };
   const toggle = () => {
     tapHaptic("light");
-    if (left <= 0) { setLeft(total); setRunning(true); return; }
-    setRunning((r) => !r);
+    if (running) { stop(); return; }
+    start(left <= 0 ? total : left);
   };
-  const reset = () => { tapHaptic("light"); setRunning(false); setLeft(total); };
+  const reset = () => { tapHaptic("light"); stop(); setLeft(total); };
 
   const pct = total ? (left / total) * 100 : 0;
   const done = left <= 0;
