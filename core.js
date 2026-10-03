@@ -4704,6 +4704,8 @@ export function getDailyQuests({ savedPlants, journalEntries, gardenMap, watered
 
   const pick = (arr, index) => arr[index % arr.length];
 
+  // Titles and descriptions in the app language; `difficulty` stays English
+  // for the colours, `difficultyText` is for display.
   return [
     pick(easy, dayOfWeek),
     pick(medium, dayOfWeek),
@@ -4711,7 +4713,12 @@ export function getDailyQuests({ savedPlants, journalEntries, gardenMap, watered
     pick(hard, dayOfWeek),
     pick(hard, dayOfWeek + 3),
     pick(bonus, dayOfWeek),
-  ];
+  ].map((q) => ({
+    ...q,
+    title: t(`quests.${q.id}`),
+    description: t(`quests.${q.id}_d`),
+    difficultyText: t(`quests.${q.difficulty.toLowerCase()}`),
+  }));
 }
 
 // ── The level curve ──────────────────────────────────────────────────────────

@@ -225,3 +225,26 @@ describe("level titles and badges in the app language", () => {
     }
   });
 });
+
+describe("daily quests in the app language", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  const quests = () => core.getDailyQuests({
+    savedPlants: [], journalEntries: [], gardenMap: {}, wateredPlants: {}, careLog: [], harvestTrackers: {},
+    streakData: { count: 0 }, harvestLog: [], visibleFertilizerTrackers: {}, comparePlants: [],
+  });
+  it("has a title and description for every quest in every language", () => {
+    for (const code of ["en", "es", "de", "ja"]) {
+      try {
+        i18n.setLocale(code);
+        for (const q of quests()) {
+          ok(!q.title.startsWith("quests.") && !q.description.startsWith("quests.") && !q.difficultyText.startsWith("quests."), `${code} ${q.id}`);
+        }
+      } finally {
+        i18n.setLocale("en");
+      }
+    }
+  });
+  it("keeps difficulty English for the colours", () => {
+    for (const q of quests()) ok(["Easy", "Medium", "Hard", "Bonus"].includes(q.difficulty), q.id);
+  });
+});

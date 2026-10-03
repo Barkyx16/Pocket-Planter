@@ -1528,8 +1528,9 @@ const achievementBadges = useMemo(
   ]
 );
 const dailyQuests = useMemo(
-  () =>
-    getDailyQuests({
+  () => {
+    void language; // quest titles are translated text
+    return getDailyQuests({
       savedPlants,
       journalEntries,
       gardenMap: combinedGardenMap,
@@ -1540,7 +1541,8 @@ const dailyQuests = useMemo(
       harvestLog,
       visibleFertilizerTrackers,
       comparePlants,
-    }),
+    });
+  },
   [
     savedPlants,
     journalEntries,
@@ -1552,6 +1554,7 @@ const dailyQuests = useMemo(
     harvestLog,
     visibleFertilizerTrackers,
     comparePlants,
+    language,
   ]
 );
 const profileBanners = useMemo(

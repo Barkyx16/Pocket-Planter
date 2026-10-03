@@ -55,7 +55,7 @@ export const DailyQuestsCard = memo(function DailyQuestsCard({ theme, dailyQuest
               key={quest.id}
               onPress={() => { if (claimable) onQuestComplete(quest); }}
               accessibilityRole="button"
-              accessibilityLabel={`${quest.title}, ${quest.progress} of ${quest.goal}${claimable ? t("dailyQuests.tapToClaim") : ""}`}
+              accessibilityLabel={`${quest.title}, ${quest.progress}/${quest.goal}${claimable ? t("dailyQuests.tapToClaim") : ""}`}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
@@ -77,7 +77,7 @@ export const DailyQuestsCard = memo(function DailyQuestsCard({ theme, dailyQuest
                     {quest.title}
                   </Text>
                   <View style={{ backgroundColor: `${c}22`, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
-                    <Text style={{ color: c, fontSize: 9.5, fontWeight: "800" }}>{quest.difficulty}</Text>
+                    <Text style={{ color: c, fontSize: 9.5, fontWeight: "800" }}>{quest.difficultyText || quest.difficulty}</Text>
                   </View>
                 </View>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 }}>
