@@ -832,6 +832,41 @@ const clearLocalAccountData = async () => {
   setCountry(DEFAULT_COUNTRY);
   setRecord(null);
   setLanguage(detectDeviceLocale());
+  // The rest of the account's state. Storage is swept below, but these stayed
+  // in memory: the next person to sign in without restarting the app saw the
+  // previous account's beds, harvest log and checklists, and a brand-new
+  // account (no cloud row to overwrite them) saved them as its own.
+  setGardenAreas([]);
+  setPlantFolders({ "🌿 Herbs": [], "🍓 Fruit Garden": [], "🥕 Spring Garden": [] });
+  setHarvestLog([]);
+  setSuppliesSpent(0);
+  setWateringAmounts([]);
+  setAreaHistory({});
+  setSowLog({});
+  setFrostOverrides({});
+  setPlantSaveDates({});
+  setHarvestGoal(null);
+  setMonthlyChecklist({});
+  setFrostChecklist({});
+  setBadgeEarnedDates({});
+  setBannerEarnedDates({});
+  setStreakFreeze({ available: true, lastUsed: null, weekKey: null });
+  setPinnedPlants([]);
+  setSeenGardenGod(false);
+  setSnoozedPlants({});
+  setRecentPlants([]);
+  setFiredMilestones([]);
+  setVacation(null);
+  setZip("");
+  setZipCoords(null);
+  setRemindersOn(false);
+  setFrostAlertsOn(false);
+  setMonthlyPlantingOn(false);
+  setDailyWateringOn(false);
+  setPlantOfDayOn(false);
+  setWeeklyRecapOn(false);
+  setShowOnboarding(true);
+  setShowPremiumIntro(true);
   try {
     // Sweep every app-owned key rather than a hand-kept list. STORAGE_KEYS only
     // covers the state App.js threads itself, so signing out used to leave the

@@ -1389,3 +1389,21 @@ describe("reminder notifications", () => {
     ok(/addNotificationResponseReceivedListener\?\.\(routeResponse\)/.test(app), "taps are not routed");
   });
 });
+
+describe("signing out", () => {
+  it("resets every piece of account state the cloud save carries", () => {
+    // Storage is swept on sign-out, but React state outlives it. Anything synced
+    // and not reset here follows the next account in, and a new account with no
+    // cloud row saves it as its own.
+    const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    const at = app.indexOf("saveTimerRef.current = setTimeout(() => { saveTimerRef.current = null; saveProfileToSupabase(); }");
+    const deps = app.slice(app.indexOf("}, [", at) + 4, app.indexOf("]);", at)).split(",").map((d) => d.trim()).filter(Boolean);
+    const c0 = app.indexOf("const clearLocalAccountData");
+    const body = app.slice(c0, app.indexOf("\n};", c0));
+    // Device preferences and the session itself, not account data.
+    const devicePrefs = new Set(["user", "selectedMonth", "selectedType", "appearanceMode", "unitSystem"]);
+    const kept = deps.filter((d) => !devicePrefs.has(d) && !body.includes(`set${d[0].toUpperCase()}${d.slice(1)}(`));
+    ok(deps.length > 20, "could not read the save dependencies");
+    eq(kept, []);
+  });
+});
