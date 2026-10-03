@@ -376,3 +376,34 @@ describe("removing a plant", () => {
     ok(/id: `plant-\$\{plantName\}`/.test(app), "scheduleReminder's id should still be plant-<name>");
   });
 });
+
+describe("the cloud row carries the whole garden too", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const PROGRESS = ["plantSaveDates", "harvestGoal", "monthlyChecklist", "frostChecklist",
+                    "badgeEarnedDates", "bannerEarnedDates", "streakFreeze", "pinnedPlants"];
+  const saveAt = app.indexOf("const saveProfileToSupabase");
+  const save = app.slice(saveAt, app.indexOf("const profileRow", saveAt));
+  const loadAt = app.indexOf("const progress = data.module_data[CLOUD_PROGRESS_KEY]");
+  const load = app.slice(loadAt, app.indexOf("\n}\n", loadAt));
+
+  it("saves the progress the backup file gained", () => {
+    // The backup file carried these eight; the cloud row did not, and for a
+    // gardener who never exports a file the cloud row is the only backup.
+    ok(saveAt > 0 && /\[CLOUD_PROGRESS_KEY\]: \{/.test(save), "the save should fold progress into module_data");
+    for (const f of PROGRESS) ok(new RegExp(`\\b${f}\\b`).test(save), `${f} is not synced`);
+    ok(/module_data: moduleBlob/.test(app), "the blob with the progress is what gets sent");
+  });
+  it("restores every field it saves", () => {
+    ok(loadAt > 0, "the cloud load should read the progress back");
+    for (const f of PROGRESS) ok(load.includes(`progress.${f}`), `${f} is synced but never restored`);
+  });
+  it("re-syncs when any of it changes", () => {
+    const depsAt = app.indexOf("saveTimerRef.current = setTimeout(() => { saveProfileToSupabase(); }");
+    const deps = app.slice(depsAt, app.indexOf("]);", depsAt));
+    for (const f of PROGRESS) ok(new RegExp(`\\n\\s*${f},`).test(deps), `changing ${f} never triggers a sync`);
+  });
+  it("keeps the key out of the module restore", () => {
+    const core8 = require(path.join(ROOT, "core.js"));
+    ok(!core8.MODULE_STORAGE_KEYS.includes("_progress"));
+  });
+});

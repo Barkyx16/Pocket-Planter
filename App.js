@@ -310,6 +310,11 @@ const persist = (key, value) => {
 // first-launch behaviour.
 const hydrate = (key, apply) => AsyncStorage.getItem(key).then(apply).catch(() => {});
 
+// The key inside the cloud row's module_data blob that carries progress with no
+// column of its own. applyModuleBackup only restores MODULE_STORAGE_KEYS, so an
+// older build reading the blob passes over it.
+const CLOUD_PROGRESS_KEY = "_progress";
+
 // How stale a cached forecast may be before it is treated as no forecast at all.
 const WEATHER_CACHE_MAX_AGE_MS = 3 * 60 * 60 * 1000; // 3 hours
 
@@ -795,9 +800,21 @@ const saveProfileToSupabase = async () => {
   // propagation, plant rooms, houseplant care log, vases, seed inventory, custom
   // tasks, toolkit) as one JSON blob so they sync across devices in this same save.
   const moduleData = await collectModuleBackup().catch(() => null);
+  // Progress that has no column of its own rides in the same blob, under a key
+  // applyModuleBackup ignores. The backup file gained these eight; the cloud row
+  // never did, and for most gardeners the cloud row is the only backup there is.
+  // A column that does not exist fails the whole upsert, so they go here rather
+  // than in new columns nobody has added.
+  const moduleBlob = {
+    ...(moduleData || {}),
+    [CLOUD_PROGRESS_KEY]: {
+      plantSaveDates, harvestGoal, monthlyChecklist, frostChecklist,
+      badgeEarnedDates, bannerEarnedDates, streakFreeze, pinnedPlants,
+    },
+  };
   const profileRow = {
       id: user.id,
-      module_data: moduleData,
+      module_data: moduleBlob,
       email: user.email,
       zip_code: zip,
       
@@ -935,8 +952,23 @@ if (!data) {
 // Restore the self-persisting trackers (compost, rain barrel, propagation, etc.)
 // from the cloud. They write straight to AsyncStorage; each card reads its key
 // when its tab next mounts, so the data shows up without a relaunch.
-if (data?.module_data && typeof data.module_data === "object")
+if (data?.module_data && typeof data.module_data === "object") {
   applyModuleBackup(data.module_data);
+  // The progress saveProfileToSupabase folds into the same blob. Same shape
+  // guards as the backup restore, so a row written before this existed simply
+  // leaves local state alone.
+  const progress = data.module_data[CLOUD_PROGRESS_KEY];
+  if (progress && typeof progress === "object") {
+    if (progress.plantSaveDates && typeof progress.plantSaveDates === "object") setPlantSaveDates(progress.plantSaveDates);
+    if (progress.harvestGoal && typeof progress.harvestGoal === "object") setHarvestGoal(progress.harvestGoal);
+    if (progress.monthlyChecklist && typeof progress.monthlyChecklist === "object") setMonthlyChecklist(progress.monthlyChecklist);
+    if (progress.frostChecklist && typeof progress.frostChecklist === "object") setFrostChecklist(progress.frostChecklist);
+    if (progress.badgeEarnedDates && typeof progress.badgeEarnedDates === "object") setBadgeEarnedDates(progress.badgeEarnedDates);
+    if (progress.bannerEarnedDates && typeof progress.bannerEarnedDates === "object") setBannerEarnedDates(progress.bannerEarnedDates);
+    if (progress.streakFreeze && typeof progress.streakFreeze === "object") setStreakFreeze(progress.streakFreeze);
+    if (Array.isArray(progress.pinnedPlants)) setPinnedPlants(progress.pinnedPlants);
+  }
+}
 
 // Country and latitude come first: the zip_code below is meaningless without
 // knowing which country's format it is, and the hemisphere has to be applied
@@ -1752,6 +1784,14 @@ sowLog,
 frostOverrides,
 country,
 latitude,
+plantSaveDates,
+harvestGoal,
+monthlyChecklist,
+frostChecklist,
+badgeEarnedDates,
+bannerEarnedDates,
+streakFreeze,
+pinnedPlants,
 ]);
 // ── Storage load ───────────────────────────────────────────────────────────
 useEffect(() => {
