@@ -1153,3 +1153,33 @@ describe("translation placeholders", () => {
     eq([...new Set(problems)], []);
   });
 });
+
+describe("translated placeholders", () => {
+  it("each locale uses exactly the English string's placeholders", () => {
+    // A translation that renames {plant} (or invents one) shows it raw.
+    const i18n = require(path.join(ROOT, "lib/i18n.js"));
+    const dicts = i18n.DICTIONARY_MAP;
+    const names = (v) => new Set((typeof v === "string" ? [v] : Object.values(v || {}).filter((x) => typeof x === "string"))
+      .flatMap((s) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1])));
+    const walk = (node, prefix, out) => {
+      for (const [k, v] of Object.entries(node || {})) {
+        const key = prefix ? `${prefix}.${k}` : k;
+        const isPlural = v && typeof v === "object" && Object.values(v).every((x) => typeof x === "string") && ("other" in v);
+        if (typeof v === "string" || isPlural) out.push([key, v]);
+        else if (v && typeof v === "object") walk(v, key, out);
+      }
+      return out;
+    };
+    const get = (d, key) => key.split(".").reduce((n, p) => (n && typeof n === "object" ? n[p] : undefined), d);
+    const problems = [];
+    for (const [key, enValue] of walk(dicts.en, "", [])) {
+      const want = [...names(enValue)].sort().join(",");
+      for (const code of Object.keys(dicts)) {
+        if (code === "en") continue;
+        const got = [...names(get(dicts[code], key))].sort().join(",");
+        if (got !== want) problems.push(`${code} ${key}: {${got}} vs {${want}}`);
+      }
+    }
+    eq(problems, []);
+  });
+});
