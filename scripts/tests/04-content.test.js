@@ -512,3 +512,30 @@ describe("the RevenueCat webhook", () => {
     ok(/status: 401/.test(src) && /REVENUECAT_WEBHOOK_SECRET/.test(src));
   });
 });
+
+describe("a snooze ends when the plant is watered or removed", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  // From the function's name to the next function declared at any indentation,
+  // so one body never borrows a call from the function after it.
+  const body = (name) => {
+    const at = app.search(new RegExp(`function ${name}\\(`));
+    if (at < 0) return "";
+    const rest = app.slice(at + 10);
+    const end = rest.search(/\n\s*(async )?function /);
+    return app.slice(at, end < 0 ? at + 4000 : at + 10 + end);
+  };
+  it("rebuilds the morning summary when it does", () => {
+    const helper = body("clearSnoozes");
+    ok(/scheduleSnoozeSummary\(next\)/.test(helper), "the summary must be rebuilt from what is left");
+  });
+  it("on every way of watering", () => {
+    // "Tomato is ready for water" went out the morning after the tomato was
+    // watered, because watering never touched the snooze.
+    for (const fn of ["markPlantWatered", "waterAllPlants", "waterPlant", "waterArea"]) {
+      ok(/clearSnoozes\(/.test(body(fn)), `${fn} leaves the snooze in place`);
+    }
+  });
+  it("and when the plant leaves the garden", () => {
+    ok(/clearSnoozes\(\[name\]\)/.test(body("toggleSavedPlant")));
+  });
+});

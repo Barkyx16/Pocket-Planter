@@ -3597,6 +3597,7 @@ function markPlantWatered(plantName) {
     // ── Mark watered ──
     successHaptic();
     setWateredPlants((current) => ({ ...current, [plantName]: today }));
+    clearSnoozes([plantName]);
     // Work out the celebration from the current history first, then queue the
     // state change. Running alerts and haptics inside the updater meant they
     // fired again any time React re-ran it for the same update.
@@ -3652,6 +3653,7 @@ function markPlantWatered(plantName) {
       return next;
     });
     unwatered.forEach((name) => schedulePlantWaterReminder(name));
+    clearSnoozes(unwatered);
     const popup = { id: Date.now().toString(), amount: `💧 Watered ${unwatered.length} plants!` };
     setXpPopups((popups) => [...popups, popup]);
     setTimeout(() => {
@@ -3673,6 +3675,7 @@ function markPlantWatered(plantName) {
       return { ...current, [plantName]: [...existing, today] };
     });
     schedulePlantWaterReminder(plantName);
+    clearSnoozes([plantName]);
     const popup = { id: Date.now().toString(), amount: `💧 Watered ${plantName}!` };
     setXpPopups((popups) => [...popups, popup]);
     setTimeout(() => {
@@ -3767,6 +3770,17 @@ function useStreakFreeze() {
   setStreakFreeze((current) => ({ ...current, available: false, lastUsed: today }));
   Alert.alert(t("streak.frozenTitle"), "Your streak is protected for today. Even if you miss watering, it won't reset. Come back tomorrow!");
 }
+// Watering a snoozed plant, or removing it, ends its snooze. Neither used to:
+// the morning summary went out anyway — "Tomato is ready for water" about a
+// tomato watered the evening before, or one no longer in the garden.
+function clearSnoozes(names) {
+  const hit = (names || []).filter((name) => snoozedPlants[name]);
+  if (!hit.length) return;
+  const next = { ...snoozedPlants };
+  hit.forEach((name) => { delete next[name]; });
+  setSnoozedPlants(next);
+  scheduleSnoozeSummary(next);
+}
 function snoozePlantWatering(plantName) {
   const key = getTomorrowKey();
   tapHaptic("light");
@@ -3815,6 +3829,7 @@ function waterArea(areaId) {
     });
     return next;
   });
+  clearSnoozes(unwatered);
   const popup = { id: Date.now().toString(), amount: `💧 Watered ${area.name}!` };
   setXpPopups((popups) => [...popups, popup]);
   setTimeout(() => {
@@ -4766,7 +4781,7 @@ useEffect(() => {
       dropKey(setWateringReminders);
       dropKey(setHarvestTrackers);
       dropKey(setFertilizerTrackers);
-      dropKey(setSnoozedPlants);
+      clearSnoozes([name]);
       dropKey(setWateredPlants);
       return;
     }
