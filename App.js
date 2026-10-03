@@ -437,7 +437,7 @@ function AppInner({ language, setLanguage }) {
           const action = parts[0] || "open";
           const arg = parts.length > 1 ? decodeURIComponent(parts.slice(1).join("/")) : null;
           switch (action) {
-            case "water": jumpToTab("plants"); break;
+            case "water": case "plants": jumpToTab("plants"); break;
             case "weather": case "frost": jumpToTab("weather"); break;
             case "harvest": jumpToTab("garden"); break;
             case "journal": jumpToTab("journal"); break;
@@ -451,7 +451,26 @@ function AppInner({ language, setLanguage }) {
     }
     Linking.getInitialURL().then((url) => { if (url) handleDeepLink(url); });
     const sub = Linking.addEventListener("url", (e) => handleDeepLink(e.url));
-    return () => sub.remove();
+
+    // Tapping a reminder opens what it is about. Each one carries a
+    // pocketplanter:// route in its data, so it goes through the same switch
+    // as a widget or Siri link; before this every tap just opened the app on
+    // whatever tab it was last on.
+    const routeResponse = (response) => {
+      const url = response?.notification?.request?.content?.data?.url;
+      if (typeof url === "string" && url.startsWith("pocketplanter://")) handleDeepLink(url);
+    };
+    const tapSub = Notifications.addNotificationResponseReceivedListener?.(routeResponse);
+    // A tap that launched the app arrived before the listener existed. It is
+    // cleared once handled, or every later launch would replay it.
+    try {
+      const launchedBy = Notifications.getLastNotificationResponse?.();
+      if (launchedBy) {
+        routeResponse(launchedBy);
+        Notifications.clearLastNotificationResponse?.();
+      }
+    } catch { /* no launch response */ }
+    return () => { sub.remove(); tapSub?.remove?.(); };
   }, []);
   // ── State ──────────────────────────────────────────────────────────────────
   const [zip, setZip] = useState("");
@@ -2564,7 +2583,7 @@ useEffect(() => {
     await Notifications.cancelScheduledNotificationAsync("plant-of-day").catch(() => {});
     await Notifications.scheduleNotificationAsync({
       identifier: "plant-of-day",
-      content: { title: t("notify.plantPickTitle"), body: t("notify.plantPickBody"), sound: true },
+      content: { title: t("notify.plantPickTitle"), body: t("notify.plantPickBody"), sound: true, data: { url: "pocketplanter://open" } },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: 8, minute: 30 },
     }).catch(() => {});
   })();
@@ -2586,6 +2605,7 @@ useEffect(() => {
           title: t("notify.plantCheckTitle", { plant: plantName }),
           body: t("notify.plantCheckBody", { plant: plantName }),
           sound: true,
+          data: { url: `pocketplanter://plant/${encodeURIComponent(plantName)}` },
         },
         trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: r.hour, minute: r.minute },
       }).catch(() => {});
@@ -2619,6 +2639,7 @@ useEffect(() => {
     }
 await scheduleDailyReminder({
       id: "daily-watering",
+      url: "pocketplanter://water",
       hour: wateringReminderTime.hour,
       minute: wateringReminderTime.minute,
       title: t("notify.dailyWaterTitle"),
@@ -2807,7 +2828,7 @@ function isOnVacation(vac) {
   const end = new Date(`${vac.end}T23:59:59`);
   return today >= start && today <= end;
 }
-async function scheduleDailyReminder({ id, hour, minute, title, body }) {
+async function scheduleDailyReminder({ id, hour, minute, title, body, url }) {
     if (hour == null || Number.isNaN(hour) || minute == null || Number.isNaN(minute)) return false;
     const granted = await ensureNotificationPermission();
     if (!granted) return false;
@@ -2820,7 +2841,7 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
     try {
       await Notifications.scheduleNotificationAsync({
         identifier: id,
-        content: { title, body, sound: true },
+        content: { title, body, sound: true, ...(url ? { data: { url } } : {}) },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DAILY,
           hour,
@@ -3269,6 +3290,7 @@ function buildWeeklyRecapBody() {
         title: t("notify.recapTitle"),
         body: buildWeeklyRecapBody(),
         sound: true,
+        data: { url: "pocketplanter://open" },
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
@@ -3314,6 +3336,7 @@ async function togglePlantOfDay(value) {
       }
       const ok = await scheduleDailyReminder({
         id: "plant-of-day",
+        url: "pocketplanter://open",
         hour: 8,
         minute: 30,
         title: t("notify.plantPickTitle"),
@@ -3357,6 +3380,7 @@ async function scheduleSnoozeSummary(snoozeMap) {
         title: tn("notify.snoozeTitle", count),
         body,
         sound: true,
+        data: { url: "pocketplanter://water" },
       },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: fireDate },
     });
@@ -3384,6 +3408,7 @@ async function scheduleFertilizerReminder(plantName, days) {
         title: t("notify.fertilizeTitle", { plant: plantName }),
         body: tn("notify.fertilizeBody", days, { plant: plantName }),
         sound: true,
+        data: { url: `pocketplanter://plant/${encodeURIComponent(plantName)}` },
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
@@ -3416,7 +3441,7 @@ async function scheduleFertilizerReminder(plantName, days) {
 
     for (const plantName of fresh) {
       await Notifications.scheduleNotificationAsync({
-        content: { title: t("notify.harvestTitle"), body: t("notify.harvestBody", { plant: plantName }) },
+        content: { title: t("notify.harvestTitle"), body: t("notify.harvestBody", { plant: plantName }), data: { url: "pocketplanter://harvest" } },
         trigger: null,
       }).catch(() => {});
       sent[plantName] = today;
@@ -3469,6 +3494,7 @@ async function scheduleReminder(plantName, hour, minute) {
     // launch schedules these words too.
     const ok = await scheduleDailyReminder({
       id: `plant-${plantName}`,
+      url: `pocketplanter://plant/${encodeURIComponent(plantName)}`,
       hour,
       minute,
       title: t("notify.plantCheckTitle", { plant: plantName }),
@@ -3523,6 +3549,7 @@ async function schedulePlantWaterReminder(plantName) {
           ? t("notify.waterBodyRhythm", { plant: plantName })
           : t("notify.waterBodyDefault", { plant: plantName }),
         sound: true,
+        data: { url: `pocketplanter://plant/${encodeURIComponent(plantName)}` },
       },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: fireDate },
     });
@@ -4567,6 +4594,7 @@ useEffect(() => {
       } else {
         await scheduleDailyReminder({
           id: "daily-watering",
+      url: "pocketplanter://water",
           hour: wateringReminderTime.hour,
           minute: wateringReminderTime.minute,
           title: t("notify.dailyWaterTitle"),
@@ -4605,6 +4633,7 @@ useEffect(() => {
           title: frostTitle,
           body: t("notify.frostBody", { temp: formatTemp(frost.minTempF, unitSystem, true) }),
           sound: true,
+          data: { url: "pocketplanter://frost" },
         },
         trigger: null,
       });
@@ -4648,6 +4677,7 @@ useEffect(() => {
           title: t("notify.heatTitle", { temp: formatTemp(day.maxTempF, unitSystem, true) }),
           body: t("notify.heatBody"),
           sound: true,
+          data: { url: "pocketplanter://weather" },
         },
         trigger: sendNow ? null : { type: Notifications.SchedulableTriggerInputTypes.DATE, date: midnight },
       });

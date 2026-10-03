@@ -1370,3 +1370,22 @@ describe("iOS permission prompts", () => {
     eq([opts("expo-camera").microphonePermission, opts("expo-camera").recordAudioAndroid, opts("expo-image-picker").microphonePermission], [false, false, false]);
   });
 });
+
+describe("reminder notifications", () => {
+  it("each carry a route for when they're tapped", () => {
+    const missing = [];
+    for (const rel of ["App.js", "lib/reminders.js"]) {
+      const src = fs.readFileSync(path.join(ROOT, rel), "utf8");
+      const re = /scheduleNotificationAsync\(\{/g;
+      let m;
+      while ((m = re.exec(src))) {
+        const block = src.slice(m.index, src.indexOf("trigger", m.index));
+        // scheduleDailyReminder passes its caller's url through.
+        if (!/url/.test(block)) missing.push(`${rel}:${src.slice(0, m.index).split("\n").length}`);
+      }
+    }
+    eq(missing, []);
+    const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    ok(/addNotificationResponseReceivedListener\?\.\(routeResponse\)/.test(app), "taps are not routed");
+  });
+});
