@@ -882,3 +882,25 @@ describe("sign-in screen and celebrations", () => {
     }
   });
 });
+
+describe("garden games in the app language", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  const games = require(path.join(ROOT, "screens/GamesTab.js"));
+  it("asks the companion question in Spanish", () => {
+    try {
+      i18n.setLocale("es");
+      const q = games.makeCompanionQuestion();
+      ok(q.prompt.startsWith("¿Cuál es la mejor compañera para "), q.prompt);
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+  it("keeps no English titles, prompts or buttons in the game screens", () => {
+    for (const f of ["screens/GamesTab.js", "components/QuizGame.js"]) {
+      const src = fs.readFileSync(path.join(ROOT, f), "utf8");
+      for (const s of ['title: "Sun or Shade?"', "How thirsty is", "How hard is", "Back to games", "Next question", "You scored", 'full: "Full sun"']) {
+        ok(!src.includes(s), `${f}: ${s}`);
+      }
+    }
+  });
+});

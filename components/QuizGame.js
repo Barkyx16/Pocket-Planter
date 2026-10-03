@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image, Pressable, Text, View } from "react-native";
 import { successHaptic, tapHaptic } from "../core";
+import { t } from "../lib/i18n";
 
 // Reusable multiple-choice quiz engine shared by the garden mini-games. A game
 // supplies makeQuestion() (returns { prompt, image?, options:[{label,correct}],
@@ -75,16 +76,16 @@ export function QuizGame({ theme, onExit, title, emoji, accent = "#5cff89", tota
     return (
       <View style={{ alignItems: "center", paddingVertical: 30 }}>
         <Text style={{ fontSize: 52 }}>{score >= totalRounds * 0.8 ? "🏆" : score >= totalRounds * 0.5 ? "🌱" : "🌧️"}</Text>
-        <Text style={{ color: theme.text, fontSize: 24, fontWeight: "900", marginTop: 10 }}>You scored {score}/{totalRounds}</Text>
-        <Text style={{ color: accent, fontSize: 16, fontWeight: "900", marginTop: 8 }}>✨ +{earned} XP earned</Text>
-        {isRecord ? <Text style={{ color: accent, fontSize: 14, fontWeight: "900", marginTop: 6 }}>🎉 New best!</Text> : (
-          <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", marginTop: 6 }}>Best: {best}/{totalRounds}</Text>
+        <Text style={{ color: theme.text, fontSize: 24, fontWeight: "900", marginTop: 10 }}>{t("games.scored", { score, total: totalRounds })}</Text>
+        <Text style={{ color: accent, fontSize: 16, fontWeight: "900", marginTop: 8 }}>{t("games.xpEarned", { xp: earned })}</Text>
+        {isRecord ? <Text style={{ color: accent, fontSize: 14, fontWeight: "900", marginTop: 6 }}>{t("games.newBest")}</Text> : (
+          <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", marginTop: 6 }}>{t("games.best", { score: best, total: totalRounds })}</Text>
         )}
         <Pressable onPress={restart} style={{ marginTop: 24, backgroundColor: accent, borderRadius: 16, paddingVertical: 14, paddingHorizontal: 40 }}>
-          <Text style={{ color: "#07120b", fontSize: 15, fontWeight: "900" }}>Play again</Text>
+          <Text style={{ color: "#07120b", fontSize: 15, fontWeight: "900" }}>{t("games.playAgain")}</Text>
         </Pressable>
         <Pressable onPress={onExit} style={{ marginTop: 12, paddingVertical: 12, paddingHorizontal: 40 }}>
-          <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "800" }}>Back to games</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "800" }}>{t("games.backToGames")}</Text>
         </Pressable>
       </View>
     );
@@ -97,9 +98,9 @@ export function QuizGame({ theme, onExit, title, emoji, accent = "#5cff89", tota
     return (
       <View style={{ alignItems: "center", paddingVertical: 30 }}>
         <Text style={{ fontSize: 40 }}>🌧️</Text>
-        <Text style={{ color: theme.text, fontSize: 16, fontWeight: "900", marginTop: 10, textAlign: "center" }}>This game couldn't start</Text>
+        <Text style={{ color: theme.text, fontSize: 16, fontWeight: "900", marginTop: 10, textAlign: "center" }}>{t("games.couldntStart")}</Text>
         <Pressable onPress={onExit} style={{ marginTop: 18, paddingVertical: 12, paddingHorizontal: 40 }}>
-          <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "800" }}>Back to games</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "800" }}>{t("games.backToGames")}</Text>
         </Pressable>
       </View>
     );
@@ -110,7 +111,7 @@ export function QuizGame({ theme, onExit, title, emoji, accent = "#5cff89", tota
       {/* Header row: exit, progress, score */}
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <Pressable onPress={onExit} hitSlop={10} style={{ paddingVertical: 4, paddingRight: 10 }}>
-          <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>‹ Exit</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>{t("games.exit")}</Text>
         </Pressable>
         <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{emoji} {title}</Text>
         <Text style={{ color: accent, fontSize: 14, fontWeight: "900" }}>⭐ {score}  ✨ {earned}</Text>
@@ -121,7 +122,7 @@ export function QuizGame({ theme, onExit, title, emoji, accent = "#5cff89", tota
         <View style={{ width: `${(round / totalRounds) * 100}%`, height: 6, backgroundColor: accent, borderRadius: 999 }} />
       </View>
       <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 16 }}>
-        <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800" }}>Question {round + 1} of {totalRounds}</Text>
+        <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800" }}>{t("games.questionOf", { n: round + 1, total: totalRounds })}</Text>
         {timePerQuestion ? (
           <Text style={{ color: picked !== null ? theme.secondaryText : timeLeft <= 3 ? "#ff7b7b" : theme.secondaryText, fontSize: 11, fontWeight: "900" }}>⏱ {picked !== null ? "—" : `${timeLeft}s`}</Text>
         ) : null}
@@ -166,7 +167,7 @@ export function QuizGame({ theme, onExit, title, emoji, accent = "#5cff89", tota
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18, marginBottom: 12, textAlign: "center" }}>{question.reveal}</Text>
           ) : null}
           <Pressable onPress={next} style={{ backgroundColor: accent, borderRadius: 16, paddingVertical: 15, alignItems: "center" }}>
-            <Text style={{ color: "#07120b", fontSize: 15, fontWeight: "900" }}>{round + 1 >= totalRounds ? "See results" : "Next question →"}</Text>
+            <Text style={{ color: "#07120b", fontSize: 15, fontWeight: "900" }}>{round + 1 >= totalRounds ? t("games.seeResults") : t("games.nextQuestion")}</Text>
           </Pressable>
         </View>
       ) : null}
