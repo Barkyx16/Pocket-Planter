@@ -1558,8 +1558,9 @@ const dailyQuests = useMemo(
   ]
 );
 const profileBanners = useMemo(
-  () =>
-    getProfileBanners({
+  () => {
+    void language; // banner names are translated text
+    return getProfileBanners({
       gardenXP,
       savedPlants,
       journalEntries,
@@ -1571,7 +1572,8 @@ const profileBanners = useMemo(
       comparePlants,
       premiumUnlocked,
       wateringHistory,
-    }),
+    });
+  },
   [
     gardenXP,
     savedPlants,
@@ -1584,6 +1586,7 @@ const profileBanners = useMemo(
     comparePlants,
     premiumUnlocked,
     wateringHistory,
+    language,
   ]
 );
 

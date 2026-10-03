@@ -56,12 +56,16 @@ const EventRow = memo(function EventRow({ ev, theme, onOpenPlant, isLast }) {
 });
 
 export const GardenTimelineCard = memo(function GardenTimelineCard({ theme, journalEntries, harvestLog, wateringHistory, careLog, sowLog, plantSaveDates, badgeEarnedDates, achievementBadges, onOpenPlant }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [visible, setVisible] = useState(8);
 
+  // language: the event titles are translated text.
   const events = useMemo(
-    () => buildGardenTimeline({ journalEntries, harvestLog, wateringHistory, careLog, sowLog, plantSaveDates, badgeEarnedDates, achievementBadges }),
-    [journalEntries, harvestLog, wateringHistory, careLog, sowLog, plantSaveDates, badgeEarnedDates, achievementBadges]
+    () => {
+      void language;
+      return buildGardenTimeline({ journalEntries, harvestLog, wateringHistory, careLog, sowLog, plantSaveDates, badgeEarnedDates, achievementBadges });
+    },
+    [journalEntries, harvestLog, wateringHistory, careLog, sowLog, plantSaveDates, badgeEarnedDates, achievementBadges, language]
   );
   const recap = useMemo(() => getTimelineMonthRecap(events), [events]);
   const onThisDay = useMemo(() => getTimelineOnThisDay(events), [events]);

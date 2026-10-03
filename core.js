@@ -6,7 +6,7 @@ import zipZoneData from "./data/zipZoneData";
 import { PLANT_DETAILS } from "./data/plantDetails";
 import { PLANT_HEALTH } from "./data/plantHealth";
 import { DISEASE_LIBRARY } from "./data/diseaseData";
-import { formatDate, formatTime, getLocale, t, tn } from "./lib/i18n";
+import { formatDate, formatTime, getLocale, moodLabel, t, tn } from "./lib/i18n";
 
 export const loadingScreenImage = require("./assets/loading-screen.png");
 
@@ -4579,6 +4579,44 @@ export const PROFILE_THEMES = [
   { id: "tropical", name: "Tropical Jungle", emoji: "🌴", color: "#8effab", bg: "rgba(142,255,171,0.18)", border: "#8effab", accent: "#8effab" },
 ];
 
+// Banner names and unlock hints in the app language, by banner id. Names that
+// match a level or badge reuse that translation.
+const BANNER_TEXT = {
+  seedling_banner: ["banners.seedlingStarter", "subLevel1"],
+  green_thumb_banner: ["levels.l10", "subReachLevel", 5],
+  harvest_banner: ["levels.l15", "subReachLevel", 8],
+  master_banner: ["levels.l50", "subReachLevel", 20],
+  collector_banner: ["banners.plantCollector", "subSave", 10],
+  journal_banner: ["badges.garden_album", "subPhotos", 10],
+  planner_banner: ["levels.l35", "subFillAll", 12],
+  streak_banner: ["banners.streakKeeper", "subStreak", 7],
+  obsessed_banner: ["badges.streak_30", "subStreak", 30],
+  water_wizard_banner: ["banners.waterWizard", "subWaterTotal", 50],
+  master_waterer_banner: ["banners.masterWaterer", "subWaterTotal", 100],
+  soil_scientist_banner: ["levels.l30", "subCare", 10],
+  care_expert_banner: ["badges.care_log_10", "subCare", 25],
+  snapshot_banner: ["badges.photo_5", "subPhotos", 5],
+  garden_historian_banner: ["badges.garden_album", "subPhotos", 25],
+  zone_master_banner: ["levels.l40", "subSave", 15],
+  legendary_grower_banner: ["levels.l60", "subReachLevel", 15],
+  full_garden_banner: ["badges.full_garden", "subFillAll", 12],
+  harvest_king_banner: ["badges.harvest_3", "subTrack", 5],
+  companion_pro_banner: ["banners.companionPro", "subCompanion"],
+  quest_crusher_banner: ["banners.questCrusher", "subQuests", 10],
+};
+
+function localizeBanners(list) {
+  return list.map((b) => {
+    const entry = BANNER_TEXT[b.id];
+    if (!entry) return b;
+    const [titleKey, subKind, n] = entry;
+    const key = `banners.${subKind}`;
+    const counted = n == null ? key : tn(key, n);
+    const subtitle = counted === key ? t(key, { count: n }) : counted;
+    return { ...b, title: t(titleKey), subtitle };
+  });
+}
+
 export function getProfileBanners({ gardenXP, savedPlants, journalEntries, gardenMap, wateredPlants, streakData, harvestTrackers, careLog, comparePlants, premiumUnlocked, wateringHistory }) {
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
   const totalWatered = getTotalWaterings(wateringHistory);
@@ -4587,7 +4625,7 @@ export function getProfileBanners({ gardenXP, savedPlants, journalEntries, garde
   const careLogCount = (careLog || []).length;
   const comparePlantCount = (comparePlants || []).length;
 
-  return [
+  return localizeBanners([
     // ORIGINAL 7
     { id: "seedling_banner", emoji: "🌱", title: "Seedling Starter", subtitle: "Unlocked at Level 1", unlocked: gardenXP.level >= 1, gradient: ["#5cff89","#1f7a3a"] },
     { id: "green_thumb_banner", emoji: "🪴", title: "Green Thumb", subtitle: "Reach Level 5", unlocked: gardenXP.level >= 5, gradient: ["#8effab","#2fbf5f"] },
@@ -4612,7 +4650,7 @@ export function getProfileBanners({ gardenXP, savedPlants, journalEntries, garde
     { id: "harvest_king_banner", emoji: "🍅", title: "Harvest King", subtitle: "Track 5 harvests", unlocked: harvestCount >= 5, gradient: ["#ff7675","#d63031"] },
     { id: "companion_pro_banner", emoji: "🌸", title: "Companion Pro", subtitle: "Unlock companion planting", unlocked: premiumUnlocked, gradient: ["#fd79a8","#e17055"] },
     { id: "quest_crusher_banner", emoji: "🎯", title: "Quest Crusher", subtitle: "Complete 10 daily quests", unlocked: gardenXP.xp >= 500, gradient: ["#74b9ff","#0984e3"] },
-  ];
+  ]);
 }
 
 // Harvests logged on a given local day. By the entry's own day key, falling back
@@ -5221,28 +5259,28 @@ export function buildGardenTimeline({
 
   Object.entries(plantSaveDates || {}).forEach(([plant, dk]) => {
     if (!dk) return;
-    events.push({ ts: tsOf(dk), dateKey: keyOf(dk), kind: "plant", icon: "🌱", color: "#5cff89", title: `Added ${plant}`, subtitle: "Saved to your garden", plantName: plant });
+    events.push({ ts: tsOf(dk), dateKey: keyOf(dk), kind: "plant", icon: "🌱", color: "#5cff89", title: t("timeline.tlAdded", { plant }), subtitle: t("timeline.tlSavedToGarden"), plantName: plant });
   });
   Object.entries(sowLog || {}).forEach(([plant, dk]) => {
     if (!dk) return;
-    events.push({ ts: tsOf(dk), dateKey: keyOf(dk), kind: "sow", icon: "🌾", color: "#8effab", title: `Sowed ${plant}`, subtitle: "Succession sowing", plantName: plant });
+    events.push({ ts: tsOf(dk), dateKey: keyOf(dk), kind: "sow", icon: "🌾", color: "#8effab", title: t("timeline.tlSowed", { plant }), subtitle: t("timeline.tlSuccession"), plantName: plant });
   });
   (journalEntries || []).forEach((e) => {
     if (!e) return;
     const when = e.createdAt || e.date;
-    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "photo", icon: "📸", color: "#6bc7ff", title: e.plantName && e.plantName !== "Garden" ? `Photo of ${e.plantName}` : "Garden photo", subtitle: e.mood ? `Feeling ${e.mood}` : "Added a photo", plantName: e.plantName && e.plantName !== "Garden" ? e.plantName : null, imageUri: e.imageUri });
+    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "photo", icon: "📸", color: "#6bc7ff", title: e.plantName && e.plantName !== "Garden" ? t("timeline.tlPhotoOf", { plant: e.plantName }) : t("timeline.tlGardenPhoto"), subtitle: e.mood ? t("timeline.tlFeeling", { mood: moodLabel(e.mood) }) : t("timeline.tlAddedPhoto"), plantName: e.plantName && e.plantName !== "Garden" ? e.plantName : null, imageUri: e.imageUri });
   });
   (harvestLog || []).forEach((h) => {
     if (!h) return;
     const when = h.createdAt || h.date;
     const amt = [h.amount, h.unit].filter(Boolean).join(" ").trim();
-    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "harvest", icon: "🎉", color: "#ffd86b", title: `Harvested ${h.plantName}`, subtitle: amt || "Logged a harvest", plantName: h.plantName });
+    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "harvest", icon: "🎉", color: "#ffd86b", title: t("timeline.tlHarvested", { plant: h.plantName }), subtitle: amt || t("timeline.tlLoggedHarvest"), plantName: h.plantName });
   });
   (careLog || []).forEach((c) => {
     if (!c) return;
     const when = c.createdAt || c.date;
-    const who = c.plant && c.plant !== "Garden" ? c.plant : "the whole garden";
-    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "care", icon: c.actionIcon || "🌿", color: c.actionColor || "#8effab", title: c.actionLabel || "Garden care", subtitle: c.note ? c.note : who, plantName: c.plant && c.plant !== "Garden" ? c.plant : null });
+    const who = c.plant && c.plant !== "Garden" ? c.plant : t("timeline.tlWholeGarden");
+    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "care", icon: c.actionIcon || "🌿", color: c.actionColor || "#8effab", title: c.actionLabel || t("timeline.tlGardenCare"), subtitle: c.note ? c.note : who, plantName: c.plant && c.plant !== "Garden" ? c.plant : null });
   });
   const waterByDay = {};
   Object.entries(wateringHistory || {}).forEach(([plant, dates]) => {
@@ -5261,7 +5299,7 @@ export function buildGardenTimeline({
   Object.entries(badgeEarnedDates || {}).forEach(([id, dk]) => {
     if (!dk) return;
     const b = badgeById[id];
-    events.push({ ts: tsOf(dk), dateKey: keyOf(dk), kind: "badge", icon: (b && b.emoji) || "🏆", color: "#ffd86b", title: `Earned "${(b && b.title) || id}"`, subtitle: "Achievement unlocked" });
+    events.push({ ts: tsOf(dk), dateKey: keyOf(dk), kind: "badge", icon: (b && b.emoji) || "🏆", color: "#ffd86b", title: t("timeline.tlEarned", { badge: (b && b.title) || id }), subtitle: t("timeline.tlAchievement") });
   });
 
   return events.filter((e) => e.ts > 0).sort((a, b) => b.ts - a.ts);

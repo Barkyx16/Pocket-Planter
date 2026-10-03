@@ -248,3 +248,33 @@ describe("daily quests in the app language", () => {
     for (const q of quests()) ok(["Easy", "Medium", "Hard", "Bonus"].includes(q.difficulty), q.id);
   });
 });
+
+describe("banners and timeline in the app language", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  const banners = () => core.getProfileBanners({
+    gardenXP: { level: 3, xp: 10 }, savedPlants: [], journalEntries: [], gardenMap: {}, wateredPlants: {},
+    streakData: { count: 0 }, harvestTrackers: {}, careLog: [], comparePlants: [], premiumUnlocked: false, wateringHistory: {},
+  });
+  it("keeps English names and hints", () => {
+    const byId = Object.fromEntries(banners().map((b) => [b.id, b]));
+    eq(byId.green_thumb_banner.title, "Green Thumb");
+    eq(byId.green_thumb_banner.subtitle, "Reach Level 5");
+    eq(byId.streak_banner.subtitle, "7 day streak");
+    eq(byId.collector_banner.subtitle, "Save 10 plants");
+    eq(byId.seedling_banner.subtitle, "Unlocked at Level 1");
+  });
+  it("translates every banner and timeline event", () => {
+    try {
+      i18n.setLocale("de");
+      for (const b of banners()) ok(!/^(banners|levels|badges)\./.test(b.title) && !/^banners\./.test(b.subtitle), b.id);
+      const events = core.buildGardenTimeline({
+        harvestLog: [{ plantName: "Tomato", createdAt: "2026-07-01T10:00:00Z" }],
+        journalEntries: [{ plantName: "Basil", createdAt: "2026-07-02T10:00:00Z", mood: "happy" }],
+      });
+      ok(events.some((e) => e.title === "Tomato geerntet"), JSON.stringify(events.map((e) => e.title)));
+      ok(events.some((e) => e.title === "Foto von Basil"), JSON.stringify(events.map((e) => e.title)));
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});
