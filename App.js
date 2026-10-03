@@ -355,15 +355,19 @@ Notifications.setNotificationHandler({
 });
 
 // Android 8+ requires a notification channel or reminders arrive silently/low-priority.
-if (Platform.OS === "android") {
+// The name shows in the phone's notification settings, so it is set again in
+// the app language whenever that changes; re-registering an id only renames it.
+function registerNotificationChannel() {
+  if (Platform.OS !== "android") return;
   Notifications.setNotificationChannelAsync("default", {
-    name: "Garden Reminders",
+    name: t("notify.channelName"),
     importance: Notifications.AndroidImportance.HIGH,
     sound: "default",
     vibrationPattern: [0, 250, 250, 250],
     lightColor: "#8effab",
   }).catch(() => {});
 }
+registerNotificationChannel();
 
 function AppInner({ language, setLanguage }) {
   const [fontsLoaded, fontError] = useFonts({
@@ -6308,6 +6312,10 @@ export default function App() {
       setLocale(chosen); // apply before the first render pass
     });
   }, []);
+
+  useEffect(() => {
+    registerNotificationChannel();
+  }, [language]);
 
   const setLanguage = useCallback((code) => {
     const next = isSupportedLocale(code) ? code : DEFAULT_LOCALE;
