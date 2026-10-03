@@ -5765,7 +5765,7 @@ const jumpToTab = useCallback((tab) => {
                   <Ionicons name="close" size={24} color={theme.secondaryText} />
                 </Pressable>
               </View>
-              <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+              <ScrollView contentContainerStyle={{ paddingBottom: 40 + (Platform.OS === "android" ? safeInsets.bottom : 0) }}>
                 {LANGUAGES.map((item) => (
                   <Pressable accessibilityState={{ selected: item.code === language }} accessibilityRole="button"
                     key={item.code}
@@ -5823,7 +5823,7 @@ const jumpToTab = useCallback((tab) => {
                 </Text>
               ) : null}
 
-              <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 40 }}>
+              <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 40 + (Platform.OS === "android" ? safeInsets.bottom : 0) }}>
                 {countryResults.map((item) => (
                   <Pressable accessibilityState={{ selected: item.code === country }} accessibilityRole="button"
                     key={item.code}
@@ -6290,7 +6290,7 @@ const jumpToTab = useCallback((tab) => {
   <Pressable accessible={false} style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", justifyContent: "flex-end" }} onPress={() => setShowMoreSheet(false)}>
     <Pressable accessible={false}
       onPress={(e) => e.stopPropagation()}
-      style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 18, paddingBottom: 34 }}
+      style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 18, paddingBottom: 34 + (Platform.OS === "android" ? safeInsets.bottom : 0) }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingBottom: 12 }}>
         <Text style={[styles.cardTitle, { color: theme.text, flex: 1 }]}>{t("tabs.more")}</Text>

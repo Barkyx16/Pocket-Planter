@@ -2,6 +2,7 @@ import { memo, useState } from "react";
 import { Keyboard, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
 import { useTranslation } from "../lib/i18n";
+import { useSheetBottomPadding } from "../lib/insets";
 
 // One button, one panel. Everything about creating a bed — the design and how
 // many plants it holds — lives in a single sheet instead of several stacked
@@ -34,6 +35,7 @@ export const GardenAreaManager = memo(function GardenAreaManager({ theme, garden
   const DESIGNS = flower ? FLOWER_DESIGNS : GARDEN_DESIGNS;
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();
+  const sheetPad = useSheetBottomPadding(30);
   const [design, setDesign] = useState(null); // the chosen design's id
   const [size, setSize] = useState(6);
 
@@ -81,7 +83,7 @@ export const GardenAreaManager = memo(function GardenAreaManager({ theme, garden
         <Pressable accessible={false} style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" }} onPress={close}>
           <Pressable accessible={false}
             onPress={(e) => e.stopPropagation()}
-            style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 30, maxHeight: "85%" }}
+            style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingTop: 18, paddingBottom: sheetPad, maxHeight: "85%" }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
               <Text style={[styles.cardTitle, { color: theme.text, flex: 1 }]}>{flower ? t("gardenAreaManager.newFlowerBed") : t("gardenAreaManager.newGardenBed")}</Text>

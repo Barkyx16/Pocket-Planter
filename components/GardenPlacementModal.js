@@ -4,6 +4,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import produceData from "../data/produceData";
 import { resolvePlantImageSource, tapHaptic } from "../core";
 import { useTranslation } from "../lib/i18n";
+import { useSheetBottomPadding } from "../lib/insets";
 
 // Shown when the user adds a plant to their garden. Lets them choose WHICH bed it
 // goes in, swap out a plant already in there, or spin up a brand-new bed. Only beds
@@ -33,6 +34,7 @@ function Thumb({ name, size = 48 }) {
 
 export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCreateNew, onClose }) {
   const { t } = useTranslation();
+  const sheetPad = useSheetBottomPadding(32);
   const visible = !!prompt;
   const plantName = prompt?.plantName || "";
   const flowerKind = !!prompt?.flowerKind;
@@ -86,7 +88,7 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
             </Pressable>
           </View>
 
-          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 32 }}>
+          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: sheetPad }}>
             {beds.length ? (
               <>
                 <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, paddingHorizontal: 20, marginTop: 12, marginBottom: 8 }}>

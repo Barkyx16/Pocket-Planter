@@ -4,6 +4,7 @@ import produceData from "../data/produceData";
 import { normalizeType, resolvePlantImageSource, typeLabel } from "../core";
 import { touchSlop } from "../lib/a11y";
 import { useTranslation } from "../lib/i18n";
+import { useSheetBottomPadding } from "../lib/insets";
 
 // A searchable, category-filtered plant picker for a garden-bed slot. Replaces the
 // old native Alert list: it scrolls (no hidden cap), shows thumbnails, and lets the
@@ -11,6 +12,7 @@ import { useTranslation } from "../lib/i18n";
 // while still allowing any valid saved plant so cross-category companions keep working.
 export function PlantPickerModal({ theme, visible, bedName, plants = [], currentPlant, onPick, onClear, onClose }) {
   const { t } = useTranslation();
+  const sheetPad = useSheetBottomPadding(30);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
 
@@ -39,7 +41,7 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
       <Pressable accessible={false} onPress={close} style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" }}>
-        <Pressable accessible={false} onPress={(e) => e.stopPropagation?.()} style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 16, paddingBottom: 30, maxHeight: "82%" }}>
+        <Pressable accessible={false} onPress={(e) => e.stopPropagation?.()} style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 16, paddingBottom: sheetPad, maxHeight: "82%" }}>
           {/* Header */}
           <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18, marginBottom: 12 }}>
             <View style={{ flex: 1 }}>

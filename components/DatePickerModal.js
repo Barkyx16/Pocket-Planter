@@ -2,6 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useEffect, useState } from "react";
 import { Modal, Pressable, Text, View } from "react-native";
 import { formatDate, useTranslation } from "../lib/i18n";
+import { useSheetBottomPadding } from "../lib/insets";
 
 // A dependency-free month-grid date picker. The app has no native date-picker
 // module (adding one needs a dev-client rebuild), so this is pure JS/RN and can
@@ -27,6 +28,7 @@ function startOfDay(d) {
  */
 export function DatePickerModal({ visible, initialDate, title, confirmLabel, onConfirm, onClose, theme }) {
   const { t } = useTranslation();
+  const sheetPad = useSheetBottomPadding(34);
   const base = initialDate instanceof Date && !Number.isNaN(initialDate.getTime()) ? initialDate : new Date();
   const [viewYear, setViewYear] = useState(base.getFullYear());
   const [viewMonth, setViewMonth] = useState(base.getMonth());
@@ -69,7 +71,7 @@ export function DatePickerModal({ visible, initialDate, title, confirmLabel, onC
       >
         <Pressable accessible={false}
           onPress={(e) => e.stopPropagation()}
-          style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 18, paddingBottom: 34, paddingHorizontal: 20 }}
+          style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 18, paddingBottom: sheetPad, paddingHorizontal: 20 }}
         >
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
             <Text style={{ color: theme.text, fontSize: 16, fontWeight: "900", flex: 1 }}>{title}</Text>
