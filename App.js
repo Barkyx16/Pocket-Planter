@@ -3,7 +3,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "./lib/supabase";
 import { isBiometricAvailable, getBiometricLabel, isBiometricEnabled, enableBiometricLogin, disableBiometricLogin, authenticateAndGetCredentials, getBiometricEmail } from "./lib/biometricAuth";
 import { hydrateTabHeroes } from "./components/TabHero";
-import { ActivityIndicator, Alert, Animated, Appearance, Image, Keyboard, Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, RefreshControl, Share, StatusBar, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Animated, AppState, Appearance, Image, Keyboard, Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, RefreshControl, Share, StatusBar, StyleSheet, Text, TextInput, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import * as Location from "expo-location";
@@ -1779,8 +1779,8 @@ useEffect(() => {
   // Debounce: many state changes (typing notes, watering, etc.) fire this rapidly.
   // Coalesce them into one Supabase upsert ~1.2s after activity stops.
   if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-  saveTimerRef.current = setTimeout(() => { saveProfileToSupabase(); }, 1200);
-  return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
+  saveTimerRef.current = setTimeout(() => { saveTimerRef.current = null; saveProfileToSupabase(); }, 1200);
+  return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); saveTimerRef.current = null; };
 }, [
   user,
   profileName,
@@ -1839,6 +1839,24 @@ pinnedPlants,
 unitSystem,
 weeklyRecapOn,
 ]);
+
+// The debounce above waits 1.2s after the last change. Leaving the app inside
+// that window cancelled nothing but also sent nothing: the change only reached
+// the cloud on the next edit, so another device never saw it. Going to the
+// background now sends a pending save at once. The ref holds this render's
+// save so it carries the latest state.
+const saveProfileNowRef = useRef(null);
+saveProfileNowRef.current = saveProfileToSupabase;
+useEffect(() => {
+  const sub = AppState.addEventListener("change", (state) => {
+    if (state !== "background" && state !== "inactive") return;
+    if (!saveTimerRef.current) return;
+    clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = null;
+    saveProfileNowRef.current?.();
+  });
+  return () => sub.remove();
+}, []);
 // ── Storage load ───────────────────────────────────────────────────────────
 useEffect(() => {
   async function loadStoredData() {

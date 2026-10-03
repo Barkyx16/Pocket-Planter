@@ -398,7 +398,7 @@ describe("the cloud row carries the whole garden too", () => {
     for (const f of PROGRESS) ok(load.includes(`progress.${f}`), `${f} is synced but never restored`);
   });
   it("re-syncs when any of it changes", () => {
-    const depsAt = app.indexOf("saveTimerRef.current = setTimeout(() => { saveProfileToSupabase(); }");
+    const depsAt = app.indexOf("saveTimerRef.current = setTimeout(() => { saveTimerRef.current = null; saveProfileToSupabase(); }");
     const deps = app.slice(depsAt, app.indexOf("]);", depsAt));
     for (const f of PROGRESS) ok(new RegExp(`\\n\\s*${f},`).test(deps), `changing ${f} never triggers a sync`);
   });
@@ -430,7 +430,7 @@ describe("settings reach a new device without the optional columns", () => {
     ok(/setZip\(normalizePostal\(data\.zip_code, cloudCountry\?\.code \|\| country\)\)/.test(app));
   });
   it("syncs when the units or the weekly recap change", () => {
-    const depsAt = app.indexOf("saveTimerRef.current = setTimeout(() => { saveProfileToSupabase(); }");
+    const depsAt = app.indexOf("saveTimerRef.current = setTimeout(() => { saveTimerRef.current = null; saveProfileToSupabase(); }");
     const deps = app.slice(depsAt, app.indexOf("]);", depsAt));
     for (const f of ["unitSystem", "weeklyRecapOn"]) ok(new RegExp(`\\n\\s*${f},`).test(deps), `${f} never triggers a sync`);
   });
@@ -1308,5 +1308,18 @@ describe("text around a value", () => {
       if (m) offenders.push(`${path.relative(ROOT, f)}: ${m[0].slice(0, 50)}`);
     }
     eq(offenders, []);
+  });
+});
+
+describe("a pending cloud save", () => {
+  it("is sent when the app goes to the background", () => {
+    // The save is debounced; leaving inside the window used to drop it until
+    // the next edit.
+    const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    const at = app.indexOf('AppState.addEventListener("change"');
+    ok(at > 0, "no AppState listener");
+    const body = app.slice(at, at + 400);
+    ok(/background/.test(body) && /saveProfileNowRef\.current/.test(body), "background does not flush the save");
+    ok(/saveProfileNowRef\.current = saveProfileToSupabase;/.test(app), "flush would send a stale save");
   });
 });
