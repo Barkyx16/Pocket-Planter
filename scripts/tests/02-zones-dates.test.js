@@ -312,3 +312,19 @@ describe("calendar .ics export", () => {
     eq(field(ics, "RRULE"), "FREQ=WEEKLY;INTERVAL=1");
   });
 });
+
+describe("day keys come from the local calendar", () => {
+  it("no app code takes a day key from the UTC date", () => {
+    // `new Date().toISOString().slice(0, 10)` is the UTC date: tomorrow from 5pm
+    // in California, yesterday until 9am in Tokyo. The Plant of the Day was
+    // seeded from it and changed in the middle of the afternoon.
+    const fs6 = require("fs");
+    const files = ["App.js", "core.js"];
+    for (const d of ["components", "screens", "lib", "utils"]) {
+      for (const f of fs6.readdirSync(path.join(ROOT, d))) if (f.endsWith(".js")) files.push(path.join(d, f));
+    }
+    const offenders = files.filter((rel) =>
+      /new Date\(\)\.toISOString\(\)\.(slice\(0, 10\)|split\("T"\))/.test(fs6.readFileSync(path.join(ROOT, rel), "utf8")));
+    eq(offenders, []);
+  });
+});
