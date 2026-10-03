@@ -196,39 +196,57 @@ Includes:
 Clone the repository:
 
 ```bash
-git clone https://github.com/Barkyx16/YOUR-REPOSITORY-NAME.git
-
-Navigate into the project:
-
+git clone https://github.com/Barkyx16/Pocket-Planter.git
 cd Pocket-Planter
+```
 
-Install dependencies:
+Install dependencies and start the app:
 
+```bash
 npm install
-
-Start the application:
-
 npx expo start
-🧠 Development Journey
+```
+
+## ✅ Checks
+
+Run these before committing:
+
+```bash
+npm test            # unit and content tests
+npm run check       # lint, translation coverage, tests in 7 time zones, render smoke test
+```
+
+`npm run check:i18n` on its own confirms every language has every English key.
+
+## 🌍 Languages
+
+The app is translated into English, Spanish, French, German, Portuguese,
+Italian, Japanese, Korean, Simplified Chinese and Hindi. Strings live in
+`lib/locales/`; add a key to `en.js` first, then to every other locale.
+Plant names and growing advice stay in English.
+
+# 🧠 Development Journey
 
 Building Pocket Planter has helped me grow as a software engineer by giving me experience with:
 
-Building a complete mobile application
-Designing user-focused experiences
-Connecting applications to cloud databases
-Integrating external APIs
-Managing authentication and user data
-Deploying applications for real users
-🔮 Future Improvements
+- Building a complete mobile application
+- Designing user-focused experiences
+- Connecting applications to cloud databases
+- Integrating external APIs
+- Managing authentication and user data
+- Deploying applications for real users
+
+# 🔮 Future Improvements
 
 Future ideas for Pocket Planter include:
 
-AI-powered gardening assistant
-Plant disease detection
-More personalized recommendations
-Community gardening features
-Advanced plant analytics
-👨‍💻 Built By
+- AI-powered gardening assistant
+- Plant disease detection
+- More personalized recommendations
+- Community gardening features
+- Advanced plant analytics
+
+# 👨‍💻 Built By
 
 Alex Rafalski
 
