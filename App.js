@@ -88,6 +88,7 @@ import {
   isFlowerBedPlant,
   isHarvestReady,
   isPerennial,
+  authErrorMessage,
   isRejectedCredentials,
   isSameDayKey,
   readDeepLinkSession,
@@ -644,7 +645,7 @@ const [seenGardenGod, setSeenGardenGod] = useState(false);
     if (__DEV__) console.log("SIGNUP:", error?.message || "ok");
 
     if (error) {
-      Alert.alert(error.message);
+      Alert.alert(authErrorMessage(error));
       return;
     }
 
@@ -658,10 +659,16 @@ const [seenGardenGod, setSeenGardenGod] = useState(false);
     if (__DEV__) console.log("LOGIN:", error?.message || "ok");
 
     if (error) {
-      Alert.alert(error.message);
+      Alert.alert(authErrorMessage(error));
       return;
     }
 
+    // Signed in with a typed password that works: if biometric sign-in holds an
+    // older one for this account (changed on another device), bring it up to date
+    // rather than let the next Face ID attempt fail.
+    if (biometricEnabled && (await getBiometricEmail()) === email) {
+      await enableBiometricLogin(email, password);
+    }
     maybeOfferBiometric(email, password);
   }
 };
@@ -809,7 +816,7 @@ const handleForgotPassword = async () => {
       redirectTo: "pocketplanter://reset-password",
     });
     if (error) {
-      Alert.alert(t("auth.resetFailed"), error.message);
+      Alert.alert(t("auth.resetFailed"), authErrorMessage(error));
       return;
     }
     Alert.alert(t("auth.checkEmailTitle"), t("auth.resetSentBody"));

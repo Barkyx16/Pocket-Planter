@@ -3551,6 +3551,30 @@ export function isRejectedCredentials(error) {
   return Number(error.status) === 400 && /invalid login credentials/i.test(String(error.message || ""));
 }
 
+// A sign-in or sign-up error in the gardener's language. Supabase's own
+// messages ("Invalid login credentials") were shown as they came, in English,
+// in every language, and a dropped connection read as "Network request failed".
+const AUTH_ERROR_KEYS = {
+  invalid_credentials: "errWrongPassword",
+  email_not_confirmed: "errEmailNotConfirmed",
+  user_already_exists: "errAccountExists",
+  email_exists: "errAccountExists",
+  weak_password: "errWeakPassword",
+  over_request_rate_limit: "errTooManyTries",
+  over_email_send_rate_limit: "errTooManyTries",
+  email_address_invalid: "errBadEmail",
+  signup_disabled: "errSignupClosed",
+};
+export function authErrorMessage(error) {
+  if (!error) return "";
+  const key = AUTH_ERROR_KEYS[error.code] || (isRejectedCredentials(error) ? "errWrongPassword" : null);
+  if (key) return t(`auth.${key}`);
+  if (error.name === "AuthRetryableFetchError" || /network request failed|failed to fetch/i.test(String(error.message || ""))) {
+    return t("auth.errOffline");
+  }
+  return String(error.message || t("common.pleaseTryAgain"));
+}
+
 export function readDeepLinkSession(url) {
   const fragment = String(url || "").split("#")[1] || "";
   const params = Object.fromEntries(new URLSearchParams(fragment));

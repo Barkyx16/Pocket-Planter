@@ -768,3 +768,23 @@ describe("biometric sign-in", () => {
     ok(/\(await getBiometricEmail\(\)\) === accountEmail[\s\S]{0,80}enableBiometricLogin\(accountEmail, resetPasswordValue\)/.test(app));
   });
 });
+
+describe("sign-in errors in the gardener's language", () => {
+  const core26 = require(path.join(ROOT, "core.js"));
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("explains the common failures, and passes on anything it does not know", () => {
+    eq(core26.authErrorMessage({ code: "invalid_credentials", status: 400 }), "That email and password don't match.");
+    eq(core26.authErrorMessage({ status: 400, message: "Invalid login credentials" }), "That email and password don't match.");
+    eq(core26.authErrorMessage({ code: "email_not_confirmed" }), "Confirm your email first. Check your inbox for the link we sent.");
+    eq(core26.authErrorMessage({ name: "AuthRetryableFetchError", message: "Network request failed" }), "Can't reach the server. Check your connection and try again.");
+    eq(core26.authErrorMessage({ message: "Something new" }), "Something new");
+    i18n.setLocale("de");
+    eq(core26.authErrorMessage({ code: "user_already_exists" }), "Mit dieser E-Mail gibt es schon ein Konto. Melde dich stattdessen an.");
+    i18n.setLocale("en");
+  });
+  it("is what sign-in, sign-up and the reset request show", () => {
+    const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+    ok(!/Alert\.alert\(error\.message\)/.test(app), "no raw Supabase message");
+    ok(/Alert\.alert\(t\("auth\.resetFailed"\), authErrorMessage\(error\)\)/.test(app));
+  });
+});
