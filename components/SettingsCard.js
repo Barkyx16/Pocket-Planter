@@ -352,7 +352,7 @@ async function choosePlan(plan) {
           return;
         }
         await Notifications.scheduleNotificationAsync({
-          content: { title: "🔔 Test Notification", body: "If you see this, notifications are firing correctly!", sound: true },
+          content: { title: t("ui3.testTitle"), body: t("ui3.testBody"), sound: true },
           trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 5 },
         });
         Alert.alert(t("alerts.testScheduledTitle"), t("alerts.testScheduledBody"));

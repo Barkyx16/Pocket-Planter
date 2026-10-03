@@ -23,9 +23,9 @@ export const SuccessionSowingCard = memo(function SuccessionSowingCard({ theme, 
   if (!rows.length) return null;
 
   const STATUS = {
-    due: { color: "#5cff89", icon: "🌱", label: "Sow again now" },
-    start: { color: "#6bc7ff", icon: "✨", label: "Start a first sowing" },
-    waiting: { color: "#8fbf9d", icon: "⏳", label: "On schedule" },
+    due: { color: "#5cff89", icon: "🌱", label: t("ui3.sowAgain") },
+    start: { color: "#6bc7ff", icon: "✨", label: t("ui3.startFirst") },
+    waiting: { color: "#8fbf9d", icon: "⏳", label: t("ui3.onSchedule") },
   };
 
   return (

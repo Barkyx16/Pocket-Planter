@@ -12,22 +12,22 @@ export const WeatherTeaserCard = memo(function WeatherTeaserCard({ theme, weathe
 
   const getConditionPreview = () => {
     if (!weather) return { icon: "🌤️", label: "Loading forecast...", color: "#8effab" };
-    if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", label: "Frost risk tonight — premium alert available", color: "#6bc7ff" };
-    if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", label: "Extreme heat today — premium action plan available", color: "#ff7b7b" };
-    if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) return { icon: "☀️", label: "Hot day — premium watering guide available", color: "#ffd86b" };
-    if (weather.precipChance >= 70) return { icon: "🌧️", label: "Heavy rain today — premium garden plan available", color: "#6bc7ff" };
-    return { icon: "✅", label: "Good growing conditions today", color: "#5cff89" };
+    if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", label: t("ui3.tFrost"), color: "#6bc7ff" };
+    if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", label: t("ui3.tHeat"), color: "#ff7b7b" };
+    if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) return { icon: "☀️", label: t("ui3.tHot"), color: "#ffd86b" };
+    if (weather.precipChance >= 70) return { icon: "🌧️", label: t("ui3.tRain"), color: "#6bc7ff" };
+    return { icon: "✅", label: t("ui3.tGood"), color: "#5cff89" };
   };
 
   const condition = getConditionPreview();
 
   const lockedFeatures = [
-    { icon: "❄️", text: "Frost alerts with cover reminders" },
-    { icon: "🔥", text: "Heat stress warnings and action plans" },
-    { icon: "💧", text: "Smart daily watering guidance" },
-    { icon: "🧠", text: "7-day garden intelligence forecast" },
-    { icon: "📍", text: "Zone-specific seasonal insights" },
-    { icon: "⚡", text: "Daily smart action checklist" },
+    { icon: "❄️", text: t("ui3.lf1") },
+    { icon: "🔥", text: t("ui3.lf2") },
+    { icon: "💧", text: t("ui3.lf3") },
+    { icon: "🧠", text: t("ui3.lf4") },
+    { icon: "📍", text: t("ui3.lf5") },
+    { icon: "⚡", text: t("ui3.lf6") },
   ];
 
   return (

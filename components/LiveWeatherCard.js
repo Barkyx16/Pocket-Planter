@@ -53,20 +53,20 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
     if (!weather) return actions;
 
     if (weather.minTempF <= FROST_THRESHOLD_F) {
-      actions.push({ id: "frost-indoors", icon: "🏠", text: "Move containers indoors or near shelter tonight", priority: "high" });
-      actions.push({ id: "frost-cover", icon: "🧣", text: "Cover frost-sensitive plants before dark", priority: "high" });
+      actions.push({ id: "frost-indoors", icon: "🏠", text: t("ui3.frostIndoors"), priority: "high" });
+      actions.push({ id: "frost-cover", icon: "🧣", text: t("ui3.frostCover"), priority: "high" });
     }
     if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) {
-      actions.push({ id: "heat-shade", icon: "🌿", text: "Add shade cloth over young transplants", priority: "high" });
-      actions.push({ id: "heat-skip-transplant", icon: "🚫", text: "Skip transplanting today — heat stress risk too high", priority: "medium" });
+      actions.push({ id: "heat-shade", icon: "🌿", text: t("ui3.heatShade"), priority: "high" });
+      actions.push({ id: "heat-skip-transplant", icon: "🚫", text: t("ui3.heatSkip"), priority: "medium" });
     } else if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) {
-      actions.push({ id: "warm-mulch", icon: "🪵", text: "Add mulch around plants to retain soil moisture", priority: "medium" });
+      actions.push({ id: "warm-mulch", icon: "🪵", text: t("ui3.warmMulch"), priority: "medium" });
     }
     if (weather.precipChance >= 70) {
-      actions.push({ id: "rain-skip-water", icon: "🌧️", text: "Skip watering — rain will handle it today", priority: "medium" });
-      actions.push({ id: "rain-drainage", icon: "🪣", text: "Check container drainage before rain arrives", priority: "low" });
+      actions.push({ id: "rain-skip-water", icon: "🌧️", text: t("ui3.rainSkip"), priority: "medium" });
+      actions.push({ id: "rain-drainage", icon: "🪣", text: t("ui3.rainDrainage"), priority: "low" });
     } else if (weather.precipChance >= 40) {
-      actions.push({ id: "rain-check-soil", icon: "🌱", text: "Check soil moisture before watering — rain may help", priority: "low" });
+      actions.push({ id: "rain-check-soil", icon: "🌱", text: t("ui3.rainCheckSoil"), priority: "low" });
     }
     if (unwateredCount > 0 && weather.precipChance < 40) {
       actions.push({ id: "water-remaining", icon: "💧", text: tn("liveWeather.stillNeedWater", unwateredCount), priority: weather.maxTempF >= WARM_DAY_THRESHOLD_F ? "high" : "medium" });
@@ -75,10 +75,10 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
       actions.push({ id: "harvest-ready", icon: "🎉", text: tn("counts.liveHarvest", harvestsReady), priority: "high" });
     }
     if (weather.maxTempF >= 65 && weather.maxTempF <= 82 && weather.precipChance < 30) {
-      actions.push({ id: "ideal-sow", icon: "🌱", text: "Ideal conditions for transplanting or direct sowing today", priority: "low" });
+      actions.push({ id: "ideal-sow", icon: "🌱", text: t("ui3.idealSow"), priority: "low" });
     }
     if (currentHour >= 6 && currentHour <= 9 && weather.maxTempF >= 70) {
-      actions.push({ id: "morning-window", icon: "🌅", text: "Perfect morning window for garden care right now", priority: "low" });
+      actions.push({ id: "morning-window", icon: "🌅", text: t("ui3.morningWindow"), priority: "low" });
     }
     return actions.slice(0, 4);
   };

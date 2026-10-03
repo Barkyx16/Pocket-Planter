@@ -132,10 +132,10 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
     if (!valid.length) {
       const flowerBed = area?.kind === "flower";
       Alert.alert(
-        flowerBed ? "No flowers saved yet" : "Nothing to plant here",
+        flowerBed ? t("ui3.noFlowers") : t("ui3.nothingToPlant"),
         flowerBed
-          ? "This is a flower bed — save some flowers, then place them here."
-          : "Save a plant that suits this bed, then place it here. (Flowers can't go in a regular garden — plant those on the Flowers tab.)"
+          ? t("ui3.flowerBedHint")
+          : t("ui3.gardenBedHint")
       );
       return;
     }

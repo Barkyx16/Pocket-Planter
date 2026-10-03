@@ -8,9 +8,9 @@ const STORAGE_KEY = "pp_sunlightByArea";
 
 const sunLabel = (hours) => {
   if (hours == null) return null;
-  if (hours >= 6) return { label: "Full sun", color: "#ffd86b", note: "Great for tomatoes, peppers, squash, most veggies." };
-  if (hours >= 4) return { label: "Partial sun", color: "#8effab", note: "Good for greens, herbs, root crops, brassicas." };
-  return { label: "Shade", color: "#6bc7ff", note: "Best for leafy greens, mint, and shade-tolerant herbs." };
+  if (hours >= 6) return { label: "games.sunFull", color: "#ffd86b", note: "ui3.sunNoteFull" };
+  if (hours >= 4) return { label: "games.sunPartial", color: "#8effab", note: "ui3.sunNotePartial" };
+  return { label: "games.sunShade", color: "#6bc7ff", note: "ui3.sunNoteShade" };
 };
 
 export const SunlightTrackerCard = memo(function SunlightTrackerCard({ theme, gardenAreas }) {
@@ -59,7 +59,7 @@ export const SunlightTrackerCard = memo(function SunlightTrackerCard({ theme, ga
             <View key={area.id} style={{ backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{area.emoji || "🌿"} {area.name}</Text>
-                {info ? <Text style={{ color: info.color, fontSize: 12, fontWeight: "900" }}>☀️ {info.label}</Text> : null}
+                {info ? <Text style={{ color: info.color, fontSize: 12, fontWeight: "900" }}>☀️ {t(info.label)}</Text> : null}
               </View>
               <View style={{ flexDirection: "row", gap: 6, marginTop: 10 }}>
                 {[2, 4, 6, 8].map((h) => {
@@ -71,7 +71,7 @@ export const SunlightTrackerCard = memo(function SunlightTrackerCard({ theme, ga
                   );
                 })}
               </View>
-              {info ? <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 16, marginTop: 8 }}>{info.note}</Text> : null}
+              {info ? <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 16, marginTop: 8 }}>{t(info.note)}</Text> : null}
             </View>
           );
         })}

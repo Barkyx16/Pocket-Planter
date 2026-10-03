@@ -25,7 +25,7 @@ export const GardenPlanExportCard = memo(function GardenPlanExportCard({ theme, 
       lines.push("");
     }
     lines.push(tn("counts.planTotal", areas.length, { plants: totalPlanted }));
-    lines.push("Planned with Pocket Planter 🌿");
+    lines.push(t("ui3.plannedWith"));
     return lines.join("\n");
   };
 

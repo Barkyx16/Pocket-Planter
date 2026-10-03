@@ -61,10 +61,10 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn
             onToggleReminders={(value) => {
               setRemindersOn(value);
               Alert.alert(
-                value ? "Watering Reminders On" : "Watering Reminders Off",
+                value ? t("ui3.remindersOnTitle") : t("ui3.remindersOffTitle"),
                 value
-                  ? "You can now add watering reminders from individual plant pages."
-                  : "Plant-page watering reminders are now disabled."
+                  ? t("ui3.remindersOnBody")
+                  : t("ui3.remindersOffBody")
               );
             }}
             onToggleFrost={async (value) => {

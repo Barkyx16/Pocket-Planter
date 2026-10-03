@@ -5,10 +5,10 @@ import { styles } from "../styles";
 import { flipMonth } from "../core";
 import { getPestImage } from "../data/pestImageMap";
 import { IconText } from "./IconText";
-import { useTranslation } from "../lib/i18n";
+import { formatDate, useTranslation } from "../lib/i18n";
 
 const MONTH_ABBR = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
-const MONTH_FULL = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const monthShort = (m) => formatDate(new Date(2026, m - 1, 1), { month: "short" });
 
 export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, onBack, onOpenPlant }) {
   const { t } = useTranslation();
@@ -21,8 +21,8 @@ export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, on
   // display in the app.
   const months = (Array.isArray(pest.months) ? pest.months : []).map(flipMonth).sort((a, b) => a - b);
   const activeLabel = months.length
-    ? months.map((m) => MONTH_FULL[m - 1]).join(" · ")
-    : "Varies by region";
+    ? months.map(monthShort).join(" · ")
+    : t("ui3.variesByRegion");
 
   // Affected = user's own plants this pest hits (passed from Pest Watch). Targets = general list.
   const affected = Array.isArray(pest.affected) ? pest.affected : [];
@@ -56,7 +56,7 @@ export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, on
         </View>
         <Text style={{ color: theme.text, fontSize: 24, fontWeight: "900", marginTop: 14, textAlign: "center" }}>{pest.name}</Text>
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4, textAlign: "center" }}>
-          {t("pestDetailScreen.gardenPestMostActive")} {months.length ? `${MONTH_FULL[months[0] - 1]}–${MONTH_FULL[months[months.length - 1] - 1]}` : "seasonally"}
+          {t("pestDetailScreen.gardenPestMostActive")} {months.length ? `${monthShort(months[0])}–${monthShort(months[months.length - 1])}` : t("ui3.seasonally")}
         </Text>
       </View>
 

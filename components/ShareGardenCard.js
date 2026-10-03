@@ -39,7 +39,7 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
       const Sharing = require("expo-sharing");
       const uri = await captureRef(shareRef, { format: "png", quality: 1 });
       if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri, { mimeType: "image/png", dialogTitle: "Share your garden" });
+        await Sharing.shareAsync(uri, { mimeType: "image/png", dialogTitle: t("share.shareDialog") });
       } else {
         await Share.share({ url: uri });
       }

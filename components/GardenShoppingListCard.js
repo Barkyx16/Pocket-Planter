@@ -29,7 +29,7 @@ export const GardenShoppingListCard = memo(function GardenShoppingListCard({ the
         "• Balanced fertilizer",
         "• Mulch",
         "",
-        "Planned in Pocket Planter 🌱",
+        t("ui3.plannedIn"),
       ];
       await Share.share({ message: lines.join("\n") });
     } catch (e) { console.log("Share list skipped:", e); }

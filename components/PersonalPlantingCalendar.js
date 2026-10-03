@@ -26,9 +26,9 @@ export const PersonalPlantingCalendar = memo(function PersonalPlantingCalendar({
   const peakLabel = peak && peak.plants.length ? formatDate(new Date(2026, peak.monthNum - 1, 1), { month: "short" }) : "—";
 
   const stats = [
-    { label: "To sow now", value: String(thisMonthCount), color: thisMonthCount ? "#8effab" : theme.secondaryText },
-    { label: "Active months", value: String(activeMonths), color: "#6bc7ff" },
-    { label: "Peak month", value: peakLabel, color: "#ffd86b" },
+    { label: t("ui3.toSowNow"), value: String(thisMonthCount), color: thisMonthCount ? "#8effab" : theme.secondaryText },
+    { label: t("ui3.activeMonths"), value: String(activeMonths), color: "#6bc7ff" },
+    { label: t("ui3.peakMonth"), value: peakLabel, color: "#ffd86b" },
   ];
 
   return (
