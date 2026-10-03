@@ -958,6 +958,7 @@ describe("tool sections", () => {
       CutFlowerGuideCard: ["BUILD A BOUQUET", "stem type{"],
       GuildTemplatesCard: ["Plant this setup in my garden"],
       HouseplantCareCard: ["MATCH A ROOM'S LIGHT", 'label: "Medium"', "Repot every ~{repot}"],
+      OnboardingCard: ["WELCOME TO POCKET PLANTER", "Find your\\ngrowing zone", 'title: "Daily streaks"'],
     };
     for (const [f, strings] of Object.entries(checks)) {
       const src = fs.readFileSync(path.join(ROOT, "components", `${f}.js`), "utf8");
