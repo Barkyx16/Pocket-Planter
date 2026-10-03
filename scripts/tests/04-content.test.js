@@ -1025,7 +1025,7 @@ describe("accessibility labels and alert buttons", () => {
       const src = fs.readFileSync(f, "utf8");
       const m = src.match(/accessibilityLabel=("[^"]*[A-Za-z]{3,}[^"]*"|\{`[^`$]*[A-Za-z]{3,} [a-z]+[^`]*`\})/);
       if (m) offenders.push(`${path.relative(ROOT, f)}: ${m[1].slice(0, 50)}`);
-      const button = src.match(/\{ text: "[A-Z][^"]*"/);
+      const button = src.match(/(?:\{ |^\s*)text: "[A-Z][^"]*"/m);
       if (button) offenders.push(`${path.relative(ROOT, f)}: ${button[0]}`);
     }
     eq(offenders, []);

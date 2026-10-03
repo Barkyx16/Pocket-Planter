@@ -3029,7 +3029,7 @@ function restoreFromBackup(text) {
     [
       { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Restore",
+        text: t("backup.restoreButton"),
         style: "destructive",
         onPress: () => {
           if (Array.isArray(data.savedPlants)) setSavedPlants(data.savedPlants);
