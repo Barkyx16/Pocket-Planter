@@ -1407,3 +1407,38 @@ describe("signing out", () => {
     eq(kept, []);
   });
 });
+
+describe("bundled images", () => {
+  const walk = (dir, out = []) => {
+    for (const f of fs.readdirSync(dir)) {
+      if (["node_modules", ".git", ".expo"].includes(f)) continue;
+      const p = path.join(dir, f);
+      if (fs.statSync(p).isDirectory()) walk(p, out);
+      else out.push(p);
+    }
+    return out;
+  };
+  it("are all present at the path each require names", () => {
+    const missing = [];
+    for (const file of walk(ROOT).filter((p) => /\.js$/.test(p) && !p.includes(`${path.sep}scripts${path.sep}`))) {
+      const src = fs.readFileSync(file, "utf8");
+      for (const m of src.matchAll(/require\(\s*["']([^"'$]+\.(png|jpe?g|gif|webp))["']\s*\)/g)) {
+        if (!fs.existsSync(path.join(path.dirname(file), m[1]))) missing.push(`${path.relative(ROOT, file)} -> ${m[1]}`);
+      }
+    }
+    eq(missing, []);
+  });
+  it("stay small enough to ship", () => {
+    // Every one of these is in the app binary. As full-size PNGs they came to
+    // about 600 MB; see assets/plants/README.md for the sizes and format.
+    const big = [];
+    for (const dir of ["plants", "badges", "banners", "pests"]) {
+      for (const f of fs.readdirSync(path.join(ROOT, "assets", dir))) {
+        if (!/\.(png|jpe?g)$/i.test(f)) continue;
+        const size = fs.statSync(path.join(ROOT, "assets", dir, f)).size;
+        if (size > 600 * 1024) big.push(`${dir}/${f} ${Math.round(size / 1024)} KB`);
+      }
+    }
+    eq(big, []);
+  });
+});

@@ -9,8 +9,8 @@ import { LinearGradient } from "expo-linear-gradient";
 // are ~92% opaque we can show it boldly in dark mode; light mode keeps it faint
 // (the image is dark, so a light theme only wants a whisper of it).
 //
-// Swap the file at assets/wallpaper.png to change it. Tune with these knobs:
-const wallpaperImage = require("../assets/wallpaper.png");
+// Swap the file at assets/wallpaper.jpg to change it. Tune with these knobs:
+const wallpaperImage = require("../assets/wallpaper.jpg");
 const WALLPAPER_OPACITY = { dark: 0.92, light: 0.12 };
 // 1 = fills the whole screen edge-to-edge (cover). Values <1 shrink the image
 // and leave a base-color margin, so keep it at 1 unless you want that matte look.

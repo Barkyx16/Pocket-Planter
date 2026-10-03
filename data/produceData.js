@@ -712,7 +712,7 @@ const produceData = [
 // ═══════════════════════════════════════════════════════════
   //  NEW PLANTS — v1.2 expansion (125 additions)
   //  Paste this block right before the closing  ];  of produceData.
-  //  Image keys are lowercase; add matching PNGs to assets/plants/
+  //  Image keys are lowercase; add matching images to assets/plants/ (JPEG, see its README)
   //  and register them in the plantImages map in App.js.
   // ═══════════════════════════════════════════════════════════
 

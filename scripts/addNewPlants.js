@@ -273,13 +273,14 @@ const missing = [], added = [], skipped = [];
 
 for (const img of Object.keys(META)) {
   const [name, type, min, max, months, hd, succ] = META[img];
-  const fileExists = fs.existsSync(path.join(ROOT, "assets/plants", img + ".png"));
+  // Bundled plant photos are JPEG (see assets/plants/README.md); a PNG still works.
+  const ext = [".jpg", ".png"].find((e) => fs.existsSync(path.join(ROOT, "assets/plants", img + e)));
   if (existingNames.has(name)) { skipped.push(name); continue; }
-  if (!fileExists) { missing.push(`${name} — ${img}.png`); continue; }
+  if (!ext) { missing.push(`${name} — ${img}.jpg`); continue; }
 
   const perennial = hd === "P";
   const annualHd = typeof hd === "number" && hd > 0 ? hd : null;
-  if (!mappedKeys.has(img)) imageLines.push(`  ${img}: require("./assets/plants/${img}.png"),`);
+  if (!mappedKeys.has(img)) imageLines.push(`  ${img}: require("./assets/plants/${img}${ext}"),`);
   produceEntries.push(
 `  {
     name: ${JSON.stringify(name)},
