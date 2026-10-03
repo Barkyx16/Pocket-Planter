@@ -183,3 +183,45 @@ describe("harvest value", () => {
     eq(total, 3);
   });
 });
+
+describe("level titles and badges in the app language", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  const xpAt = (level) => {
+    // The smallest bonus XP that lands exactly on `level`.
+    const xp = core.xpForLevel(level);
+    return core.getGardenXP({ savedPlants: [], journalEntries: [], gardenMap: {}, wateredPlants: {}, streakData: { count: 0 }, bonusXP: xp, questXP: 0 });
+  };
+  const badges = () => core.getAchievementBadges({
+    savedPlants: ["Tomato", "Basil", "Kale"], followedPlants: [], journalEntries: [], gardenMap: {}, wateredPlants: {},
+    streakData: { count: 2 }, gardenXP: { level: 12 }, careLog: [], harvestTrackers: {}, visibleFertilizerTrackers: {},
+    harvestLog: [], wateringHistory: {},
+  });
+  it("keeps the English titles", () => {
+    eq(xpAt(1).title, "Seedling");
+    eq(xpAt(5).title, "Backyard Grower");
+    eq(xpAt(57).title, "Garden Oracle");
+    eq(xpAt(100).title, "🌟 Garden Gnome");
+    const byId = Object.fromEntries(badges().map((b) => [b.id, b]));
+    eq(byId.save_5_plants.title, "Green Thumb");
+    eq(byId.save_5_plants.text, "Save 5 plants. 3/5 saved.");
+    eq(byId.first_plant_saved.text, "Save your first plant. 1/1 saved.");
+    eq(byId.level_10.text, "Reach Level 10. Level 10/10.");
+    eq(byId.streak_7.category, "🔥 Streaks");
+    eq(byId.garden_gnome_ultimate.title, "???");
+  });
+  it("translates every badge, with no raw keys left", () => {
+    try {
+      i18n.setLocale("es");
+      eq(xpAt(10).title, "Mano verde");
+      const list = badges();
+      for (const b of list) {
+        ok(!/^(badges|levels)\./.test(b.title) && !/^(badges|levels)\./.test(b.text) && !/^badges\./.test(b.category), `${b.id}: ${b.title} / ${b.text}`);
+      }
+      const byId = Object.fromEntries(list.map((b) => [b.id, b]));
+      eq(byId.save_5_plants.text, "Guarda 5 plantas. 3/5 guardadas.");
+      eq(byId.streak_7.title, "Racha de 7 días");
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});

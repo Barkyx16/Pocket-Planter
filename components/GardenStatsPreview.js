@@ -44,7 +44,7 @@ export const GardenStatsPreview = memo(function GardenStatsPreview({
   const gardenHealth = useMemo(() => calculateGardenHealth(gardenMap), [gardenMap]);
   const streakCount = streakData?.count || 0;
   const level = gardenXP?.level ?? 1;
-  const levelTitle = gardenXP?.title ?? "Seedling";
+  const levelTitle = gardenXP?.title ?? t("levels.l0");
   const levelProgress = gardenXP?.progress || 0;
   const currentLevelXP = gardenXP?.currentLevelXP ?? 0;
   const nextLevelXP = gardenXP?.nextLevelXP ?? 100;

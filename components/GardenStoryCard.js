@@ -28,7 +28,7 @@ export const GardenStoryCard = memo(function GardenStoryCard({ theme, savedPlant
     { icon: "💧", value: totalWaterings, label: "Waterings" },
     { icon: "📸", value: journalEntries.length, label: "Photos" },
     { icon: "🔥", value: streakData?.count || 0, label: "Day Streak" },
-    { icon: "⭐", value: `Lvl ${gardenXP.level}`, label: gardenXP.title },
+    { icon: "⭐", value: t("levels.lvl", { level: gardenXP.level }), label: gardenXP.title },
   ];
 
   const shareStory = async () => {
@@ -44,7 +44,7 @@ export const GardenStoryCard = memo(function GardenStoryCard({ theme, savedPlant
         journalEntries.length > 0 ? `📸 ${journalEntries.length} garden photos` : null,
         (streakData?.count || 0) > 0 ? `🔥 ${streakData.count}-day streak` : null,
         mvpPlant ? `🏆 MVP plant: ${mvpPlant}` : null,
-        `⭐ Level ${gardenXP.level} — ${gardenXP.title}`,
+        t("stats.shareLevel", { level: gardenXP.level, title: gardenXP.title }),
         "",
         "Growing smarter with Pocket Planter 🌿",
       ].filter(Boolean);

@@ -17,7 +17,7 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
       const lines = [
         "🌱 My Pocket Planter garden report card:",
         "",
-        `⭐ Level ${gardenXP.level} — ${gardenXP.title}`,
+        t("stats.shareLevel", { level: gardenXP.level, title: gardenXP.title }),
         `🪴 ${savedPlants.length} plants growing`,
         plotCount > 0 ? `🗺️ ${plotCount} plots planted` : null,
         harvests > 0 ? tn("counts.harvestsLogged", harvests) : null,
@@ -76,7 +76,7 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
   textAlign: "center"
 }} />
         <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "900", textAlign: "center", marginTop: 6 }}>
-          Level {gardenXP.level} · {gardenXP.title}
+          {t("levels.levelLine", { level: gardenXP.level, title: gardenXP.title })}
         </Text>
 
         <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>

@@ -1470,8 +1470,9 @@ const gardenHealth = useMemo(
 );
 
 const gardenXP = useMemo(
-  () =>
-    getGardenXP({
+  () => {
+    void language; // the level title is translated text
+    return getGardenXP({
       savedPlants,
       journalEntries,
       gardenMap: combinedGardenMap,
@@ -1479,7 +1480,8 @@ const gardenXP = useMemo(
       streakData,
       bonusXP,
       questXP,
-    }),
+    });
+  },
   [
     savedPlants,
     journalEntries,
@@ -1488,11 +1490,13 @@ const gardenXP = useMemo(
     streakData,
     bonusXP,
     questXP,
+    language,
   ]
 );
 const achievementBadges = useMemo(
-  () =>
-    getAchievementBadges({
+  () => {
+    void language; // badge titles and progress lines are translated text
+    return getAchievementBadges({
       savedPlants,
       followedPlants,
       journalEntries,
@@ -1505,7 +1509,8 @@ const achievementBadges = useMemo(
       visibleFertilizerTrackers,
       harvestLog,
       wateringHistory,
-    }),
+    });
+  },
   [
     savedPlants,
     followedPlants,
@@ -1519,6 +1524,7 @@ const achievementBadges = useMemo(
     visibleFertilizerTrackers,
     harvestLog,
     wateringHistory,
+    language,
   ]
 );
 const dailyQuests = useMemo(

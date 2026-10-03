@@ -114,7 +114,7 @@ export const PlantGrowthTimeline = memo(function PlantGrowthTimeline({ theme, pl
                   <View style={{ padding: 12 }}>
                     <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                       <View style={{ backgroundColor: `${stageColor(e.growthStage)}22`, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderColor: `${stageColor(e.growthStage)}55` }}>
-                        <Text style={{ color: stageColor(e.growthStage), fontSize: 10, fontWeight: "900" }}>{e.growthStage || "Seedling"}</Text>
+                        <Text style={{ color: stageColor(e.growthStage), fontSize: 10, fontWeight: "900" }}>{growthStageLabel(e.growthStage || "Seedling")}</Text>
                       </View>
                       <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "800" }}>
                         Day {dayNumber(e)} · {formatDate(new Date(e.createdAt), {

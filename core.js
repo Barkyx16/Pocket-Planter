@@ -4133,6 +4133,42 @@ export function getStreakDaysLeft(plantName, wateringHistory) {
   return daysLeft;
 }
 
+// Badge titles, categories and progress lines in the app language. The list
+// above keeps English as its source; ids and numbers drive the translation.
+const BADGE_CATEGORY_KEYS = {
+  "🌱 Plant Saving": "catSaving", "💧 Watering": "catWatering", "🔥 Streaks": "catStreaks",
+  "📸 Journal": "catJournal", "🗺️ Garden Map": "catMap", "🧪 Care Log": "catCare",
+  "🚜 Harvest": "catHarvest", "⭐ Levels": "catLevels", "🌟 Legend": "catLegend",
+};
+const BADGE_TEXT_KINDS = [
+  [/^(first_plant_saved|save_\d+_plants)$/, "txtSave"],
+  [/^water_(one|three)_today$/, "txtWaterToday"],
+  [/^water_\d+_total$/, "txtWaterTotal"],
+  [/^streak_\d+$/, "txtStreak"],
+  [/^(first_journal_photo|photo_\d+|photo_logger|garden_album)$/, "txtPhoto"],
+  [/^(first_plot|plot_builder|full_garden)$/, "txtPlot"],
+  [/^(first_care_log|care_log_\d+)$/, "txtCare"],
+  [/^(first_harvest|harvest_\d+)$/, "txtHarvest"],
+  [/^harvest_ready$/, "txtHarvestReady"],
+  [/^level_\d+$/, "txtLevel"],
+];
+
+function localizeBadges(list) {
+  return list.map((b) => {
+    const category = BADGE_CATEGORY_KEYS[b.category] ? t(`badges.${BADGE_CATEGORY_KEYS[b.category]}`) : b.category;
+    if (b.id === "garden_gnome_ultimate") {
+      return { ...b, category, title: b.hidden ? "???" : t("badges.gnome"), text: t(b.hidden ? "badges.txtLegendHidden" : "badges.txtLegendDone") };
+    }
+    const level = /^level_(\d+)$/.exec(b.id);
+    const title = level ? t(`levels.l${level[1]}`) : t(`badges.${b.id}`);
+    const kind = (BADGE_TEXT_KINDS.find(([re]) => re.test(b.id)) || [])[1];
+    // Most progress lines are plural forms; the level and harvest-ready ones are plain.
+    const counted = kind ? tn(`badges.${kind}`, b.goal, { have: b.progress }) : null;
+    const text = !kind ? b.text : counted === `badges.${kind}` ? t(`badges.${kind}`, { count: b.goal, have: b.progress }) : counted;
+    return { ...b, category, title, text };
+  });
+}
+
 export function getAchievementBadges({
   savedPlants,
   followedPlants,
@@ -4164,7 +4200,7 @@ const allUnlocked =
   (careLog || []).length >= 25 &&
   Object.keys(harvestTrackers || {}).length >= 5;
 
-  return [
+  return localizeBadges([
     // ── PLANT SAVING ─────────────────────────────────────────────
     {
       id: "first_plant_saved",
@@ -4533,7 +4569,7 @@ const allUnlocked =
     : "Complete every achievement and reach Level 100 to reveal this secret.",
   hidden: !allUnlocked,
 },
-  ];
+  ]);
 }
 
 export const PROFILE_THEMES = [
@@ -5256,27 +5292,9 @@ const xpForCurrentLevel = xpForLevel(level);
 const xpForNextLevel = xpForLevel(level + 1);
 const currentLevelXP = xp - xpForCurrentLevel;
 const nextLevelXP = xpForNextLevel - xpForCurrentLevel;
-  let title = "Seedling";
-if (level >= 5) title = "Backyard Grower";
-if (level >= 10) title = "Green Thumb";
-if (level >= 15) title = "Harvest Keeper";
-if (level >= 20) title = "Garden Sage";
-if (level >= 25) title = "Plant Whisperer";
-if (level >= 30) title = "Soil Scientist";
-if (level >= 35) title = "Garden Architect";
-if (level >= 40) title = "Zone Master";
-if (level >= 45) title = "Harvest Legend";
-if (level >= 50) title = "Master Botanist";
-if (level >= 55) title = "Garden Oracle";
-if (level >= 60) title = "Legendary Grower";
-if (level >= 65) title = "Elite Cultivator";
-if (level >= 70) title = "Grand Gardener";
-if (level >= 75) title = "Garden Mythkeeper";
-if (level >= 80) title = "Ancient Cultivator";
-if (level >= 85) title = "Garden Immortal";
-if (level >= 90) title = "Celestial Grower";
-if (level >= 95) title = "Garden Transcendent";
-if (level >= 100) title = "🌟 Garden Gnome";
+  // A title every 5 levels, in the app language (levels.l0 … levels.l100).
+  const tier = Math.min(100, Math.floor(level / 5) * 5);
+  const title = `${tier >= 100 ? "🌟 " : ""}${t(`levels.l${tier}`)}`;
   return { xp, level, title, currentLevelXP, nextLevelXP, progress: currentLevelXP / nextLevelXP };
 }
 

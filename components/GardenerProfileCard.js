@@ -37,13 +37,13 @@ return (
       )}
       <TextInput value={profileName} onChangeText={setProfileName} placeholder={t("gardenerProfile.enterProfileName")} placeholderTextColor="#8fbf9d" style={[styles.profileNameInput, { marginTop: 4 }]} />
 
-      <Text style={styles.profileRank}>Level {gardenXP.level} • {gardenXP.title}</Text>
+      <Text style={styles.profileRank}>{t("levels.levelLine", { level: gardenXP.level, title: gardenXP.title })}</Text>
       <Text style={styles.profileXP}>{gardenXP.xp} {t("gardenerProfile.totalXpEarned")}</Text>
 
       {/* XP PROGRESS */}
       <View style={{ marginTop: 12 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Text style={{ color: theme.text, fontWeight: "800", fontSize: 12 }}>Level {gardenXP.level} → {gardenXP.level + 1}</Text>
+          <Text style={{ color: theme.text, fontWeight: "800", fontSize: 12 }}>{t("levels.lvl", { level: gardenXP.level })} → {gardenXP.level + 1}</Text>
           <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 12 }}>{Math.round((gardenXP.progress || 0) * 100)}%</Text>
         </View>
         <View style={{ height: 10, backgroundColor: "rgba(255, 255, 255, 0.1)", borderRadius: 16, marginTop: 6, overflow: "hidden" }}>
