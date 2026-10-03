@@ -159,7 +159,7 @@ export const PlantingCalendarCard = memo(function PlantingCalendarCard({ theme, 
                 {[
                   { icon: "🌱", label: t("plantingCalendar.startIndoors"), value: sow ? fmt(sow) : t("plantingCalendar.directSow"), color: "#8effab" },
                   { icon: "🪴", label: t("plantingCalendar.plantOut"), value: fmt(plantOut), color: "#6bc7ff" },
-                  { icon: "🚜", label: "Harvest", value: `~${fmt(harvest)}`, color: "#ffd86b" },
+                  { icon: "🚜", label: t("share.harvest"), value: `~${fmt(harvest)}`, color: "#ffd86b" },
                 ].map((m) => (
                   <View key={m.label} style={{ flex: 1, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 8, paddingVertical: 8, paddingHorizontal: 4 }}>
                     <Text style={{ fontSize: 14 }}>{m.icon}</Text>

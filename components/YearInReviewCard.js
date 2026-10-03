@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Pressable, Share, Text, View } from "react-native";
 import { estimateHarvestValue, tapHaptic } from "../core";
 import { IconText } from "./IconText";
-import { useTranslation } from "../lib/i18n";
+import { formatMoney, tn, useTranslation } from "../lib/i18n";
 
 export const YearInReviewCard = memo(function YearInReviewCard({ theme, savedPlants, harvestLog, journalEntries, wateringHistory, streakData, gardenXP }) {
   const { t } = useTranslation();
@@ -28,11 +28,11 @@ export const YearInReviewCard = memo(function YearInReviewCard({ theme, savedPla
   if (!hasActivity) return null;
 
   const stats = [
-    { icon: "🌱", value: savedPlants.length, label: "Plants Grown" },
-    { icon: "💧", value: wateringsYr, label: "Waterings" },
-    { icon: "📸", value: photosYr, label: "Photos" },
-    { icon: "🎉", value: harvestsYr, label: "Harvests" },
-    { icon: "🔥", value: streakData?.count || 0, label: "Day Streak" },
+    { icon: "🌱", value: savedPlants.length, label: t("share.plantsGrown") },
+    { icon: "💧", value: wateringsYr, label: t("share.waterings") },
+    { icon: "📸", value: photosYr, label: t("share.photos") },
+    { icon: "🎉", value: harvestsYr, label: t("stats.harvests") },
+    { icon: "🔥", value: streakData?.count || 0, label: t("share.dayStreak") },
     { icon: "⭐", value: t("levels.lvl", { level: gardenXP.level }), label: gardenXP.title },
   ];
 
@@ -40,17 +40,17 @@ export const YearInReviewCard = memo(function YearInReviewCard({ theme, savedPla
     try {
       tapHaptic("light");
       const lines = [
-        `🌿 My Pocket Planter year in review:`,
+        t("share.yearHeader"),
         "",
-        `🌱 ${savedPlants.length} plants grown`,
-        wateringsYr > 0 ? `💧 ${wateringsYr} waterings` : null,
-        photosYr > 0 ? `📸 ${photosYr} garden photos` : null,
-        harvestsYr > 0 ? `🎉 ${harvestsYr} harvests` : null,
-        harvestValue.total > 0 ? `💰 ~$${harvestValue.total} of produce grown` : null,
-        (streakData?.count || 0) > 0 ? `🔥 ${streakData.count}-day streak` : null,
+        tn("share.yPlants", savedPlants.length),
+        wateringsYr > 0 ? tn("share.lWaterings", wateringsYr) : null,
+        photosYr > 0 ? tn("counts.gardenPhotos", photosYr) : null,
+        harvestsYr > 0 ? tn("share.yHarvests", harvestsYr) : null,
+        harvestValue.total > 0 ? t("share.lProduce", { value: formatMoney(harvestValue.total, { decimals: 0 }) }) : null,
+        (streakData?.count || 0) > 0 ? tn("share.lStreak", streakData.count) : null,
         t("stats.shareLevel", { level: gardenXP.level, title: gardenXP.title }),
         "",
-        "What a year in the garden 🌻",
+        t("share.yearFooter"),
       ].filter(Boolean);
       await Share.share({ message: lines.join("\n") });
     } catch (e) {
@@ -66,7 +66,7 @@ return (
           <Text style={{ fontSize: 32 }}>💰</Text>
           <View style={{ flex: 1 }}>
             <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>{t("yearInReview.grownThisYear")}</Text>
-            <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "900", marginTop: 2 }}>~${harvestValue.total}</Text>
+            <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "900", marginTop: 2 }}>~{formatMoney(harvestValue.total, { decimals: 0 })}</Text>
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>{t("yearInReview.estimatedValueOfYourHarvests")}</Text>
           </View>
         </View>

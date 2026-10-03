@@ -20,9 +20,9 @@ export const WateringRhythmCard = memo(function WateringRhythmCard({ theme, save
   if (!rows.length) return null;
 
   const STATUS = {
-    "on-track": { color: "#5cff89", icon: "✅", label: "On track" },
-    under: { color: "#ffd86b", icon: "🌵", label: "Water sooner" },
-    over: { color: "#6bc7ff", icon: "💧", label: "Space it out" },
+    "on-track": { color: "#5cff89", icon: "✅", label: t("share.onTrack") },
+    under: { color: "#ffd86b", icon: "🌵", label: t("share.waterSooner") },
+    over: { color: "#6bc7ff", icon: "💧", label: t("share.spaceOut") },
   };
 
 return (
@@ -31,7 +31,7 @@ return (
         {rows.map(({ name, item, rhythm }) => {
           const s = STATUS[rhythm.status];
           const img = resolvePlantImageSource(item);
-          const detail = `Every ~${rhythm.avgGap}d · target ~${rhythm.target}d`;
+          const detail = t("share.rhythmDetail", { avg: rhythm.avgGap, target: rhythm.target });
           return (
             <Pressable
               key={`rhythm-${name}`}

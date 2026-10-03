@@ -19,14 +19,14 @@ export const PhotoStorageCard = memo(function PhotoStorageCard({ theme, journalE
   const estMB = formatNumber(total * EST_MB_PER_PHOTO, { maximumFractionDigits: 1 });
 
   const stats = [
-    { value: String(total), label: "Photos", color: "#8effab" },
-    { value: `~${estMB}`, label: "MB (est.)", color: "#6bc7ff" },
-    { value: String(thisMonth), label: "This month", color: "#ffd86b" },
+    { value: String(total), label: t("share.photos"), color: "#8effab" },
+    { value: `~${estMB}`, label: t("share.mbEst"), color: "#6bc7ff" },
+    { value: String(thisMonth), label: t("harvestLog.thisMonth"), color: "#ffd86b" },
   ];
 
   const cleanupOptions = [
-    { days: 365, count: older1yr, label: "Older than 1 year" },
-    { days: 182, count: older6mo, label: "Older than 6 months" },
+    { days: 365, count: older1yr, label: t("share.olderYear") },
+    { days: 182, count: older6mo, label: t("share.olderSixMonths") },
   ];
 
   return (
