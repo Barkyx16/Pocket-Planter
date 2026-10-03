@@ -3,7 +3,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "./lib/supabase";
 import { isBiometricAvailable, getBiometricLabel, isBiometricEnabled, enableBiometricLogin, disableBiometricLogin, authenticateAndGetCredentials, getBiometricEmail } from "./lib/biometricAuth";
 import { hydrateTabHeroes } from "./components/TabHero";
-import { ActivityIndicator, Alert, Animated, AppState, Appearance, BackHandler, Image, Keyboard, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, RefreshControl, Share, StatusBar, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Animated, AppState, Appearance, BackHandler, Image, Keyboard, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, ScrollView, RefreshControl, Share, StatusBar, StyleSheet, Text, TextInput, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import * as Location from "expo-location";
@@ -121,6 +121,10 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { PremiumLockedSection } from "./components/PremiumLockedSection";
 import { MAX_FONT_SCALE_COMPACT, touchSlop } from "./lib/a11y";
 import { readStored } from "./lib/storageRead";
+// react-native's own SafeAreaView only pads on iOS. Expo SDK 54 draws Android
+// edge to edge, so there the header ran under the status bar; this one pads on
+// both platforms.
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { fetchWithTimeout } from "./lib/net";
 import { OnboardingCard } from "./components/OnboardingCard";
 import { PestDetailScreen } from "./components/PestDetailScreen";
@@ -370,6 +374,7 @@ function registerNotificationChannel() {
 registerNotificationChannel();
 
 function AppInner({ language, setLanguage }) {
+  const safeInsets = useSafeAreaInsets();
   const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -6331,8 +6336,11 @@ const jumpToTab = useCallback((tab) => {
   </Pressable>
 </Modal>
 
+{/* The tab bar is absolute, so it ignores the safe area's padding. On Android
+    the system navigation bar now overlaps the window, so lift the bar clear of
+    it; iOS keeps the position it was designed at. */}
 {record ? (
-  <View style={styles.bottomTabs}>
+  <View style={[styles.bottomTabs, Platform.OS === "android" && { bottom: 16 + safeInsets.bottom }]}>
   {TABS.map((tab) => {
       const label = t(tab.labelKey);
       // "More" reads as selected while any of the destinations behind it is open.
@@ -6407,9 +6415,11 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <LanguageProvider language={language}>
-        <AppInner language={language} setLanguage={setLanguage} />
-      </LanguageProvider>
+      <SafeAreaProvider>
+        <LanguageProvider language={language}>
+          <AppInner language={language} setLanguage={setLanguage} />
+        </LanguageProvider>
+      </SafeAreaProvider>
     </ErrorBoundary>
   );
 }

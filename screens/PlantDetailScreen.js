@@ -12,7 +12,8 @@ import { getPestImage } from "../data/pestImageMap";
 import { formatDate, t, tn } from "../lib/i18n";
 import { styles } from "../styles";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Alert, Animated, Image, Linking, Pressable, SafeAreaView, ScrollView, StatusBar, Text, TextInput, View } from "react-native";
+import { Alert, Animated, Image, Linking, Pressable, ScrollView, StatusBar, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // The plant detail screen. Extracted from App.js, where it lived as a ~590-line
 // early return inside AppInner — a big part of why that file passed 6,000 lines.

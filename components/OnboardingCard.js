@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { useState } from "react";
-import { Pressable, SafeAreaView, ScrollView, StatusBar, Text, View } from "react-native";
+import { Pressable, ScrollView, StatusBar, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { styles } from "../styles";
 import { BackgroundDecoration } from "./BackgroundDecoration";
 import { PREMIUM_FEATURES } from "../core";

@@ -1454,3 +1454,22 @@ describe("Android back button", () => {
     eq(order, [...order].sort((a, b) => a - b));
   });
 });
+
+describe("safe areas", () => {
+  it("come from safe-area-context, which pads on Android too", () => {
+    // Expo SDK 54 draws Android edge to edge; react-native's SafeAreaView only
+    // pads on iOS, so the header sat under the Android status bar.
+    const offenders = [];
+    const files = [path.join(ROOT, "App.js")];
+    for (const dir of ["components", "screens"]) {
+      for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith(".js"))) files.push(path.join(ROOT, dir, f));
+    }
+    for (const f of files) {
+      const src = fs.readFileSync(f, "utf8");
+      const rn = src.match(/import \{([^}]*)\} from "react-native";/);
+      if (rn && /\bSafeAreaView\b/.test(rn[1])) offenders.push(path.relative(ROOT, f));
+    }
+    eq(offenders, []);
+    ok(/<SafeAreaProvider>/.test(fs.readFileSync(path.join(ROOT, "App.js"), "utf8")), "no SafeAreaProvider at the root");
+  });
+});

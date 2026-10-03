@@ -97,6 +97,7 @@ const STUBS = {
   // Native-only submodule; node cannot resolve it. Stubbed like its siblings.
   "expo-secure-store": { getItemAsync: async () => null, setItemAsync: async () => {}, deleteItemAsync: async () => {} },
   "react-native-purchases": { __esModule: true, default: {} },
+  "react-native-safe-area-context": { SafeAreaProvider: ({ children }) => children, SafeAreaView: host("div"), useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) },
   "react-native-svg": new Proxy({}, { get: () => host("svg") }),
   "@expo/vector-icons/Ionicons": { __esModule: true, default: host("i") },
   "@expo/vector-icons": new Proxy({}, { get: () => host("i") }),
