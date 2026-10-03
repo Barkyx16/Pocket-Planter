@@ -99,7 +99,7 @@ export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries
                   <Text style={{ color: "#ffffff", fontSize: 12, fontWeight: "900" }}>🕐 {m.match.label}</Text>
                 </View>
                 <View style={{ padding: 12 }}>
-                  <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{m.entry.plantName || "Garden"}</Text>
+                  <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{m.entry.plantName && m.entry.plantName !== "Garden" ? m.entry.plantName : t("journal.gardenUpdate")}</Text>
                   {m.entry.growthStage ? (
                     <Text style={{ color: "#d8c8ff", fontSize: 12, fontWeight: "800", marginTop: 2 }}>{growthStageLabel(m.entry.growthStage)}</Text>
                   ) : null}
@@ -119,7 +119,7 @@ export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries
                 {img ? <Image source={img} style={{ width: 36, height: 36 }} resizeMode="contain" /> : <Text style={{ fontSize: 20 }}>🎉</Text>}
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>Harvested {m.entry.plantName}</Text>
+                <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{t("ui8.harvestedPlant", { plant: m.entry.plantName })}</Text>
                 <Text style={{ color: "#d8c8ff", fontSize: 12, fontWeight: "900", marginTop: 2 }}>
                   🕐 {m.match.label}{m.entry.amount ? ` · ${m.entry.amount} ${m.entry.unit || ""}`.trimEnd() : ""}
                 </Text>

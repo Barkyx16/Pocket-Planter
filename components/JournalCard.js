@@ -7,6 +7,9 @@ import { IconText } from "./IconText";
 
 export const JournalCard = memo(function JournalCard({ theme, journalEntries, onAddGeneralPhoto, onDeleteEntry, uploadingPhoto }) {
   const { t, tn, growthStageLabel, moodLabel } = useTranslation();
+  // Photos taken from the quick-log menu are stored under the "Garden" bucket
+  // rather than a plant; they group with untagged ones under a translated name.
+  const journalGroupName = (e) => (e.plantName && e.plantName !== "Garden" ? e.plantName : t("journal.gardenUpdate"));
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPlant, setFilterPlant] = useState("All");
   const [filterStage, setFilterStage] = useState("All");
@@ -364,8 +367,8 @@ return (
                   </Pressable>
                 </View>
               ) : null}
-              {Array.from(new Set(filteredEntries.map(e => e.plantName || t("journal.gardenUpdate")))).map(plantName => {
-                const plantEntries = filteredEntries.filter(e => (e.plantName || t("journal.gardenUpdate")) === plantName);
+              {Array.from(new Set(filteredEntries.map(journalGroupName))).map(plantName => {
+                const plantEntries = filteredEntries.filter(e => journalGroupName(e) === plantName);
                 return (
                   <View key={plantName} style={[styles.journalPlantGroup, { borderColor: "rgba(92, 255, 137, 0.16)" }]}>
                     <View style={styles.journalPlantGroupHeader}>

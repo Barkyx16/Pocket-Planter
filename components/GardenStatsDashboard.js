@@ -116,7 +116,7 @@ return (
       {/* XP PROGRESS BAR */}
       <View style={styles.dashXPRow}>
         <View style={styles.dashXPLeft}>
-          <Text style={styles.dashXPLevel}>Lvl {gardenXP.level}</Text>
+          <Text style={styles.dashXPLevel}>{t("ui8.lvl", { level: gardenXP.level })}</Text>
           <Text style={[styles.dashXPTitle, { color: theme.secondaryText }]}>{gardenXP.title}</Text>
         </View>
         <View style={styles.dashXPBarWrap}>

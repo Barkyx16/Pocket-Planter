@@ -65,7 +65,7 @@ export const GardenStatsPreview = memo(function GardenStatsPreview({
       {/* XP PROGRESS — real */}
       <View style={styles.dashXPRow}>
         <View style={styles.dashXPLeft}>
-          <Text style={styles.dashXPLevel}>Lvl {level}</Text>
+          <Text style={styles.dashXPLevel}>{t("ui8.lvl", { level })}</Text>
           <Text style={[styles.dashXPTitle, { color: theme.secondaryText }]}>{levelTitle}</Text>
         </View>
         <View style={styles.dashXPBarWrap}>

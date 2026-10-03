@@ -4270,7 +4270,7 @@ function addSetupToGarden(setupName, plantNames) {
   setGardenAreas((current) => [...current, ...newAreas]);
   successHaptic();
 
-  const beds = [edibles.length ? "Garden" : null, flowers.length ? "Flowers" : null].filter(Boolean).join(" & ");
+  const beds = [edibles.length ? t("tabs.garden") : null, flowers.length ? t("ui8.moreFlowers") : null].filter(Boolean).join(" & ");
   const capNote = capped ? ` ${t("alerts.setupCapNote")}` : "";
   Alert.alert(
     t("alerts.setupPlantedTitle", { plant: clean }),
