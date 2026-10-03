@@ -63,8 +63,28 @@ Deno.serve(async (req) => {
       console.error("photo cleanup skipped", String(storageErr));
     }
 
-    // Delete the user's profile row first
-    await adminClient.from("profiles").delete().eq("id", userId);
+    // Rows the app writes under this user besides the profile. profile_snapshots
+    // is a daily copy of the whole profile row — email, name, photo, journal,
+    // garden — and nothing here deleted it, so a deleted account left a copy of
+    // itself for every day it was used. Neither table's schema is in this repo,
+    // so whether a foreign key would cascade is unknown; deleting explicitly is
+    // a no-op if it does. Like the photos, trouble here is logged, not fatal.
+    for (const table of ["profile_snapshots", "zone_activity"]) {
+      const { error: rowsError } = await adminClient.from(table).delete().eq("user_id", userId);
+      if (rowsError) console.error(`${table} cleanup failed`, rowsError.message);
+    }
+
+    // The profile row is the account's data. If it cannot be deleted, stop before
+    // the auth user goes: once that is gone the gardener can no longer sign in to
+    // try again, and the row would outlive the account with no way to remove it.
+    const { error: profileError } = await adminClient.from("profiles").delete().eq("id", userId);
+    if (profileError) {
+      console.error("profile delete failed", profileError.message);
+      return new Response(JSON.stringify({ error: "Could not delete your data. Please try again." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     // Then delete the auth user
     const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
     if (deleteError) {

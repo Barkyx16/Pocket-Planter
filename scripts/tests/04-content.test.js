@@ -475,3 +475,25 @@ describe("one rule for fertilizer due", () => {
     eq(core13.isFertilizerDue("Tomato", { lastFertilized: fed.toISOString() }), true, "tomato at 20 of 14 days");
   });
 });
+
+describe("deleting an account", () => {
+  const src = require("fs").readFileSync(path.join(ROOT, "supabase/functions/delete-account/index.ts"), "utf8");
+  it("deletes every per-user table the app writes, not only the profile", () => {
+    // profile_snapshots is a daily copy of the whole profile row. A deleted
+    // account left one behind for every day it had been used.
+    const written = new Set();
+    for (const f of ["App.js", "core.js"]) {
+      const app = require("fs").readFileSync(path.join(ROOT, f), "utf8");
+      for (const m of app.matchAll(/\.from\("([a-z_]+)"\)\s*\.insert\(\{\s*user_id:/g)) written.add(m[1]);
+    }
+    ok(written.has("profile_snapshots") && written.has("zone_activity"), "the scan should find both");
+    for (const table of written) ok(src.includes(`"${table}"`), `${table} is never cleaned up`);
+  });
+  it("stops before deleting the login if the profile row survives", () => {
+    const profileAt = src.indexOf('from("profiles").delete()');
+    const checkAt = src.indexOf("if (profileError)", profileAt);
+    const authAt = src.indexOf("auth.admin.deleteUser");
+    ok(profileAt > 0 && checkAt > profileAt && checkAt < authAt,
+      "a failed profile delete must return before the auth user is removed");
+  });
+});
