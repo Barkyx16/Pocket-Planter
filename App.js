@@ -544,6 +544,7 @@ useEffect(() => { vacationRef.current = vacation; }, [vacation]);
 const [password, setPassword] = useState("");
 const [showPassword, setShowPassword] = useState(false);
 const [authMode, setAuthMode] = useState("login");
+const [authBusy, setAuthBusy] = useState(false);
 const [biometricAvailable, setBiometricAvailable] = useState(false);
 const [biometricEnabled, setBiometricEnabled] = useState(false);
 const [biometricLabel, setBiometricLabel] = useState("Face ID");
@@ -637,45 +638,60 @@ const [completedQuestIds, setCompletedQuestIds] = useState({});
 const [activeBannerId, setActiveBannerId] = useState(null);
 const [seenGardenGod, setSeenGardenGod] = useState(false);
   const handleAuth = async () => {
-  if (authMode === "signup") {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: "pocketplanter://auth",
-      },
-    });
-
-    // Never log the auth response in production — `data` carries the session
-    // access + refresh tokens.
-    if (__DEV__) console.log("SIGNUP:", error?.message || "ok");
-
-    if (error) {
-      Alert.alert(authErrorMessage(error));
-      return;
-    }
-
-    Alert.alert(t("auth.checkEmailTitle"), t("auth.confirmSentBody"));
-  } else {
-    const { data, error } =
-      await supabase.auth.signInWithPassword({
-        email,
+  // One request at a time: a second tap while the first is in flight sent a
+  // second sign-up (and a second confirmation email) or a second sign-in.
+  if (authBusy) return;
+  // Keyboards' autocomplete often leaves a trailing space after an address,
+  // which Supabase rejects as an invalid email.
+  const cleanEmail = email.trim();
+  setAuthBusy(true);
+  try {
+    if (authMode === "signup") {
+      const { error } = await supabase.auth.signUp({
+        email: cleanEmail,
         password,
+        options: {
+          emailRedirectTo: "pocketplanter://auth",
+        },
       });
-    if (__DEV__) console.log("LOGIN:", error?.message || "ok");
 
-    if (error) {
-      Alert.alert(authErrorMessage(error));
-      return;
-    }
+      // Never log the auth response in production — it carries the session
+      // access + refresh tokens.
+      if (__DEV__) console.log("SIGNUP:", error?.message || "ok");
 
-    // Signed in with a typed password that works: if biometric sign-in holds an
-    // older one for this account (changed on another device), bring it up to date
-    // rather than let the next Face ID attempt fail.
-    if (biometricEnabled && (await getBiometricEmail()) === email) {
-      await enableBiometricLogin(email, password);
+      if (error) {
+        Alert.alert(authErrorMessage(error));
+        return;
+      }
+
+      Alert.alert(t("auth.checkEmailTitle"), t("auth.confirmSentBody"));
+    } else {
+      const { error } =
+        await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password,
+        });
+      if (__DEV__) console.log("LOGIN:", error?.message || "ok");
+
+      if (error) {
+        Alert.alert(authErrorMessage(error));
+        return;
+      }
+
+      // Signed in with a typed password that works: if biometric sign-in holds an
+      // older one for this account (changed on another device), bring it up to date
+      // rather than let the next Face ID attempt fail.
+      if (biometricEnabled && (await getBiometricEmail()) === cleanEmail) {
+        await enableBiometricLogin(cleanEmail, password);
+      }
+      maybeOfferBiometric(cleanEmail, password);
     }
-    maybeOfferBiometric(email, password);
+  } catch {
+    // A dropped connection throws rather than returning an error, and used to
+    // leave the button doing nothing at all.
+    Alert.alert(t("common.somethingWrong"), t("common.pleaseTryAgain"));
+  } finally {
+    setAuthBusy(false);
   }
 };
 
@@ -5245,12 +5261,18 @@ const jumpToTab = useCallback((tab) => {
             </View>
 
             <Pressable accessibilityRole="button"
-              style={({ pressed }) => [styles.authButton, pressed && { opacity: 0.8 }]}
+              accessibilityState={{ busy: authBusy, disabled: authBusy }}
+              disabled={authBusy}
+              style={({ pressed }) => [styles.authButton, (pressed || authBusy) && { opacity: 0.8 }]}
               onPress={handleAuth}
             >
-              <Text style={styles.authButtonText}>
-                {authMode === "signup" ? t("auth.signUp") : t("auth.logIn")}
-              </Text>
+              {authBusy ? (
+                <ActivityIndicator color="#07120b" />
+              ) : (
+                <Text style={styles.authButtonText}>
+                  {authMode === "signup" ? t("auth.signUp") : t("auth.logIn")}
+                </Text>
+              )}
             </Pressable>
 
             {authMode === "login" && biometricAvailable && biometricEnabled ? (
