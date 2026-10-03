@@ -918,3 +918,16 @@ describe("common buttons", () => {
     eq(offenders, []);
   });
 });
+
+describe("tn", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("shows a caller's formatted count while choosing the form from the number", () => {
+    try {
+      i18n.setLocale("de");
+      eq(i18n.tn("calc.cansHose", 1.5, { count: "1,5", seconds: 30 }), "≈ 1,5 Gießkannen · oder 30 s Schlauch");
+      eq(i18n.tn("harvestLog.daysAgo", 2), "vor 2 Tagen");
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});
