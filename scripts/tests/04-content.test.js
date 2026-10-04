@@ -896,3 +896,39 @@ describe("sorting plants by harvest", () => {
     ok(/harvestSortDays\(a\) - harvestSortDays\(b\)/.test(app));
   });
 });
+
+describe("translations keep their placeholders", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  const load = (code) => { const m = require(path.join(ROOT, `lib/locales/${code}.js`)); return m.default || m; };
+  const flat = (obj, prefix = "", out = {}) => {
+    for (const [k, v] of Object.entries(obj || {})) {
+      const key = prefix ? `${prefix}.${k}` : k;
+      if (v && typeof v === "object") flat(v, key, out); else if (typeof v === "string") out[key] = v;
+    }
+    return out;
+  };
+  const holes = (s) => [...String(s).matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(",");
+  it("in every language, for every key", () => {
+    // A placeholder spelt differently — or dropped — shows to the gardener as
+    // "{plant}" or loses the plant's name from the sentence.
+    const en = flat(load("en"));
+    const bad = [];
+    for (const { code } of i18n.LANGUAGES) {
+      if (code === "en") continue;
+      const tr = flat(load(code));
+      for (const [k, v] of Object.entries(tr)) if (k in en && holes(v) !== holes(en[k])) bad.push(`${code}:${k} {${holes(v)}} vs {${holes(en[k])}}`);
+    }
+    eq(bad, []);
+  });
+});
+
+describe("the plant page", () => {
+  const page = require("fs").readFileSync(path.join(ROOT, "screens/PlantDetailScreen.js"), "utf8");
+  it("has no English left in its labels", () => {
+    // Its ~70 labels were hard-coded English in all ten languages.
+    ok(!/label: "[A-Z]/.test(page), "a quick-fact label is hard-coded");
+    ok(!/>(Start|Restart|Stop|Tracking|Reminder|Watered)</.test(page) && !/"(Start|Restart|Tracking|Watered)"/.test(page), "a button is hard-coded");
+    ok(!/`Ready in \$\{/.test(page) && !/`Last fed /.test(page), "a countdown is hard-coded");
+    ok((page.match(/t\("plantDetailScreen\./g) || []).length >= 65);
+  });
+});
