@@ -683,3 +683,29 @@ describe("what the profile cards are given", () => {
     }
   });
 });
+
+describe("searching for a plant", () => {
+  const core = require(path.join(ROOT, "core.js"));
+  it("ignores accents either way round", () => {
+    eq(core.foldForSearch("Jalapeño"), "jalapeno");
+    eq(core.foldForSearch("Cupuaçu"), "cupuacu");
+    eq(core.foldForSearch("Ají Amarillo"), "aji amarillo");
+    eq(core.foldForSearch(undefined), "");
+    eq(core.getSearchSuggestions("jalapeno", 1)[0]?.name, "Jalapeño");
+    eq(core.getSearchSuggestions("padron", 1)[0]?.name, "Padrón Pepper");
+  });
+  it("folds every plant name to plain letters", () => {
+    // A character the map misses leaves that plant unfindable without it.
+    const produce = require(path.join(ROOT, "data/produceData.js"));
+    const list = produce.default || produce;
+    const unfolded = list.map((p) => core.foldForSearch(p.name)).filter((n) => /[^\x00-\x7f]/.test(n));
+    eq(unfolded, []);
+  });
+  it("is how the Plants tab and global search compare", () => {
+    const fs = require("fs");
+    const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    const modal = fs.readFileSync(path.join(ROOT, "components/GlobalSearchModal.js"), "utf8");
+    ok(/const terms = foldForSearch\(plantSearch\)/.test(app) && /haystackFolded\.includes\(t\)/.test(app));
+    ok(/const query = foldForSearch\(q\.trim\(\)\)/.test(modal) && /foldForSearch\(p\.name\)\.includes\(query\)/.test(modal));
+  });
+});

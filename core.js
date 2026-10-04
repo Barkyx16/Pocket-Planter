@@ -3847,12 +3847,24 @@ export function getNextWaterInfo(plantName, item, wateringHistory, wateredPlants
   return { daysUntil, label, urgency, interval, rainSoon };
 }
 
+// Text as search compares it: lower case, accents dropped. Four plants are named
+// with one — Jalapeño, Padrón Pepper, Ají Amarillo, Cupuaçu — and almost nobody
+// types the ñ, so "jalapeno" found nothing at all.
+// An explicit map rather than String.prototype.normalize, which not every
+// JavaScript engine a React Native build can ship with implements.
+const SEARCH_FOLD = { á: "a", à: "a", â: "a", ä: "a", ã: "a", å: "a", é: "e", è: "e", ê: "e", ë: "e",
+  í: "i", ì: "i", î: "i", ï: "i", ñ: "n", ó: "o", ò: "o", ô: "o", ö: "o", õ: "o", ø: "o",
+  ú: "u", ù: "u", û: "u", ü: "u", ç: "c", ý: "y", ÿ: "y" };
+export function foldForSearch(value) {
+  return String(value ?? "").toLowerCase().replace(/[^\x00-\x7f]/g, (ch) => SEARCH_FOLD[ch] || ch);
+}
+
 export function getSearchSuggestions(query, limit = 3) {
-  const q = String(query || "").toLowerCase().trim();
+  const q = foldForSearch(query).trim();
   if (!q || q.length < 2) return [];
   const scored = produceData
     .map((item) => {
-      const name = String(item.name || "").toLowerCase();
+      const name = foldForSearch(item.name);
       let score = 0;
       if (name.startsWith(q)) score = 100;
       else if (name.includes(q)) score = 80;

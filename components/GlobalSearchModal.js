@@ -1,7 +1,7 @@
 import { memo, useState } from "react";
 import { Image, Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import produceData from "../data/produceData";
-import { PEST_WATCH_DATA, resolvePlantImageSource, tapHaptic } from "../core";
+import { PEST_WATCH_DATA, foldForSearch, resolvePlantImageSource, tapHaptic } from "../core";
 import { getPestImage } from "../data/pestImageMap";
 import { FEATURE_INDEX, searchFeatures } from "../data/featureIndex";
 import { useTranslation, formatDate } from "../lib/i18n";
@@ -11,22 +11,22 @@ import { touchSlop } from "../lib/a11y";
 export const GlobalSearchModal = memo(function GlobalSearchModal({ visible, onClose, theme, savedPlants, journalEntries, onOpenPlant, onOpenPest, onGoToJournal, onJumpToTab }) {
   const { t } = useTranslation();
   const [q, setQ] = useState("");
-  const query = q.trim().toLowerCase();
+  const query = foldForSearch(q.trim());
   const savedSet = new Set((savedPlants || []).map((n) => n.toLowerCase()));
 
   const plants = query.length >= 1
     ? produceData
-        .filter((p) => p.name.toLowerCase().includes(query))
-        .sort((a, b) => (b.name.toLowerCase().startsWith(query) ? 1 : 0) - (a.name.toLowerCase().startsWith(query) ? 1 : 0))
+        .filter((p) => foldForSearch(p.name).includes(query))
+        .sort((a, b) => (foldForSearch(b.name).startsWith(query) ? 1 : 0) - (foldForSearch(a.name).startsWith(query) ? 1 : 0))
         .slice(0, 8)
     : [];
   const pests = query.length >= 1
-    ? PEST_WATCH_DATA.filter((p) => p.name.toLowerCase().includes(query)).slice(0, 5)
+    ? PEST_WATCH_DATA.filter((p) => foldForSearch(p.name).includes(query)).slice(0, 5)
     : [];
   const journals = query.length >= 1
     ? (journalEntries || []).filter((e) =>
-        (e.plantName || "").toLowerCase().includes(query) ||
-        (e.growthStage || "").toLowerCase().includes(query)
+        foldForSearch(e.plantName).includes(query) ||
+        foldForSearch(e.growthStage).includes(query)
       ).slice(0, 6)
     : [];
 

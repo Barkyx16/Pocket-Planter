@@ -81,6 +81,7 @@ import {
   getFrostSeasonMonths,
   MONTH_NAMES,
   getWeekKey,
+  foldForSearch,
   keepEarned,
   getTotalWaterings,
   getUpcomingFrost,
@@ -1320,7 +1321,7 @@ setDailyBonusClaimed(isSameDayKey(data?.daily_bonus_date, getTodayKey()));
 
   const filteredPlants = useMemo(() => {
   const DIFF_ORDER = { Easy: 0, Medium: 1, Hard: 2 };
-  const terms = plantSearch.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  const terms = foldForSearch(plantSearch).trim().split(/\s+/).filter(Boolean);
   const byName = (a, b) => a.name.localeCompare(b.name);
 
   const list = produceData.filter((item) => {
@@ -1344,10 +1345,9 @@ setDailyBonusClaimed(isSameDayKey(data?.daily_bonus_date, getTodayKey()));
         getPlantSeasonLabel(item, zone),
         getPlantDifficulty(item).label,
         isPerennial(item) ? "perennial" : "annual",
-      ]
-        .join(" ")
-        .toLowerCase();
-      if (!terms.every((t) => haystack.includes(t))) return false;
+      ].join(" ");
+      const haystackFolded = foldForSearch(haystack);
+      if (!terms.every((t) => haystackFolded.includes(t))) return false;
     }
     return true;
   });
