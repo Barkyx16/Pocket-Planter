@@ -2522,17 +2522,15 @@ export function getUpcomingFrost(weather) {
 // from the shared app group; nothing here is AI or network. Keep it small — a
 // widget shows a glance, not a screen.
 export function buildWidgetSnapshot({
-  savedPlantObjs = [], wateredPlants = {}, wateringHistory = {},
+  savedPlantObjs = [], wateredPlants = {}, wateringHistory = {}, snoozedPlants = {},
   weather = null, harvestTrackers = {}, streakData = null, plantPick = null, zone = null,
 } = {}) {
-  const today = getTodayKey();
-
-  // Plants due for water today (not yet watered).
-  const dueNames = [];
-  (savedPlantObjs || []).forEach((p) => {
-    if (!p || !p.name || wateredPlants[p.name] === today) return;
-    const nw = getNextWaterInfo(p.name, p, wateringHistory, wateredPlants, weather);
-    if (nw && nw.urgency === "due") dueNames.push(p.name);
+  // The same list Home shows. The widget had its own rule: it skipped snoozed
+  // plants' snoozes, let a rain forecast hide a plant that was due, and left out
+  // a plant never watered — so the home screen and the app disagreed.
+  const dueNames = getPlantsDueForWater({
+    savedPlants: (savedPlantObjs || []).filter((p) => p && p.name).map((p) => p.name),
+    wateredPlants, wateringHistory, snoozedPlants, weather,
   });
 
   // Plants whose harvest tracker has reached (or passed) its window.

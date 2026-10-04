@@ -810,3 +810,34 @@ describe("claiming a reward", () => {
     ok(/claimingRef\.current\.has\(key\)\) return;\s*\n\s*claimingRef\.current\.add\(key\);/.test(seasonal), "a challenge must lock at once");
   });
 });
+
+describe("App's day state", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("is declared before anything reads it", () => {
+    // A const read above its declaration is a ReferenceError on the first render,
+    // and nothing else in the checks renders App.js to notice.
+    // (A function further up keeps a local `const todayKey` of its own; only the
+    // component-level reads count — builder arguments and dependency arrays.)
+    const decl = app.indexOf("const [todayKey, setTodayKey]");
+    ok(decl > 0, "todayKey should be declared");
+    const reads = [...app.matchAll(/today: todayKey|\btodayKey\]|^\s*todayKey,\s*$|useRef\(todayKey\)/gm)].map((m) => m.index);
+    ok(reads.length >= 4, `only ${reads.length} reads of todayKey found`);
+    eq(reads.filter((i) => i < decl), [], "todayKey read above its declaration");
+  });
+});
+
+describe("the widget's water count", () => {
+  const core = require(path.join(ROOT, "core.js"));
+  const item = (n) => ({ name: n, type: "Vegetables" });
+  const ago = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return core.getDateKey(d); };
+  it("is the same list Home shows", () => {
+    const snap = (over) => core.buildWidgetSnapshot({
+      savedPlantObjs: [item("Tomato"), item("Pepper"), item("Carrot")], wateredPlants: {},
+      wateringHistory: { Tomato: [ago(5)], Pepper: [ago(5)], Carrot: [ago(1)] }, snoozedPlants: {}, weather: null, ...over,
+    });
+    eq(snap().waterDue.count, 2, "two are past their countdown, one is not");
+    eq(snap({ snoozedPlants: { Pepper: core.getTomorrowKey() } }).waterDue.names, ["Tomato"], "a snoozed plant is not due");
+    eq(snap({ weather: { precipChance: 90 } }).waterDue.count, 2, "rain does not hide a due plant");
+    eq(snap({ wateringHistory: {} }).waterDue.count, 3, "a plant never watered is due");
+  });
+});

@@ -1310,15 +1310,45 @@ setDailyBonusClaimed(isSameDayKey(data?.daily_bonus_date, getTodayKey()));
     AsyncStorage.setItem("pp_gettingStartedDismissed", "1").catch(() => {});
   }, []);
 
+// The day as the app last saw it. iOS keeps an app suspended for days and brings
+// it back without a launch, and everything that happened "on launch" — counting
+// the day toward the streak, the harvest-ready check — only ran on a cold start.
+// A gardener who opened the app every morning by switching back to it was never
+// counted, and when it finally did relaunch the gap looked like days missed and
+// the streak reset. Today's quests and counts stayed on the day it was opened.
+const [todayKey, setTodayKey] = useState(getTodayKey);
+const onNewDayRef = useRef(null);
+onNewDayRef.current = () => {
+  updateDailyStreak();
+  checkHarvestNotifications();
+  // Also launch-only until now: the week's streak freeze coming back, and a
+  // forecast for the new day rather than the one the app was opened on.
+  const week = getWeekKey();
+  setStreakFreeze((f) => (f?.weekKey === week ? f : { available: true, lastUsed: f?.lastUsed ?? null, weekKey: week }));
+  setWeatherRefreshToken((value) => value + 1);
+};
+useEffect(() => {
+  const sub = AppState.addEventListener("change", (state) => {
+    if (state === "active") setTodayKey(getTodayKey());
+  });
+  return () => sub.remove();
+}, []);
+const seenDayRef = useRef(todayKey);
+useEffect(() => {
+  if (seenDayRef.current === todayKey) return; // the launch path already did it
+  seenDayRef.current = todayKey;
+  onNewDayRef.current?.();
+}, [todayKey]);
+
   // Keep the home-screen widgets / Live Activities fed with a fresh "what needs
   // attention today" snapshot whenever the underlying garden state changes.
   // No-ops safely until the native widget target is wired in (see lib/widgets.js).
   useEffect(() => {
     syncWidgets(buildWidgetSnapshot({
-      savedPlantObjs, wateredPlants, wateringHistory, weather,
+      savedPlantObjs, wateredPlants, wateringHistory, snoozedPlants, weather,
       harvestTrackers: visibleHarvestTrackers, streakData, plantPick: monthlySuggestions[0] || null, zone,
     }));
-  }, [savedPlantObjs, wateredPlants, wateringHistory, weather, visibleHarvestTrackers, streakData, monthlySuggestions, zone]);
+  }, [savedPlantObjs, wateredPlants, wateringHistory, snoozedPlants, weather, visibleHarvestTrackers, streakData, monthlySuggestions, zone, todayKey]);
 
   const filteredPlants = useMemo(() => {
   const DIFF_ORDER = { Easy: 0, Medium: 1, Hard: 2 };
@@ -1417,36 +1447,6 @@ const gardenHealth = useMemo(
   () => calculateGardenHealth(combinedGardenMap),
   [combinedGardenMap]
 );
-
-// The day as the app last saw it. iOS keeps an app suspended for days and brings
-// it back without a launch, and everything that happened "on launch" — counting
-// the day toward the streak, the harvest-ready check — only ran on a cold start.
-// A gardener who opened the app every morning by switching back to it was never
-// counted, and when it finally did relaunch the gap looked like days missed and
-// the streak reset. Today's quests and counts stayed on the day it was opened.
-const [todayKey, setTodayKey] = useState(getTodayKey);
-const onNewDayRef = useRef(null);
-onNewDayRef.current = () => {
-  updateDailyStreak();
-  checkHarvestNotifications();
-  // Also launch-only until now: the week's streak freeze coming back, and a
-  // forecast for the new day rather than the one the app was opened on.
-  const week = getWeekKey();
-  setStreakFreeze((f) => (f?.weekKey === week ? f : { available: true, lastUsed: f?.lastUsed ?? null, weekKey: week }));
-  setWeatherRefreshToken((value) => value + 1);
-};
-useEffect(() => {
-  const sub = AppState.addEventListener("change", (state) => {
-    if (state === "active") setTodayKey(getTodayKey());
-  });
-  return () => sub.remove();
-}, []);
-const seenDayRef = useRef(todayKey);
-useEffect(() => {
-  if (seenDayRef.current === todayKey) return; // the launch path already did it
-  seenDayRef.current = todayKey;
-  onNewDayRef.current?.();
-}, [todayKey]);
 
 const gardenXP = useMemo(
   () =>
