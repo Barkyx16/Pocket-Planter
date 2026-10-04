@@ -1032,3 +1032,20 @@ describe("reminder times", () => {
     }
   });
 });
+
+describe("labels from core are compared in English", () => {
+  it("never against a translated string", () => {
+    // core returns fixed English labels ("Excellent Pair", "Plant now"…);
+    // comparing one with t(...) is always false outside English, which hid
+    // the bed map's good-pair highlight in nine languages.
+    const bad = [];
+    for (const dir of ["components", "screens"]) {
+      for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((n) => n.endsWith(".js"))) {
+        const src = fs.readFileSync(path.join(ROOT, dir, f), "utf8");
+        if (/[=!]==\s*t\(/.test(src)) bad.push(`${dir}/${f}`);
+      }
+    }
+    if (/[=!]==\s*t\(/.test(fs.readFileSync(path.join(ROOT, "App.js"), "utf8"))) bad.push("App.js");
+    eq(bad, []);
+  });
+});
