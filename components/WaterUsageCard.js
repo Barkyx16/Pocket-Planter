@@ -5,11 +5,14 @@ import { WATER_UNITS, getTodayKey, tapHaptic, toGallons } from "../core";
 import { useTranslation, formatDate } from "../lib/i18n";
 import { IconText } from "./IconText";
 
-export const WaterUsageCard = memo(function WaterUsageCard({ theme, savedPlants, wateringAmounts, setWateringAmounts, onUndoToast }) {
+export const WaterUsageCard = memo(function WaterUsageCard({ theme, savedPlants, wateringAmounts, setWateringAmounts, onUndoToast, unitSystem }) {
   const { t } = useTranslation();
   const [plant, setPlant] = useState("Garden");
   const [amount, setAmount] = useState("");
-  const [unit, setUnit] = useState("gal");
+  // Totals follow the units setting. They were always gallons, so a gardener on
+  // metric who logged "2 L" read back "0.5 gal this week".
+  const metric = unitSystem === "metric";
+  const [unit, setUnit] = useState(metric ? "L" : "gal");
   const [showPanel, setShowPanel] = useState(false);
 
   const plantOptions = ["Garden", ...(savedPlants || [])];
@@ -62,7 +65,10 @@ export const WaterUsageCard = memo(function WaterUsageCard({ theme, savedPlants,
     }
   };
 
-  const fmtGal = (g) => (g >= 10 ? Math.round(g) : Math.round(g * 10) / 10);
+  const fmtGal = (g) => {
+    const v = metric ? g / 0.264172 : g;
+    return v >= 10 ? Math.round(v) : Math.round(v * 10) / 10;
+  };
 
 return (
     <View>
@@ -72,18 +78,18 @@ return (
         <View style={{ flex: 1, borderRadius: 16, paddingVertical: 16, alignItems: "center", backgroundColor: "rgba(107, 199, 255, 0.1)", borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.24)" }}>
           <Text style={{ fontSize: 20 }}>📅</Text>
           <Text style={{ color: "#6bc7ff", fontSize: 24, fontWeight: "900", marginTop: 6 }}>{fmtGal(weekGal)}</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 2 }}>{t("waterUsage.galThisWeek")}</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 2 }}>{t(metric ? "waterUsage.litersThisWeek" : "waterUsage.galThisWeek")}</Text>
         </View>
         <View style={{ flex: 1, borderRadius: 16, paddingVertical: 16, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
           <Text style={{ fontSize: 20 }}>💧</Text>
           <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "900", marginTop: 6 }}>{fmtGal(totalGal)}</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 2 }}>{t("waterUsage.galAlltime")}</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 2 }}>{t(metric ? "waterUsage.litersAlltime" : "waterUsage.galAlltime")}</Text>
         </View>
       </View>
 
       {thirstiest && thirstiest[1] > 0 ? (
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 14, textAlign: "center" }}>
-          {t("waterUsage.thirstiest")} <Text style={{ color: "#6bc7ff", fontWeight: "900" }}>{thirstiest[0]}</Text> (~{fmtGal(thirstiest[1])} {t("waterUsage.gal")}
+          {t("waterUsage.thirstiest")} <Text style={{ color: "#6bc7ff", fontWeight: "900" }}>{thirstiest[0]}</Text> (~{fmtGal(thirstiest[1])} {t(metric ? "waterUsage.liters" : "waterUsage.gal")}
         </Text>
       ) : null}
 

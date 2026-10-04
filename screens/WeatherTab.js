@@ -74,7 +74,7 @@ export function WeatherTab({ frostAlertsOn, gardenMap, harvestTrackers, jumpToTa
         extraTabs={[
           { id: "schedule", label: t("weather.schedule"), node: <AdaptiveWateringCard theme={theme} savedPlants={savedPlants} wateringHistory={wateringHistory} wateredPlants={wateredPlants} weather={weather} onOpenPlant={openPlantFromList} /> },
           { id: "rainfall", label: t("weather.rainfall"), node: <RainfallLogCard theme={theme} weather={weather} unitSystem={unitSystem} /> },
-          { id: "usage", label: t("weather.usage"), node: <WaterUsageCard theme={theme} savedPlants={savedPlants} wateringAmounts={wateringAmounts} setWateringAmounts={setWateringAmounts} onUndoToast={showUndoToast} /> },
+          { id: "usage", label: t("weather.usage"), node: <WaterUsageCard theme={theme} savedPlants={savedPlants} wateringAmounts={wateringAmounts} setWateringAmounts={setWateringAmounts} onUndoToast={showUndoToast} unitSystem={unitSystem} /> },
           { id: "forecast", label: t("weather.n7day"), node: <WateringForecastCard theme={theme} savedPlants={savedPlants} wateringHistory={wateringHistory} wateredPlants={wateredPlants} weather={weather} onOpenPlant={openPlantFromList} /> },
         ]}
       />

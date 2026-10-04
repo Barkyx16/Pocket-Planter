@@ -608,3 +608,15 @@ describe("the garden ROI card's money", () => {
     eq(formatMoney(undefined), "0");
   });
 });
+
+describe("the water usage card", () => {
+  const fs = require("fs");
+  const card = fs.readFileSync(path.join(ROOT, "components/WaterUsageCard.js"), "utf8");
+  const tab = fs.readFileSync(path.join(ROOT, "screens/WeatherTab.js"), "utf8");
+  it("totals in liters for a metric gardener", () => {
+    ok(/unitSystem=\{unitSystem\}/.test(tab), "the Weather tab must pass the units setting");
+    ok(/const metric = unitSystem === "metric";/.test(card));
+    ok(/metric \? g \/ 0\.264172 : g/.test(card), "gallons must be converted for display");
+    for (const k of ["litersThisWeek", "litersAlltime", "liters"]) ok(card.includes(`waterUsage.${k}`), `${k} must be used`);
+  });
+});
