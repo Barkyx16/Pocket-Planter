@@ -40,9 +40,9 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
   const toggleBulk = (name) => setBulkSel((cur) => cur.includes(name) ? cur.filter((n) => n !== name) : [...cur, name]);
   const toggleAttr = (key) => { tapHaptic("light"); setPlantAttrFilters((cur) => cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key]); };
   const ATTR_FILTERS = [
-    { key: "container", label: "🪴 Container-friendly" },
-    { key: "fullsun", label: "☀️ Full sun" },
-    { key: "perennial", label: "🔁 Perennial" },
+    { key: "container", label: t("tabText.filterContainer") },
+    { key: "fullsun", label: t("tabText.filterFullSun") },
+    { key: "perennial", label: t("tabText.filterPerennial") },
   ];
   const exitSelect = () => { setSelectMode(false); setBulkSel([]); };
   const bulkSave = () => {
@@ -73,8 +73,8 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
       {!premiumUnlocked ? (
       <PremiumLockedCard
         theme={theme}
-        title="This month's picks locked"
-        body="Unlock Premium to see the best plants to start this month, matched to your zone and climate."
+        title={t("tabText.monthPicksLocked")}
+        body={t("tabText.monthPicksLockedBody")}
         onUnlock={onViewPremium}
       />
       ) : (
@@ -465,11 +465,11 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
           <Pressable
             onPress={onViewPremium}
             accessibilityRole="button"
-            accessibilityLabel="Unlock all plants with Premium"
+            accessibilityLabel={t("tabText.unlockAllLabel")}
             style={{ marginTop: 14, backgroundColor: "rgba(255, 216, 107, 0.16)", borderRadius: 16, paddingVertical: 14, paddingHorizontal: 16, alignItems: "center", borderWidth: 1, borderColor: "#ffd86b" }}
           >
             <Text style={{ color: "#ffd86b", fontWeight: "900", fontSize: 14 }}>
-              🔒 Unlock all {filteredPlants.length} plants with Premium
+              {tn("tabText.unlockAllCount", filteredPlants.length)}
             </Text>
           </Pressable>
         ) : filteredPlants.length > plantsVisibleCount ? (
