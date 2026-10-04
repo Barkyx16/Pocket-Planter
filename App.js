@@ -81,6 +81,7 @@ import {
   getFrostSeasonMonths,
   MONTH_NAMES,
   getWeekKey,
+  hasHarvestCountdown,
   getPlantsDueForWater,
   foldForSearch,
   keepEarned,
@@ -1384,7 +1385,10 @@ useEffect(() => {
   });
 
   if (plantSortMode === "az") return list.sort(byName);
-  if (plantSortMode === "harvest") return list.sort((a, b) => (getHarvestDays(a) - getHarvestDays(b)) || byName(a, b));
+  // Fastest first; plants that harvest by season rather than on a countdown go
+  // last, instead of sitting at the 75-day fallback among the annuals.
+  const harvestSortDays = (item) => (hasHarvestCountdown(item) ? getHarvestDays(item) : Infinity);
+  if (plantSortMode === "harvest") return list.sort((a, b) => (harvestSortDays(a) - harvestSortDays(b)) || byName(a, b));
   if (plantSortMode === "difficulty") return list.sort((a, b) => (DIFF_ORDER[getPlantDifficulty(a).label] - DIFF_ORDER[getPlantDifficulty(b).label]) || byName(a, b));
   // "smart" (default): in-season plants first, then alphabetical.
   return list.sort((a, b) => {

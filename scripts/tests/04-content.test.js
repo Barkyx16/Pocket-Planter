@@ -888,3 +888,11 @@ describe("what an offline launch falls back to", () => {
     }
   });
 });
+
+describe("sorting plants by harvest", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("puts seasonal perennials last, not at the 75-day fallback", () => {
+    ok(/const harvestSortDays = \(item\) => \(hasHarvestCountdown\(item\) \? getHarvestDays\(item\) : Infinity\);/.test(app));
+    ok(/harvestSortDays\(a\) - harvestSortDays\(b\)/.test(app));
+  });
+});
