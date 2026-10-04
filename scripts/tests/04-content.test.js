@@ -781,3 +781,19 @@ describe("watering everything that is due", () => {
     ok(/getPlantsDueForWater\(/.test(dash) && !/savedPlants\.length - wateredTodayCount/.test(dash), "the dashboard must count what is due");
   });
 });
+
+describe("the garden quiz", () => {
+  const quiz = require("fs").readFileSync(path.join(ROOT, "components/QuizGame.js"), "utf8");
+  it("pays out once per answer and once per finish, however fast the taps", () => {
+    ok(/if \(picked !== null \|\| answeredRef\.current\) return;\s*\n\s*answeredRef\.current = true;/.test(quiz), "an answer must lock at once");
+    ok(/if \(advancingRef\.current \|\| finished\) return;\s*\n\s*advancingRef\.current = true;/.test(quiz), "Next must lock at once");
+    ok(/answeredRef\.current = false;\s*\n\s*setPicked\(null\);/.test(quiz), "the next question must unlock answering");
+  });
+});
+describe("the garden quiz's Next button", () => {
+  const quiz = require("fs").readFileSync(path.join(ROOT, "components/QuizGame.js"), "utf8");
+  it("unlocks when the round has changed, not on a timer", () => {
+    ok(/useEffect\(\(\) => \{ advancingRef\.current = false; \}, \[round\]\);/.test(quiz));
+    ok(!/setTimeout\(\(\) => \{ advancingRef/.test(quiz));
+  });
+});

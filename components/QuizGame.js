@@ -21,10 +21,18 @@ export function QuizGame({ theme, onExit, title, emoji, accent = "#5cff89", tota
   const [best, setBest] = useState(0);
   const [earned, setEarned] = useState(0); // XP earned this run
   const timerRef = useRef(null);
+  // State only changes on the next render, so two taps in the same frame both
+  // saw `picked === null` and both paid out — and a double tap on the last
+  // "Next" paid the completion bonus twice. These change at once.
+  const answeredRef = useRef(false);
+  const advancingRef = useRef(false);
 
   useEffect(() => {
     AsyncStorage.getItem(storageKey).then((v) => { if (v) setBest(Number(v) || 0); }).catch(() => {});
   }, [storageKey]);
+
+  // "Next" unlocks once the new round is on screen.
+  useEffect(() => { advancingRef.current = false; }, [round]);
 
   // Per-question countdown (only when a game opts into a timer).
   useEffect(() => {
@@ -35,7 +43,8 @@ export function QuizGame({ theme, onExit, title, emoji, accent = "#5cff89", tota
   }, [timeLeft, picked, finished, timePerQuestion]);
 
   function reveal(index) {
-    if (picked !== null) return;
+    if (picked !== null || answeredRef.current) return;
+    answeredRef.current = true;
     clearTimeout(timerRef.current);
     const correct = index >= 0 && question.options[index]?.correct;
     if (correct) {
@@ -48,6 +57,8 @@ export function QuizGame({ theme, onExit, title, emoji, accent = "#5cff89", tota
   }
 
   function next() {
+    if (advancingRef.current || finished) return;
+    advancingRef.current = true;
     const nextRound = round + 1;
     if (nextRound >= totalRounds) {
       const finalScore = score; // score already reflects the last answer
@@ -61,11 +72,13 @@ export function QuizGame({ theme, onExit, title, emoji, accent = "#5cff89", tota
     }
     setRound(nextRound);
     setQuestion(makeQuestion?.() ?? null);
+    answeredRef.current = false;
     setPicked(null);
     setTimeLeft(timePerQuestion);
   }
 
   function restart() {
+    answeredRef.current = false; advancingRef.current = false;
     setRound(0); setScore(0); setPicked(null); setTimeLeft(timePerQuestion);
     setEarned(0); setQuestion(makeQuestion?.() ?? null); setFinished(false);
   }
