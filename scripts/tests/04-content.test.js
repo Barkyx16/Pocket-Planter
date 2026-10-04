@@ -951,7 +951,8 @@ describe("screens that are fully translated", () => {
   // Measured by the repo's own coverage script, so a string added in English to
   // one of these fails here instead of shipping untranslated in nine languages.
   const { execFileSync } = require("child_process");
-  const DONE = ["screens/PlantDetailScreen.js", "components/DiseaseDetailScreen.js", "components/WeatherTeaserCard.js"];
+  const DONE = ["screens/PlantDetailScreen.js", "components/DiseaseDetailScreen.js", "components/WeatherTeaserCard.js", "screens/GamesTab.js", "components/QuizGame.js",
+    "components/MyGardenTodayCard.js", "components/LiveWeatherCard.js", "components/GardenIntelligenceCard.js"];
   for (const file of DONE) {
     it(`${file} has no hard-coded English`, () => {
       const out = execFileSync(process.execPath, [path.join(ROOT, "scripts/i18n-coverage.js"), file], { cwd: ROOT, encoding: "utf8" });

@@ -24,10 +24,35 @@ const SKIP_FILES = /backup|prerefactor|zip_zone|\.test\./;
 // paths keyed by plant name, not display copy.
 const NOT_TRANSLATABLE = /lib[/\\]locales|ImageMap\.js|plantImages\.js/;
 
+// A string that names an entry in the English dictionary is a translation key
+// kept in a table or a conditional — `t(open ? "a.close" : "a.open")`, a list of
+// labels translated at render — not English copy, and was being counted as both.
+const EN_KEYS = (() => {
+  const keys = new Set();
+  try {
+    const src = fs.readFileSync(path.join(ROOT, "lib/locales/en.js"), "utf8");
+    const ast = parser.parse(src, { sourceType: "module" });
+    const visit = (node, prefix) => {
+      for (const prop of node.properties || []) {
+        const name = prop.key && (prop.key.name || prop.key.value);
+        if (!name) continue;
+        const key = prefix ? `${prefix}.${name}` : name;
+        if (prop.value && prop.value.type === "ObjectExpression") {
+          keys.add(key);
+          visit(prop.value, key);
+        } else keys.add(key);
+      }
+    };
+    traverse(ast, { ObjectExpression(p) { if (!p.parentPath.isObjectProperty()) { visit(p.node, ""); p.stop(); } } });
+  } catch { /* no dictionary, no exemption */ }
+  return keys;
+})();
+
 function isProse(value) {
   if (typeof value !== "string") return false;
   const s = value.trim();
   if (s.length < 3) return false;
+  if (EN_KEYS.has(s)) return false;
   if (/^(rgba?|#[0-9a-f]{3,8}|https?:|\.\/|\/|@)/i.test(s)) return false;
   if (/^[a-z0-9_-]+$/i.test(s) && !s.includes(" ")) return false;
   if (/^[\d\s.,:%°·-]+$/.test(s)) return false;
