@@ -1836,6 +1836,17 @@ sowLog,
 frostOverrides,
 country,
 latitude,
+// Written by the save but missing here, so changing only one of these — the
+// postcode, a reminder switch, the units, an earned badge — never synced until
+// something else happened to change.
+zip,
+plantOfDayOn,
+weeklyRecapOn,
+shownBanners,
+dailyBonusClaimed,
+unitSystem,
+badgeEarnedDates,
+bannerEarnedDates,
 ]);
 // ── Storage load ───────────────────────────────────────────────────────────
 useEffect(() => {

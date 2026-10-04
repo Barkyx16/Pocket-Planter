@@ -858,3 +858,19 @@ describe("icon-only buttons", () => {
     eq(bare, []);
   });
 });
+
+describe("the cloud save", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("runs when anything it writes changes", () => {
+    // A field the save writes but its effect does not watch only reaches the
+    // cloud when something else changes — or never, if nothing does.
+    const fnAt = app.indexOf("const saveProfileToSupabase");
+    const fn = app.slice(fnAt, app.indexOf("\n};", fnAt));
+    const written = [...new Set([...fn.matchAll(/^\s+[a-z_]+: ([a-zA-Z]+),/gm)].map((m) => m[1]))]
+      .filter((n) => n !== "moduleData"); // collected inside the save, not state
+    ok(written.length >= 45, `only ${written.length} written fields found`);
+    const at = app.indexOf("saveTimerRef.current = setTimeout(() => { saveProfileToSupabase(); }, 1200);");
+    const deps = app.slice(app.indexOf("}, [", at), app.indexOf("]);", at));
+    eq(written.filter((n) => !new RegExp(`\\b${n}\\b`).test(deps)), [], "written to the cloud but not watched");
+  });
+});
