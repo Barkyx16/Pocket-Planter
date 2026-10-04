@@ -367,3 +367,25 @@ describe("removing a plant", () => {
     ok(/dropKey\(setWateringReminders\)/.test(removal), "the check-in must be forgotten too");
   });
 });
+
+describe("every way of watering", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const body = (sig) => {
+    const at = app.indexOf(sig);
+    if (at < 0) return "";
+    const end = app.indexOf("\nfunction ", at + sig.length);
+    const end2 = app.indexOf("\n  function ", at + sig.length);
+    const stops = [end, end2].filter((n) => n > 0);
+    return app.slice(at, stops.length ? Math.min(...stops) : undefined);
+  };
+
+  for (const sig of ["function markPlantWatered(", "function waterAllPlants(", "function waterPlant(", "function waterArea("]) {
+    it(`${sig.slice(9, -1)} restarts the water reminder`, () => {
+      // A reminder left on the previous watering's schedule tells the gardener
+      // to water a plant they watered a moment ago.
+      const fn = body(sig);
+      ok(fn.length > 0, `${sig} should exist`);
+      ok(/schedulePlantWaterReminder\(/.test(fn), `${sig} must reschedule the water reminder`);
+    });
+  }
+});

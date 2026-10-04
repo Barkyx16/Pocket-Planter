@@ -3688,6 +3688,12 @@ function waterArea(areaId) {
     });
     return next;
   });
+  // Restart each plant's water reminder from today, as the other two watering
+  // paths do. Without it the reminder set at the previous watering still fired
+  // on the old schedule, telling the gardener to water what they just had.
+  // Saved plants only: the reminders switch cancels by the saved list, so a
+  // reminder for a plant left in a bed after removal could never be turned off.
+  unwatered.filter((name) => savedPlants.includes(name)).forEach((name) => schedulePlantWaterReminder(name));
   const popup = { id: Date.now().toString(), amount: `💧 Watered ${area.name}!` };
   setXpPopups((popups) => [...popups, popup]);
   setTimeout(() => {
