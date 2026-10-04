@@ -3660,6 +3660,19 @@ export function formatTemp(fahrenheit, units, withUnit = false) {
   return `${val}°${withUnit ? (metric ? "C" : "F") : ""}`;
 }
 
+// Temperatures written into advice text — "wait until soil reaches 60°F",
+// "warm (60–80°F) days" — shown in the gardener's units. The prose is authored in
+// Fahrenheit, and before this a gardener on metric read Fahrenheit in every
+// planting step and fertilizer tip while the forecast beside it was in Celsius.
+// Every °F in the text is an absolute temperature, so plain conversion is right.
+export function localizeTemps(text, units) {
+  if (typeof text !== "string" || units !== "metric") return text;
+  const c = (f) => Math.round(fToC(parseFloat(f)));
+  return text
+    .replace(/(\d+(?:\.\d+)?)(\s?(?:–|-|to)\s?)(\d+(?:\.\d+)?)\s?°F/g, (m, a, sep, b) => `${c(a)}${sep}${c(b)}°C`)
+    .replace(/(-?\d+(?:\.\d+)?)\s?°F/g, (m, f) => `${c(f)}°C`);
+}
+
 // Rainfall/length: inches → mm for metric.
 export function formatLength(inches, units) {
   if (inches == null || Number.isNaN(Number(inches))) return "—";

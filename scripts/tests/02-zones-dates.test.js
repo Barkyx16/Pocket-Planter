@@ -423,3 +423,25 @@ describe("countHarvestsOn", () => {
     ok(/harvestLogToday = countHarvestsOn\(harvestLog, today\)/.test(src));
   });
 });
+
+describe("localizeTemps", () => {
+  it("converts every Fahrenheit temperature in advice text for metric", () => {
+    eq(core.localizeTemps("Wait until soil reaches 60°F before planting.", "metric"), "Wait until soil reaches 16°C before planting.");
+    eq(core.localizeTemps("Warm (60–80°F) days", "metric"), "Warm (16–27°C) days");
+    eq(core.localizeTemps("below 32°F and above 95°F", "metric"), "below 0°C and above 35°C");
+  });
+  it("leaves imperial, and anything that is not text, alone", () => {
+    eq(core.localizeTemps("above 95°F", "imperial"), "above 95°F");
+    eq(core.localizeTemps(undefined, "metric"), undefined);
+    eq(core.localizeTemps("no temperatures here", "metric"), "no temperatures here");
+  });
+  it("covers every °F the plant and fertilizer advice can produce", () => {
+    // Anything left over after conversion is a shape the regex does not know.
+    const src = require("fs").readFileSync(path.join(ROOT, "core.js"), "utf8") +
+      require("fs").readFileSync(path.join(ROOT, "components/FertilizerIntelligenceCard.js"), "utf8") +
+      require("fs").readFileSync(path.join(ROOT, "data/diseaseData.js"), "utf8");
+    const strings = src.split("\n").filter((l) => !/^\s*\/\//.test(l) && /°F/.test(l) && /["`]/.test(l));
+    const left = strings.map((l) => core.localizeTemps(l, "metric")).filter((l) => /\d\s?°F/.test(l));
+    eq(left, []);
+  });
+});

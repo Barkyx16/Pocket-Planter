@@ -4,6 +4,7 @@ import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { IconText } from "./IconText";
+import { localizeTemps } from "../core";
 
 // Disease counterpart of PestDetailScreen. Same layout and section rhythm, but
 // amber-themed (matching the "Common Diseases" section) and with disease-shaped
@@ -11,7 +12,7 @@ import { IconText } from "./IconText";
 // calendar, since diseases are condition-driven, not calendar-driven.
 const AMBER = "#ffcf8b";
 
-export const DiseaseDetailScreen = memo(function DiseaseDetailScreen({ theme, disease, onBack, onOpenPlant }) {
+export const DiseaseDetailScreen = memo(function DiseaseDetailScreen({ theme, disease, onBack, onOpenPlant, unitSystem }) {
   if (!disease) return null;
 
   // Affected = the user's own plants this disease hits (passed in from the plant
@@ -59,7 +60,7 @@ export const DiseaseDetailScreen = memo(function DiseaseDetailScreen({ theme, di
       <Section icon="💥" title="Damage it causes" text={disease.damage} color="#ff9f9f" />
       <Section icon="🛡️" title="How to prevent it" text={disease.prevent} color="#8effab" />
       <Section icon="✅" title="How to treat it" text={disease.treat} color="#5cff89" />
-      <Section icon="🌡️" title="Favorable conditions" text={disease.spreads} color={AMBER} />
+      <Section icon="🌡️" title="Favorable conditions" text={localizeTemps(disease.spreads, unitSystem)} color={AMBER} />
 
       {/* PLANTS AT RISK */}
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>

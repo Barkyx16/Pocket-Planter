@@ -6,7 +6,7 @@ import { PlantGrowthTimeline } from "../components/PlantGrowthTimeline";
 import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { PremiumLockedSection } from "../components/PremiumLockedSection";
 import { WeatherParticles } from "../components/WeatherParticles";
-import { getCompanionInfo, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, normalizeType, resolvePlantImageSource } from "../core";
+import { getCompanionInfo, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeTemps, normalizeType, resolvePlantImageSource } from "../core";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { getPestImage } from "../data/pestImageMap";
 import { formatDate, t } from "../lib/i18n";
@@ -18,7 +18,7 @@ import { Alert, Animated, Image, Linking, Pressable, SafeAreaView, ScrollView, S
 // early return inside AppInner — a big part of why that file passed 6,000 lines.
 // Behaviour is unchanged; the closure variables it relied on are now explicit props.
 export function PlantDetailScreen({
-  createBedFromPlacementPrompt, fadeAnimation, fertilizerTrackers, followedPlants, gardenPlacementPrompt, gardenXP, getCompanionDisplayName, getCompanionImage, glowOpacity, handleBackFromPlant, harvestTrackers, isDark, journalEntries, jumpToTab, markPlantWatered, openDisease, openPest, openPlantByName, pickJournalPhoto, placeFromPlacementPrompt, plantNotes, premiumUnlocked, quickAddPlantToGarden, rarityStyle, replaceFromPlacementPrompt, resolveCompanionPlant, savedPlants, schedulePlantReminder, selectedPlant, setGardenPlacementPrompt, setHarvestLogPlant, setHarvestLogText, setHarvestTrackers, setPlantNotes, showLevelUp, theme, toggleFertilizerTracker, toggleSavedPlant, wateredPlants, wateringHistory, weather, xpPopups, zip, zone,
+  createBedFromPlacementPrompt, fadeAnimation, fertilizerTrackers, followedPlants, gardenPlacementPrompt, gardenXP, getCompanionDisplayName, getCompanionImage, glowOpacity, handleBackFromPlant, harvestTrackers, isDark, journalEntries, jumpToTab, markPlantWatered, openDisease, openPest, openPlantByName, pickJournalPhoto, placeFromPlacementPrompt, plantNotes, premiumUnlocked, quickAddPlantToGarden, rarityStyle, replaceFromPlacementPrompt, resolveCompanionPlant, savedPlants, schedulePlantReminder, selectedPlant, setGardenPlacementPrompt, setHarvestLogPlant, setHarvestLogText, setHarvestTrackers, setPlantNotes, showLevelUp, theme, toggleFertilizerTracker, toggleSavedPlant, unitSystem, wateredPlants, wateringHistory, weather, xpPopups, zip, zone,
 }) {
     const plantImage = resolvePlantImageSource(selectedPlant);
     const companionInfo = getCompanionInfo(selectedPlant.name) || {};
@@ -246,7 +246,7 @@ export function PlantDetailScreen({
 
 <View style={styles.card}>
   <Text style={styles.cardEyebrow}>Smart Care</Text>
-  <Text style={styles.cardText}>{getShouldGrowText(selectedPlant, zone, weather)}</Text>
+  <Text style={styles.cardText}>{localizeTemps(getShouldGrowText(selectedPlant, zone, weather), unitSystem)}</Text>
   <View style={styles.detailMiniGrid}>
     {[
       { icon: "☀️", label: "Sun", value: quickFacts.sun },
@@ -265,7 +265,7 @@ export function PlantDetailScreen({
         <Text style={styles.detailMiniIcon}>{fact.icon}</Text>
         <View style={{ flex: 1 }}>
           <Text style={styles.detailMiniLabel}>{fact.label}</Text>
-          <Text style={styles.detailMiniValue}>{fact.value}</Text>
+          <Text style={styles.detailMiniValue}>{localizeTemps(fact.value, unitSystem)}</Text>
         </View>
       </View>
     ))}
@@ -395,7 +395,7 @@ export function PlantDetailScreen({
                 <View style={{ width: 2, flex: 1, backgroundColor: "rgba(92, 255, 137, 0.24)", marginTop: 2, minHeight: 14 }} />
               ) : null}
             </View>
-            <Text style={styles.stepText}>{step}</Text>
+            <Text style={styles.stepText}>{localizeTemps(step, unitSystem)}</Text>
           </View>
         ))}
       </View>

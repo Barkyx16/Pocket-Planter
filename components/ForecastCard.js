@@ -64,7 +64,7 @@ export const ForecastCard = memo(function ForecastCard({ theme, weather, zone, s
     const frostDays = forecast.filter(d => d.minTempF <= FROST_THRESHOLD_F).length;
     const heatDays = forecast.filter(d => d.maxTempF >= HEAT_THRESHOLD_F).length;
     if (frostDays > 0) return { icon: "❄️", text: `${frostDays} frost risk night${frostDays === 1 ? "" : "s"} this week — keep covers ready.`, color: "#6bc7ff" };
-    if (heatDays >= 3) return { icon: "🔥", text: `${heatDays} days above 95°F — water deeply every morning and mulch heavily.`, color: "#ff7b7b" };
+    if (heatDays >= 3) return { icon: "🔥", text: `${heatDays} days above ${formatTemp(HEAT_THRESHOLD_F, unitSystem, true)} — water deeply every morning and mulch heavily.`, color: "#ff7b7b" };
     if (rainyDays >= 4) return { icon: "🌧️", text: `${rainyDays} rainy days ahead — hold off on fertilizing and check container drainage.`, color: "#6bc7ff" };
     if (weeklyHigh <= 75 && weeklyLow >= 45) return { icon: "✅", text: "Perfect growing week ahead — mild temps and low rain chance all week.", color: "#5cff89" };
     if (climate === "hot") return { icon: "☀️", text: `Hot zone week — high of ${formatTemp(weeklyHigh, unitSystem, true)}. Water before 9 AM daily and harvest often.`, color: "#ffd86b" };
