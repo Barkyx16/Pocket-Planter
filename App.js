@@ -78,6 +78,7 @@ import {
   getSuggestionsForMonth,
   getTodayKey,
   getTomorrowKey,
+  getWeekKey,
   getTotalWaterings,
   getUpcomingFrost,
   getWateringRhythm,
@@ -2449,10 +2450,8 @@ useEffect(() => {
     if (val) {
       try { loaded = JSON.parse(val); } catch (e) {}
     }
-    // Refresh the freeze at the start of each ISO week
-    const now = new Date();
-    const oneJan = new Date(now.getFullYear(), 0, 1);
-    const currentWeek = `${now.getFullYear()}-W${Math.ceil((((now - oneJan) / 86400000) + oneJan.getDay() + 1) / 7)}`;
+    // Refresh the freeze at the start of each week (Sunday).
+    const currentWeek = getWeekKey();
     if (loaded.weekKey !== currentWeek) {
       setStreakFreeze({ available: true, lastUsed: loaded.lastUsed, weekKey: currentWeek });
     } else {

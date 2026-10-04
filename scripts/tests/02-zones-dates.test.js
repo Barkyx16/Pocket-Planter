@@ -291,3 +291,38 @@ describe("frost alert scheduling", () => {
     core5.setHemisphereFromLatitude(40.7);
   });
 });
+
+describe("getWeekKey", () => {
+  const at = (y, m, d, h = 9, min = 0) => new Date(y, m - 1, d, h, min);
+  it("starts the week on Sunday", () => {
+    // 2026-10-03 is a Saturday, 10-04 the Sunday after it.
+    eq(core.getWeekKey(at(2026, 10, 3)), "2026-09-27");
+    eq(core.getWeekKey(at(2026, 10, 4)), "2026-10-04");
+    eq(core.getWeekKey(at(2026, 10, 10, 23, 59)), "2026-10-04");
+  });
+  it("does not roll over on a Saturday", () => {
+    // The old week-of-year count refreshed the streak freeze every Saturday.
+    eq(core.getWeekKey(at(2026, 10, 2)), core.getWeekKey(at(2026, 10, 3)));
+  });
+  it("does not move with the clocks", () => {
+    // Just after midnight on the Saturday after spring forward (US and EU).
+    eq(core.getWeekKey(at(2026, 3, 14, 0, 30)), core.getWeekKey(at(2026, 3, 14, 2, 0)));
+    eq(core.getWeekKey(at(2026, 4, 4, 0, 30)), core.getWeekKey(at(2026, 4, 4, 2, 0)));
+  });
+  it("carries one week across New Year", () => {
+    // Thursday 31 Dec and Friday 1 Jan are the same week; a year-prefixed count
+    // handed out a second freeze between them.
+    eq(core.getWeekKey(at(2026, 12, 31)), core.getWeekKey(at(2027, 1, 1)));
+    eq(core.getWeekKey(at(2027, 1, 1)), "2026-12-27");
+  });
+});
+
+describe("the streak freeze refresh", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("uses getWeekKey", () => {
+    const at = app.indexOf('hydrate("pp_streakFreeze"');
+    const fn = app.slice(at, app.indexOf("});", at));
+    ok(/getWeekKey\(\)/.test(fn), "the refresh must use the shared week key");
+    ok(!/oneJan/.test(fn), "no week-of-year arithmetic");
+  });
+});

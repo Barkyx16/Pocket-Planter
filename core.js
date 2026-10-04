@@ -3400,6 +3400,18 @@ export function getTomorrowKey(from = new Date()) {
   return getDateKey(d);
 }
 
+// The week a date falls in, named by the day key of the Sunday that starts it.
+// Sunday because that is the app's week everywhere else — the recap lands on
+// Sunday evening — and a calendar day rather than a week number so the answer
+// cannot move with the clocks or restart at New Year. The streak freeze's weekly
+// refresh used a week-of-year count that rolled over on Saturdays, an hour late
+// after the clocks went forward, and again on the 1st of January mid-week.
+export function getWeekKey(from = new Date()) {
+  const d = new Date(from);
+  d.setDate(d.getDate() - d.getDay());
+  return getDateKey(d);
+}
+
 export function getTodayKey() {
   return getDateKey(new Date());
 }
