@@ -4515,7 +4515,10 @@ const forecast = (weatherData?.daily?.time || []).map((date, index) => ({
   maxTempF: weatherData?.daily?.temperature_2m_max?.[index] ?? null,
   minTempF: weatherData?.daily?.temperature_2m_min?.[index] ?? null,
   precipChance: weatherData?.daily?.precipitation_probability_max?.[index] ?? 0,
-}));
+// A day the service has no temperatures for is not a day of weather. Kept as
+// nulls it read as 0°F wherever it was compared — `null <= 35` is true — so the
+// cards announced "Frost on Saturday" and a 0° weekly low for a missing day.
+})).filter((d) => typeof d.maxTempF === "number" && typeof d.minTempF === "number");
 const freshWeather = {
   maxTempF: forecast[0]?.maxTempF ?? null,
   minTempF: forecast[0]?.minTempF ?? null,

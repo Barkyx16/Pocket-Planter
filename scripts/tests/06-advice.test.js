@@ -373,3 +373,27 @@ describe("getPlantHealthStatus", () => {
     eq(core.getPlantHealthStatus({ plantName: "Tomato", wateredPlants: { Tomato: core.getTodayKey() }, weather: null }).label, "Healthy");
   });
 });
+
+describe("getUpcomingFrost by date", () => {
+  const key = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return core.getDateKey(d); };
+  it("skips a frost that is already behind us in a cached forecast", () => {
+    // Painted from cache after midnight, the list still starts with yesterday.
+    const f = core.getUpcomingFrost({ forecast: [
+      { date: key(-1), minTempF: 20 }, { date: key(0), minTempF: 50 }, { date: key(1), minTempF: 30 },
+    ] });
+    eq(f.date, key(1));
+    eq(f.daysOut, 1, "tomorrow night, not the third day of the list");
+  });
+  it("counts from the date when a day is missing from the list", () => {
+    const f = core.getUpcomingFrost({ forecast: [{ date: key(0), minTempF: 50 }, { date: key(2), minTempF: 30 }] });
+    eq(f.daysOut, 2);
+  });
+});
+
+describe("the forecast as App builds it", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("drops days without temperatures", () => {
+    // Left as nulls, `null <= 35` made a missing day a frost.
+    ok(/\}\)\)\.filter\(\(d\) => typeof d\.maxTempF === "number" && typeof d\.minTempF === "number"\);/.test(app));
+  });
+});

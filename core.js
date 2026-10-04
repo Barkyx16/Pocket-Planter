@@ -2500,10 +2500,17 @@ export const WARM_DAY_THRESHOLD_F = 90;
 
 export function getUpcomingFrost(weather) {
   const forecast = Array.isArray(weather?.forecast) ? weather.forecast : [];
+  const today = getTodayKey();
   for (let i = 0; i < forecast.length; i += 1) {
     const day = forecast[i];
     if (typeof day?.minTempF === "number" && day.minTempF <= FROST_THRESHOLD_F) {
-      return { date: day.date, minTempF: day.minTempF, daysOut: i };
+      // Counted from the day's own date, not its place in the list: a forecast
+      // painted from cache after midnight still starts with yesterday, which
+      // called yesterday's frost "tonight", and a dropped day shifted the rest.
+      // A date that is not a day key falls back to the list position.
+      const byDate = day.date ? daysBetweenKeys(today, day.date) : null;
+      if (byDate !== null && byDate < 0) continue; // already past
+      return { date: day.date, minTempF: day.minTempF, daysOut: byDate ?? i };
     }
   }
   return null;
