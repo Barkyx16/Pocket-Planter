@@ -9,14 +9,14 @@ import { touchSlop } from "../lib/a11y";
 
 const STORAGE_KEY = "pp_customTasks";
 const INTERVALS = [
-  { days: 3, label: "3 days", every: "Every 3 days" },
-  { days: 7, label: "Weekly", every: "Every week" },
-  { days: 14, label: "2 weeks", every: "Every 2 weeks" },
-  { days: 30, label: "Monthly", every: "Every month" },
+  { days: 3, label: "customTaskText.label3", every: null },
+  { days: 7, label: "customTaskText.labelWeekly", every: "customTaskText.everyWeek" },
+  { days: 14, label: "customTaskText.label14", every: "customTaskText.every2Weeks" },
+  { days: 30, label: "customTaskText.labelMonthly", every: "customTaskText.everyMonth" },
 ];
 
 export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const [tasks, setTasks] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [title, setTitle] = useState("");
@@ -47,7 +47,7 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
       if (!granted) granted = (await Notifications.requestPermissionsAsync()).granted;
       if (granted) {
         notifId = await Notifications.scheduleNotificationAsync({
-          content: { title: "🌿 Garden Task", body: text, sound: true },
+          content: { title: t("customTaskText.notifTitle"), body: text, sound: true },
           trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: interval * 86400, repeats: true },
         });
       }
@@ -83,7 +83,7 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
           const active = interval === iv.days;
           return (
             <Pressable key={iv.days} onPress={() => setIntervalDays(iv.days)} style={{ flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}>
-              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{iv.label}</Text>
+              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{t(iv.label)}</Text>
             </Pressable>
           );
         })}
@@ -99,7 +99,10 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
               <Text style={{ fontSize: 14 }}>{task.notifId ? "🔔" : "📝"}</Text>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }} numberOfLines={1}>{task.title}</Text>
-                <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 2 }}>{INTERVALS.find((i) => i.days === task.interval)?.every || `Every ${task.interval} days`}</Text>
+                <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 2 }}>{(() => {
+                  const every = INTERVALS.find((i) => i.days === task.interval)?.every;
+                  return every ? t(every) : tn("customTaskText.everyDays", task.interval);
+                })()}</Text>
               </View>
               <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.deleteTask")} onPress={() => remove(task)} hitSlop={touchSlop(14)}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
             </View>

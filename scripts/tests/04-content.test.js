@@ -953,7 +953,8 @@ describe("screens that are fully translated", () => {
   const { execFileSync } = require("child_process");
   const DONE = [...require("fs").readdirSync(path.join(ROOT, "screens")).filter((f) => f.endsWith(".js")).map((f) => `screens/${f}`), "components/DiseaseDetailScreen.js", "components/WeatherTeaserCard.js", "components/QuizGame.js",
     "components/MyGardenTodayCard.js", "components/LiveWeatherCard.js", "components/GardenIntelligenceCard.js",
-    "components/OnboardingCard.js"];
+    "components/OnboardingCard.js", "components/GardenStatsPreview.js",
+    "components/ForecastCard.js", "components/CustomTasksCard.js"];
   for (const file of DONE) {
     it(`${file} has no hard-coded English`, () => {
       const out = execFileSync(process.execPath, [path.join(ROOT, "scripts/i18n-coverage.js"), file], { cwd: ROOT, encoding: "utf8" });
