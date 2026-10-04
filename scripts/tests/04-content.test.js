@@ -477,3 +477,12 @@ describe("the daily bonus card", () => {
     ok(!/24 \* 60 \* 60 \* 1000/.test(card), "no rolling 24-hour window");
   });
 });
+
+describe("the plant pick of the day", () => {
+  const hero = require("fs").readFileSync(path.join(ROOT, "components/PlantTodayHero.js"), "utf8");
+  it("turns over at local midnight", () => {
+    // Seeded from the UTC date, it changed plant at 5pm in California.
+    ok(/const dateKey = getTodayKey\(\);/.test(hero));
+    ok(!/toISOString\(\)\.slice\(0, 10\)/.test(hero));
+  });
+});

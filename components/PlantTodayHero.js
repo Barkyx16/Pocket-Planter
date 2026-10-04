@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
-import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, getHarvestCountdown, getPlantDifficulty, getPlantSeasonLabel, normalizeType, resolvePlantImageSource } from "../core";
+import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, getHarvestCountdown, getPlantDifficulty, getPlantSeasonLabel, getTodayKey, normalizeType, resolvePlantImageSource } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const PlantTodayHero = memo(function PlantTodayHero({ theme, monthlySuggestions, compatiblePlants, savedPlants = [], zone, weather, onOpen }) {
@@ -14,7 +14,8 @@ export const PlantTodayHero = memo(function PlantTodayHero({ theme, monthlySugge
 
   // Random-feeling pick that's seeded by today's date, so it stays stable through
   // the day (no flicker on re-render) but lands on a fresh plant each new day.
-  const dateKey = new Date().toISOString().slice(0, 10);
+  // The local day: the UTC one turned over at 5pm in California.
+  const dateKey = getTodayKey();
   let seed = 0;
   for (let i = 0; i < dateKey.length; i += 1) seed = (seed * 31 + dateKey.charCodeAt(i)) >>> 0;
   const plant = plantPool[seed % plantPool.length];

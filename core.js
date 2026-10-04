@@ -4300,6 +4300,15 @@ export function getProfileBanners({ gardenXP, savedPlants, journalEntries, garde
   ];
 }
 
+// Harvests logged on a local day. By the entry's own day key: createdAt is UTC,
+// and matching its prefix against a local key counted an evening harvest in the
+// west toward the next day's quests too.
+export function countHarvestsOn(harvestLog, dayKey) {
+  return (harvestLog || []).filter((h) => (
+    h?.date ? h.date === dayKey : !!h?.createdAt && getDateKey(new Date(h.createdAt)) === dayKey
+  )).length;
+}
+
 export function getDailyQuests({ savedPlants, journalEntries, gardenMap, wateredPlants, careLog, harvestTrackers, streakData, harvestLog, fertilizerTrackers, comparePlants }) {
   const today = getTodayKey();
   const dayOfWeek = new Date().getDay();
@@ -4313,7 +4322,7 @@ export function getDailyQuests({ savedPlants, journalEntries, gardenMap, watered
   const streakCount = streakData?.count || 0;
   const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).length;
   const fertilizerCount = Object.keys(fertilizerTrackers || {}).length;
-  const harvestLogToday = (harvestLog || []).filter((h) => h.date === today || (h.createdAt || "").startsWith(today)).length;
+  const harvestLogToday = countHarvestsOn(harvestLog, today);
   const compareCount = (comparePlants || []).length;
 
   const allQuests = [

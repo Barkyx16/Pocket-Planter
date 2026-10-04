@@ -405,3 +405,21 @@ describe("the garden timeline", () => {
     eq(water[0].title, "Watered 2 plants");
   });
 });
+
+describe("countHarvestsOn", () => {
+  const today = core.getTodayKey();
+  const y = core.getDateKey(new Date(Date.now() - 86400000 * 1.5));
+  it("does not count yesterday evening's harvest today", () => {
+    // Its createdAt already reads as today in UTC; its own day is yesterday.
+    eq(core.countHarvestsOn([{ date: y, createdAt: `${today}T03:00:00.000Z` }], today), 0);
+  });
+  it("counts today's, and falls back to the local day of createdAt", () => {
+    eq(core.countHarvestsOn([{ date: today }], today), 1);
+    eq(core.countHarvestsOn([{ createdAt: new Date().toISOString() }], today), 1);
+    eq(core.countHarvestsOn([null, {}], today), 0);
+  });
+  it("is what the quests use", () => {
+    const src = require("fs").readFileSync(path.join(ROOT, "core.js"), "utf8");
+    ok(/harvestLogToday = countHarvestsOn\(harvestLog, today\)/.test(src));
+  });
+});
