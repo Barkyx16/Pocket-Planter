@@ -951,7 +951,7 @@ describe("screens that are fully translated", () => {
   // Measured by the repo's own coverage script, so a string added in English to
   // one of these fails here instead of shipping untranslated in nine languages.
   const { execFileSync } = require("child_process");
-  const DONE = ["screens/PlantDetailScreen.js", "components/DiseaseDetailScreen.js"];
+  const DONE = ["screens/PlantDetailScreen.js", "components/DiseaseDetailScreen.js", "components/WeatherTeaserCard.js"];
   for (const file of DONE) {
     it(`${file} has no hard-coded English`, () => {
       const out = execFileSync(process.execPath, [path.join(ROOT, "scripts/i18n-coverage.js"), file], { cwd: ROOT, encoding: "utf8" });
@@ -960,4 +960,15 @@ describe("screens that are fully translated", () => {
       eq(Number(m[1]), 0, out.split("\n").slice(2, 12).join("\n"));
     });
   }
+});
+
+describe("the weather cards", () => {
+  const fs = require("fs");
+  const read = (f) => fs.readFileSync(path.join(ROOT, f), "utf8");
+  it("have no English conditions, actions or tiles left", () => {
+    const live = read("components/LiveWeatherCard.js");
+    ok(!/label: "[A-Z]/.test(live) && !/text: "[A-Z]/.test(live) && !/plant\$\{[^}]*=== 1/.test(live), "LiveWeatherCard");
+    const gi = read("components/GardenIntelligenceCard.js");
+    ok(!/label: "[A-Z]/.test(gi) && !/text: `/.test(gi) && !/return "(Today|Tomorrow)"/.test(gi), "GardenIntelligenceCard");
+  });
 });

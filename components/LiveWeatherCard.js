@@ -7,7 +7,7 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, recommendation, savedPlants, wateredPlants, harvestTrackers, unitSystem }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const today = getTodayKey();
   const currentHour = new Date().getHours();
 
@@ -36,14 +36,14 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
   const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).length;
 
   const getConditionDetails = () => {
-    if (!weather) return { icon: "🌤️", label: "Loading", color: "#8effab", urgency: null };
-    if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", label: "Frost Risk", color: "#6bc7ff", urgency: "high" };
-    if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", label: "Extreme Heat", color: "#ff7b7b", urgency: "high" };
-    if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) return { icon: "☀️", label: "Hot Day", color: "#ff7b7b", urgency: "medium" };
-    if (weather.precipChance >= 70) return { icon: "🌧️", label: "Heavy Rain", color: "#6bc7ff", urgency: "medium" };
-    if (weather.precipChance >= 40) return { icon: "🌦️", label: "Possible Rain", color: "#8effab", urgency: null };
-    if (weather.maxTempF >= 65 && weather.maxTempF <= 85) return { icon: "✅", label: "Perfect Day", color: "#5cff89", urgency: null };
-    return { icon: "🌤️", label: "Mild Conditions", color: "#8effab", urgency: null };
+    if (!weather) return { icon: "🌤️", label: t("liveWeather.loading"), color: "#8effab", urgency: null };
+    if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", label: t("liveWeather.frostRisk"), color: "#6bc7ff", urgency: "high" };
+    if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", label: t("liveWeather.extremeHeat"), color: "#ff7b7b", urgency: "high" };
+    if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) return { icon: "☀️", label: t("liveWeather.hotDay"), color: "#ff7b7b", urgency: "medium" };
+    if (weather.precipChance >= 70) return { icon: "🌧️", label: t("liveWeather.heavyRain"), color: "#6bc7ff", urgency: "medium" };
+    if (weather.precipChance >= 40) return { icon: "🌦️", label: t("liveWeather.possibleRain"), color: "#8effab", urgency: null };
+    if (weather.maxTempF >= 65 && weather.maxTempF <= 85) return { icon: "✅", label: t("liveWeather.perfectDay"), color: "#5cff89", urgency: null };
+    return { icon: "🌤️", label: t("liveWeather.mild"), color: "#8effab", urgency: null };
   };
 
   const getSmartActions = () => {
@@ -51,32 +51,32 @@ export const LiveWeatherCard = memo(function LiveWeatherCard({ theme, weather, r
     if (!weather) return actions;
 
     if (weather.minTempF <= FROST_THRESHOLD_F) {
-      actions.push({ id: "frost-indoors", icon: "🏠", text: "Move containers indoors or near shelter tonight", priority: "high" });
-      actions.push({ id: "frost-cover", icon: "🧣", text: "Cover frost-sensitive plants before dark", priority: "high" });
+      actions.push({ id: "frost-indoors", icon: "🏠", text: t("liveWeather.actFrostIndoors"), priority: "high" });
+      actions.push({ id: "frost-cover", icon: "🧣", text: t("liveWeather.actFrostCover"), priority: "high" });
     }
     if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) {
-      actions.push({ id: "heat-shade", icon: "🌿", text: "Add shade cloth over young transplants", priority: "high" });
-      actions.push({ id: "heat-skip-transplant", icon: "🚫", text: "Skip transplanting today — heat stress risk too high", priority: "medium" });
+      actions.push({ id: "heat-shade", icon: "🌿", text: t("liveWeather.actHeatShade"), priority: "high" });
+      actions.push({ id: "heat-skip-transplant", icon: "🚫", text: t("liveWeather.actHeatSkip"), priority: "medium" });
     } else if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) {
-      actions.push({ id: "warm-mulch", icon: "🪵", text: "Add mulch around plants to retain soil moisture", priority: "medium" });
+      actions.push({ id: "warm-mulch", icon: "🪵", text: t("liveWeather.actWarmMulch"), priority: "medium" });
     }
     if (weather.precipChance >= 70) {
-      actions.push({ id: "rain-skip-water", icon: "🌧️", text: "Skip watering — rain will handle it today", priority: "medium" });
-      actions.push({ id: "rain-drainage", icon: "🪣", text: "Check container drainage before rain arrives", priority: "low" });
+      actions.push({ id: "rain-skip-water", icon: "🌧️", text: t("liveWeather.actRainSkip"), priority: "medium" });
+      actions.push({ id: "rain-drainage", icon: "🪣", text: t("liveWeather.actRainDrainage"), priority: "low" });
     } else if (weather.precipChance >= 40) {
-      actions.push({ id: "rain-check-soil", icon: "🌱", text: "Check soil moisture before watering — rain may help", priority: "low" });
+      actions.push({ id: "rain-check-soil", icon: "🌱", text: t("liveWeather.actRainCheckSoil"), priority: "low" });
     }
     if (unwateredCount > 0 && weather.precipChance < 40) {
-      actions.push({ id: "water-remaining", icon: "💧", text: `${unwateredCount} saved plant${unwateredCount === 1 ? "" : "s"} still need watering today`, priority: weather.maxTempF >= WARM_DAY_THRESHOLD_F ? "high" : "medium" });
+      actions.push({ id: "water-remaining", icon: "💧", text: tn("liveWeather.actWaterRemaining", unwateredCount), priority: weather.maxTempF >= WARM_DAY_THRESHOLD_F ? "high" : "medium" });
     }
     if (harvestsReady > 0) {
-      actions.push({ id: "harvest-ready", icon: "🎉", text: `${harvestsReady} plant${harvestsReady === 1 ? "" : "s"} ready to harvest — pick today for peak flavor`, priority: "high" });
+      actions.push({ id: "harvest-ready", icon: "🎉", text: tn("liveWeather.actHarvestReady", harvestsReady), priority: "high" });
     }
     if (weather.maxTempF >= 65 && weather.maxTempF <= 82 && weather.precipChance < 30) {
-      actions.push({ id: "ideal-sow", icon: "🌱", text: "Ideal conditions for transplanting or direct sowing today", priority: "low" });
+      actions.push({ id: "ideal-sow", icon: "🌱", text: t("liveWeather.actIdealSow"), priority: "low" });
     }
     if (currentHour >= 6 && currentHour <= 9 && weather.maxTempF >= 70) {
-      actions.push({ id: "morning-window", icon: "🌅", text: "Perfect morning window for garden care right now", priority: "low" });
+      actions.push({ id: "morning-window", icon: "🌅", text: t("liveWeather.actMorningWindow"), priority: "low" });
     }
     return actions.slice(0, 4);
   };

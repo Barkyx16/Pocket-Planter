@@ -11,23 +11,23 @@ export const WeatherTeaserCard = memo(function WeatherTeaserCard({ theme, weathe
   const currentMonth = new Date().getMonth() + 1;
 
   const getConditionPreview = () => {
-    if (!weather) return { icon: "🌤️", label: "Loading forecast...", color: "#8effab" };
-    if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", label: "Frost risk tonight — premium alert available", color: "#6bc7ff" };
-    if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", label: "Extreme heat today — premium action plan available", color: "#ff7b7b" };
-    if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) return { icon: "☀️", label: "Hot day — premium watering guide available", color: "#ffd86b" };
-    if (weather.precipChance >= 70) return { icon: "🌧️", label: "Heavy rain today — premium garden plan available", color: "#6bc7ff" };
-    return { icon: "✅", label: "Good growing conditions today", color: "#5cff89" };
+    if (!weather) return { icon: "🌤️", label: t("weatherTeaser.loading"), color: "#8effab" };
+    if (weather.minTempF <= FROST_THRESHOLD_F) return { icon: "❄️", label: t("weatherTeaser.frost"), color: "#6bc7ff" };
+    if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", label: t("weatherTeaser.heat"), color: "#ff7b7b" };
+    if (weather.maxTempF >= WARM_DAY_THRESHOLD_F) return { icon: "☀️", label: t("weatherTeaser.hot"), color: "#ffd86b" };
+    if (weather.precipChance >= 70) return { icon: "🌧️", label: t("weatherTeaser.rain"), color: "#6bc7ff" };
+    return { icon: "✅", label: t("weatherTeaser.good"), color: "#5cff89" };
   };
 
   const condition = getConditionPreview();
 
   const lockedFeatures = [
-    { icon: "❄️", text: "Frost alerts with cover reminders" },
-    { icon: "🔥", text: "Heat stress warnings and action plans" },
-    { icon: "💧", text: "Smart daily watering guidance" },
-    { icon: "🧠", text: "7-day garden intelligence forecast" },
-    { icon: "📍", text: "Zone-specific seasonal insights" },
-    { icon: "⚡", text: "Daily smart action checklist" },
+    { icon: "❄️", text: t("weatherTeaser.featFrost") },
+    { icon: "🔥", text: t("weatherTeaser.featHeat") },
+    { icon: "💧", text: t("weatherTeaser.featWatering") },
+    { icon: "🧠", text: t("weatherTeaser.featForecast") },
+    { icon: "📍", text: t("weatherTeaser.featZone") },
+    { icon: "⚡", text: t("weatherTeaser.featChecklist") },
   ];
 
   return (
