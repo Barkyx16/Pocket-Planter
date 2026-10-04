@@ -18,12 +18,12 @@ export const GardenerProfileCard = memo(function GardenerProfileCard({ theme, se
   const wateringTotal = Object.values(wateringHistory || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0);
   const xpToNext = Math.max(0, (gardenXP.nextLevelXP || 0) - (gardenXP.currentLevelXP || 0));
   const stats = [
-    { value: savedPlants.length, label: "Saved", color: "#5cff89" },
-    { value: journalEntries.length, label: "Photos", color: "#6bc7ff" },
-    { value: harvestCount, label: "Harvests", color: "#ffd86b" },
-    { value: wateringTotal, label: "Waterings", color: "#6bc7ff" },
-    { value: gardenPlotCount, label: "Plots", color: "#8effab" },
-    { value: streakData?.count || 0, label: "Day Streak", color: "#ff9f43" },
+    { value: savedPlants.length, label: t("shareText.statSaved"), color: "#5cff89" },
+    { value: journalEntries.length, label: t("shareText.statPhotos"), color: "#6bc7ff" },
+    { value: harvestCount, label: t("shareText.statHarvests"), color: "#ffd86b" },
+    { value: wateringTotal, label: t("shareText.statWaterings"), color: "#6bc7ff" },
+    { value: gardenPlotCount, label: t("shareText.statPlots"), color: "#8effab" },
+    { value: streakData?.count || 0, label: t("shareText.statDayStreak"), color: "#ff9f43" },
   ];
 return (
     <View>

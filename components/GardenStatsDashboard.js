@@ -24,7 +24,7 @@ export const GardenStatsDashboard = memo(function GardenStatsDashboard({
   onWaterAll,
   unitSystem,
 }) {
-  const { t, levelTitle } = useTranslation();
+  const { t, tn, levelTitle } = useTranslation();
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
   const today = getTodayKey();
 
@@ -92,10 +92,10 @@ return isFertilizerDue(plantName, tracker);
   };
 
   const weatherStatus = !weather ? null
-    : weather.minTempF <= FROST_THRESHOLD_F ? { icon: "❄️", label: "Frost Risk", color: "#6bc7ff" }
-    : weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F ? { icon: "🔥", label: "Heat Alert", color: "#ff7b7b" }
-    : weather.precipChance >= 70 ? { icon: "🌧️", label: "Rain Today", color: "#6bc7ff" }
-    : { icon: "☀️", label: "Good Day", color: "#5cff89" };
+    : weather.minTempF <= FROST_THRESHOLD_F ? { icon: "❄️", label: t("statsPreview.frostRisk"), color: "#6bc7ff" }
+    : weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F ? { icon: "🔥", label: t("statsPreview.heatAlert"), color: "#ff7b7b" }
+    : weather.precipChance >= 70 ? { icon: "🌧️", label: t("statsPreview.rainToday"), color: "#6bc7ff" }
+    : { icon: "☀️", label: t("statsPreview.goodDay"), color: "#5cff89" };
 
 return (
     <View>
@@ -139,13 +139,13 @@ return (
         ) : null}
         <View style={[styles.dashTopCard, { borderColor: streakData?.count >= 7 ? "#ff9f4355" : "rgba(255, 255, 255, 0.08)" }]}>
           <Text style={styles.dashTopCardIcon}>{getStreakEmoji(streakData?.count || 0)}</Text>
-          <Text style={[styles.dashTopCardLabel, { color: streakData?.count >= 7 ? "#ff9f43" : theme.text }]}>{streakData?.count || 0} Days</Text>
-          <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>Streak</Text>
+          <Text style={[styles.dashTopCardLabel, { color: streakData?.count >= 7 ? "#ff9f43" : theme.text }]}>{tn("statsPreview.streakDays", streakData?.count || 0)}</Text>
+          <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>{t("statsPreview.streak")}</Text>
         </View>
         <View style={[styles.dashTopCard, { borderColor: getHealthColor(gardenHealth.score) + "55" }]}>
           <Text style={styles.dashTopCardIcon}>🌿</Text>
           <Text style={[styles.dashTopCardLabel, { color: getHealthColor(gardenHealth.score) }]}>{gardenHealth.score}%</Text>
-          <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>Health</Text>
+          <Text style={[styles.dashTopCardSub, { color: theme.secondaryText }]}>{t("statsPreview.health")}</Text>
         </View>
       </View>
 
@@ -156,7 +156,7 @@ return (
         <View style={[styles.dashMainCard, { borderColor: "rgba(92, 255, 137, 0.2)" }]}>
           <IconText label={t("gardenStatsDashboard.plants")} style={styles.dashMainCardEyebrow} />
           <Text style={styles.dashMainCardValue}>{savedPlants.length}</Text>
-          <Text style={[styles.dashMainCardLabel, { color: theme.secondaryText }]}>Saved</Text>
+          <Text style={[styles.dashMainCardLabel, { color: theme.secondaryText }]}>{t("shareText.statSaved")}</Text>
           <View style={styles.dashMainCardDivider} />
           <Text style={[styles.dashMainCardSub, { color: theme.secondaryText }]}>
             {gardenPlotCount} {t("gardenStatsDashboard.inGardenMap")}
@@ -313,9 +313,9 @@ return (
               <Text style={styles.dashActionLabel}>{t("gardenStatsDashboard.thisWeeksMomentum")}</Text>
               <Text style={[styles.dashActionSub, { color: theme.secondaryText }]}>
                 {[
-                  wateringsThisWeek > 0 ? `💧 ${wateringsThisWeek} watering${wateringsThisWeek === 1 ? "" : "s"}` : null,
-                  photosThisWeek > 0 ? `📸 ${photosThisWeek} photo${photosThisWeek === 1 ? "" : "s"}` : null,
-                  (streakData?.count || 0) > 0 ? `🔥 ${streakData.count}-day streak` : null,
+                  wateringsThisWeek > 0 ? `💧 ${tn("shareText.waterings", wateringsThisWeek)}` : null,
+                  photosThisWeek > 0 ? `📸 ${tn("shareText.photos", photosThisWeek)}` : null,
+                  (streakData?.count || 0) > 0 ? `🔥 ${tn("shareText.dayStreak", streakData.count)}` : null,
                 ].filter(Boolean).join("  •  ")}
               </Text>
             </View>
@@ -327,10 +327,10 @@ return (
                 const lines = [
                   t("gardenStatsDashboard.myPocketPlanterGardenThis"),
                   "",
-                  `🪴 ${savedPlants.length} plants growing`,
-                  wateringsThisWeek > 0 ? `💧 ${wateringsThisWeek} watering${wateringsThisWeek === 1 ? "" : "s"} this week` : null,
-                  photosThisWeek > 0 ? `📸 ${photosThisWeek} garden photo${photosThisWeek === 1 ? "" : "s"} logged` : null,
-                  (streakData?.count || 0) > 0 ? `🔥 ${streakData.count}-day streak going strong` : null,
+                  `🪴 ${tn("shareText.plantsGrowing", savedPlants.length)}`,
+                  wateringsThisWeek > 0 ? `💧 ${tn("shareText.wateringsThisWeek", wateringsThisWeek)}` : null,
+                  photosThisWeek > 0 ? `📸 ${tn("shareText.gardenPhotosLogged", photosThisWeek)}` : null,
+                  (streakData?.count || 0) > 0 ? `🔥 ${tn("shareText.streakStrong", streakData.count)}` : null,
                   t("levelText.shareLine", { level: gardenXP.level, title: levelTitle(gardenXP) }),
                   "",
                   t("gardenStatsDashboard.growingSmarterWithPocketPlanter"),

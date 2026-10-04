@@ -5,7 +5,7 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const YearInReviewCard = memo(function YearInReviewCard({ theme, savedPlants, harvestLog, journalEntries, wateringHistory, streakData, gardenXP }) {
-  const { t, levelTitle } = useTranslation();
+  const { t, tn, levelTitle } = useTranslation();
   const now = new Date();
   const yearAgo = new Date(now); yearAgo.setFullYear(now.getFullYear() - 1);
   const inLastYear = (dateStr) => {
@@ -28,11 +28,11 @@ export const YearInReviewCard = memo(function YearInReviewCard({ theme, savedPla
   if (!hasActivity) return null;
 
   const stats = [
-    { icon: "🌱", value: savedPlants.length, label: "Plants Grown" },
-    { icon: "💧", value: wateringsYr, label: "Waterings" },
-    { icon: "📸", value: photosYr, label: "Photos" },
-    { icon: "🎉", value: harvestsYr, label: "Harvests" },
-    { icon: "🔥", value: streakData?.count || 0, label: "Day Streak" },
+    { icon: "🌱", value: savedPlants.length, label: t("shareText.statPlantsGrown") },
+    { icon: "💧", value: wateringsYr, label: t("shareText.statWaterings") },
+    { icon: "📸", value: photosYr, label: t("shareText.statPhotos") },
+    { icon: "🎉", value: harvestsYr, label: t("shareText.statHarvests") },
+    { icon: "🔥", value: streakData?.count || 0, label: t("shareText.statDayStreak") },
     { icon: "⭐", value: t("levelText.lvl", { level: gardenXP.level }), label: levelTitle(gardenXP) },
   ];
 
@@ -40,17 +40,17 @@ export const YearInReviewCard = memo(function YearInReviewCard({ theme, savedPla
     try {
       tapHaptic("light");
       const lines = [
-        `🌿 My Pocket Planter year in review:`,
+        `🌿 ${t("shareText.yearHeader")}`,
         "",
-        `🌱 ${savedPlants.length} plants grown`,
-        wateringsYr > 0 ? `💧 ${wateringsYr} waterings` : null,
-        photosYr > 0 ? `📸 ${photosYr} garden photos` : null,
-        harvestsYr > 0 ? `🎉 ${harvestsYr} harvests` : null,
-        harvestValue.total > 0 ? `💰 ~$${harvestValue.total} of produce grown` : null,
-        (streakData?.count || 0) > 0 ? `🔥 ${streakData.count}-day streak` : null,
+        `🌱 ${tn("shareText.plantsGrown", savedPlants.length)}`,
+        wateringsYr > 0 ? `💧 ${tn("shareText.waterings", wateringsYr)}` : null,
+        photosYr > 0 ? `📸 ${tn("shareText.gardenPhotos", photosYr)}` : null,
+        harvestsYr > 0 ? `🎉 ${tn("shareText.harvests", harvestsYr)}` : null,
+        harvestValue.total > 0 ? `💰 ${t("shareText.produceValue", { amount: `~$${harvestValue.total}` })}` : null,
+        (streakData?.count || 0) > 0 ? `🔥 ${tn("shareText.dayStreak", streakData.count)}` : null,
         t("levelText.shareLine", { level: gardenXP.level, title: levelTitle(gardenXP) }),
         "",
-        "What a year in the garden 🌻",
+        `${t("shareText.yearFooter")} 🌻`,
       ].filter(Boolean);
       await Share.share({ message: lines.join("\n") });
     } catch (e) {

@@ -5,7 +5,7 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, savedPlants, harvestLog, journalEntries, streakData, gardenAreas }) {
-  const { t, levelTitle } = useTranslation();
+  const { t, tn, levelTitle } = useTranslation();
   const shareRef = useRef(null);
   const plotCount = (gardenAreas || []).reduce((sum, a) => sum + Object.values(a.plots || {}).filter(Boolean).length, 0);
   const harvests = (harvestLog || []).length;
@@ -15,16 +15,16 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
   const shareText = async () => {
     try {
       const lines = [
-        "🌱 My Pocket Planter garden report card:",
+        `🌱 ${t("shareText.reportHeader")}`,
         "",
         t("levelText.shareLine", { level: gardenXP.level, title: levelTitle(gardenXP) }),
-        `🪴 ${savedPlants.length} plants growing`,
-        plotCount > 0 ? `🗺️ ${plotCount} plots planted` : null,
-        harvests > 0 ? `🚜 ${harvests} harvest${harvests === 1 ? "" : "s"} logged` : null,
-        photos > 0 ? `📸 ${photos} garden photo${photos === 1 ? "" : "s"}` : null,
-        streak > 0 ? `🔥 ${streak}-day care streak` : null,
+        `🪴 ${tn("shareText.plantsGrowing", savedPlants.length)}`,
+        plotCount > 0 ? `🗺️ ${tn("shareText.plotsPlanted", plotCount)}` : null,
+        harvests > 0 ? `🚜 ${tn("shareText.harvestsLogged", harvests)}` : null,
+        photos > 0 ? `📸 ${tn("shareText.gardenPhotos", photos)}` : null,
+        streak > 0 ? `🔥 ${tn("shareText.careStreak", streak)}` : null,
         "",
-        "Growing smarter with Pocket Planter 🌿",
+        `${t("shareText.footer")} 🌿`,
       ].filter(Boolean);
       await Share.share({ message: lines.join("\n") });
     } catch (e) { /* share cancelled */ }
@@ -39,7 +39,7 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
       const Sharing = require("expo-sharing");
       const uri = await captureRef(shareRef, { format: "png", quality: 1 });
       if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri, { mimeType: "image/png", dialogTitle: "Share your garden" });
+        await Sharing.shareAsync(uri, { mimeType: "image/png", dialogTitle: t("shareText.dialogTitle") });
       } else {
         await Share.share({ url: uri });
       }
@@ -51,13 +51,13 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
 
   const stats = [
     { value: t("levelText.lvShort", { level: gardenXP.level }), label: t("levelText.level"), color: "#5cff89" },
-    { value: savedPlants.length, label: "Plants", color: "#8effab" },
-    { value: harvests, label: "Harvests", color: "#ffd86b" },
-    { value: `${streak}d`, label: "Streak", color: "#ff9f43" },
+    { value: savedPlants.length, label: t("shareText.statPlants"), color: "#8effab" },
+    { value: harvests, label: t("shareText.statHarvests"), color: "#ffd86b" },
+    { value: t("shareText.daysShort", { count: streak }), label: t("shareText.statStreak"), color: "#ff9f43" },
   ];
   const extras = [
-    plotCount > 0 ? `🗺️ ${plotCount} plots planted` : null,
-    photos > 0 ? `📸 ${photos} garden photos` : null,
+    plotCount > 0 ? `🗺️ ${tn("shareText.plotsPlanted", plotCount)}` : null,
+    photos > 0 ? `📸 ${tn("shareText.gardenPhotos", photos)}` : null,
   ].filter(Boolean);
 
   return (
