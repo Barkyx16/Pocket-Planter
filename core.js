@@ -6,7 +6,7 @@ import zipZoneData from "./data/zipZoneData";
 import { PLANT_DETAILS } from "./data/plantDetails";
 import { PLANT_HEALTH } from "./data/plantHealth";
 import { DISEASE_LIBRARY } from "./data/diseaseData";
-import { formatDate, t } from "./lib/i18n";
+import { formatDate, formatTime, t } from "./lib/i18n";
 
 export const loadingScreenImage = require("./assets/loading-screen.png");
 
@@ -3558,10 +3558,7 @@ export function getAreaTag(area) {
 }
 
 export function formatReminderTime({ hour, minute }) {
-  const h12 = hour % 12 === 0 ? 12 : hour % 12;
-  const ampm = hour < 12 ? "AM" : "PM";
-  const mm = minute === 0 ? "00" : String(minute).padStart(2, "0");
-return `${h12}:${mm} ${ampm}`;
+  return formatTime(hour, minute);
 }
 
 export function formatRelativeDate(ts) {

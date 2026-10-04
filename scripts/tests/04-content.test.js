@@ -1008,3 +1008,27 @@ describe("the Premium prompts and toasts", () => {
     ok(!/showUndoToast\("|showUndoToast\(`/.test(app), "an undo toast is hard-coded");
   });
 });
+
+describe("reminder times", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("keep 12-hour AM/PM in English", () => {
+    i18n.setLocale("en");
+    eq(core.formatReminderTime({ hour: 7, minute: 0 }), "7:00 AM");
+    eq(core.formatReminderTime({ hour: 0, minute: 5 }), "12:05 AM");
+    eq(core.formatReminderTime({ hour: 18, minute: 30 }), "6:30 PM");
+  });
+  it("follow the language's own clock everywhere else", () => {
+    // An English "PM" in the middle of a German sentence reads as a bug.
+    try {
+      i18n.setLocale("de");
+      const de = core.formatReminderTime({ hour: 18, minute: 30 });
+      ok(/18:30/.test(de) && !/PM/.test(de), de);
+      i18n.setLocale("fr");
+      ok(/18:30/.test(core.formatReminderTime({ hour: 18, minute: 30 })));
+      i18n.setLocale("ko");
+      ok(!/AM|PM/.test(core.formatReminderTime({ hour: 7, minute: 0 })));
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});
