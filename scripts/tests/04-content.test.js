@@ -432,3 +432,18 @@ describe("the fertilizer card's due list", () => {
     ok(!/>= ?\d+/.test(fn), "no hardcoded day count");
   });
 });
+
+describe("clearing old journal photos", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const at = app.indexOf("function deleteJournalEntriesOlderThan(");
+  const fn = app.slice(at, app.indexOf("\n}\n", at));
+  it("deletes exactly what it counted and confirmed", () => {
+    ok(at > 0, "the bulk delete should exist");
+    const counted = fn.match(/toRemove = journalEntries\.filter\(\(e\) => (.+?)\);/);
+    const kept = fn.match(/setJournalEntries\(\(current\) => current\.filter\(\(e\) => (.+?)\)\);/);
+    ok(counted && kept, "both filters should be found");
+    // Whatever is kept must be the negation of what was counted, or an entry
+    // with no readable date is dropped without being in the count.
+    eq(kept[1], `!(${counted[1]})`);
+  });
+});

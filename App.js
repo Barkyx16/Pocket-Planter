@@ -2961,7 +2961,10 @@ function deleteJournalEntriesOlderThan(days) {
         text: `Delete ${toRemove.length}`,
         style: "destructive",
         onPress: () => {
-          setJournalEntries((current) => current.filter((e) => new Date(e.createdAt).getTime() >= cutoff));
+          // The exact complement of toRemove. `>= cutoff` is false for an entry
+          // with no readable date as well, so those were deleted without being
+          // counted, confirmed, or having their photos cleaned up.
+          setJournalEntries((current) => current.filter((e) => !(new Date(e.createdAt).getTime() < cutoff)));
           successHaptic();
           // Delete the uploaded files too, the way deleteJournalEntry does — this
           // path only dropped the local entries, so every photo it claimed to
