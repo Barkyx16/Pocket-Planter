@@ -5093,6 +5093,32 @@ export function getTimelineOnThisDay(events, ref = new Date()) {
   });
 }
 
+// Rank names by the level they unlock at. The English title stays on the result
+// for share text and older callers; titleKey is what the UI translates.
+const LEVEL_TITLES = [
+  [0, "Seedling", "seedling"],
+  [5, "Backyard Grower", "backyardGrower"],
+  [10, "Green Thumb", "greenThumb"],
+  [15, "Harvest Keeper", "harvestKeeper"],
+  [20, "Garden Sage", "gardenSage"],
+  [25, "Plant Whisperer", "plantWhisperer"],
+  [30, "Soil Scientist", "soilScientist"],
+  [35, "Garden Architect", "gardenArchitect"],
+  [40, "Zone Master", "zoneMaster"],
+  [45, "Harvest Legend", "harvestLegend"],
+  [50, "Master Botanist", "masterBotanist"],
+  [55, "Garden Oracle", "gardenOracle"],
+  [60, "Legendary Grower", "legendaryGrower"],
+  [65, "Elite Cultivator", "eliteCultivator"],
+  [70, "Grand Gardener", "grandGardener"],
+  [75, "Garden Mythkeeper", "gardenMythkeeper"],
+  [80, "Ancient Cultivator", "ancientCultivator"],
+  [85, "Garden Immortal", "gardenImmortal"],
+  [90, "Celestial Grower", "celestialGrower"],
+  [95, "Garden Transcendent", "gardenTranscendent"],
+  [100, "🌟 Garden Gnome", "gardenGnome"],
+];
+
 export function getGardenXP({ savedPlants, journalEntries, gardenMap, wateredPlants, streakData, bonusXP, questXP, today = getTodayKey() }) {
   const wateredTodayCount = Object.values(wateredPlants || {}).filter((value) => value === today).length;
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
@@ -5103,28 +5129,8 @@ const xpForCurrentLevel = xpForLevel(level);
 const xpForNextLevel = xpForLevel(level + 1);
 const currentLevelXP = xp - xpForCurrentLevel;
 const nextLevelXP = xpForNextLevel - xpForCurrentLevel;
-  let title = "Seedling";
-if (level >= 5) title = "Backyard Grower";
-if (level >= 10) title = "Green Thumb";
-if (level >= 15) title = "Harvest Keeper";
-if (level >= 20) title = "Garden Sage";
-if (level >= 25) title = "Plant Whisperer";
-if (level >= 30) title = "Soil Scientist";
-if (level >= 35) title = "Garden Architect";
-if (level >= 40) title = "Zone Master";
-if (level >= 45) title = "Harvest Legend";
-if (level >= 50) title = "Master Botanist";
-if (level >= 55) title = "Garden Oracle";
-if (level >= 60) title = "Legendary Grower";
-if (level >= 65) title = "Elite Cultivator";
-if (level >= 70) title = "Grand Gardener";
-if (level >= 75) title = "Garden Mythkeeper";
-if (level >= 80) title = "Ancient Cultivator";
-if (level >= 85) title = "Garden Immortal";
-if (level >= 90) title = "Celestial Grower";
-if (level >= 95) title = "Garden Transcendent";
-if (level >= 100) title = "🌟 Garden Gnome";
-  return { xp, level, title, currentLevelXP, nextLevelXP, progress: currentLevelXP / nextLevelXP };
+  const [, title, titleSlug] = LEVEL_TITLES.filter(([min]) => level >= min).pop();
+  return { xp, level, title, titleKey: `levelTitles.${titleSlug}`, currentLevelXP, nextLevelXP, progress: currentLevelXP / nextLevelXP };
 }
 
 

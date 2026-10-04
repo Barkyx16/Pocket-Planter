@@ -53,6 +53,21 @@ describe("getGardenXP", () => {
     eq(g.nextLevelXP, core.xpForLevel(g.level + 1) - core.xpForLevel(g.level));
     ok(g.progress >= 0 && g.progress <= 1, `progress ${g.progress} out of range`);
   });
+  it("names every rank with a translation key whose English matches the title", () => {
+    // The UI renders t(titleKey); share text still uses the English title, so
+    // the two must never drift apart.
+    const enMod = require(path.join(ROOT, "lib/locales/en.js"));
+    const en = enMod.default || enMod;
+    const seen = new Set();
+    for (let level = 1; level <= 105; level += 1) {
+      const g = core.getGardenXP({ ...build(0), streakData: { count: 0 }, bonusXP: core.xpForLevel(level) });
+      const [ns, key] = g.titleKey.split(".");
+      eq(ns, "levelTitles");
+      eq(en.levelTitles[key], g.title, `level ${g.level}`);
+      seen.add(key);
+    }
+    eq(seen.size, Object.keys(en.levelTitles).length, "every level title is reachable");
+  });
 });
 
 describe("calculateGardenHealth", () => {

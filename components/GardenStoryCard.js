@@ -5,7 +5,7 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const GardenStoryCard = memo(function GardenStoryCard({ theme, savedPlants, harvestLog, journalEntries, wateringHistory, streakData, gardenXP, gardenAreas }) {
-  const { t } = useTranslation();
+  const { t, levelTitle } = useTranslation();
   const shareRef = useRef(null);
   const totalWaterings = Object.values(wateringHistory || {}).reduce(
     (sum, dates) => sum + (Array.isArray(dates) ? dates.length : 0),
@@ -28,7 +28,7 @@ export const GardenStoryCard = memo(function GardenStoryCard({ theme, savedPlant
     { icon: "💧", value: totalWaterings, label: "Waterings" },
     { icon: "📸", value: journalEntries.length, label: "Photos" },
     { icon: "🔥", value: streakData?.count || 0, label: "Day Streak" },
-    { icon: "⭐", value: `Lvl ${gardenXP.level}`, label: gardenXP.title },
+    { icon: "⭐", value: t("levelText.lvl", { level: gardenXP.level }), label: levelTitle(gardenXP) },
   ];
 
   const shareStory = async () => {
@@ -44,7 +44,7 @@ export const GardenStoryCard = memo(function GardenStoryCard({ theme, savedPlant
         journalEntries.length > 0 ? `📸 ${journalEntries.length} garden photos` : null,
         (streakData?.count || 0) > 0 ? `🔥 ${streakData.count}-day streak` : null,
         mvpPlant ? `🏆 MVP plant: ${mvpPlant}` : null,
-        `⭐ Level ${gardenXP.level} — ${gardenXP.title}`,
+        t("levelText.shareLine", { level: gardenXP.level, title: levelTitle(gardenXP) }),
         "",
         "Growing smarter with Pocket Planter 🌿",
       ].filter(Boolean);

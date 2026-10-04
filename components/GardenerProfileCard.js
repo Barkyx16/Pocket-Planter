@@ -7,7 +7,7 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const GardenerProfileCard = memo(function GardenerProfileCard({ theme, setAppearanceMode, avatarGlow, gardenXP, savedPlants, journalEntries, gardenMap, streakData, profileBanners, activeBannerId, profileName, setProfileName, profilePhoto, setProfilePhoto, selectedProfileTheme, setSelectedProfileTheme, harvestLog, wateringHistory }) {
-  const { t } = useTranslation();
+  const { t, levelTitle } = useTranslation();
   const unlockedBanners = profileBanners.filter((banner) => banner.unlocked);
   // Prefer the banner the gardener equipped; otherwise the most recent unlock.
   const activeBanner = profileBanners.find((b) => b.id === activeBannerId && b.unlocked) || unlockedBanners[unlockedBanners.length - 1] || profileBanners[0];
@@ -37,13 +37,13 @@ return (
       )}
       <TextInput value={profileName} onChangeText={setProfileName} placeholder={t("gardenerProfile.enterProfileName")} placeholderTextColor="#8fbf9d" style={[styles.profileNameInput, { marginTop: 4 }]} />
 
-      <Text style={styles.profileRank}>Level {gardenXP.level} • {gardenXP.title}</Text>
+      <Text style={styles.profileRank}>{t("levelText.rank", { level: gardenXP.level, title: levelTitle(gardenXP) })}</Text>
       <Text style={styles.profileXP}>{gardenXP.xp} {t("gardenerProfile.totalXpEarned")}</Text>
 
       {/* XP PROGRESS */}
       <View style={{ marginTop: 12 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Text style={{ color: theme.text, fontWeight: "800", fontSize: 12 }}>Level {gardenXP.level} → {gardenXP.level + 1}</Text>
+          <Text style={{ color: theme.text, fontWeight: "800", fontSize: 12 }}>{t("levelText.nextLevel", { level: gardenXP.level, next: gardenXP.level + 1 })}</Text>
           <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 12 }}>{Math.round((gardenXP.progress || 0) * 100)}%</Text>
         </View>
         <View style={{ height: 10, backgroundColor: "rgba(255, 255, 255, 0.1)", borderRadius: 16, marginTop: 6, overflow: "hidden" }}>

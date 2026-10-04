@@ -24,7 +24,7 @@ export const GardenStatsDashboard = memo(function GardenStatsDashboard({
   onWaterAll,
   unitSystem,
 }) {
-  const { t } = useTranslation();
+  const { t, levelTitle } = useTranslation();
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
   const today = getTodayKey();
 
@@ -111,8 +111,8 @@ return (
       {/* XP PROGRESS BAR */}
       <View style={styles.dashXPRow}>
         <View style={styles.dashXPLeft}>
-          <Text style={styles.dashXPLevel}>Lvl {gardenXP.level}</Text>
-          <Text style={[styles.dashXPTitle, { color: theme.secondaryText }]}>{gardenXP.title}</Text>
+          <Text style={styles.dashXPLevel}>{t("levelText.lvl", { level: gardenXP.level })}</Text>
+          <Text style={[styles.dashXPTitle, { color: theme.secondaryText }]}>{levelTitle(gardenXP)}</Text>
         </View>
         <View style={styles.dashXPBarWrap}>
           <AnimatedBar progress={levelProgress} color="#5cff89" trackStyle={styles.dashXPTrack} fillStyle={styles.dashXPFill} />
@@ -331,7 +331,7 @@ return (
                   wateringsThisWeek > 0 ? `💧 ${wateringsThisWeek} watering${wateringsThisWeek === 1 ? "" : "s"} this week` : null,
                   photosThisWeek > 0 ? `📸 ${photosThisWeek} garden photo${photosThisWeek === 1 ? "" : "s"} logged` : null,
                   (streakData?.count || 0) > 0 ? `🔥 ${streakData.count}-day streak going strong` : null,
-                  `⭐ Level ${gardenXP.level} — ${gardenXP.title}`,
+                  t("levelText.shareLine", { level: gardenXP.level, title: levelTitle(gardenXP) }),
                   "",
                   t("gardenStatsDashboard.growingSmarterWithPocketPlanter"),
                 ].filter(Boolean);

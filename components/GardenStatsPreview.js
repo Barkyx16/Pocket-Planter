@@ -25,7 +25,7 @@ export const GardenStatsPreview = memo(function GardenStatsPreview({
   unitSystem,
   onUnlock,
 }) {
-  const { t, tn } = useTranslation();
+  const { t, tn, levelTitle } = useTranslation();
 
   const getStreakEmoji = (count) => {
     if (count >= 30) return "🏆";
@@ -44,7 +44,7 @@ export const GardenStatsPreview = memo(function GardenStatsPreview({
   const gardenHealth = useMemo(() => calculateGardenHealth(gardenMap), [gardenMap]);
   const streakCount = streakData?.count || 0;
   const level = gardenXP?.level ?? 1;
-  const levelTitle = gardenXP?.title ?? "Seedling";
+  const rankTitle = gardenXP ? levelTitle(gardenXP) : t("levelTitles.seedling");
   const levelProgress = gardenXP?.progress || 0;
   const currentLevelXP = gardenXP?.currentLevelXP ?? 0;
   const nextLevelXP = gardenXP?.nextLevelXP ?? 100;
@@ -66,7 +66,7 @@ export const GardenStatsPreview = memo(function GardenStatsPreview({
       <View style={styles.dashXPRow}>
         <View style={styles.dashXPLeft}>
           <Text style={styles.dashXPLevel}>{t("statsPreview.lvl", { level })}</Text>
-          <Text style={[styles.dashXPTitle, { color: theme.secondaryText }]}>{levelTitle}</Text>
+          <Text style={[styles.dashXPTitle, { color: theme.secondaryText }]}>{rankTitle}</Text>
         </View>
         <View style={styles.dashXPBarWrap}>
           <AnimatedBar progress={levelProgress} color="#5cff89" trackStyle={styles.dashXPTrack} fillStyle={styles.dashXPFill} />

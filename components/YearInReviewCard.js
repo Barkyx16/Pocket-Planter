@@ -5,7 +5,7 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const YearInReviewCard = memo(function YearInReviewCard({ theme, savedPlants, harvestLog, journalEntries, wateringHistory, streakData, gardenXP }) {
-  const { t } = useTranslation();
+  const { t, levelTitle } = useTranslation();
   const now = new Date();
   const yearAgo = new Date(now); yearAgo.setFullYear(now.getFullYear() - 1);
   const inLastYear = (dateStr) => {
@@ -33,7 +33,7 @@ export const YearInReviewCard = memo(function YearInReviewCard({ theme, savedPla
     { icon: "📸", value: photosYr, label: "Photos" },
     { icon: "🎉", value: harvestsYr, label: "Harvests" },
     { icon: "🔥", value: streakData?.count || 0, label: "Day Streak" },
-    { icon: "⭐", value: `Lvl ${gardenXP.level}`, label: gardenXP.title },
+    { icon: "⭐", value: t("levelText.lvl", { level: gardenXP.level }), label: levelTitle(gardenXP) },
   ];
 
   const shareReview = async () => {
@@ -48,7 +48,7 @@ export const YearInReviewCard = memo(function YearInReviewCard({ theme, savedPla
         harvestsYr > 0 ? `🎉 ${harvestsYr} harvests` : null,
         harvestValue.total > 0 ? `💰 ~$${harvestValue.total} of produce grown` : null,
         (streakData?.count || 0) > 0 ? `🔥 ${streakData.count}-day streak` : null,
-        `⭐ Level ${gardenXP.level} — ${gardenXP.title}`,
+        t("levelText.shareLine", { level: gardenXP.level, title: levelTitle(gardenXP) }),
         "",
         "What a year in the garden 🌻",
       ].filter(Boolean);

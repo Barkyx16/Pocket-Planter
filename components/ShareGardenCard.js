@@ -5,7 +5,7 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, savedPlants, harvestLog, journalEntries, streakData, gardenAreas }) {
-  const { t } = useTranslation();
+  const { t, levelTitle } = useTranslation();
   const shareRef = useRef(null);
   const plotCount = (gardenAreas || []).reduce((sum, a) => sum + Object.values(a.plots || {}).filter(Boolean).length, 0);
   const harvests = (harvestLog || []).length;
@@ -17,7 +17,7 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
       const lines = [
         "🌱 My Pocket Planter garden report card:",
         "",
-        `⭐ Level ${gardenXP.level} — ${gardenXP.title}`,
+        t("levelText.shareLine", { level: gardenXP.level, title: levelTitle(gardenXP) }),
         `🪴 ${savedPlants.length} plants growing`,
         plotCount > 0 ? `🗺️ ${plotCount} plots planted` : null,
         harvests > 0 ? `🚜 ${harvests} harvest${harvests === 1 ? "" : "s"} logged` : null,
@@ -50,7 +50,7 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
   };
 
   const stats = [
-    { value: `Lv${gardenXP.level}`, label: "Level", color: "#5cff89" },
+    { value: t("levelText.lvShort", { level: gardenXP.level }), label: t("levelText.level"), color: "#5cff89" },
     { value: savedPlants.length, label: "Plants", color: "#8effab" },
     { value: harvests, label: "Harvests", color: "#ffd86b" },
     { value: `${streak}d`, label: "Streak", color: "#ff9f43" },
@@ -76,7 +76,7 @@ export const ShareGardenCard = memo(function ShareGardenCard({ theme, gardenXP, 
   textAlign: "center"
 }} />
         <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "900", textAlign: "center", marginTop: 6 }}>
-          Level {gardenXP.level} · {gardenXP.title}
+          {t("levelText.rank", { level: gardenXP.level, title: levelTitle(gardenXP) })}
         </Text>
 
         <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
