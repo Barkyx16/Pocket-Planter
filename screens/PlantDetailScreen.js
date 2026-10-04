@@ -6,7 +6,7 @@ import { PlantGrowthTimeline } from "../components/PlantGrowthTimeline";
 import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { PremiumLockedSection } from "../components/PremiumLockedSection";
 import { WeatherParticles } from "../components/WeatherParticles";
-import { getCompanionInfo, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeAdvice, normalizeType, resolvePlantImageSource } from "../core";
+import { getCompanionInfo, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, hasHarvestCountdown, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeAdvice, normalizeType, resolvePlantImageSource } from "../core";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { getPestImage } from "../data/pestImageMap";
 import { formatDate, t } from "../lib/i18n";
@@ -156,6 +156,7 @@ export function PlantDetailScreen({
               : getHarvestCountdown(selectedPlant)}
           </Text>
         </View>
+        {hasHarvestCountdown(selectedPlant) ? (
         <Pressable
           style={styles.harvestTrackerButton}
           onPress={() => {
@@ -173,6 +174,20 @@ export function PlantDetailScreen({
             {harvestTracker ? "Restart" : "Start"}
           </Text>
         </Pressable>
+        ) : harvestTracker ? (
+          // No countdown for this plant: a tracker started before there was this
+          // check can still be stopped, but a new one is not offered.
+          <Pressable
+            style={styles.harvestTrackerButton}
+            onPress={() => setHarvestTrackers((current) => {
+              const next = { ...current };
+              delete next[selectedPlant.name];
+              return next;
+            })}
+          >
+            <Text style={styles.harvestTrackerButtonText}>Stop</Text>
+          </Pressable>
+        ) : null}
       </View>
       <Pressable
         onPress={() => { setHarvestLogText(""); setHarvestLogPlant(selectedPlant.name); }}

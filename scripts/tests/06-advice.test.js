@@ -417,3 +417,21 @@ describe("getPlantsDueForWater", () => {
     eq(core.getPlantsDueForWater(args({ wateringHistory: { Tomato: [ago(5)] }, savedPlants: ["Tomato"], weather: { precipChance: 95 } })), ["Tomato"]);
   });
 });
+
+describe("hasHarvestCountdown", () => {
+  const produce = require(path.join(ROOT, "data/produceData.js"));
+  const list = produce.default || produce;
+  it("agrees with what the harvest label says, for every plant", () => {
+    // The label says "Perennial — harvests seasonally" for an apple tree; the
+    // tracker must not then count down 75 days to a harvest that is not coming.
+    const disagree = list.filter((i) => core.hasHarvestCountdown(i) !== /day harvest$/.test(core.getHarvestCountdown(i)))
+      .map((i) => i.name);
+    eq(disagree, []);
+    ok(!core.hasHarvestCountdown(list.find((i) => i.name === "Apple")));
+    ok(core.hasHarvestCountdown(list.find((i) => i.name === "Tomato")));
+  });
+  it("is what the plant page asks before offering a tracker", () => {
+    const page = require("fs").readFileSync(path.join(ROOT, "screens/PlantDetailScreen.js"), "utf8");
+    ok(/\{hasHarvestCountdown\(selectedPlant\) \? \(/.test(page));
+  });
+});

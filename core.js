@@ -2301,6 +2301,21 @@ export function getHarvestCountdown(item) {
   return `~${days} day harvest`;
 }
 
+// Whether a plant has a harvest countdown at all — the same question
+// getHarvestCountdown answers in words. Perennials without an authored maturity
+// window (apple, orange, raspberry: 207 edibles) are "Perennial — harvests
+// seasonally", but the tracker would still start a countdown from
+// getHarvestDays' 75-day fallback, announce an apple tree "ready to harvest"
+// eleven weeks after planting, and send a notification saying so.
+export function hasHarvestCountdown(item) {
+  const type = normalizeType(item?.type, item?.name);
+  if (type === "Flowers" || type === "Houseplants") return false;
+  const authored = getPlantDetails(item);
+  if (authored?.daysToMaturity) return true;
+  if (authored?.perennial) return false;
+  return !isPerennial(item);
+}
+
 export function getHarvestDays(item) {
   const authored = getPlantDetails(item);
   if (authored && authored.daysToMaturity) return authored.daysToMaturity;
