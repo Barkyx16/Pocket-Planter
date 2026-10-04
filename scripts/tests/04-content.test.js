@@ -758,3 +758,15 @@ describe("what the app does by itself never asks for permission", () => {
     ok(daily.every((d) => /silent: true/.test(d)), "the daily watering effects must be silent");
   });
 });
+
+describe("Home's watering task", () => {
+  const fs = require("fs");
+  const card = fs.readFileSync(path.join(ROOT, "components/MyGardenTodayCard.js"), "utf8");
+  it("lists only plants that are due, by their own rhythm", () => {
+    // Every plant not watered today used to "need water", whatever its interval.
+    ok(/getNextWaterInfo\(p, item, wateringHistory, wateredPlants, dryWeather\)/.test(card));
+    ok(/snoozedPlants\?\.\[p\] !== tomorrowKey && isDue\(p\)/.test(card));
+    ok(/myGardenToday\.nothingDueToday/.test(card), "nothing due should not claim every plant was watered");
+    ok(/<MyGardenTodayCard\s+theme=\{theme\}\s+wateringHistory=\{wateringHistory\}/.test(fs.readFileSync(path.join(ROOT, "screens/HomeTab.js"), "utf8")));
+  });
+});

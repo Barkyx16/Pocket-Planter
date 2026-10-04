@@ -320,6 +320,7 @@ harvestTrackers={harvestTrackers}
 
 <MyGardenTodayCard
   theme={theme}
+  wateringHistory={wateringHistory}
   unitSystem={unitSystem}
   weather={weather}
   monthlySuggestions={monthlySuggestions}
