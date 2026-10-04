@@ -511,3 +511,34 @@ describe("signing out leaves nothing of the account in memory", () => {
     eq(missing, [], "synced to the account but not reset on sign-out");
   });
 });
+
+describe("frost alerts follow the gardener", () => {
+  const fs = require("fs");
+  const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const settings = fs.readFileSync(path.join(ROOT, "screens/SettingsTab.js"), "utf8");
+  it("are rescheduled when the zone or hemisphere changes", () => {
+    // Scheduled once from the switch, they stayed on the old place's winter.
+    const at = app.indexOf("const southernHemisphere =");
+    ok(at > 0, "there should be an effect that follows the place");
+    const effect = app.slice(at, app.indexOf("}, [", at) + 60);
+    ok(/scheduleFrostSeasonReminders\(zone\)/.test(effect), "it must reschedule for the current zone");
+    ok(/\[frostAlertsOn, zone, southernHemisphere\]/.test(effect), "it must rerun on zone and hemisphere");
+    ok(/getPermissionsAsync/.test(effect) && !/ensureNotificationPermission/.test(effect), "it must never prompt");
+    ok(app.indexOf("setHemisphereFromLatitude(latitude); // keep") < at, "it must run after the hemisphere is set");
+  });
+  it("are scheduled in one place", () => {
+    const fn = app.slice(app.indexOf("async function scheduleFrostSeasonReminders("));
+    ok(/cancelReminder\(`frost-daily-\$\{month\}`\)/.test(fn.slice(0, 400)), "all twelve are cleared first");
+    ok(/scheduleFrostSeasonReminders\(zone\)/.test(settings), "the switch must use the shared scheduler");
+    ok(!/SchedulableTriggerInputTypes\.CALENDAR[\s\S]{0,200}hour: 18/.test(settings), "no second copy in Settings");
+  });
+});
+
+describe("the monthly planting guides switch", () => {
+  const settings = require("fs").readFileSync(path.join(ROOT, "screens/SettingsTab.js"), "utf8");
+  it("backs off when notifications are refused", () => {
+    const at = settings.indexOf("onToggleMonthlyPlanting=");
+    const fn = settings.slice(at, settings.indexOf("onToggleDailyWatering=", at));
+    ok(/\} else \{[\s\S]*?setMonthlyPlantingOn\(false\)/.test(fn), "the switch must turn back off");
+  });
+});

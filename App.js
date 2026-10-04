@@ -78,6 +78,7 @@ import {
   getSuggestionsForMonth,
   getTodayKey,
   getTomorrowKey,
+  getFrostSeasonMonths,
   getWeekKey,
   getTotalWaterings,
   getUpcomingFrost,
@@ -2068,6 +2069,19 @@ useEffect(() => {
   persist(STORAGE_KEYS.latitude, String(latitude));
   setHemisphereFromLatitude(latitude); // keep the seasonal helpers in sync
 }, [latitude]);
+
+// Follow the frost season when the place changes. Declared after the effect above
+// so the hemisphere is already set when this reads it, and silent: it never asks
+// for permission, it only moves reminders the gardener already switched on.
+const southernHemisphere = latitude != null && latitude < 0;
+useEffect(() => {
+  if (!frostAlertsOn) return;
+  (async () => {
+    const { granted } = await Notifications.getPermissionsAsync().catch(() => ({ granted: false }));
+    if (granted) await scheduleFrostSeasonReminders(zone);
+  })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [frostAlertsOn, zone, southernHemisphere]);
 useEffect(() => {
   persist(STORAGE_KEYS.country, country);
 }, [country]);
@@ -2659,6 +2673,34 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
   }
   async function cancelReminder(id) {
     await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
+  }
+
+  // Frost alerts are one yearly repeat per month of the local frost season, and
+  // which months those are depends on the zone and the hemisphere. They were
+  // scheduled once, from the switch, for wherever the gardener was that day — so
+  // after a move, or once a southern location's latitude arrived, the evening
+  // checks kept coming in the old place's winter and not at all in the new one's.
+  // All twelve are cleared first, for the reason the off switch gives.
+  async function scheduleFrostSeasonReminders(forZone) {
+    for (let month = 1; month <= 12; month += 1) await cancelReminder(`frost-daily-${month}`);
+    for (const month of getFrostSeasonMonths(forZone)) {
+      await Notifications.scheduleNotificationAsync({
+        identifier: `frost-daily-${month}`,
+        content: {
+          title: "❄️ Frost Check",
+          body: "Cold season is here — open Pocket Planter to see if frost is coming and protect your tender plants.",
+          sound: true,
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+          repeats: true,
+          month,
+          day: 1,
+          hour: 18,
+          minute: 0,
+        },
+      }).catch(() => {});
+    }
   }
 
  async function updateDailyStreak() {
@@ -5941,6 +5983,7 @@ const jumpToTab = useCallback((tab) => {
   dailyWateringOn={dailyWateringOn}
   deleteJournalEntriesOlderThan={deleteJournalEntriesOlderThan}
   ensureNotificationPermission={ensureNotificationPermission}
+  scheduleFrostSeasonReminders={scheduleFrostSeasonReminders}
   frostAlertsOn={frostAlertsOn}
   gardenAreas={gardenAreas}
   gardenMap={gardenMap}
