@@ -523,7 +523,7 @@ describe("frost alerts follow the gardener", () => {
     const effect = app.slice(at, app.indexOf("}, [", at) + 60);
     ok(/scheduleFrostSeasonReminders\(zone\)/.test(effect), "it must reschedule for the current zone");
     ok(/\[frostAlertsOn, zone, southernHemisphere\]/.test(effect), "it must rerun on zone and hemisphere");
-    ok(/getPermissionsAsync/.test(effect) && !/ensureNotificationPermission/.test(effect), "it must never prompt");
+    ok(/notificationsGranted\(\)/.test(effect) && !/ensureNotificationPermission/.test(effect), "it must never prompt");
     ok(app.indexOf("setHemisphereFromLatitude(latitude); // keep") < at, "it must run after the hemisphere is set");
   });
   it("are scheduled in one place", () => {
@@ -567,7 +567,7 @@ describe("a plant's daily check-in", () => {
 
 describe("switches that come back on are re-armed", () => {
   const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
-  const at = app.indexOf("async function notificationsAlreadyAllowed(");
+  const at = app.indexOf("// Re-arm what the switches say is on.");
   const block = at < 0 ? "" : app.slice(at, app.indexOf("}, [remindersOn, wateringReminders, savedPlants]);", at) + 60);
   it("for the monthly guides, the plant of the day and each plant's check-in", () => {
     // Restored from a backup or the cloud row onto a fresh device, these read
@@ -737,5 +737,24 @@ describe("the launch-time harvest check", () => {
     const fn = app.slice(at, app.indexOf("\n  }\n", at));
     ok(at > 0 && /getPermissionsAsync\(\)/.test(fn), "it should only check permission");
     ok(!/requestPermissionsAsync/.test(fn), "it must not ask on launch");
+  });
+});
+
+describe("what the app does by itself never asks for permission", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const slice = (from, to) => { const a = app.indexOf(from); return a < 0 ? "" : app.slice(a, app.indexOf(to, a)); };
+  it("the frost and heat alerts, the snooze summary and the daily watering re-schedules", () => {
+    // ensureNotificationPermission shows an alert once permission is refused, so
+    // from an effect it nagged on every launch and weather refresh.
+    const frost = slice("if (alreadySent === frost.date)", "scheduleNotificationAsync");
+    const heat = slice("if (alreadySent === day.date)", "scheduleNotificationAsync");
+    const snooze = slice("async function scheduleSnoozeSummary(", "scheduleNotificationAsync");
+    for (const [name, body] of [["frost", frost], ["heat", heat], ["snooze", snooze]]) {
+      ok(body.length > 0, `${name} should be found`);
+      ok(/notificationsGranted\(\)/.test(body) && !/ensureNotificationPermission/.test(body), `${name} must only check`);
+    }
+    const daily = [...app.matchAll(/id: "daily-watering",[\s\S]{0,260}?\}\);/g)].map((m) => m[0]);
+    ok(daily.length >= 2, "both daily watering effects should be found");
+    ok(daily.every((d) => /silent: true/.test(d)), "the daily watering effects must be silent");
   });
 });

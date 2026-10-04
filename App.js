@@ -2086,8 +2086,7 @@ const southernHemisphere = latitude != null && latitude < 0;
 useEffect(() => {
   if (!frostAlertsOn) return;
   (async () => {
-    const { granted } = await Notifications.getPermissionsAsync().catch(() => ({ granted: false }));
-    if (granted) await scheduleFrostSeasonReminders(zone);
+    if (await notificationsGranted()) await scheduleFrostSeasonReminders(zone);
   })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [frostAlertsOn, zone, southernHemisphere]);
@@ -2098,18 +2097,14 @@ useEffect(() => {
 // never fired. The daily watering check and the weekly recap already re-schedule
 // from their own effects, and frost from the one above; these three did not.
 // Fixed identifiers make it safe to repeat, and it never asks for permission.
-async function notificationsAlreadyAllowed() {
-  const { granted } = await Notifications.getPermissionsAsync().catch(() => ({ granted: false }));
-  return !!granted;
-}
 useEffect(() => {
   if (!monthlyPlantingOn) return;
-  (async () => { if (await notificationsAlreadyAllowed()) await scheduleMonthlyPlantingReminders(); })();
+  (async () => { if (await notificationsGranted()) await scheduleMonthlyPlantingReminders(); })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [monthlyPlantingOn]);
 useEffect(() => {
   if (!plantOfDayOn) return;
-  (async () => { if (await notificationsAlreadyAllowed()) await schedulePlantOfDayReminder(); })();
+  (async () => { if (await notificationsGranted()) await schedulePlantOfDayReminder(); })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [plantOfDayOn]);
 useEffect(() => {
@@ -2118,7 +2113,7 @@ useEffect(() => {
   // removing its plant (or switching reminders off) has just cancelled.
   let stale = false;
   (async () => {
-    if (!(await notificationsAlreadyAllowed())) return;
+    if (!(await notificationsGranted())) return;
     for (const [plantName, r] of Object.entries(wateringReminders || {})) {
       if (stale) return;
       if (!r?.enabled || typeof r.hour !== "number" || typeof r.minute !== "number") continue;
@@ -2512,6 +2507,7 @@ await scheduleDailyReminder({
       minute: wateringReminderTime.minute,
       title: t("notify.dailyWaterTitle"),
       body: t("notify.dailyWaterBody"),
+      silent: true,
     });
   })();
 }, [wateringReminderTime, dailyWateringOn]);
@@ -2693,9 +2689,17 @@ function isOnVacation(vac) {
   const end = new Date(`${vac.end}T23:59:59`);
   return today >= start && today <= end;
 }
-async function scheduleDailyReminder({ id, hour, minute, title, body }) {
+// Something the app does by itself — on launch, on a weather update — only checks
+// permission. ensureNotificationPermission explains and asks, or, once refused,
+// offers the Settings app; from an effect that meant a gardener who had turned
+// notifications off in iOS was shown that alert on every launch and refresh.
+async function notificationsGranted() {
+  const { granted } = await Notifications.getPermissionsAsync().catch(() => ({ granted: false }));
+  return !!granted;
+}
+async function scheduleDailyReminder({ id, hour, minute, title, body, silent = false }) {
     if (hour == null || Number.isNaN(hour) || minute == null || Number.isNaN(minute)) return false;
-    const granted = await ensureNotificationPermission();
+    const granted = silent ? await notificationsGranted() : await ensureNotificationPermission();
     if (!granted) return false;
     // Vacation mode: don't schedule new reminders while away.
     if (isOnVacation(vacationRef.current)) {
@@ -3296,8 +3300,9 @@ async function scheduleSnoozeSummary(snoozeMap) {
     await Notifications.cancelScheduledNotificationAsync("snooze-summary").catch(() => {});
     if (!dueTomorrow.length) return;
 
-    const granted = await ensureNotificationPermission();
-    if (!granted) return;
+    // Silent: it also runs on launch, and snoozing a plant is not asking for
+    // notifications.
+    if (!(await notificationsGranted())) return;
 
     const count = dueTomorrow.length;
     const preview = dueTomorrow.slice(0, 3).join(", ");
@@ -4553,6 +4558,7 @@ useEffect(() => {
           minute: wateringReminderTime.minute,
           title: t("notify.dailyWaterTitle"),
           body: t("notify.dailyWaterBody"),
+          silent: true,
         });
       }
     })();
@@ -4575,7 +4581,7 @@ useEffect(() => {
       try { alreadySent = await AsyncStorage.getItem("pp_frostAlertDay"); } catch (e) { /* ignore */ }
       if (alreadySent === frost.date) { lastFrostAlertDate.current = frost.date; return; }
 
-      const granted = await ensureNotificationPermission();
+      const granted = await notificationsGranted();
       if (!granted) return;
 
       lastFrostAlertDate.current = frost.date;
@@ -4616,7 +4622,7 @@ useEffect(() => {
       try { alreadySent = await AsyncStorage.getItem("pp_heatAlertDay"); } catch (e) { /* ignore */ }
       if (alreadySent === day.date) { lastHeatAlertDate.current = day.date; return; }
 
-      const granted = await ensureNotificationPermission();
+      const granted = await notificationsGranted();
       if (!granted) return;
 
       lastHeatAlertDate.current = day.date;
