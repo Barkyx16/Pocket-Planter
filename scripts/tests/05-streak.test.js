@@ -67,3 +67,33 @@ describe("nextStreakState", () => {
     eq(out.streak, { count: 1, lastOpened: day(0) });
   });
 });
+
+describe("a new day while the app is open", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("is noticed when the app comes back to the foreground", () => {
+    // iOS resumes a suspended app without a launch; the streak only counted on
+    // a cold start, so daily resumes were never counted and then reset it.
+    ok(/AppState\.addEventListener\("change"/.test(app), "the app should listen for coming back");
+    ok(/if \(state === "active"\) setTodayKey\(getTodayKey\(\)\);/.test(app));
+    const at = app.indexOf("const seenDayRef = useRef(todayKey);");
+    const effect = app.slice(at, app.indexOf("}, [todayKey]);", at));
+    ok(at > 0 && /onNewDayRef\.current\?\.\(\)/.test(effect), "a new day should run the daily work");
+    ok(/updateDailyStreak\(\);\s*\n\s*checkHarvestNotifications\(\);\s*\n\};/.test(app), "the daily work is the streak and the harvest check");
+  });
+  it("rebuilds today's quests, badges and XP", () => {
+    for (const fn of ["getDailyQuests", "getAchievementBadges", "getGardenXP"]) {
+      const at = app.indexOf(`${fn}({`);
+      ok(/today: todayKey/.test(app.slice(at, app.indexOf("}),", at))), `${fn} must be given todayKey`);
+    }
+  });
+  it("lets the builders be asked about a given day", () => {
+    const quests = (today) => core.getDailyQuests({
+      savedPlants: [], journalEntries: [], gardenMap: {}, wateredPlants: { A: "2026-10-05" }, careLog: [],
+      harvestTrackers: {}, streakData: { count: 1 }, harvestLog: [], fertilizerTrackers: {}, comparePlants: [], today,
+    });
+    // The rotation follows the given day, and "watered today" counts against it.
+    ok(JSON.stringify(quests("2026-10-04").map((q) => q.id)) !== JSON.stringify(quests("2026-10-05").map((q) => q.id)));
+    const xp = (today) => core.getGardenXP({ savedPlants: [], journalEntries: [], gardenMap: {}, wateredPlants: { A: "2026-10-05" }, streakData: { count: 1 }, bonusXP: 0, questXP: 0, today });
+    ok(xp("2026-10-05").xp > xp("2026-10-06").xp, "a watering counts only on its own day");
+  });
+});

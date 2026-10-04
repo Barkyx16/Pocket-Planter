@@ -3948,8 +3948,8 @@ export function getAchievementBadges({
   fertilizerTrackers,
   harvestLog,
   wateringHistory,
+  today = getTodayKey(),
 }) {
-  const today = getTodayKey();
   const wateredTodayCount = Object.values(wateredPlants || {}).filter((value) => value === today).length;
   const totalWateredCount = getTotalWaterings(wateringHistory);
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
@@ -4408,9 +4408,10 @@ export function countHarvestsOn(harvestLog, dayKey) {
   )).length;
 }
 
-export function getDailyQuests({ savedPlants, journalEntries, gardenMap, wateredPlants, careLog, harvestTrackers, streakData, harvestLog, fertilizerTrackers, comparePlants }) {
-  const today = getTodayKey();
-  const dayOfWeek = new Date().getDay();
+// `today` is passed in by App so the memo that holds these is rebuilt when the day
+// changes while the app is open; it defaults to the real day for every other caller.
+export function getDailyQuests({ savedPlants, journalEntries, gardenMap, wateredPlants, careLog, harvestTrackers, streakData, harvestLog, fertilizerTrackers, comparePlants, today = getTodayKey() }) {
+  const dayOfWeek = parseStoredDate(today).getDay();
   const wateredTodayCount = Object.values(wateredPlants || {}).filter((value) => value === today).length;
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
   // createdAt is a UTC timestamp and `today` is a local day key, so a prefix
@@ -5061,8 +5062,7 @@ export function getTimelineOnThisDay(events, ref = new Date()) {
   });
 }
 
-export function getGardenXP({ savedPlants, journalEntries, gardenMap, wateredPlants, streakData, bonusXP, questXP }) {
-  const today = getTodayKey();
+export function getGardenXP({ savedPlants, journalEntries, gardenMap, wateredPlants, streakData, bonusXP, questXP, today = getTodayKey() }) {
   const wateredTodayCount = Object.values(wateredPlants || {}).filter((value) => value === today).length;
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
   const consistencyBonus = getConsistencyBonus(streakData?.count || 0);

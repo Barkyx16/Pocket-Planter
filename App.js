@@ -3,7 +3,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "./lib/supabase";
 import { isBiometricAvailable, getBiometricLabel, isBiometricEnabled, enableBiometricLogin, disableBiometricLogin, authenticateAndGetCredentials } from "./lib/biometricAuth";
 import { hydrateTabHeroes } from "./components/TabHero";
-import { ActivityIndicator, Alert, Animated, Appearance, Image, Keyboard, Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, RefreshControl, Share, StatusBar, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Animated, AppState, Appearance, Image, Keyboard, Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, RefreshControl, Share, StatusBar, StyleSheet, Text, TextInput, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import * as Location from "expo-location";
@@ -1417,6 +1417,31 @@ const gardenHealth = useMemo(
   [combinedGardenMap]
 );
 
+// The day as the app last saw it. iOS keeps an app suspended for days and brings
+// it back without a launch, and everything that happened "on launch" — counting
+// the day toward the streak, the harvest-ready check — only ran on a cold start.
+// A gardener who opened the app every morning by switching back to it was never
+// counted, and when it finally did relaunch the gap looked like days missed and
+// the streak reset. Today's quests and counts stayed on the day it was opened.
+const [todayKey, setTodayKey] = useState(getTodayKey);
+const onNewDayRef = useRef(null);
+onNewDayRef.current = () => {
+  updateDailyStreak();
+  checkHarvestNotifications();
+};
+useEffect(() => {
+  const sub = AppState.addEventListener("change", (state) => {
+    if (state === "active") setTodayKey(getTodayKey());
+  });
+  return () => sub.remove();
+}, []);
+const seenDayRef = useRef(todayKey);
+useEffect(() => {
+  if (seenDayRef.current === todayKey) return; // the launch path already did it
+  seenDayRef.current = todayKey;
+  onNewDayRef.current?.();
+}, [todayKey]);
+
 const gardenXP = useMemo(
   () =>
     getGardenXP({
@@ -1427,8 +1452,10 @@ const gardenXP = useMemo(
       streakData,
       bonusXP,
       questXP,
+      today: todayKey,
     }),
   [
+    todayKey,
     savedPlants,
     journalEntries,
     combinedGardenMap,
@@ -1453,8 +1480,10 @@ const achievementBadges = useMemo(
       fertilizerTrackers: visibleFertilizerTrackers,
       harvestLog,
       wateringHistory,
+      today: todayKey,
     }), badgeEarnedDates),
   [
+    todayKey,
     badgeEarnedDates,
     savedPlants,
     followedPlants,
@@ -1486,8 +1515,10 @@ const dailyQuests = useMemo(
       // "Feed a plant" and "Feed 3 plants" could never be completed.
       fertilizerTrackers: visibleFertilizerTrackers,
       comparePlants,
+      today: todayKey,
     }),
   [
+    todayKey,
     savedPlants,
     journalEntries,
     combinedGardenMap,
