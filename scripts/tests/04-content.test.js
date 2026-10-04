@@ -932,3 +932,17 @@ describe("the plant page", () => {
     ok((page.match(/t\("plantDetailScreen\./g) || []).length >= 65);
   });
 });
+
+describe("Home's daily plan", () => {
+  const card = require("fs").readFileSync(path.join(ROOT, "components/MyGardenTodayCard.js"), "utf8");
+  it("has no English left in it", () => {
+    // Greetings, the weather line, seasonal tips and every count were English
+    // in all ten languages, and "1 plant need water" in English too.
+    ok(!/greeting: "|title: "[A-Z]|return "[^"]*[a-z]{3}/.test(card), "a greeting, weather title or tip is hard-coded");
+    ok(!/plant\{[^}]*=== 1 \? "" : "s"\}/.test(card) && !/photo\$\{todayPhotos === 1/.test(card), "a count is pluralised in English");
+    ok(!/\} done<|\} more</.test(card));
+    for (const k of ["plantsNeedWater", "plantsReadyToHarvest", "plantsDueForFertilizer", "startSeedsIndoors", "photosLoggedToday"]) {
+      ok(card.includes(`tn("myGardenToday.${k}"`), `${k} must be pluralised per language`);
+    }
+  });
+});
