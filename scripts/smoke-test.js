@@ -74,6 +74,9 @@ const RN = {
   Appearance: { getColorScheme: () => "dark", addChangeListener: () => ({ remove() {} }) },
   StatusBar: host("div"),
   I18nManager: { isRTL: false },
+  // For App.js, which the component passes do not reach.
+  AppState: { currentState: "active", addEventListener: () => ({ remove() {} }) },
+  NativeModules: {},
   AccessibilityInfo: {
     isReduceMotionEnabled: async () => process.env.PP_REDUCE_MOTION === "1",
     isScreenReaderEnabled: async () => false,
@@ -91,7 +94,7 @@ const STUBS = {
   "expo-blur": { BlurView: host("div") },
   "expo-notifications": { setNotificationHandler() {}, getAllScheduledNotificationsAsync: async () => [], scheduleNotificationAsync: async () => {}, cancelScheduledNotificationAsync: async () => {}, AndroidImportance: {}, setNotificationChannelAsync: async () => {} },
   "expo-location": { requestForegroundPermissionsAsync: async () => ({ granted: false }) },
-  "expo-image-picker": {}, "expo-image-manipulator": {}, "expo-splash-screen": { preventAutoHideAsync() {}, hideAsync() {} },
+  "expo-image-picker": {}, "expo-image-manipulator": {}, "expo-splash-screen": { preventAutoHideAsync: async () => {}, hideAsync: async () => {} },
   "expo-calendar": {}, "expo-file-system": {}, "expo-sharing": {}, "expo-clipboard": {},
   "expo-local-authentication": {}, "expo-application": {}, "expo-device": {},
   // Native-only submodule; node cannot resolve it. Stubbed like its siblings.
@@ -335,15 +338,38 @@ for (const { locale, label, props, strict } of passes) {
   }
 }
 
+// App.js itself. Every other module is rendered above; App never was, and it is
+// where all the state, memos and effects live. A const read above its own
+// declaration — a dependency array that names state declared further down — is
+// a ReferenceError on the very first render, and nothing here would have said
+// so. Rendering it runs the whole component body: every hook, memo and
+// dependency array is evaluated before it returns even the loading screen.
+// App silences console.log outside development, so it is put back afterwards.
+let appFail = null;
+{
+  const log = console.log;
+  try {
+    i18n.setLocale("en");
+    const mod = require(path.join(ROOT, "App.js"));
+    renderToStaticMarkup(React.createElement(mod.default || mod));
+  } catch (e) {
+    appFail = String((e && e.message) || e).split("\n")[0].slice(0, 160);
+  } finally {
+    console.log = log;
+  }
+}
+
 console.log(`\n  passes:           ${passes.map((p) => p.label).join(", ")}`);
 console.log(`  modules:          ${files.length}`);
 console.log(`  rendered OK:      ${rendered}`);
 console.log(`  skipped:          ${skipped}`);
 console.log(`  module load fail: ${evalFail}`);
-console.log(`  render fail:      ${renderFail}\n`);
+console.log(`  render fail:      ${renderFail}`);
+console.log(`  App.js:           ${appFail ? "FAILED" : "rendered OK"}\n`);
+if (appFail) failures.unshift(`App.js  ${appFail}`);
 if (failures.length) {
   const uniq = [...new Set(failures)];
   uniq.slice(0, 40).forEach((f) => console.log("  " + f));
   if (uniq.length > 40) console.log(`  …and ${uniq.length - 40} more`);
 }
-process.exit(evalFail + renderFail ? 1 : 0);
+process.exit(evalFail + renderFail + (appFail ? 1 : 0) ? 1 : 0);
