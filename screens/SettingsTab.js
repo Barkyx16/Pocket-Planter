@@ -142,18 +142,23 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn
             onToggleDailyWatering={async (value) => {
               setDailyWateringOn(value);
               if (value) {
-                const rainLikely = weather?.precipChance >= 65;
+                // The same wording App schedules this reminder with everywhere
+                // else. It is a daily repeat, so today's forecast does not belong
+                // in it: switched on during a wet spell, "Rain may water today"
+                // came back every morning of the summer.
                 const ok = await scheduleDailyReminder({
                   id: "daily-watering",
                   hour: wateringReminderTime.hour,
                   minute: wateringReminderTime.minute,
-                  title: rainLikely ? t("settings.rainMayWaterToday") : t("settings.dailyWateringCheck"),
-                  body: rainLikely
-                    ? t("settings.rainIsLikelyTodayCheck")
-                    : t("settings.timeToCheckYourGarden"),
+                  title: t("notify.dailyWaterTitle"),
+                  body: t("notify.dailyWaterBody"),
                 });
                 if (ok) {
                   Alert.alert(t("alerts.waterOnTitle"), t("alerts.waterOnBody", { time: formatReminderTime(wateringReminderTime) }));
+                } else {
+                  // Back off rather than read "on" over nothing.
+                  setDailyWateringOn(false);
+                  Alert.alert(t("alerts.notificationsDisabledTitle"), t("alerts.notificationsDisabledBody"));
                 }
               } else {
                 await cancelReminder("daily-watering");

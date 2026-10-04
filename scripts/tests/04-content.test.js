@@ -542,3 +542,25 @@ describe("the monthly planting guides switch", () => {
     ok(/\} else \{[\s\S]*?setMonthlyPlantingOn\(false\)/.test(fn), "the switch must turn back off");
   });
 });
+
+describe("the daily watering switch", () => {
+  const settings = require("fs").readFileSync(path.join(ROOT, "screens/SettingsTab.js"), "utf8");
+  const at = settings.indexOf("onToggleDailyWatering=");
+  const fn = settings.slice(at, settings.indexOf("/>", at));
+  it("backs off when notifications are refused", () => {
+    ok(/if \(ok\) \{[\s\S]*?\} else \{[\s\S]*?setDailyWateringOn\(false\)/.test(fn), "the switch must turn back off");
+  });
+  it("does not bake today's weather into a daily repeat", () => {
+    ok(!/precipChance/.test(fn), "a repeating reminder cannot carry today's forecast");
+  });
+});
+
+describe("a plant's daily check-in", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("does not bake today's weather into a daily repeat", () => {
+    const at = app.indexOf("async function scheduleReminder(plantName, hour, minute)");
+    const fn = app.slice(at, app.indexOf("\n}\n", at));
+    ok(at > 0 && /scheduleDailyReminder\(/.test(fn), "the check-in should be a daily reminder");
+    ok(!/precipChance|rainLikely/.test(fn), "a repeating reminder cannot carry today's forecast");
+  });
+});
