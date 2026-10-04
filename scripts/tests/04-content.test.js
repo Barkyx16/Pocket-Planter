@@ -641,3 +641,13 @@ describe("advice temperatures follow the units setting", () => {
     ok(/localizeAdvice\(pest\.description, unitSystem\)/.test(read("components/PestDetailScreen.js")));
   });
 });
+
+describe("the bed planner", () => {
+  const fs = require("fs");
+  const card = fs.readFileSync(path.join(ROOT, "components/BedPlannerCard.js"), "utf8");
+  it("measures in metres and centimetres for a metric gardener", () => {
+    ok(/<BedPlannerCard[^>]*unitSystem=\{unitSystem\}/.test(fs.readFileSync(path.join(ROOT, "screens/GardenTab.js"), "utf8")));
+    ok(/const inchesPer = metric \? 39\.3701 : 12;/.test(card), "metres must convert to inches for the sum");
+    for (const k of ["widthM", "lengthM", "spacingInACm", "mBed"]) ok(card.includes(`bedPlanner.${k}`), `${k} must be used`);
+  });
+});

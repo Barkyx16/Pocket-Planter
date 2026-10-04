@@ -13,18 +13,22 @@ const spacingInches = (str) => {
   return /ft/i.test(s) ? max * 12 : max;
 };
 
-export const BedPlannerCard = memo(function BedPlannerCard({ theme, savedPlants }) {
+export const BedPlannerCard = memo(function BedPlannerCard({ theme, savedPlants, unitSystem }) {
   const { t } = useTranslation();
   const options = (savedPlants || []).map((n) => produceData.find((p) => p.name === n)).filter(Boolean);
   const [selected, setSelected] = useState(options[0]?.name || "");
-  const [widthFt, setWidthFt] = useState("4");
-  const [lengthFt, setLengthFt] = useState("8");
+  // Metric gardeners measure the bed in metres and read the spacing in
+  // centimetres; the sum is still done in inches, which is what the guide holds.
+  const metric = unitSystem === "metric";
+  const [widthFt, setWidthFt] = useState(metric ? "1.25" : "4");
+  const [lengthFt, setLengthFt] = useState(metric ? "2.5" : "8");
+  const inchesPer = metric ? 39.3701 : 12;
 
   const plant = options.find((p) => p.name === selected);
   const spacing = plant ? spacingInches(getPlantingGuide(plant).spacing) : null;
   const w = parseFloat(widthFt), l = parseFloat(lengthFt);
-  const perRow = spacing && w > 0 ? Math.floor((w * 12) / spacing) : 0;
-  const rows = spacing && l > 0 ? Math.floor((l * 12) / spacing) : 0;
+  const perRow = spacing && w > 0 ? Math.floor((w * inchesPer) / spacing) : 0;
+  const rows = spacing && l > 0 ? Math.floor((l * inchesPer) / spacing) : 0;
   const total = perRow * rows;
 
   if (!options.length) {
@@ -43,7 +47,7 @@ export const BedPlannerCard = memo(function BedPlannerCard({ theme, savedPlants 
 
       {/* DIMENSIONS */}
       <View style={{ flexDirection: "row", gap: 10, marginTop: 14 }}>
-        {[{ label: t("bedPlanner.widthFt"), v: widthFt, set: setWidthFt }, { label: t("bedPlanner.lengthFt"), v: lengthFt, set: setLengthFt }].map((f) => (
+        {[{ label: t(metric ? "bedPlanner.widthM" : "bedPlanner.widthFt"), v: widthFt, set: setWidthFt }, { label: t(metric ? "bedPlanner.lengthM" : "bedPlanner.lengthFt"), v: lengthFt, set: setLengthFt }].map((f) => (
           <View key={f.label} style={{ flex: 1 }}>
             <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "800", marginBottom: 6 }}>{f.label}</Text>
             <TextInput
@@ -75,7 +79,7 @@ export const BedPlannerCard = memo(function BedPlannerCard({ theme, savedPlants 
           <Text style={{ color: "#5cff89", fontSize: 34, fontWeight: "900" }}>{total}</Text>
           <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800", marginTop: 2 }}>{plant.name} {t("bedPlanner.plantsFit")}</Text>
           <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4, textAlign: "center" }}>
-            {rows} {t("bedPlanner.rows")} {perRow} {t("bedPlanner.perRow")}{spacing}{t("bedPlanner.spacingInA")} {widthFt}×{lengthFt} {t("bedPlanner.ftBed")}
+            {rows} {t("bedPlanner.rows")} {perRow} {t("bedPlanner.perRow")}{metric ? Math.round(spacing * 2.54) : spacing}{t(metric ? "bedPlanner.spacingInACm" : "bedPlanner.spacingInA")} {widthFt}×{lengthFt} {t(metric ? "bedPlanner.mBed" : "bedPlanner.ftBed")}
           </Text>
         </View>
       ) : (
