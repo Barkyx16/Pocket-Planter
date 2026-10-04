@@ -1,7 +1,7 @@
 import { memo, useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 import produceData from "../data/produceData";
-import { resolvePlantImageSource } from "../core";
+import { foldForSearch, resolvePlantImageSource } from "../core";
 import { EmptyState } from "./EmptyState";
 import { useTranslation } from "../lib/i18n";
 
@@ -10,10 +10,10 @@ export const QuickAddCard = memo(function QuickAddCard({ theme, savedPlants, onS
   const [query, setQuery] = useState("");
   const owned = new Set((savedPlants || []).map((n) => n.toLowerCase()));
 
-  const q = query.toLowerCase().trim();
+  const q = foldForSearch(query).trim();
   const matches = q.length >= 1
     ? produceData
-        .filter((p) => p.name.toLowerCase().includes(q))
+        .filter((p) => foldForSearch(p.name).includes(q))
         .sort((a, b) => (a.name.toLowerCase().startsWith(q) ? -1 : 0) - (b.name.toLowerCase().startsWith(q) ? -1 : 0))
         .slice(0, 8)
     : [];

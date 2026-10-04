@@ -4,6 +4,7 @@ import { Alert, Image, Pressable, ScrollView, Text, TextInput, View } from "reac
 import { formatDate, useTranslation } from "../lib/i18n";
 import { styles } from "../styles";
 import { IconText } from "./IconText";
+import { foldForSearch } from "../core";
 
 export const JournalCard = memo(function JournalCard({ theme, journalEntries, onAddGeneralPhoto, onDeleteEntry, uploadingPhoto }) {
   const { t, tn, growthStageLabel, moodLabel } = useTranslation();
@@ -21,7 +22,7 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
   const uniqueStages = ["All", "Seedling", "Leaf Growth", "Flowering", "Fruit Forming", "Harvest Ready"];
 
   const filteredEntries = journalEntries.filter(entry => {
-    const matchesSearch = !searchQuery || (entry.plantName || "").toLowerCase().includes(searchQuery.toLowerCase()) || (entry.caption || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = !searchQuery || foldForSearch(entry.plantName).includes(foldForSearch(searchQuery)) || foldForSearch(entry.caption).includes(foldForSearch(searchQuery));
     const matchesPlant = filterPlant === "All" || (entry.plantName || "Garden Update") === filterPlant;
     const matchesStage = filterStage === "All" || entry.growthStage === filterStage;
     return matchesSearch && matchesPlant && matchesStage;

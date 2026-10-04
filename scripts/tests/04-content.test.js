@@ -709,3 +709,14 @@ describe("searching for a plant", () => {
     ok(/const query = foldForSearch\(q\.trim\(\)\)/.test(modal) && /foldForSearch\(p\.name\)\.includes\(query\)/.test(modal));
   });
 });
+
+describe("every search box ignores accents", () => {
+  const fs = require("fs");
+  it("in the pickers, quick add, notes, wishlist and journal", () => {
+    // A filter left on plain toLowerCase() cannot find Jalapeño from "jalapeno".
+    const files = ["PlantPickerModal", "QuickAddCard", "AllNotesCard", "WishlistCard", "JournalCard", "GlobalSearchModal"]
+      .map((f) => `components/${f}.js`);
+    const plain = files.filter((f) => /toLowerCase\(\)\.includes\(/.test(fs.readFileSync(path.join(ROOT, f), "utf8")));
+    eq(plain, []);
+  });
+});

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Image, Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import produceData from "../data/produceData";
-import { normalizeType, resolvePlantImageSource } from "../core";
+import { foldForSearch, normalizeType, resolvePlantImageSource } from "../core";
 import { touchSlop } from "../lib/a11y";
 import { useTranslation } from "../lib/i18n";
 
@@ -25,10 +25,10 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
   }, [items]);
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = foldForSearch(search.trim());
     return items.filter((p) => {
       if (category !== "All" && normalizeType(p.type, p.name) !== category) return false;
-      if (q && !p.name.toLowerCase().includes(q)) return false;
+      if (q && !foldForSearch(p.name).includes(q)) return false;
       return true;
     });
   }, [items, search, category]);

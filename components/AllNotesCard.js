@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { resolvePlantImageSource } from "../core";
+import { foldForSearch, resolvePlantImageSource } from "../core";
 import { useTranslation } from "../lib/i18n";
 import { IconText } from "./IconText";
 
@@ -17,9 +17,9 @@ export const AllNotesCard = memo(function AllNotesCard({ theme, plantNotes, onOp
 
   if (!notes.length) return null;
 
-  const q = query.toLowerCase().trim();
+  const q = foldForSearch(query).trim();
   const filtered = q
-    ? notes.filter((n) => n.name.toLowerCase().includes(q) || n.text.toLowerCase().includes(q))
+    ? notes.filter((n) => foldForSearch(n.name).includes(q) || foldForSearch(n.text).includes(q))
     : notes;
 
   return (

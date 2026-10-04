@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
 import produceData from "../data/produceData";
-import { tapHaptic } from "../core";
+import { foldForSearch, tapHaptic } from "../core";
 import { useTranslation } from "../lib/i18n";
 import { touchSlop } from "../lib/a11y";
 
@@ -26,7 +26,7 @@ export const WishlistCard = memo(function WishlistCard({ theme, savedPlants, onO
   const persist = (next) => { setItems(next); AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)).catch(() => {}); };
 
   const suggestions = draft.trim().length >= 2
-    ? produceData.filter((p) => p.name.toLowerCase().includes(draft.toLowerCase()) && !items.some((i) => i.name === p.name)).slice(0, 4)
+    ? produceData.filter((p) => foldForSearch(p.name).includes(foldForSearch(draft)) && !items.some((i) => i.name === p.name)).slice(0, 4)
     : [];
 
   const add = (name) => {
