@@ -3369,7 +3369,11 @@ async function scheduleFertilizerReminder(plantName, days) {
     const fresh = ready.filter((name) => sent[name] !== today);
     if (!fresh.length) return;
 
-    const { status } = await Notifications.requestPermissionsAsync();
+    // Check, never ask. This runs on launch, and asking here put the one-shot OS
+    // prompt in front of a gardener who had just opened the app, with none of the
+    // explanation ensureNotificationPermission gives first — and once declined,
+    // iOS will not show it again.
+    const { status } = await Notifications.getPermissionsAsync();
     if (status !== "granted") return;
 
     for (const plantName of fresh) {

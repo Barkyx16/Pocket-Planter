@@ -729,3 +729,13 @@ describe("the heat alert", () => {
     ok(at > 0 && /String\(d\.date\) >= todayKey/.test(effect));
   });
 });
+
+describe("the launch-time harvest check", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("never raises the OS permission prompt", () => {
+    const at = app.indexOf("async function checkHarvestNotifications(");
+    const fn = app.slice(at, app.indexOf("\n  }\n", at));
+    ok(at > 0 && /getPermissionsAsync\(\)/.test(fn), "it should only check permission");
+    ok(!/requestPermissionsAsync/.test(fn), "it must not ask on launch");
+  });
+});
