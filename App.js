@@ -22,7 +22,10 @@ import {
   getLanguage,
   isSupportedLocale,
   setLocale,
+  difficultyLabel,
   formatDate,
+  plantTypeLabel,
+  seasonLabel,
   t,
   tn,
 } from "./lib/i18n";
@@ -1378,6 +1381,10 @@ useEffect(() => {
         getPlantSeasonLabel(item, zone),
         getPlantDifficulty(item).label,
         isPerennial(item) ? "perennial" : "annual",
+        // The same labels as the user sees them, so "Kräuter" finds the herbs.
+        plantTypeLabel(normalizeType(item.type, item.name)),
+        seasonLabel(getPlantSeasonLabel(item, zone)),
+        difficultyLabel(getPlantDifficulty(item)).label,
       ].join(" ");
       const haystackFolded = foldForSearch(haystack);
       if (!terms.every((t) => haystackFolded.includes(t))) return false;
@@ -1399,6 +1406,9 @@ useEffect(() => {
     if (!aNow && bNow) return 1;
     return byName(a, b);
   });
+  // `language`: the search also matches translated labels, which the hook
+  // linter can't see through t().
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [
   selectedType,
   zone,
@@ -1407,6 +1417,7 @@ useEffect(() => {
   plantNowOnly,
   plantSortMode,
   plantAttrFilters,
+  language,
 ]);
 
   // Names currently planted in any garden bed — lets plant cards show an

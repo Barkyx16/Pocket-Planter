@@ -10,7 +10,7 @@ import { useTranslation } from "../lib/i18n";
 // user filter by category — e.g. tap "Herbs" to find just the herbs for a herb bed —
 // while still allowing any valid saved plant so cross-category companions keep working.
 export function PlantPickerModal({ theme, visible, bedName, plants = [], currentPlant, onPick, onClear, onClose }) {
-  const { t } = useTranslation();
+  const { t, plantTypeLabel } = useTranslation();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
 
@@ -77,7 +77,7 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
                     onPress={() => setCategory(c)}
                     style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255,255,255,0.12)" }}
                   >
-                    <Text style={{ color: active ? "#07120b" : theme.text, fontSize: 12, fontWeight: "900" }}>{c}</Text>
+                    <Text style={{ color: active ? "#07120b" : theme.text, fontSize: 12, fontWeight: "900" }}>{plantTypeLabel(c)}</Text>
                   </Pressable>
                 );
               })}
@@ -104,7 +104,7 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: theme.text, fontSize: 15, fontWeight: "800" }}>{p.name}</Text>
-                    <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 1 }}>{normalizeType(p.type, p.name)}</Text>
+                    <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 1 }}>{plantTypeLabel(normalizeType(p.type, p.name))}</Text>
                   </View>
                   {isCurrent ? <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900" }}>{t("plantPicker.inThisPlot")}</Text> : <Text style={{ color: "#5cff89", fontSize: 20, fontWeight: "900" }}>＋</Text>}
                 </Pressable>

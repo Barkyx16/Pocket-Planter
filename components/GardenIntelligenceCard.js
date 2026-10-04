@@ -70,7 +70,7 @@ export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ the
   return (
     <View>
       <Text style={[styles.gardenIntelligenceSub, { color: theme.secondaryText, marginTop: 0 }]}>
-        Zone {zone || "—"} · {formatDate(new Date(), {
+        {t("statsPreview.zone", { zone: zone || "—" })} · {formatDate(new Date(), {
   month: "long",
   day: "numeric"
 })}
@@ -119,7 +119,7 @@ export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ the
                 key={item.name}
                 onPress={() => onOpenPlant && onOpenPlant(item)}
                 accessibilityRole="button"
-                accessibilityLabel={`Open ${item.name} care guide`}
+                accessibilityLabel={t("weatherText.openCareGuide", { plant: item.name })}
                 style={{ backgroundColor: "rgba(92, 255, 137, 0.12)", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
               >
                 <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "800" }}>{item.name} ›</Text>

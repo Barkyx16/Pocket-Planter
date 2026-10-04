@@ -111,8 +111,23 @@ function analyse(file) {
         hardcoded.push({ line: p.node.loc.start.line, text: p.node.value });
       }
     },
+    TemplateLiteral(p) {
+      // `Filter by ${type}` is as much English copy as "Filter by", but has no
+      // StringLiteral for the check above to see. Judge the literal text with
+      // its ${} holes blanked out.
+      if (p.parent.type === "TaggedTemplateExpression") return;
+      if (p.findParent((a) => a.isCallExpression() && (/^console$/.test(a.node.callee?.object?.name) || /^(AsyncStorage|Localization)$/.test(a.node.callee?.object?.name)))) return;
+      if (p.parent.type === "JSXExpressionContainer" && p.parentPath.parent.type === "JSXAttribute" && /^(key|testID|storageKey|nativeID)$/.test(p.parentPath.parent.name?.name)) return;
+      if (p.parent.type === "ObjectProperty" && /^(key|id|storageKey)$/.test(p.parent.key?.name)) return;
+      const text = p.node.quasis.map((q) => q.value.cooked).join(" ").replace(/\s+/g, " ").trim();
+      if (/[A-Za-z]{2,} [A-Za-z]{2,}/.test(text) && isProse(text)) {
+        hardcoded.push({ line: p.node.loc.start.line, text: p.node.quasis.map((q) => q.value.cooked).join("…") });
+      }
+    },
     JSXText(p) {
-      if (isProse(p.node.value)) {
+      // A lone word between tags ("Best", "VS", "Streak") is always shown to the
+      // user, even though it is too short to look like prose anywhere else.
+      if (isProse(p.node.value) || /^[A-Z][A-Za-z]{1,}[!?.:]?$/.test(p.node.value.trim())) {
         hardcoded.push({ line: p.node.loc.start.line, text: p.node.value.trim() });
       }
     },

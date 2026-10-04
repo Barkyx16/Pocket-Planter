@@ -9,7 +9,7 @@ import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { TabHero } from "../components/TabHero";
 import { GlowPlantCard } from "../components/GlowPlantCard";
 import { PersonalPlantingCalendar } from "../components/PersonalPlantingCalendar";
-import { t, tn } from "../lib/i18n";
+import { difficultyLabel, formatDate, plantTypeLabel, seasonLabel, t, tn } from "../lib/i18n";
 import { IconText } from "../components/IconText";
 
 export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filteredPlants, followedPlants, markPlantWatered, monthScrollDone, monthScrollRef, monthlyPicksY, monthlySuggestions, openPlantFromList, openPlantFromMonthly, plantSearch, plantDifficultyFilter, setPlantDifficultyFilter, plantNowOnly, setPlantNowOnly, plantSortMode, setPlantSortMode, plantAttrFilters, setPlantAttrFilters, addPlantToGarden, gardenPlantNames, plantsListY, plantsVisibleCount, recentPlants, savedPlants, scrollRef, selectedMonth, selectedType, setComparePlants, setPlantSearch, setPlantsVisibleCount, setSelectedMonth, setSelectedType, snoozePlantWatering, snoozedPlants, theme, toggleComparePlant, toggleFollowPlant, toggleSavedPlant, wateredPlants, wateringHistory, weather, zone }) {
@@ -108,7 +108,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
               ) : (
                 <Text style={styles.calendarMonthEmoji}>{getMonthEmoji(monthNumber)}</Text>
               )}
-              <Text style={[styles.calendarMonthText, { color: active ? "#ffd86b" : "#d7ebdc" }]}>{month.slice(0, 3)}</Text>
+              <Text style={[styles.calendarMonthText, { color: active ? "#ffd86b" : "#d7ebdc" }]}>{formatDate(new Date(2000, index, 1), { month: "short" })}</Text>
             </Pressable>
           );
         })}
@@ -124,7 +124,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.cleanPlantName}>{item.name}</Text>
-                  <Text style={styles.cleanPlantMeta}>{normalizeType(item.type, item.name)} • {getPlantSeasonLabel(item, zone, selectedMonth)}</Text>
+                  <Text style={styles.cleanPlantMeta}>{plantTypeLabel(normalizeType(item.type, item.name))} • {seasonLabel(getPlantSeasonLabel(item, zone, selectedMonth))}</Text>
                 </View>
                 <Text style={styles.cleanPlantArrow}>›</Text>
               </Pressable>
@@ -148,10 +148,10 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
       ) : (
         <View style={styles.emptyStateCard}>
           <Text style={styles.emptyStateIcon}>📅</Text>
-          <Text style={styles.emptyStateTitle}>{t("plants.nothingIdealFor")} {MONTH_NAMES[selectedMonth - 1]}</Text>
+          <Text style={styles.emptyStateTitle}>{t("plants.nothingIdealFor")} {formatDate(new Date(2000, selectedMonth - 1, 1), { month: "long" })}</Text>
           <Text style={styles.emptyStateText}>
             {zone
-              ? `${MONTH_NAMES[selectedMonth - 1]} isn't a prime planting window for Zone ${zone}. Try another month above, or browse all plants to plan ahead.`
+              ? t("plantsText.notPrimeMonth", { month: formatDate(new Date(2000, selectedMonth - 1, 1), { month: "long" }), zone })
               : t("plants.setYourZipCodeOn")}
           </Text>
 </View>
@@ -174,7 +174,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
     <View onLayout={(event) => { plantsListY.current = event.nativeEvent.layout.y; }} style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <View style={styles.cardHeaderRow}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>Plants</Text>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>{t("plantsText.title")}</Text>
         </View>
         <Pressable
           style={styles.smallJumpButton}
@@ -187,7 +187,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
             setPlantAttrFilters([]);
           }}
         >
-          <Text style={styles.smallJumpButtonText}>Reset</Text>
+          <Text style={styles.smallJumpButtonText}>{t("plantsText.reset")}</Text>
         </Pressable>
       </View>
       <ScrollView
@@ -203,11 +203,11 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
               onPress={() => setSelectedType(type)}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
-              accessibilityLabel={`Filter by ${type}`}
+              accessibilityLabel={t("plantTypes.filterBy", { type: plantTypeLabel(type) })}
               style={[styles.filterTabNew, active && styles.filterTabNewActive]}
             >
               <Text style={[styles.filterTabNewText, active && styles.filterTabNewTextActive]}>
-                {type}
+                {plantTypeLabel(type)}
               </Text>
             </Pressable>
           );
@@ -266,7 +266,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
           style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 12, borderRadius: 999, paddingVertical: 10, backgroundColor: plantNowOnly ? "#5cff89" : "rgba(92, 255, 137, 0.1)", borderWidth: 1, borderColor: plantNowOnly ? "#5cff89" : "rgba(92, 255, 137, 0.3)" }}
         >
           <Text style={{ color: plantNowOnly ? "#07120b" : "#8effab", fontSize: 14, fontWeight: "900" }}>
-            {plantNowOnly ? t("plants.showingPlantableNow") : `🌱 What can I grow now in Zone ${zone}?`}
+            {plantNowOnly ? t("plants.showingPlantableNow") : t("plantsText.growNowZone", { zone })}
           </Text>
         </Pressable>
       ) : null}
@@ -281,10 +281,10 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
               onPress={() => { tapHaptic("light"); setPlantDifficultyFilter(d); }}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
-              accessibilityLabel={d === "All" ? t("plants.showAllDifficulties") : `Filter by ${d} difficulty`}
+              accessibilityLabel={d === "All" ? t("plants.showAllDifficulties") : t("plantsText.filterDifficulty", { difficulty: difficultyLabel({ label: d }).label })}
               style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}
             >
-              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{icon ? icon + " " : ""}{d}</Text>
+              <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{icon ? icon + " " : ""}{d === "All" ? plantTypeLabel("All") : difficultyLabel({ label: d }).label}</Text>
             </Pressable>
           );
         })}
@@ -299,7 +299,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
               onPress={() => toggleAttr(a.key)}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
-              accessibilityLabel={active ? `Remove ${a.label} filter` : `Filter by ${a.label}`}
+              accessibilityLabel={active ? t("plantsText.removeFilter", { filter: a.label }) : t("plantTypes.filterBy", { type: a.label })}
               style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#5cff89" : "rgba(255, 255, 255, 0.1)" }}
             >
               <Text style={{ color: active ? "#07120b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{a.label}</Text>
@@ -322,7 +322,7 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
               onPress={() => { tapHaptic("light"); setPlantSortMode(s.id); }}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
-              accessibilityLabel={`Sort by ${s.label.replace(/^[^ ]+ /, "")}`}
+              accessibilityLabel={t("plantsText.sortBy", { mode: s.label.replace(/^[^ ]+ /, "") })}
               style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: active ? "rgba(255, 216, 107, 0.16)" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? "#ffd86b" : "rgba(255, 255, 255, 0.1)" }}
             >
               <Text style={{ color: active ? "#ffd86b" : "#d7ebdc", fontSize: 12, fontWeight: "900" }}>{s.label}</Text>
@@ -341,14 +341,14 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
               <>
                 <View style={styles.compareRow}>
                   <Text style={styles.comparePlantName}>{left.name}</Text>
-                  <Text style={styles.compareVs}>VS</Text>
+                  <Text style={styles.compareVs}>{t("plantsText.vs")}</Text>
                   <Text style={styles.comparePlantName}>{right.name}</Text>
                 </View>
                 {[
-                  ["Difficulty", getPlantDifficulty(left).label, getPlantDifficulty(right).label],
-                  ["Harvest", getHarvestCountdown(left), getHarvestCountdown(right)],
-                  ["Zones", `${left.minZone}-${left.maxZone}`, `${right.minZone}-${right.maxZone}`],
-                  ["Type", normalizeType(left.type, left.name), normalizeType(right.type, right.name)],
+                  [t("plantsText.rowDifficulty"), difficultyLabel(getPlantDifficulty(left)).label, difficultyLabel(getPlantDifficulty(right)).label],
+                  [t("plantsText.rowHarvest"), getHarvestCountdown(left), getHarvestCountdown(right)],
+                  [t("plantsText.rowZones"), `${left.minZone}-${left.maxZone}`, `${right.minZone}-${right.maxZone}`],
+                  [t("plantsText.rowType"), plantTypeLabel(normalizeType(left.type, left.name)), plantTypeLabel(normalizeType(right.type, right.name))],
                 ].map(([label, lv, rv]) => (
                   <View key={label} style={styles.compareStatRow}>
                     <Text style={styles.compareLabel}>{label}</Text>
@@ -375,15 +375,15 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
 
       {selectMode ? (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, padding: 10, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", marginBottom: 8 }}>
-          <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", flex: 1, paddingLeft: 4 }}>{bulkSel.length} selected</Text>
+          <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", flex: 1, paddingLeft: 4 }}>{tn("plantsText.selected", bulkSel.length)}</Text>
           <Pressable onPress={bulkSave} disabled={!bulkSel.length} style={{ backgroundColor: bulkSel.length ? "#5cff89" : "rgba(255, 255, 255, 0.08)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 }}>
-            <Text style={{ color: bulkSel.length ? "#07120b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>Save {bulkSel.length || ""}</Text>
+            <Text style={{ color: bulkSel.length ? "#07120b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>{bulkSel.length ? t("plantsText.saveCount", { count: bulkSel.length }) : t("plantsText.save")}</Text>
           </Pressable>
           <Pressable onPress={bulkCompare} disabled={bulkSel.length !== 2} style={{ backgroundColor: bulkSel.length === 2 ? "rgba(255, 216, 107, 0.16)" : "rgba(255, 255, 255, 0.08)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: bulkSel.length === 2 ? "#ffd86b" : "transparent" }}>
-            <Text style={{ color: bulkSel.length === 2 ? "#ffd86b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>Compare</Text>
+            <Text style={{ color: bulkSel.length === 2 ? "#ffd86b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>{t("plantsText.compare")}</Text>
           </Pressable>
           <Pressable onPress={exitSelect} style={{ paddingHorizontal: 6, paddingVertical: 10 }}>
-            <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "900" }}>Cancel</Text>
+            <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "900" }}>{t("plantsText.cancel")}</Text>
           </Pressable>
         </View>
       ) : filteredPlants.length > 0 ? (
@@ -403,9 +403,9 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
             <Text style={styles.emptyStateTitle}>{t("plants.noPlantsFound")}</Text>
             <Text style={styles.emptyStateText}>
               {plantSearch
-                ? `Nothing matches "${plantSearch}". Try a different name or clear your search.`
+                ? t("plantsText.noSearchMatch", { query: plantSearch })
                 : selectedType !== "All"
-                ? `No ${selectedType.toLowerCase()} match right now. Try viewing all plants instead.`
+                ? t("plantsText.noTypeMatch", { type: plantTypeLabel(selectedType) })
                 : t("plants.noPlantsMatchTheCurrent")}
             </Text>
             {plantSearch && getSearchSuggestions(plantSearch).length > 0 ? (

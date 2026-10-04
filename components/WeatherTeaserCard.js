@@ -37,7 +37,7 @@ export const WeatherTeaserCard = memo(function WeatherTeaserCard({ theme, weathe
       <IconText label={t("weatherTeaser.liveGardenWeather")} style={styles.cardEyebrow} />
       <Text style={[styles.cardTitle, { color: theme.text }]}>{t("weatherTeaser.gardenWeather")}</Text>
       <Text style={[styles.cardText, { color: theme.secondaryText }]}>
-        Zone {zone || "—"} {t("weatherTeaser.smartWeatherIntelligenceForYour")}
+        {t("statsPreview.zone", { zone: zone || "—" })} {t("weatherTeaser.smartWeatherIntelligenceForYour")}
       </Text>
 
       {/* TEASER WEATHER CARD */}
@@ -54,7 +54,7 @@ export const WeatherTeaserCard = memo(function WeatherTeaserCard({ theme, weathe
               </Text>
             </Text>
             <Text style={[styles.weatherTeaserRainPreview, { color: theme.secondaryText }]}>
-              {weather?.precipChance !== undefined ? `💧 ${Math.round(weather.precipChance)}% rain chance` : ""}
+              {weather?.precipChance !== undefined ? `💧 ${t("weatherText.rainChance", { percent: Math.round(weather.precipChance) })}` : ""}
             </Text>
           </View>
           <View style={styles.weatherTeaserLockCircle}>

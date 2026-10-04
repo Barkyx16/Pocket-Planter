@@ -6,10 +6,10 @@ import { PlantGrowthTimeline } from "../components/PlantGrowthTimeline";
 import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { PremiumLockedSection } from "../components/PremiumLockedSection";
 import { WeatherParticles } from "../components/WeatherParticles";
-import { getCompanionInfo, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, hasHarvestCountdown, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeAdvice, normalizeType, resolvePlantImageSource } from "../core";
+import { getCompanionInfo, getPlantDifficulty, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, hasHarvestCountdown, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeAdvice, normalizeType, resolvePlantImageSource } from "../core";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { getPestImage } from "../data/pestImageMap";
-import { formatDate, t } from "../lib/i18n";
+import { difficultyLabel, formatDate, plantTypeLabel, seasonLabel, t } from "../lib/i18n";
 import { styles } from "../styles";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Alert, Animated, Image, Linking, Pressable, SafeAreaView, ScrollView, StatusBar, Text, TextInput, View } from "react-native";
@@ -26,7 +26,7 @@ export function PlantDetailScreen({
     const excellentCompanions = (Array.isArray(companionInfo.excellent) ? companionInfo.excellent : []).filter(inCatalog);
     const neutralCompanions = (Array.isArray(companionInfo.neutral) ? companionInfo.neutral : []).filter(inCatalog);
     const avoidCompanions = (Array.isArray(companionInfo.avoid) ? companionInfo.avoid : []).filter(inCatalog);
-    const seasonLabel = getPlantSeasonLabel(selectedPlant, zone);
+    const plantSeason = getPlantSeasonLabel(selectedPlant, zone);
     const quickFacts = getPlantQuickFacts(selectedPlant);
     const plantHealth = getPlantHealth(selectedPlant);
     const plantingWindow = getPlantingWindowText(selectedPlant);
@@ -41,7 +41,7 @@ export function PlantDetailScreen({
         <StatusBar barStyle="light-content" />
         <BackgroundDecoration isDark={isDark} />
         <WeatherParticles weather={weather} />
-        {xpPopups.map((popup) => (<View key={popup.id} style={styles.xpPopup}><Text style={styles.xpPopupText}>+{popup.amount} XP</Text></View>))}
+        {xpPopups.map((popup) => (<View key={popup.id} style={styles.xpPopup}><Text style={styles.xpPopupText}>{t("plantsText.xpGain", { amount: popup.amount })}</Text></View>))}
         {showLevelUp ? (
   <View style={styles.levelUpOverlay}>
     <ConfettiBurst />
@@ -77,7 +77,7 @@ export function PlantDetailScreen({
       />
 
       <Text style={styles.backButtonText}>
-        Back
+        {t("plantsText.back")}
       </Text>
     </Pressable>
   </View>
@@ -118,12 +118,12 @@ export function PlantDetailScreen({
 
       <View style={styles.detailBadge}>
         <Text style={styles.detailBadgeText}>
-          {seasonLabel}
+          {seasonLabel(plantSeason)}
         </Text>
       </View>
     </View>
             <Text style={styles.detailTitle}>{selectedPlant.name}</Text>
-            <Text style={styles.detailSubtitle}>{normalizeType(selectedPlant.type, selectedPlant.name)} {t("plantDetailScreen.zones", { min: selectedPlant.minZone, max: selectedPlant.maxZone })}</Text>
+            <Text style={styles.detailSubtitle}>{plantTypeLabel(normalizeType(selectedPlant.type, selectedPlant.name))} {t("plantDetailScreen.zones", { min: selectedPlant.minZone, max: selectedPlant.maxZone })}</Text>
           </Animated.View>
           <View style={styles.detailQuickActions}>
             <Pressable onPress={() => toggleSavedPlant(selectedPlant.name)} style={[styles.quickActionButton, isSaved && styles.quickActionButtonActive]}>
@@ -268,7 +268,7 @@ export function PlantDetailScreen({
       { icon: "💧", label: t("plantDetailScreen.waterNeeds"), value: quickFacts.water },
       { icon: "📏", label: t("plantDetailScreen.spacing"), value: quickFacts.spacing },
       { icon: "🌱", label: t("plantDetailScreen.soil"), value: quickFacts.soil },
-      { icon: "🏆", label: t("plantDetailScreen.difficulty"), value: quickFacts.difficulty },
+      { icon: "🏆", label: t("plantDetailScreen.difficulty"), value: `${getPlantDifficulty(selectedPlant).icon} ${difficultyLabel(getPlantDifficulty(selectedPlant)).label}` },
       { icon: "📅", label: t("plantDetailScreen.plantingWindow"), value: plantingWindow },
       // Premium users already get a rich Watering Forecast in Daily controls above,
       // so only show the generic weather-based watering tip to free users (no duplicate).
@@ -320,7 +320,7 @@ export function PlantDetailScreen({
             </>
           );
           return pestObj ? (
-            <Pressable key={`pest-${pestName}`} onPress={() => openPest(pestObj)} accessibilityRole="button" accessibilityLabel={`${label} — tap for the pest guide`} style={chipStyle}>{inner}</Pressable>
+            <Pressable key={`pest-${pestName}`} onPress={() => openPest(pestObj)} accessibilityRole="button" accessibilityLabel={t("plantsText.pestGuideA11y", { name: label })} style={chipStyle}>{inner}</Pressable>
           ) : (
             <View key={`pest-${pestName}`} style={chipStyle}>{inner}</View>
           );
@@ -356,7 +356,7 @@ export function PlantDetailScreen({
             </>
           );
           return diseaseObj ? (
-            <Pressable key={`dis-${diseaseName}`} onPress={() => openDisease(diseaseObj)} accessibilityRole="button" accessibilityLabel={`${label} — tap for the disease guide`} style={chipStyle}>{inner}</Pressable>
+            <Pressable key={`dis-${diseaseName}`} onPress={() => openDisease(diseaseObj)} accessibilityRole="button" accessibilityLabel={t("plantsText.diseaseGuideA11y", { name: label })} style={chipStyle}>{inner}</Pressable>
           ) : (
             <View key={`dis-${diseaseName}`} style={chipStyle}>{inner}</View>
           );
@@ -600,7 +600,7 @@ export function PlantDetailScreen({
   <Text style={styles.cardEyebrow}>{t("plantDetailScreen.personalGardenNotes")}</Text>
   <TextInput
     multiline
-    placeholder={`Write notes about ${selectedPlant.name}...`}
+    placeholder={t("plantsText.notesPlaceholder", { plant: selectedPlant.name })}
     placeholderTextColor="#8fbf9d"
     value={plantNotes[selectedPlant.name] || ""}
     onChangeText={(text) => setPlantNotes((current) => ({ ...current, [selectedPlant.name]: text }))}

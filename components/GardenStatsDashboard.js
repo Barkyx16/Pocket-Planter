@@ -102,7 +102,7 @@ return (
 
       {/* HEADER */}
       <Text style={[styles.gardenStatsSubtitle, { color: theme.secondaryText }]}>
-        Zone {zone || "—"} • {formatDate(new Date(), {
+        {t("statsPreview.zone", { zone: zone || "—" })} • {formatDate(new Date(), {
   month: "long",
   year: "numeric"
 })}

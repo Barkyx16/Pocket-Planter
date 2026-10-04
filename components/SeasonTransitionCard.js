@@ -4,7 +4,7 @@ import { getNextSeasonStart, getPlantDifficulty, getSeasonForDate, getSuggestion
 import { useTranslation } from "../lib/i18n";
 
 export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, zone, onOpenPlant, onBrowse }) {
-  const { t } = useTranslation();
+  const { t, difficultyLabel, plantTypeLabel } = useTranslation();
   const now = new Date();
   now.setHours(12, 0, 0, 0);
   const currentSeason = getSeasonForDate(now);
@@ -55,7 +55,7 @@ export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, 
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{item.name}</Text>
                   <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "800", marginTop: 2 }}>
-                    {diff.icon} {diff.text} · {normalizeType(item.type, item.name)}
+                    {diff.icon} {difficultyLabel(diff).text} · {plantTypeLabel(normalizeType(item.type, item.name))}
                   </Text>
                 </View>
                 <Text style={{ color: "#ff9f43", fontSize: 20, fontWeight: "900" }}>›</Text>

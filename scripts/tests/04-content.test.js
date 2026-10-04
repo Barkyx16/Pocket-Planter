@@ -1049,3 +1049,30 @@ describe("labels from core are compared in English", () => {
     eq(bad, []);
   });
 });
+
+describe("plant labels from core", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("translate every category, season status, difficulty and pair rating", () => {
+    try {
+      i18n.setLocale("de");
+      for (const type of core.PLANT_TYPES) ok(i18n.plantTypeLabel(type) !== type || type === "", `type ${type}`);
+      eq(i18n.seasonLabel("Plant now"), "Jetzt pflanzen");
+      ok(/^Ab .*(März|Mär)/.test(i18n.seasonLabel("Starts in March")), i18n.seasonLabel("Starts in March"));
+      for (const item of items.slice(0, 40)) {
+        const season = core.getPlantSeasonLabel(item, "7");
+        ok(i18n.seasonLabel(season) !== season, `season ${season}`);
+        const d = core.getPlantDifficulty(item);
+        ok(i18n.difficultyLabel(d).label !== d.label && i18n.difficultyLabel(d).text !== d.text, d.label);
+      }
+      for (const label of ["Excellent Pair", "Avoid"]) ok(i18n.pairLabel(label) !== label, label);
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+  it("read back as the English labels in English", () => {
+    eq(i18n.plantTypeLabel("Tree Fruits"), "Tree Fruits");
+    eq(i18n.seasonLabel("Starts in March"), "Starts in March");
+    eq(i18n.difficultyLabel({ label: "Easy", text: "Beginner friendly" }), { label: "Easy", text: "Beginner friendly" });
+    eq(i18n.pairLabel("Excellent Pair"), "Excellent Pair");
+  });
+});

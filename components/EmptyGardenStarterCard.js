@@ -6,7 +6,7 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const EmptyGardenStarterCard = memo(function EmptyGardenStarterCard({ theme, savedPlants, compatiblePlants, zone, onOpenPlant, onBrowse }) {
-  const { t } = useTranslation();
+  const { t, difficultyLabel, seasonLabel } = useTranslation();
   if ((savedPlants || []).length > 0) return null;
 
   const starters = (compatiblePlants || [])
@@ -47,7 +47,7 @@ export const EmptyGardenStarterCard = memo(function EmptyGardenStarterCard({ the
               <View style={{ flex: 1 }}>
                 <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{item.name}</Text>
                 <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "800", marginTop: 2 }}>
-                  {diff.icon} {diff.text} · {getPlantSeasonLabel(item, zone)}
+                  {diff.icon} {difficultyLabel(diff).text} · {seasonLabel(getPlantSeasonLabel(item, zone))}
                 </Text>
               </View>
               <Text style={{ color: "#5cff89", fontSize: 20, fontWeight: "900" }}>›</Text>
