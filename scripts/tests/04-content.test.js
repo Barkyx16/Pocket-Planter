@@ -467,3 +467,13 @@ describe("the translator is never shadowed", () => {
     eq(offenders, []);
   });
 });
+
+describe("the daily bonus card", () => {
+  const card = require("fs").readFileSync(path.join(ROOT, "components/DailyBonusCard.js"), "utf8");
+  it("hides by the same day key the claim checks", () => {
+    // A 24-hour window measured from a day key parsed as UTC midnight showed the
+    // card again on the evening of the claim west of Greenwich.
+    ok(/isSameDayKey\(dailyBonusDate, getTodayKey\(\)\)/.test(card), "the card must use isSameDayKey");
+    ok(!/24 \* 60 \* 60 \* 1000/.test(card), "no rolling 24-hour window");
+  });
+});

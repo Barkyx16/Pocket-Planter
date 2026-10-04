@@ -3,6 +3,7 @@ import { Pressable, Text, View } from "react-native";
 import { styles } from "../styles";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
+import { getTodayKey, isSameDayKey } from "../core";
 
 export const DailyBonusCard = memo(function DailyBonusCard({
   theme,
@@ -12,9 +13,11 @@ export const DailyBonusCard = memo(function DailyBonusCard({
   streakData,
 }) {
   const { t } = useTranslation();
-const claimedRecently =
-    dailyBonusDate &&
-    (Date.now() - new Date(dailyBonusDate).getTime()) < 24 * 60 * 60 * 1000;
+  // The same test the claim itself uses. dailyBonusDate is a local day key, and
+  // "within 24 hours of it" read the key as UTC midnight: west of Greenwich the
+  // card came back on the evening of the claim only to say "already claimed",
+  // and east of it the card stayed hidden into the next morning.
+  const claimedRecently = isSameDayKey(dailyBonusDate, getTodayKey());
 
   if (claimedRecently) return null;
 
