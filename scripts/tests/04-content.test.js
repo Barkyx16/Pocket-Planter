@@ -972,3 +972,15 @@ describe("the weather cards", () => {
     ok(!/label: "[A-Z]/.test(gi) && !/text: `/.test(gi) && !/return "(Today|Tomorrow)"/.test(gi), "GardenIntelligenceCard");
   });
 });
+
+describe("the sign-in screen and the celebrations", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("are translated", () => {
+    // The first screen anyone sees, and every celebration overlay, were English
+    // whatever language the phone was in.
+    for (const s of ["garden account", "Welcome back,", "Forgot password?", '"Sign Up"', '"Log In"', 'placeholder="Email"', 'placeholder="Password"',
+      "ACHIEVEMENT UNLOCKED", "NEW BANNER UNLOCKED", "-DAY STREAK!", "FIRST PLANT!", "How much did you harvest?", "Changes aren't syncing"]) {
+      ok(!app.includes(s), `still hard-coded: ${s}`);
+    }
+  });
+});
