@@ -81,6 +81,7 @@ import {
   getFrostSeasonMonths,
   MONTH_NAMES,
   getWeekKey,
+  keepEarned,
   getTotalWaterings,
   getUpcomingFrost,
   getWateringRhythm,
@@ -1439,7 +1440,7 @@ const gardenXP = useMemo(
 );
 const achievementBadges = useMemo(
   () =>
-    getAchievementBadges({
+    keepEarned(getAchievementBadges({
       savedPlants,
       followedPlants,
       journalEntries,
@@ -1452,8 +1453,9 @@ const achievementBadges = useMemo(
       fertilizerTrackers: visibleFertilizerTrackers,
       harvestLog,
       wateringHistory,
-    }),
+    }), badgeEarnedDates),
   [
+    badgeEarnedDates,
     savedPlants,
     followedPlants,
     journalEntries,
@@ -1500,27 +1502,30 @@ const dailyQuests = useMemo(
 );
 const profileBanners = useMemo(
   () =>
-    getProfileBanners({
+    keepEarned(getProfileBanners({
       gardenXP,
       savedPlants,
       journalEntries,
       gardenMap: combinedGardenMap,
       wateredPlants,
       streakData,
-      harvestTrackers: visibleHarvestTrackers,
+      harvestLog,
+      completedQuestIds,
       careLog,
       comparePlants,
       premiumUnlocked,
       wateringHistory,
-    }),
+    }), bannerEarnedDates),
   [
+    bannerEarnedDates,
+    harvestLog,
+    completedQuestIds,
     gardenXP,
     savedPlants,
     journalEntries,
     combinedGardenMap,
     wateredPlants,
     streakData,
-    visibleHarvestTrackers,
     careLog,
     comparePlants,
     premiumUnlocked,

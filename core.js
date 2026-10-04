@@ -4326,11 +4326,18 @@ export const PROFILE_THEMES = [
   { id: "tropical", name: "Tropical Jungle", emoji: "🌴", color: "#8effab", bg: "rgba(142,255,171,0.18)", border: "#8effab", accent: "#8effab" },
 ];
 
-export function getProfileBanners({ gardenXP, savedPlants, journalEntries, gardenMap, wateredPlants, streakData, harvestTrackers, careLog, comparePlants, premiumUnlocked, wateringHistory }) {
+export function getProfileBanners({ gardenXP, savedPlants, journalEntries, gardenMap, wateredPlants, streakData, harvestLog, completedQuestIds, careLog, comparePlants, premiumUnlocked, wateringHistory }) {
   const gardenPlotCount = Object.values(gardenMap || {}).filter(Boolean).length;
   const totalWatered = getTotalWaterings(wateringHistory);
   const streakCount = streakData?.count || 0;
-  const harvestCount = Object.keys(harvestTrackers || {}).length;
+  // Harvests logged, as the matching achievements count them. Counting live
+  // trackers made "Track 5 harvests" go backwards: logging a harvest ends its
+  // tracker, so picking the crop took the banner away.
+  const harvestCount = Array.isArray(harvestLog) ? harvestLog.length : 0;
+  // Quests actually completed, across every day. "Complete 10 daily quests"
+  // used to unlock at 500 XP, which a gardener could reach without one.
+  const questsCompleted = Object.values(completedQuestIds || {})
+    .reduce((sum, ids) => sum + (Array.isArray(ids) ? ids.length : 0), 0);
   const careLogCount = (careLog || []).length;
   const comparePlantCount = (comparePlants || []).length;
 
@@ -4358,13 +4365,24 @@ export function getProfileBanners({ gardenXP, savedPlants, journalEntries, garde
     { id: "full_garden_banner", emoji: "🌍", title: "Full Garden", subtitle: "Fill all 12 plots", unlocked: gardenPlotCount >= 12, gradient: ["#55efc4","#00b894"] },
     { id: "harvest_king_banner", emoji: "🍅", title: "Harvest King", subtitle: "Track 5 harvests", unlocked: harvestCount >= 5, gradient: ["#ff7675","#d63031"] },
     { id: "companion_pro_banner", emoji: "🌸", title: "Companion Pro", subtitle: "Unlock companion planting", unlocked: premiumUnlocked, gradient: ["#fd79a8","#e17055"] },
-    { id: "quest_crusher_banner", emoji: "🎯", title: "Quest Crusher", subtitle: "Complete 10 daily quests", unlocked: gardenXP.xp >= 500, gradient: ["#74b9ff","#0984e3"] },
+    { id: "quest_crusher_banner", emoji: "🎯", title: "Quest Crusher", subtitle: "Complete 10 daily quests", unlocked: questsCompleted >= 10, gradient: ["#74b9ff","#0984e3"] },
   ];
 }
 
 // Harvests logged on a local day. By the entry's own day key: createdAt is UTC,
 // and matching its prefix against a local key counted an evening harvest in the
 // west toward the next day's quests too.
+// Achievements and banners are worked out from the garden as it is now, and
+// several ask about things that do not last: plants watered today, the current
+// streak, plots filled. Their earned dates are recorded the moment they unlock
+// and kept — but the cards showed the live answer, so "Water 3 plants today"
+// was gone the next morning and a 60-day streak badge vanished after one missed
+// day. Anything with an earned date stays unlocked.
+export function keepEarned(items, earnedDates) {
+  if (!Array.isArray(items) || !earnedDates || typeof earnedDates !== "object") return items;
+  return items.map((item) => (item && !item.unlocked && earnedDates[item.id] ? { ...item, unlocked: true } : item));
+}
+
 export function countHarvestsOn(harvestLog, dayKey) {
   return (harvestLog || []).filter((h) => (
     h?.date ? h.date === dayKey : !!h?.createdAt && getDateKey(new Date(h.createdAt)) === dayKey

@@ -117,3 +117,37 @@ describe("harvest and fertilizer timing", () => {
     ok(core.isFertilizerDue("Tomato", null), "never fed is due");
   });
 });
+
+describe("profile banners", () => {
+  const base = {
+    gardenXP: { level: 1, xp: 0 }, savedPlants: [], journalEntries: [], gardenMap: {}, wateredPlants: {},
+    streakData: { count: 0 }, harvestLog: [], completedQuestIds: {}, careLog: [], comparePlants: [],
+    premiumUnlocked: false, wateringHistory: {},
+  };
+  const banner = (over, id) => core.getProfileBanners({ ...base, ...over }).find((b) => b.id === id);
+  it("Harvest King counts harvests logged, which picking a crop adds to", () => {
+    const five = Array.from({ length: 5 }, (_, i) => ({ id: String(i), plantName: "Tomato" }));
+    ok(banner({ harvestLog: five }, "harvest_king_banner").unlocked);
+    ok(!banner({ harvestLog: five.slice(0, 4) }, "harvest_king_banner").unlocked);
+  });
+  it("Quest Crusher needs ten completed quests, not 500 XP", () => {
+    ok(!banner({ gardenXP: { level: 3, xp: 900 } }, "quest_crusher_banner").unlocked);
+    const done = { "2026-10-01": ["a", "b", "c", "d"], "2026-10-02": ["a", "b", "c"], "2026-10-03": ["a", "b", "c"] };
+    ok(banner({ completedQuestIds: done }, "quest_crusher_banner").unlocked);
+  });
+});
+
+describe("keepEarned", () => {
+  it("keeps anything with an earned date unlocked, and leaves the rest alone", () => {
+    const items = [{ id: "a", unlocked: false }, { id: "b", unlocked: false }, { id: "c", unlocked: true }];
+    const out = core.keepEarned(items, { a: "2026-09-01T00:00:00.000Z" });
+    eq(out.map((i) => i.unlocked), [true, false, true]);
+    eq(items[0].unlocked, false, "the input must not be mutated");
+    eq(core.keepEarned(items, null), items);
+  });
+  it("is applied to both cards in App", () => {
+    const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+    ok(/keepEarned\(getAchievementBadges\(\{[\s\S]*?\}\), badgeEarnedDates\)/.test(app));
+    ok(/keepEarned\(getProfileBanners\(\{[\s\S]*?\}\), bannerEarnedDates\)/.test(app));
+  });
+});
