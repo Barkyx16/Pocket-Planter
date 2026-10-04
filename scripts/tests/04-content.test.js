@@ -720,3 +720,12 @@ describe("every search box ignores accents", () => {
     eq(plain, []);
   });
 });
+
+describe("the heat alert", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("ignores days already past in a cached forecast", () => {
+    const at = app.indexOf("Smart action: extreme-heat alert");
+    const effect = app.slice(at, app.indexOf("}, [weather, frostAlertsOn, unitSystem]);", at));
+    ok(at > 0 && /String\(d\.date\) >= todayKey/.test(effect));
+  });
+});

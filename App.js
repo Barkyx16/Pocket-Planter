@@ -4592,7 +4592,10 @@ useEffect(() => {
   // Smart action: extreme-heat alert (uses the same weather-alert toggle as frost).
   useEffect(() => {
     if (!frostAlertsOn) return;
-    const days = weather?.forecast || [];
+    // From today on. A forecast painted from cache after midnight still starts
+    // with yesterday, and its heat went out as "Extreme heat today".
+    const todayKey = getTodayKey();
+    const days = (weather?.forecast || []).filter((d) => !d?.date || String(d.date) >= todayKey);
     // First upcoming day (today or the next two) that hits extreme heat.
     const idx = days.findIndex((d, i) => i <= 2 && typeof d.maxTempF === "number" && d.maxTempF >= HEAT_THRESHOLD_F);
     if (idx === -1) return;
