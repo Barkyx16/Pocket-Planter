@@ -4,6 +4,14 @@ import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { estimateHarvestValue, tapHaptic } from "../core";
 import { useTranslation } from "../lib/i18n";
 
+// Whole dollars stay whole; anything with cents shows exactly two. The net is a
+// whole-dollar estimate minus a spend with cents, and printing that float raw put
+// "$10.010000000000002" on the card for $30 grown against $19.99 spent.
+export function formatMoney(amount) {
+  const n = Math.round((Number(amount) || 0) * 100) / 100;
+  return Number.isInteger(n) ? String(n) : n.toFixed(2);
+}
+
 export const GardenROICard = memo(function GardenROICard({ theme, harvestLog, suppliesSpent, setSuppliesSpent }) {
   const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
@@ -40,7 +48,7 @@ return (
             {net >= 0 ? t("gardenROI.netSavings") : t("gardenROI.netSoFar")}
           </Text>
           <Text style={{ color: netColor, fontSize: 42, fontWeight: "900", marginTop: 4 }}>
-            {net >= 0 ? "" : "-"}${Math.abs(net)}
+            {net >= 0 ? "" : "-"}${formatMoney(Math.abs(net))}
           </Text>
           {roi ? (
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 4 }}>
@@ -54,12 +62,12 @@ return (
       <View style={{ flexDirection: "row", gap: 12, marginTop: 14 }}>
         <View style={{ flex: 1, borderRadius: 16, paddingVertical: 16, alignItems: "center", backgroundColor: "rgba(92, 255, 137, 0.1)", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}>
           <Text style={{ fontSize: 20 }}>🌱</Text>
-          <Text style={{ color: "#8effab", fontSize: 24, fontWeight: "900", marginTop: 6 }}>${grownTotal}</Text>
+          <Text style={{ color: "#8effab", fontSize: 24, fontWeight: "900", marginTop: 6 }}>${formatMoney(grownTotal)}</Text>
           <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 2 }}>Grown</Text>
         </View>
         <View style={{ flex: 1, borderRadius: 16, paddingVertical: 16, alignItems: "center", backgroundColor: "rgba(255, 159, 67, 0.1)", borderWidth: 1, borderColor: "rgba(255, 159, 67, 0.24)" }}>
           <Text style={{ fontSize: 20 }}>🧾</Text>
-          <Text style={{ color: "#ff9f43", fontSize: 24, fontWeight: "900", marginTop: 6 }}>${spent}</Text>
+          <Text style={{ color: "#ff9f43", fontSize: 24, fontWeight: "900", marginTop: 6 }}>${formatMoney(spent)}</Text>
           <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 2 }}>Spent</Text>
         </View>
       </View>

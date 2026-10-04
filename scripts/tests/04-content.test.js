@@ -597,3 +597,14 @@ describe("re-arming the check-ins", () => {
     ok(/if \(stale\) return;/.test(effect) && /return \(\) => \{ stale = true; \};/.test(effect));
   });
 });
+
+describe("the garden ROI card's money", () => {
+  const { formatMoney } = require(path.join(ROOT, "components/GardenROICard.js"));
+  it("never prints a float's tail", () => {
+    eq(formatMoney(30 - 19.99), "10.01");
+    eq(formatMoney(25 - 4.35), "20.65");
+    eq(formatMoney(12.5), "12.50");
+    eq(formatMoney(45), "45");
+    eq(formatMoney(undefined), "0");
+  });
+});
