@@ -399,3 +399,21 @@ describe("the forecast as App builds it", () => {
     ok(/\}\)\)\.filter\(\(d\) => typeof d\.maxTempF === "number" && typeof d\.minTempF === "number"\);/.test(app));
   });
 });
+
+describe("getPlantsDueForWater", () => {
+  const today = core.getTodayKey();
+  const args = (over) => ({ savedPlants: ["Tomato", "Basil"], wateredPlants: {}, wateringHistory: {}, snoozedPlants: {}, weather: null, today, ...over });
+  it("leaves out a plant watered recently and not yet due", () => {
+    // Tomato every 3 days: watered yesterday, not due. Basil never watered: due.
+    eq(core.getPlantsDueForWater(args({ wateringHistory: { Tomato: [ago(1)] } })), ["Basil"]);
+  });
+  it("includes a plant whose countdown has run out", () => {
+    eq(core.getPlantsDueForWater(args({ wateringHistory: { Tomato: [ago(3)], Basil: [ago(0)] }, wateredPlants: { Basil: today } })), ["Tomato"]);
+  });
+  it("leaves out what was watered today or snoozed to tomorrow", () => {
+    eq(core.getPlantsDueForWater(args({ wateredPlants: { Tomato: today }, snoozedPlants: { Basil: core.getTomorrowKey() } })), []);
+  });
+  it("does not let rain hide a due plant from the list", () => {
+    eq(core.getPlantsDueForWater(args({ wateringHistory: { Tomato: [ago(5)] }, savedPlants: ["Tomato"], weather: { precipChance: 95 } })), ["Tomato"]);
+  });
+});

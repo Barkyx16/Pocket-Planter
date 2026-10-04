@@ -3866,6 +3866,22 @@ export function foldForSearch(value) {
   return String(value ?? "").toLowerCase().replace(/[^\x00-\x7f]/g, (ch) => SEARCH_FOLD[ch] || ch);
 }
 
+// The saved plants that need water today, by each plant's own rhythm — the same
+// countdown its page shows and the widget counts. Not watered today, not snoozed
+// to tomorrow, and either never watered or with its countdown run out. Rain is
+// left out of the sum; the screens that show this say so in words instead.
+export function getPlantsDueForWater({ savedPlants, wateredPlants, wateringHistory, snoozedPlants, weather, today = getTodayKey() }) {
+  const tomorrow = getTomorrowKey(parseStoredDate(today));
+  const dry = weather ? { ...weather, precipChance: 0 } : null;
+  return (savedPlants || []).filter((name) => {
+    if (wateredPlants?.[name] === today) return false;
+    if (snoozedPlants?.[name] === tomorrow) return false;
+    const item = produceData.find((p) => p.name === name);
+    const next = item ? getNextWaterInfo(name, item, wateringHistory, wateredPlants, dry) : null;
+    return !next || next.daysUntil <= 0;
+  });
+}
+
 export function getSearchSuggestions(query, limit = 3) {
   const q = foldForSearch(query).trim();
   if (!q || q.length < 2) return [];

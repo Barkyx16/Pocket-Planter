@@ -81,6 +81,7 @@ import {
   getFrostSeasonMonths,
   MONTH_NAMES,
   getWeekKey,
+  getPlantsDueForWater,
   foldForSearch,
   keepEarned,
   getTotalWaterings,
@@ -3717,9 +3718,13 @@ function markPlantWatered(plantName) {
 
   function waterAllPlants() {
     const today = getTodayKey();
-    const unwatered = savedPlants.filter((name) => wateredPlants[name] !== today);
+    // The plants that are due — what "Water all due plants" and the dashboard's
+    // "Water all N now" say they water. It used to log a watering for every
+    // plant not watered today, due or not, which put days that never happened
+    // into each plant's history and reset every countdown.
+    const unwatered = getPlantsDueForWater({ savedPlants, wateredPlants, wateringHistory, snoozedPlants, weather, today });
     if (!unwatered.length) {
-      Alert.alert(t("garden.allWateredTitle"), t("garden.allWateredBody"));
+      Alert.alert(t("garden.allWateredTitle"), t("myGardenToday.nothingDueToday"));
       return;
     }
     successHaptic();
@@ -6192,7 +6197,7 @@ const jumpToTab = useCallback((tab) => {
     <Ionicons name="chevron-up" size={24} color="#07120b" />
   </Pressable>
 ) : null}
-{record && (activeTab === "home" || activeTab === "plants") && savedPlants.some((p) => wateredPlants[p] !== getTodayKey()) ? (
+{record && (activeTab === "home" || activeTab === "plants") && getPlantsDueForWater({ savedPlants, wateredPlants, wateringHistory, snoozedPlants, weather }).length > 0 ? (
   <Pressable
     onPress={() => Alert.alert(t("alerts.quickLogTitle"), t("alerts.quickLogBody"), [
       { text: "💧 Water all due plants", onPress: () => waterAllPlants() },

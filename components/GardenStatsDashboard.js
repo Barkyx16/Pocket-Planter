@@ -1,7 +1,7 @@
 import { memo, useMemo } from "react";
 import { Pressable, Share, Text, View } from "react-native";
 import { styles } from "../styles";
-import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, calculateGardenHealth, formatTemp, getConsistencyBonus, getTodayKey, getTotalWaterings, isFertilizerDue, isHarvestReady, tapHaptic } from "../core";
+import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, calculateGardenHealth, formatTemp, getConsistencyBonus, getPlantsDueForWater, getTodayKey, getTotalWaterings, isFertilizerDue, isHarvestReady, tapHaptic } from "../core";
 import { AnimatedBar } from "./AnimatedBar";
 import { IconText } from "./IconText";
 import { formatDate, useTranslation } from "../lib/i18n";
@@ -15,6 +15,7 @@ export const GardenStatsDashboard = memo(function GardenStatsDashboard({
   streakData,
   wateredPlants,
   wateringHistory,
+  snoozedPlants,
   weather,
   zone,
   harvestTrackers,
@@ -45,7 +46,9 @@ export const GardenStatsDashboard = memo(function GardenStatsDashboard({
   // plants can push the count above the total (e.g. "16/11").
   const wateredTodayCount = (savedPlants || []).filter((name) => wateredPlants?.[name] === today).length;
   const totalWatered = getTotalWaterings(wateringHistory);
-  const plantsNeedingWater = savedPlants.length - wateredTodayCount;
+  // Due by each plant's rhythm, as Home and the plant pages count it — not every
+  // plant that has not been watered today.
+  const plantsNeedingWater = getPlantsDueForWater({ savedPlants, wateredPlants, wateringHistory, snoozedPlants, weather, today }).length;
 
   const harvestsReady = Object.entries(harvestTrackers || {}).filter(([, tracker]) => isHarvestReady(tracker)).length;
 

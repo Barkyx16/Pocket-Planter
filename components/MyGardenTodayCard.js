@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, WARM_DAY_THRESHOLD_F, formatTemp, getClimateBucket, getDateKey, getNextWaterInfo, getSeasonForDate, getSeedStartInfo, getTodayKey, getTomorrowKey, isFertilizerDue, isHarvestReady, resolvePlantImageSource } from "../core";
+import { EXTREME_HEAT_THRESHOLD_F, FROST_THRESHOLD_F, WARM_DAY_THRESHOLD_F, formatTemp, getClimateBucket, getDateKey, getPlantsDueForWater, getSeasonForDate, getSeedStartInfo, getTodayKey, isFertilizerDue, isHarvestReady, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
@@ -11,23 +11,15 @@ export const MyGardenTodayCard = memo(function MyGardenTodayCard({ theme, weathe
   const today = getTodayKey();
   const currentHour = new Date().getHours();
 
-  // Snoozing a plant should quiet it here too. This card used to ignore snoozes
-  // entirely, so a plant you'd deliberately put off kept showing up as "needs water".
-  const tomorrowKey = getTomorrowKey();
+  // Snoozing a plant should quiet it here too (getPlantsDueForWater leaves out a
+  // plant snoozed to tomorrow). This card used to ignore snoozes entirely, so a
+  // plant you'd deliberately put off kept showing up as "needs water".
   const wateredToday = savedPlants.filter(p => wateredPlants?.[p] === today);
   // Due by each plant's own rhythm, as its page and the widget count it. Every
   // plant not watered today used to be listed, so a rosemary watered yesterday,
   // not due for days, was among the "8 plants need water" every single morning.
   // Rain is left out of the sum here; the card says so in words below.
-  const dryWeather = weather ? { ...weather, precipChance: 0 } : null;
-  const isDue = (p) => {
-    const item = produceData.find((x) => x.name === p);
-    const next = item ? getNextWaterInfo(p, item, wateringHistory, wateredPlants, dryWeather) : null;
-    return !next || next.daysUntil <= 0;
-  };
-  const unwateredPlants = savedPlants.filter(
-    p => wateredPlants?.[p] !== today && snoozedPlants?.[p] !== tomorrowKey && isDue(p)
-  );
+  const unwateredPlants = getPlantsDueForWater({ savedPlants, wateredPlants, wateringHistory, snoozedPlants, weather, today });
   const needsWaterCount = unwateredPlants.length;
   // Nothing left to water — every plant done today, or nothing due.
   const allWatered = needsWaterCount === 0 && savedPlants.length > 0;

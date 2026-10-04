@@ -296,6 +296,7 @@ export function HomeTab({ activationSteps, claimDailyBonus, combinedGardenMap, c
   streakData={streakData}
   wateredPlants={wateredPlants}
   wateringHistory={wateringHistory}
+  snoozedPlants={snoozedPlants}
   weather={weather}
   zone={zone}
 harvestTrackers={harvestTrackers}

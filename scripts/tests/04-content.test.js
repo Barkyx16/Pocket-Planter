@@ -764,9 +764,20 @@ describe("Home's watering task", () => {
   const card = fs.readFileSync(path.join(ROOT, "components/MyGardenTodayCard.js"), "utf8");
   it("lists only plants that are due, by their own rhythm", () => {
     // Every plant not watered today used to "need water", whatever its interval.
-    ok(/getNextWaterInfo\(p, item, wateringHistory, wateredPlants, dryWeather\)/.test(card));
-    ok(/snoozedPlants\?\.\[p\] !== tomorrowKey && isDue\(p\)/.test(card));
+    ok(/getPlantsDueForWater\(\{ savedPlants, wateredPlants, wateringHistory, snoozedPlants, weather, today \}\)/.test(card));
     ok(/myGardenToday\.nothingDueToday/.test(card), "nothing due should not claim every plant was watered");
     ok(/<MyGardenTodayCard\s+theme=\{theme\}\s+wateringHistory=\{wateringHistory\}/.test(fs.readFileSync(path.join(ROOT, "screens/HomeTab.js"), "utf8")));
+  });
+});
+
+describe("watering everything that is due", () => {
+  const fs = require("fs");
+  const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const dash = fs.readFileSync(path.join(ROOT, "components/GardenStatsDashboard.js"), "utf8");
+  it("waters the due plants, as its label says, and the dashboard counts the same", () => {
+    const at = app.indexOf("function waterAllPlants()");
+    const fn = app.slice(at, app.indexOf("setWateredPlants", at));
+    ok(/getPlantsDueForWater\(/.test(fn), "water-all must water only what is due");
+    ok(/getPlantsDueForWater\(/.test(dash) && !/savedPlants\.length - wateredTodayCount/.test(dash), "the dashboard must count what is due");
   });
 });
