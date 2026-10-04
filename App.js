@@ -1428,6 +1428,11 @@ const onNewDayRef = useRef(null);
 onNewDayRef.current = () => {
   updateDailyStreak();
   checkHarvestNotifications();
+  // Also launch-only until now: the week's streak freeze coming back, and a
+  // forecast for the new day rather than the one the app was opened on.
+  const week = getWeekKey();
+  setStreakFreeze((f) => (f?.weekKey === week ? f : { available: true, lastUsed: f?.lastUsed ?? null, weekKey: week }));
+  setWeatherRefreshToken((value) => value + 1);
 };
 useEffect(() => {
   const sub = AppState.addEventListener("change", (state) => {

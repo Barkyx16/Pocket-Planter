@@ -78,7 +78,10 @@ describe("a new day while the app is open", () => {
     const at = app.indexOf("const seenDayRef = useRef(todayKey);");
     const effect = app.slice(at, app.indexOf("}, [todayKey]);", at));
     ok(at > 0 && /onNewDayRef\.current\?\.\(\)/.test(effect), "a new day should run the daily work");
-    ok(/updateDailyStreak\(\);\s*\n\s*checkHarvestNotifications\(\);\s*\n\};/.test(app), "the daily work is the streak and the harvest check");
+    const work = app.slice(app.indexOf("onNewDayRef.current = () => {"), app.indexOf("\n};", app.indexOf("onNewDayRef.current = () => {")));
+    for (const call of ["updateDailyStreak()", "checkHarvestNotifications()", "setStreakFreeze(", "setWeatherRefreshToken("]) {
+      ok(work.includes(call), `a new day must run ${call}`);
+    }
   });
   it("rebuilds today's quests, badges and XP", () => {
     for (const fn of ["getDailyQuests", "getAchievementBadges", "getGardenXP"]) {
