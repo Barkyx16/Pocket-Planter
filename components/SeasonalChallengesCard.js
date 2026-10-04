@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
 import {
   getSeasonForDate,
+  parseStoredDate,
   successHaptic,
   vibrate,
 } from "../core";
@@ -16,8 +17,10 @@ const STORAGE_KEY = "pp_claimedChallenges";
 const inSeason = (dateVal, season) => {
   // Parse the whole value rather than slicing its first ten characters: journal
   // entries carry a UTC timestamp, and the sliced date is the next day for
-  // anything logged in the evening.
-  const raw = new Date(dateVal);
+  // anything logged in the evening. Bare day keys (waterings, harvests, care)
+  // go the other way through `new Date` — UTC midnight, the day before in the
+  // west — so both shapes go through parseStoredDate.
+  const raw = parseStoredDate(dateVal);
   if (Number.isNaN(raw.getTime())) return false;
   const d = new Date(raw.getFullYear(), raw.getMonth(), raw.getDate(), 12, 0, 0, 0);
   return d >= season.start && d < season.end;

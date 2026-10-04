@@ -3449,6 +3449,19 @@ export function getTodayKey() {
   return getDateKey(new Date());
 }
 
+// A stored date as a Date, read the way it was written. Day keys ("2026-10-04")
+// are local calendar days, but `new Date("2026-10-04")` reads a bare date as UTC
+// midnight — which is the evening before anywhere west of Greenwich, so today's
+// waterings were "Yesterday" across the Americas. A bare key is placed at local
+// midday; anything with a time on it (a createdAt) is a real instant and is
+// parsed as one. Invalid input gives an Invalid Date, as `new Date` would.
+export function parseStoredDate(value) {
+  if (value instanceof Date) return new Date(value);
+  const s = String(value ?? "");
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(`${s}T12:00:00`);
+  return new Date(value);
+}
+
 // True when a stored value refers to the same calendar day as `key`. Stored
 // dates are a mix of day keys and full ISO timestamps depending on when and
 // where they were written, so compare only the date part.
@@ -4866,8 +4879,10 @@ export function buildGardenTimeline({
   sowLog = {}, plantSaveDates = {}, badgeEarnedDates = {}, achievementBadges = [],
 } = {}) {
   const events = [];
-  const tsOf = (v) => { const t = new Date(v).getTime(); return Number.isNaN(t) ? 0 : t; };
-  const keyOf = (v) => { const d = new Date(v); return Number.isNaN(d.getTime()) ? "" : getDateKey(d); };
+  // Through parseStoredDate: most of these are bare day keys, and read as UTC
+  // they filed the day's events under the day before west of Greenwich.
+  const tsOf = (v) => { const t = parseStoredDate(v).getTime(); return Number.isNaN(t) ? 0 : t; };
+  const keyOf = (v) => { const d = parseStoredDate(v); return Number.isNaN(d.getTime()) ? "" : getDateKey(d); };
 
   Object.entries(plantSaveDates || {}).forEach(([plant, dk]) => {
     if (!dk) return;
@@ -4904,7 +4919,7 @@ export function buildGardenTimeline({
   });
   Object.entries(waterByDay).forEach(([dk, set]) => {
     const n = set.size;
-    events.push({ ts: new Date(dk).getTime(), dateKey: dk, kind: "water", icon: "💧", color: "#6bc7ff", title: `Watered ${n} plant${n === 1 ? "" : "s"}`, subtitle: Array.from(set).slice(0, 3).join(", ") + (n > 3 ? ` +${n - 3}` : "") });
+    events.push({ ts: tsOf(dk), dateKey: dk, kind: "water", icon: "💧", color: "#6bc7ff", title: `Watered ${n} plant${n === 1 ? "" : "s"}`, subtitle: Array.from(set).slice(0, 3).join(", ") + (n > 3 ? ` +${n - 3}` : "") });
   });
   const badgeById = {};
   (achievementBadges || []).forEach((b) => { if (b && b.id) badgeById[b.id] = b; });

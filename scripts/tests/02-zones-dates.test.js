@@ -366,3 +366,42 @@ describe("the first frost of the season", () => {
     }
   });
 });
+
+describe("parseStoredDate", () => {
+  it("reads a bare day key as that local day", () => {
+    // new Date("2026-10-04") is UTC midnight: the 3rd anywhere west of Greenwich.
+    eq(core.getDateKey(core.parseStoredDate("2026-10-04")), "2026-10-04");
+    eq(core.getDateKey(core.parseStoredDate("2026-03-08")), "2026-03-08"); // US spring forward
+  });
+  it("reads a timestamp as the instant it is", () => {
+    const iso = "2026-10-04T03:30:00.000Z";
+    eq(core.parseStoredDate(iso).getTime(), new Date(iso).getTime());
+  });
+  it("passes invalid input through as invalid", () => {
+    ok(Number.isNaN(core.parseStoredDate("nope").getTime()));
+    ok(Number.isNaN(core.parseStoredDate(undefined).getTime()));
+  });
+});
+
+describe("the garden timeline", () => {
+  const today = core.getTodayKey();
+  const events = core.buildGardenTimeline({
+    plantSaveDates: { Tomato: today },
+    wateringHistory: { Tomato: [today], Basil: [today] },
+    harvestLog: [{ plantName: "Tomato", date: today }],
+  });
+  it("files today's events under today", () => {
+    // Read as UTC, all three were "Yesterday" across the Americas.
+    for (const kind of ["plant", "water", "harvest"]) {
+      const e = events.find((x) => x.kind === kind);
+      ok(e, `${kind} event should exist`);
+      eq(e.dateKey, today, `${kind} dateKey`);
+      eq(core.getDateKey(new Date(e.ts)), today, `${kind} ts`);
+    }
+  });
+  it("groups a day's waterings into one event on that day", () => {
+    const water = events.filter((x) => x.kind === "water");
+    eq(water.length, 1);
+    eq(water[0].title, "Watered 2 plants");
+  });
+});
