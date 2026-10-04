@@ -2709,6 +2709,8 @@ export function getDaylightInfo(coords) {
 
 export function getFrostMaturityInfo(item, zone) {
   if (!zone) return null;
+  // A perennial with no maturity window has no finish date to race the frost.
+  if (!hasHarvestCountdown(item)) return null;
   const days = getHarvestDays(item);
   const now = new Date(); now.setHours(12, 0, 0, 0);
   const firstFrost = getNextFirstFrost(zone, now);

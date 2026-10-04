@@ -435,3 +435,17 @@ describe("hasHarvestCountdown", () => {
     ok(/\{hasHarvestCountdown\(selectedPlant\) \? \(/.test(page));
   });
 });
+
+describe("perennials without a maturity window elsewhere", () => {
+  const produce = require(path.join(ROOT, "data/produceData.js"));
+  const apple = (produce.default || produce).find((i) => i.name === "Apple");
+  it("are not warned about finishing before frost", () => {
+    eq(core.getFrostMaturityInfo(apple, "6a"), null);
+  });
+  it("get a seasonal harvest on the planting calendar, not a date", () => {
+    const card = require("fs").readFileSync(path.join(ROOT, "components/PlantingCalendarCard.js"), "utf8");
+    ok(/const harvest = hasHarvestCountdown\(item\) \? addDays\(plantOut/.test(card));
+    ok(/const harvest = hasHarvestCountdown\(r\.item\) \? addDays\(anchor/.test(card), "no calendar event for it either");
+    ok(/t\("plantingCalendar\.seasonal"\)/.test(card));
+  });
+});

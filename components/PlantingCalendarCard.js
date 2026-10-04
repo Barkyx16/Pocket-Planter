@@ -1,7 +1,7 @@
 import { memo, useState } from "react";
 import { Alert, Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { getFirstFrostAfter, getHarvestDays, getLastFrostDate, getSeedStartWeeks, isOrnamental, resolvePlantImageSource, tapHaptic } from "../core";
+import { getFirstFrostAfter, getHarvestDays, hasHarvestCountdown, getLastFrostDate, getSeedStartWeeks, isOrnamental, resolvePlantImageSource, tapHaptic } from "../core";
 import { IconText } from "./IconText";
 import { DatePickerModal } from "./DatePickerModal";
 import { formatDate, useTranslation } from "../lib/i18n";
@@ -33,9 +33,11 @@ export const PlantingCalendarCard = memo(function PlantingCalendarCard({ theme, 
       // Start indoors before last frost, transplant out at last frost, harvest after maturity.
       const sow = startWeeks ? addDays(lastFrost, -startWeeks * 7) : null;
       const plantOut = new Date(lastFrost);
-      const harvest = addDays(plantOut, harvestDays || 0);
+      // A perennial with no maturity window harvests by season, not on a date —
+      // the 75-day fallback put an apple tree's harvest eleven weeks out.
+      const harvest = hasHarvestCountdown(item) ? addDays(plantOut, harvestDays || 0) : null;
       // Flag if the harvest lands after the first fall frost (risky in this zone).
-      const beatsFrost = harvest <= firstFrost;
+      const beatsFrost = !harvest || harvest <= firstFrost;
       return { item, sow, plantOut, harvest, beatsFrost };
     });
 
@@ -89,7 +91,7 @@ export const PlantingCalendarCard = memo(function PlantingCalendarCard({ theme, 
         const startWeeks = getSeedStartWeeks(r.item);
         const harvestDays = getHarvestDays(r.item);
         const sow = startWeeks ? addDays(anchor, -startWeeks * 7) : null;
-        const harvest = addDays(anchor, harvestDays || 0);
+        const harvest = hasHarvestCountdown(r.item) ? addDays(anchor, harvestDays || 0) : null;
         count += await mkEvent(sow, t("plantingCalendar.startIndoorsEvent", { plant: r.item.name }));
         count += await mkEvent(anchor, t("plantingCalendar.plantOutEvent", { plant: r.item.name }));
         count += await mkEvent(harvest, t("plantingCalendar.harvestEvent", { plant: r.item.name }));
@@ -160,7 +162,7 @@ export const PlantingCalendarCard = memo(function PlantingCalendarCard({ theme, 
                 {[
                   { icon: "🌱", label: t("plantingCalendar.startIndoors"), value: sow ? fmt(sow) : t("plantingCalendar.directSow"), color: "#8effab" },
                   { icon: "🪴", label: t("plantingCalendar.plantOut"), value: fmt(plantOut), color: "#6bc7ff" },
-                  { icon: "🚜", label: "Harvest", value: `~${fmt(harvest)}`, color: "#ffd86b" },
+                  { icon: "🚜", label: "Harvest", value: harvest ? `~${fmt(harvest)}` : t("plantingCalendar.seasonal"), color: "#ffd86b" },
                 ].map((m) => (
                   <View key={m.label} style={{ flex: 1, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 8, paddingVertical: 8, paddingHorizontal: 4 }}>
                     <Text style={{ fontSize: 14 }}>{m.icon}</Text>
