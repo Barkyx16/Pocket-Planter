@@ -22,6 +22,7 @@ import {
   getLanguage,
   isSupportedLocale,
   setLocale,
+  formatDate,
   t,
   tn,
 } from "./lib/i18n";
@@ -79,7 +80,7 @@ import {
   getTodayKey,
   getTomorrowKey,
   getFrostSeasonMonths,
-  MONTH_NAMES,
+  formatReminderTime,
   getWeekKey,
   hasHarvestCountdown,
   getPlantsDueForWater,
@@ -256,10 +257,10 @@ const PREMIUM_TAB_IDS = new Set(["garden", "weather", "games", "journal"]);
 // What a free user sees in place of a paid tab. Copy sells the tab they just
 // tried to open, rather than repeating one generic "upgrade" line four times.
 const LOCKED_TAB_COPY = {
-  garden: { icon: "🌱", title: "Your garden, mapped", description: "Lay out beds, track what's planted where, and get watering and spacing guidance for every area." },
-  weather: { icon: "🌤️", title: "Weather intelligence", description: "Frost alerts, rainfall tracking, and daily water-or-don't calls based on your actual forecast." },
-  games: { icon: "🎮", title: "Garden games", description: "Play, learn your plants, and earn XP toward your gardener level." },
-  journal: { icon: "📔", title: "Your garden journal", description: "A dated, photo-backed record of every harvest, planting, and note across your seasons." },
+  garden: { icon: "🌱", titleKey: "lockedTab.gardenTitle", descriptionKey: "lockedTab.gardenBody" },
+  weather: { icon: "🌤️", titleKey: "lockedTab.weatherTitle", descriptionKey: "lockedTab.weatherBody" },
+  games: { icon: "🎮", titleKey: "lockedTab.gamesTitle", descriptionKey: "lockedTab.gamesBody" },
+  journal: { icon: "📔", titleKey: "lockedTab.journalTitle", descriptionKey: "lockedTab.journalBody" },
 };
 
 const OVERFLOW_TAB_IDS = ["flowers", "games", "pests", "journal", "profile", "settings", "premium"];
@@ -2441,12 +2442,12 @@ useEffect(() => {
     0
   );
   const checks = [
-    { id: "first_harvest", hit: (harvestLog || []).length >= 1, emoji: "🎉", title: "FIRST HARVEST!", text: "You harvested your very first crop. This is what it's all about! 🥗" },
-    { id: "plants_10", hit: (savedPlants || []).length >= 10, emoji: "🌿", title: "10 PLANTS!", text: "Your garden collection just hit 10 plants. You're building something special. 🌱" },
-    { id: "plants_25", hit: (savedPlants || []).length >= 25, emoji: "🏡", title: "25 PLANTS!", text: "Twenty-five plants! That's a serious garden. 🌻" },
-    { id: "water_50", hit: totalWaterings >= 50, emoji: "💧", title: "50 WATERINGS!", text: "Fifty waterings logged. Your plants are lucky to have you. 💚" },
-    { id: "water_100", hit: totalWaterings >= 100, emoji: "🌊", title: "100 WATERINGS!", text: "One hundred waterings! Your dedication is next level. 🔥" },
-    { id: "harvest_10", hit: (harvestLog || []).length >= 10, emoji: "🧺", title: "10 HARVESTS!", text: "Ten harvests in the books. Your garden is truly producing. 🍅" },
+    { id: "first_harvest", hit: (harvestLog || []).length >= 1, emoji: "🎉", title: t("notifyText.msFirstHarvestTitle"), text: t("notifyText.msFirstHarvestText") },
+    { id: "plants_10", hit: (savedPlants || []).length >= 10, emoji: "🌿", title: t("notifyText.msPlants10Title"), text: t("notifyText.msPlants10Text") },
+    { id: "plants_25", hit: (savedPlants || []).length >= 25, emoji: "🏡", title: t("notifyText.msPlants25Title"), text: t("notifyText.msPlants25Text") },
+    { id: "water_50", hit: totalWaterings >= 50, emoji: "💧", title: t("notifyText.msWater50Title"), text: t("notifyText.msWater50Text") },
+    { id: "water_100", hit: totalWaterings >= 100, emoji: "🌊", title: t("notifyText.msWater100Title"), text: t("notifyText.msWater100Text") },
+    { id: "harvest_10", hit: (harvestLog || []).length >= 10, emoji: "🧺", title: t("notifyText.msHarvest10Title"), text: t("notifyText.msHarvest10Text") },
   ];
 
   // Fire only the first newly-crossed milestone (avoid stacking overlays)
@@ -2477,8 +2478,8 @@ useEffect(() => {
   vibrate([0, 80, 60, 120]);
   setMilestoneCelebration({
     emoji: "🎯",
-    title: "GOAL REACHED!",
-    text: `You hit your season goal of ${harvestGoal.target} harvest${harvestGoal.target === 1 ? "" : "s"}. What a season! 🌻`,
+    title: t("notifyText.msGoalTitle"),
+    text: tn("notifyText.msGoalText", harvestGoal.target),
   });
   setFiredMilestones((current) => [...current, goalId]);
   setTimeout(() => setMilestoneCelebration(null), 4000);
@@ -2822,8 +2823,9 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
       await Notifications.scheduleNotificationAsync({
         identifier: id,
         content: {
-          title: `🌱 ${MONTH_NAMES[month - 1]} Planting Guide`,
-          body: `Open Pocket Planter to see what to plant this month in your zone.`,
+          // The month in the gardener's language, not MONTH_NAMES' English.
+          title: t("notifyText.monthlyGuideTitle", { month: formatDate(new Date(2000, month - 1, 1), { month: "long" }) }),
+          body: t("notifyText.monthlyGuideBody"),
           sound: true,
         },
         trigger: {
@@ -2856,8 +2858,8 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
       id: `plant-${plantName}`,
       hour,
       minute,
-      title: `🌱 Good morning! Check on your ${plantName}`,
-      body: `Time for your daily ${plantName} check-in. Water if the top inch of soil feels dry.`,
+      title: t("notifyText.checkInTitle", { plant: plantName }),
+      body: t("notifyText.checkInBody", { plant: plantName }),
     });
   }
 
@@ -2867,8 +2869,8 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
       await Notifications.scheduleNotificationAsync({
         identifier: `frost-daily-${month}`,
         content: {
-          title: "❄️ Frost Check",
-          body: "Cold season is here — open Pocket Planter to see if frost is coming and protect your tender plants.",
+          title: t("notifyText.frostCheckTitle"),
+          body: t("notifyText.frostCheckBody"),
           sound: true,
         },
         trigger: {
@@ -3130,7 +3132,7 @@ async function exportFullBackup() {
   }
   try {
     tapHaptic("light");
-    await Share.share({ title: "Pocket Planter Backup", message: JSON.stringify(backup) });
+    await Share.share({ title: t("lockedTab.backupShareTitle"), message: JSON.stringify(backup) });
   } catch (e) {
     console.log("Backup export skipped:", e?.message);
   }
@@ -3293,16 +3295,16 @@ function buildWeeklyRecapBody() {
     const streak = streakData?.count || 0;
 
     const parts = [
-      wateringsThisWeek > 0 ? `💧 ${wateringsThisWeek} watering${wateringsThisWeek === 1 ? "" : "s"}` : null,
-      photosThisWeek > 0 ? `📸 ${photosThisWeek} photo${photosThisWeek === 1 ? "" : "s"}` : null,
-      streak > 0 ? `🔥 ${streak}-day streak` : null,
+      wateringsThisWeek > 0 ? tn("notifyText.recapWaterings", wateringsThisWeek) : null,
+      photosThisWeek > 0 ? tn("notifyText.recapPhotos", photosThisWeek) : null,
+      streak > 0 ? t("notifyText.recapStreak", { count: streak }) : null,
     ].filter(Boolean);
 
     // If they did nothing this week, nudge gently instead of showing zeros.
     if (!parts.length) {
-      return "A fresh week in the garden starts today 🌱 Open Pocket Planter to check on your plants.";
+      return t("notifyText.recapEmpty");
     }
-    return `This week: ${parts.join("  •  ")}. Tap to see your full garden recap 🌿`;
+    return t("notifyText.recapSummary", { parts: parts.join("  •  ") });
   }
 
   // `silent` is for the refresh below: it must never trigger the permission
@@ -3316,7 +3318,7 @@ function buildWeeklyRecapBody() {
     await Notifications.scheduleNotificationAsync({
       identifier: "weekly-recap",
       content: {
-        title: "🌻 Your Garden Week",
+        title: t("notifyText.recapTitle"),
         body: buildWeeklyRecapBody(),
         sound: true,
       },
@@ -3389,8 +3391,8 @@ async function scheduleSnoozeSummary(snoozeMap) {
     const count = dueTomorrow.length;
     const preview = dueTomorrow.slice(0, 3).join(", ");
     const body = count <= 3
-      ? `${preview} ${count === 1 ? "is" : "are"} ready for water 🌱`
-      : `${preview}, and ${count - 3} more are ready for water 🌱`;
+      ? tn("notifyText.snoozeBodyFew", count, { plants: preview })
+      : tn("notifyText.snoozeBodyMany", count - 3, { plants: preview });
 
     const fireDate = new Date();
     fireDate.setDate(fireDate.getDate() + 1);
@@ -3399,7 +3401,7 @@ async function scheduleSnoozeSummary(snoozeMap) {
     await Notifications.scheduleNotificationAsync({
       identifier: "snooze-summary",
       content: {
-        title: count === 1 ? "🌱 A plant is off snooze" : `🌱 ${count} plants are off snooze`,
+        title: tn("notifyText.snoozeTitle", count),
         body,
         sound: true,
       },
@@ -3426,8 +3428,8 @@ async function scheduleFertilizerReminder(plantName, days) {
     await Notifications.scheduleNotificationAsync({
       identifier: id,
       content: {
-        title: `🌾 Time to fertilize ${plantName}`,
-        body: `It's been ${days} days since you last fed ${plantName}. Check if it's ready for another feeding.`,
+        title: t("notifyText.fertilizeTitle", { plant: plantName }),
+        body: t("notifyText.fertilizeBody", { plant: plantName, days }),
         sound: true,
       },
       trigger: {
@@ -3435,7 +3437,7 @@ async function scheduleFertilizerReminder(plantName, days) {
         date: fireDate,
       },
     });
-    Alert.alert(t("notify.reminderSetFertilizer"), `You'll get a reminder to fertilize ${plantName} in ${days} days.`);
+    Alert.alert(t("notify.reminderSetFertilizer"), t("notifyText.fertilizeSet", { plant: plantName, days }));
   }
 
   async function checkHarvestNotifications() {
@@ -3465,7 +3467,7 @@ async function scheduleFertilizerReminder(plantName, days) {
 
     for (const plantName of fresh) {
       await Notifications.scheduleNotificationAsync({
-        content: { title: "🎉 Harvest Ready", body: `${plantName} should be ready to harvest today.` },
+        content: { title: t("notifyText.harvestReadyTitle"), body: t("notifyText.harvestReadyBody", { plant: plantName }) },
         trigger: null,
       }).catch(() => {});
       sent[plantName] = today;
@@ -3529,7 +3531,7 @@ async function scheduleReminder(plantName, hour, minute) {
 
     Alert.alert(
       t("notify.reminderSet"),
-      `You'll get a daily ${plantName} check-in at ${hour}:${minute === 0 ? "00" : minute} AM every morning.`
+      t("notifyText.checkInSet", { plant: plantName, time: formatReminderTime({ hour, minute }) })
     );
   } catch (error) {
     console.log("Reminder error:", error);
@@ -3557,10 +3559,10 @@ async function schedulePlantWaterReminder(plantName) {
     await Notifications.scheduleNotificationAsync({
       identifier: id,
       content: {
-        title: `💧 Time to water ${plantName}`,
+        title: t("notifyText.waterTitle", { plant: plantName }),
         body: rhythm
-          ? `Based on your rhythm, ${plantName} is about due for a drink.`
-          : `${plantName} is likely ready for water — check if the top inch of soil feels dry.`,
+          ? t("notifyText.waterBodyRhythm", { plant: plantName })
+          : t("notifyText.waterBodyGuess", { plant: plantName }),
         sound: true,
       },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: fireDate },
@@ -4667,10 +4669,10 @@ useEffect(() => {
     const frost = getUpcomingFrost(weather);
     if (!frost) return;
     if (lastFrostAlertDate.current === frost.date) return;
-    const whenText =
-      frost.daysOut === 0 ? "tonight"
-      : frost.daysOut === 1 ? "tomorrow night"
-      : `in ${frost.daysOut} days`;
+    const frostTitle =
+      frost.daysOut === 0 ? t("notifyText.frostTonightTitle")
+      : frost.daysOut === 1 ? t("notifyText.frostTomorrowTitle")
+      : tn("notifyText.frostInDaysTitle", frost.daysOut);
     (async () => {
       // Persist the guard, the way the heat alert below does: the in-memory ref
       // resets on every app start, and the cached forecast repaints immediately,
@@ -4688,8 +4690,8 @@ useEffect(() => {
       await Notifications.scheduleNotificationAsync({
         identifier: "frost-detected",
         content: {
-          title: `❄️ Frost expected ${whenText}`,
-          body: `Low of ${formatTemp(frost.minTempF, unitSystem, true)} coming — cover tender plants and move containers to shelter before dark.`,
+          title: frostTitle,
+          body: t("notifyText.frostAlertBody", { low: formatTemp(frost.minTempF, unitSystem, true) }),
           sound: true,
         },
         trigger: null,
@@ -4734,8 +4736,8 @@ useEffect(() => {
       await Notifications.scheduleNotificationAsync({
         identifier: "heat-detected",
         content: {
-          title: `🔥 Extreme heat today — ${formatTemp(day.maxTempF, unitSystem, true)}`,
-          body: "Water deeply before 9 AM, shade young transplants, and hold off on planting until it cools.",
+          title: t("notifyText.heatAlertTitle", { high: formatTemp(day.maxTempF, unitSystem, true) }),
+          body: t("notifyText.heatAlertBody"),
           sound: true,
         },
         trigger: sendNow ? null : { type: Notifications.SchedulableTriggerInputTypes.DATE, date: midnight },
@@ -6236,8 +6238,8 @@ const jumpToTab = useCallback((tab) => {
 {PREMIUM_TAB_IDS.has(activeTab) && !premiumUnlocked ? (
   <PremiumLockedSection
     icon={(LOCKED_TAB_COPY[activeTab] || {}).icon || "🔒"}
-    title={(LOCKED_TAB_COPY[activeTab] || {}).title || t("appShell.premiumFeature")}
-    description={(LOCKED_TAB_COPY[activeTab] || {}).description || t("appShell.premiumUnlockThis")}
+    title={LOCKED_TAB_COPY[activeTab] ? t(LOCKED_TAB_COPY[activeTab].titleKey) : t("appShell.premiumFeature")}
+    description={LOCKED_TAB_COPY[activeTab] ? t(LOCKED_TAB_COPY[activeTab].descriptionKey) : t("appShell.premiumUnlockThis")}
     onUnlock={() => jumpToTab("premium")}
   />
 ) : null}

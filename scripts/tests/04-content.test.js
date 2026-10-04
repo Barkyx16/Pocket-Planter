@@ -984,3 +984,14 @@ describe("the sign-in screen and the celebrations", () => {
     }
   });
 });
+
+describe("notifications", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("are written in the gardener's language", () => {
+    // Every reminder, alert and milestone the app sends was English text.
+    const scheduled = [...app.matchAll(/(title|body): (`[^`]*`|"[^"]*[a-z]{3}[^"]*")/g)].map((m) => m[0])
+      .filter((x) => !/^(title|body): "(daily-watering|plant-of-day)/.test(x));
+    eq(scheduled, [], "a notification or milestone title/body is hard-coded");
+    ok(/notifyText\.monthlyGuideTitle", \{ month: formatDate\(/.test(app), "month names must be localised");
+  });
+});
