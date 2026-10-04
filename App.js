@@ -3051,7 +3051,7 @@ const { error: uploadError } =
         daysSincePlanting: 1,
       };
       setJournalEntries((current) => [entry, ...current]);
-      maybePromptPremium("Photo added to your journal. Upgrade to Premium to save unlimited plants and unlock every tab, calendar, and insight.");
+      maybePromptPremium(t("upsell.photo"));
       return;
     }
     const { data: publicUrlData } =
@@ -3077,7 +3077,7 @@ setJournalEntries((current) => [
   entry,
   ...current,
 ]);
-maybePromptPremium("Photo added to your journal. Upgrade to Premium to save unlimited plants and unlock every tab, calendar, and insight.");
+maybePromptPremium(t("upsell.photo"));
 
 console.log(
   "Journal photo uploaded ✅"
@@ -3211,7 +3211,7 @@ function deleteJournalEntriesOlderThan(days) {
     Alert.alert(t("alerts.nothingToClearTitle"), t("alerts.nothingToClearBody"));
     return;
   }
-  const label = days >= 365 ? "1 year" : "6 months";
+  const label = t(days >= 365 ? "upsell.oneYear" : "upsell.sixMonths");
   Alert.alert(
     t("alerts.deleteOldPhotosTitle"),
     tn("alerts.deleteOldPhotosBody", toRemove.length, { label }),
@@ -3255,7 +3255,7 @@ function deleteJournalEntry(entryId) {
   tapHaptic("light");
   setJournalEntries((current) => current.filter((entry) => entry.id !== entryId));
   let undone = false;
-  showUndoToast("Photo deleted", () => {
+  showUndoToast(t("upsell.photoDeleted"), () => {
     undone = true;
     setJournalEntries((current) => [removed, ...current].sort(
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
@@ -3718,7 +3718,7 @@ async function claimDailyBonusOnce() {
   setTimeout(() => {
     setShowDailyBonus(false);
   }, 1800);
-  maybePromptPremium("Bonus claimed! Upgrade to Premium to save unlimited plants and unlock every tab, calendar, and insight.");
+  maybePromptPremium(t("upsell.bonus"));
 }
 
 function markPlantWatered(plantName) {
@@ -3772,7 +3772,7 @@ function markPlantWatered(plantName) {
       Alert.alert(t("alerts.wateredTitle"), t("alerts.wateredBody", { plant: plantName }));
     }
     schedulePlantWaterReminder(plantName);
-    maybePromptPremium("Watering tracked. Upgrade to Premium to unlock unlimited plants, the garden dashboard, planting & frost calendars, and more.");
+    maybePromptPremium(t("upsell.watering"));
   }
 
   function waterAllPlants() {
@@ -3809,7 +3809,7 @@ function markPlantWatered(plantName) {
     setTimeout(() => {
       setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
     }, 2000);
-    maybePromptPremium("Watering tracked. Upgrade to Premium to unlock unlimited plants, the garden dashboard, planting & frost calendars, and more.");
+    maybePromptPremium(t("upsell.watering"));
   }
 
   function waterPlant(plantName) {
@@ -3830,7 +3830,7 @@ function markPlantWatered(plantName) {
     setTimeout(() => {
       setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
     }, 2000);
-    maybePromptPremium("Watering tracked. Upgrade to Premium to unlock unlimited plants, the garden dashboard, planting & frost calendars, and more.");
+    maybePromptPremium(t("upsell.watering"));
   }
 
 function logHarvest(plantName, amount, unit, note) {
@@ -3935,7 +3935,7 @@ function snoozePlantWatering(plantName) {
   const snoozed = { ...snoozedPlants, [plantName]: key };
   setSnoozedPlants(snoozed);
   scheduleSnoozeSummary(snoozed);
-  showUndoToast(`${plantName} snoozed until tomorrow`, () => {
+  showUndoToast(t("upsell.snoozedUntilTomorrow", { plant: plantName }), () => {
     const restored = { ...snoozedPlants };
     delete restored[plantName];
     setSnoozedPlants(restored);
@@ -4056,7 +4056,7 @@ function assignPlantToAreaSlot(areaId, slotId, plantName, opts = {}) {
         : area
     )
   );
-  maybePromptPremium("Nice — that plant's in your garden. Upgrade to Premium to save unlimited plants and unlock the garden dashboard, calendars, pest watch, and the Flowers & Home tab.");
+  maybePromptPremium(t("upsell.placed"));
   // Record this planting into rotation history (families only).
   try {
     const family = getPlantFamily(plantName);
@@ -4900,7 +4900,7 @@ useEffect(() => {
     setCompletedQuestIds((prev) => {
       const next = typeof updater === "function" ? updater(prev) : updater;
       if (countIds(next) > countIds(prev)) {
-        maybePromptPremium("Quest complete! Upgrade to Premium to save unlimited plants and unlock every tab, calendar, and insight.");
+        maybePromptPremium(t("upsell.quest"));
       }
       return next;
     });

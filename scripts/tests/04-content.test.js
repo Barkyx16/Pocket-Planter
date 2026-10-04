@@ -995,3 +995,11 @@ describe("notifications", () => {
     ok(/notifyText\.monthlyGuideTitle", \{ month: formatDate\(/.test(app), "month names must be localised");
   });
 });
+
+describe("the Premium prompts and toasts", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("are translated", () => {
+    ok(!/maybePromptPremium\("/.test(app), "an upsell message is hard-coded");
+    ok(!/showUndoToast\("|showUndoToast\(`/.test(app), "an undo toast is hard-coded");
+  });
+});
