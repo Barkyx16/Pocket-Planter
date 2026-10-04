@@ -651,3 +651,35 @@ describe("the bed planner", () => {
     for (const k of ["widthM", "lengthM", "spacingInACm", "mBed"]) ok(card.includes(`bedPlanner.${k}`), `${k} must be used`);
   });
 });
+
+describe("what the profile cards are given", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  // The object handed to a core builder, from its call to the closing `}),`.
+  const argsOf = (fn) => {
+    const at = app.indexOf(`${fn}({`);
+    return at < 0 ? "" : app.slice(at, app.indexOf("}),", at));
+  };
+  it("passes the fertilizer trackers under the name the quests read", () => {
+    // A shorthand `visibleFertilizerTrackers,` arrives under that name, and the
+    // two "Feed" quests read `fertilizerTrackers` — so they never completed.
+    for (const fn of ["getDailyQuests", "getAchievementBadges"]) {
+      const args = argsOf(fn);
+      ok(args.length > 0, `${fn} should be called`);
+      ok(/fertilizerTrackers: visibleFertilizerTrackers/.test(args), `${fn} must get fertilizerTrackers`);
+      ok(!/^\s*visibleFertilizerTrackers,\s*$/m.test(args), `${fn} must not get a misnamed shorthand`);
+    }
+  });
+  it("passes nothing a builder does not take", () => {
+    // Every key handed over has to be one the builder destructures, or it is
+    // silently dropped, as this one was.
+    const core = require("fs").readFileSync(path.join(ROOT, "core.js"), "utf8");
+    for (const fn of ["getDailyQuests", "getAchievementBadges", "getProfileBanners", "getGardenXP"]) {
+      const sigAt = core.indexOf(`export function ${fn}(`);
+      const sig = core.slice(sigAt, core.indexOf("{\n", core.indexOf("})", sigAt)));
+      const params = new Set([...sig.matchAll(/\b([a-zA-Z]+)\b/g)].map((m) => m[1]));
+      const keys = [...argsOf(fn).matchAll(/^\s*([a-zA-Z]+)(?::|,)/gm)].map((m) => m[1]);
+      const unknown = keys.filter((k) => !params.has(k));
+      eq(unknown, [], `${fn} is handed keys it does not read`);
+    }
+  });
+});

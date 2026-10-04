@@ -1449,7 +1449,7 @@ const achievementBadges = useMemo(
       gardenXP,
       careLog,
       harvestTrackers: visibleHarvestTrackers,
-      visibleFertilizerTrackers,
+      fertilizerTrackers: visibleFertilizerTrackers,
       harvestLog,
       wateringHistory,
     }),
@@ -1479,7 +1479,10 @@ const dailyQuests = useMemo(
       harvestTrackers: visibleHarvestTrackers,
       streakData,
       harvestLog,
-      visibleFertilizerTrackers,
+      // Named for the parameter: as a shorthand it arrived as
+      // `visibleFertilizerTrackers`, the quests read `fertilizerTrackers`, and
+      // "Feed a plant" and "Feed 3 plants" could never be completed.
+      fertilizerTrackers: visibleFertilizerTrackers,
       comparePlants,
     }),
   [
