@@ -421,3 +421,14 @@ describe("a fertilizer tracker after a feed", () => {
     eq(core.isFertilizerDue("Tomato", { lastFertilized: old.toISOString() }), true);
   });
 });
+
+describe("the fertilizer card's due list", () => {
+  const card = require("fs").readFileSync(path.join(ROOT, "components/FertilizerIntelligenceCard.js"), "utf8");
+  it("uses each plant's own interval, as Home does", () => {
+    const at = card.indexOf("getPlantsDueForFertilizer = ");
+    const fn = card.slice(at, card.indexOf("};", at));
+    ok(at > 0, "the due list should exist");
+    ok(/isFertilizerDue\(plantName, tracker\)/.test(fn), "it must ask isFertilizerDue");
+    ok(!/>= ?\d+/.test(fn), "no hardcoded day count");
+  });
+});

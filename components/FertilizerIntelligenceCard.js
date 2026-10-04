@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, flipMonth, getClimateBucket, getFertilizerDaysSince, getTodayKey } from "../core";
+import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, flipMonth, getClimateBucket, getTodayKey, isFertilizerDue } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
@@ -165,8 +165,9 @@ const getPlantsDueForFertilizer = () => {
   return savedPlants.filter((plantName) => {
     const tracker = fertilizerTrackers?.[plantName];
     if (!tracker) return true;
-    const daysSince = getFertilizerDaysSince(tracker);
-    return daysSince === null || daysSince >= 14;
+    // The plant's own interval, as Home and the dashboard use: a flat 14 days
+    // listed oregano (45) as due here a month before anything else agreed.
+    return isFertilizerDue(plantName, tracker);
   }).slice(0, 3);
 };
 
