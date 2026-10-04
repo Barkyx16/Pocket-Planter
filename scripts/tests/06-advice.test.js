@@ -4,7 +4,9 @@ const core = require(path.join(ROOT, "core.js"));
 const produce = require(path.join(ROOT, "data/produceData.js"));
 const items = produce.default || produce;
 const plant = (n) => items.find((i) => i.name === n);
-const ago = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
+// A local day key, as the app writes them. toISOString() gives the UTC day, which
+// is tomorrow for half of every day in Auckland, and the tests failed whenever it was.
+const ago = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return core.getDateKey(d); };
 
 describe("getNextWaterInfo", () => {
   const tomato = plant("Tomato");
@@ -330,7 +332,7 @@ describe("getPlantingGuide", () => {
 
 describe("getPlantHealthStatus", () => {
   const plantOf = (n) => items.find((i) => i.name === n);
-  const ago = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
+  const ago = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return core.getDateKey(d); };
   const status = (name, daysAgo, weather) => {
     const item = plantOf(name);
     const when = daysAgo == null ? null : ago(daysAgo);
