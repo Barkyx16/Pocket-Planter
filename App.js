@@ -3020,15 +3020,15 @@ function buildWeeklyRecapBody() {
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
     const photosThisWeek = (journalEntries || []).filter((e) => {
-      const t = new Date(e.createdAt).getTime();
-      return !Number.isNaN(t) && t >= weekAgo;
+      const ms = new Date(e.createdAt).getTime();
+      return !Number.isNaN(ms) && ms >= weekAgo;
     }).length;
 
     const wateringsThisWeek = Object.values(wateringHistory || {}).reduce((sum, dates) => {
       if (!Array.isArray(dates)) return sum;
       return sum + dates.filter((d) => {
-        const t = new Date(`${String(d).slice(0, 10)}T12:00:00`).getTime();
-        return !Number.isNaN(t) && t >= weekAgo;
+        const ms = new Date(`${String(d).slice(0, 10)}T12:00:00`).getTime();
+        return !Number.isNaN(ms) && ms >= weekAgo;
       }).length;
     }, 0);
 
@@ -4767,8 +4767,8 @@ useEffect(() => {
   // level) never triggers a false "Level Up". Only genuine level gains after settle pop.
   const levelUpReadyRef = useRef(false);
   useEffect(() => {
-    const t = setTimeout(() => { levelUpReadyRef.current = true; }, 3500);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => { levelUpReadyRef.current = true; }, 3500);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {

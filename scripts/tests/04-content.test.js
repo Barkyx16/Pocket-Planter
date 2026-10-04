@@ -447,3 +447,23 @@ describe("clearing old journal photos", () => {
     eq(kept[1], `!(${counted[1]})`);
   });
 });
+
+describe("the translator is never shadowed", () => {
+  const fs = require("fs");
+  const files = ["App.js",
+    ...fs.readdirSync(path.join(ROOT, "components")).map((f) => `components/${f}`),
+    ...fs.readdirSync(path.join(ROOT, "screens")).map((f) => `screens/${f}`)]
+    .filter((f) => f.endsWith(".js"));
+  it("by a local named t, in any file that translates", () => {
+    // CustomTasksCard declared `const t = title.trim()` and then called
+    // t("alerts.taskSavedTitle") a few lines later — a string, not a function —
+    // so the alert threw instead of showing.
+    const offenders = [];
+    for (const f of files) {
+      const src = fs.readFileSync(path.join(ROOT, f), "utf8");
+      if (!/useTranslation\(\)/.test(src)) continue;
+      if (/\b(const|let|var) t\s*=/.test(src)) offenders.push(f);
+    }
+    eq(offenders, []);
+  });
+});

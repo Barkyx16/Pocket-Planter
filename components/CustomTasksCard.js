@@ -9,10 +9,10 @@ import { touchSlop } from "../lib/a11y";
 
 const STORAGE_KEY = "pp_customTasks";
 const INTERVALS = [
-  { days: 3, label: "3 days" },
-  { days: 7, label: "Weekly" },
-  { days: 14, label: "2 weeks" },
-  { days: 30, label: "Monthly" },
+  { days: 3, label: "3 days", every: "Every 3 days" },
+  { days: 7, label: "Weekly", every: "Every week" },
+  { days: 14, label: "2 weeks", every: "Every 2 weeks" },
+  { days: 30, label: "Monthly", every: "Every month" },
 ];
 
 export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
@@ -34,8 +34,11 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
   const persist = (next) => { setTasks(next); AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)).catch(() => {}); };
 
   const add = async () => {
-    const t = title.trim();
-    if (!t) return;
+    // Not `t`: that name is the translator, and shadowing it here made the
+    // "saved without a reminder" alert below call a string and throw, so a
+    // gardener with notifications off got no confirmation at all.
+    const text = title.trim();
+    if (!text) return;
     tapHaptic("light");
     let notifId = null;
     try {
@@ -44,12 +47,12 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
       if (!granted) granted = (await Notifications.requestPermissionsAsync()).granted;
       if (granted) {
         notifId = await Notifications.scheduleNotificationAsync({
-          content: { title: "🌿 Garden Task", body: t, sound: true },
+          content: { title: "🌿 Garden Task", body: text, sound: true },
           trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: interval * 86400, repeats: true },
         });
       }
     } catch (e) { /* scheduling may be limited in Expo Go */ }
-    persist([{ id: Date.now().toString(), title: t, interval, notifId }, ...tasks]);
+    persist([{ id: Date.now().toString(), title: text, interval, notifId }, ...tasks]);
     setTitle("");
     if (!notifId) Alert.alert(t("alerts.taskSavedTitle"), t("alerts.taskSavedBody"));
   };
@@ -96,7 +99,7 @@ export const CustomTasksCard = memo(function CustomTasksCard({ theme }) {
               <Text style={{ fontSize: 14 }}>{task.notifId ? "🔔" : "📝"}</Text>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }} numberOfLines={1}>{task.title}</Text>
-                <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 2 }}>Every {INTERVALS.find((i) => i.days === task.interval)?.label.toLowerCase() || `${task.interval} days`}</Text>
+                <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 2 }}>{INTERVALS.find((i) => i.days === task.interval)?.every || `Every ${task.interval} days`}</Text>
               </View>
               <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.deleteTask")} onPress={() => remove(task)} hitSlop={touchSlop(14)}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
             </View>
