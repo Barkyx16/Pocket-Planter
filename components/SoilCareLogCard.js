@@ -8,7 +8,7 @@ import { IconText } from "./IconText";
 import { CompostTrackerSection } from "./CompostTrackerSection";
 import { PruningScheduleSection } from "./PruningScheduleSection";
 
-export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlants, careLog, setCareLog, onFertilizerLogged, onUndoToast }) {
+export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlants, careLog, setCareLog, onFertilizerLogged, onFertilized, onUndoToast }) {
   const { t } = useTranslation();
   const [selectedPlant, setSelectedPlant] = useState("Garden");
   const [customNote, setCustomNote] = useState("");
@@ -58,6 +58,7 @@ export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlant
     setCustomNote("");
     setShowAddPanel(false);
 
+    if (selectedAction === "fertilize" && selectedPlant !== "Garden" && onFertilized) onFertilized(selectedPlant);
     if (selectedAction === "fertilize" && selectedPlant !== "Garden" && onFertilizerLogged) {
       Alert.alert(
         t("alerts.fertilizedTitle"),

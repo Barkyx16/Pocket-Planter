@@ -3619,6 +3619,22 @@ function toggleFertilizerTracker(plantName) {
   });
 }
 
+// Logging a feed in the care log is the gardener saying the plant was fed, so
+// it is what restarts the tracker's count. Only the tracker's own Start button
+// ever set lastFertilized, so a plant fed on schedule stayed "fertilizer due" on
+// Home and the dashboard, and its "Last fed" date stayed at the day tracking
+// began, however many feeds were logged after it. The pending reminder counted
+// from the previous feed, so it goes too; the logging card offers a new one.
+function recordFeeding(plantName) {
+  if (!fertilizerTrackers[plantName]) return;
+  cancelFertilizerReminder(plantName);
+  setFertilizerTrackers((current) => (
+    current[plantName]
+      ? { ...current, [plantName]: { ...current[plantName], lastFertilized: new Date().toISOString() } }
+      : current
+  ));
+}
+
 function assignPlantToGardenSlot(slotId, plantName) {
   setGardenMap((current) => ({ ...current, [slotId]: plantName }));
 }
@@ -5637,6 +5653,7 @@ const jumpToTab = useCallback((tab) => {
   gardenY={gardenY}
   harvestTrackers={visibleHarvestTrackers}
   onFocusConflict={focusGardenConflict}
+  onFertilized={recordFeeding}
   openPlantFromList={openPlantFromList}
   scheduleFertilizerReminder={scheduleFertilizerReminder}
   setCareLog={setCareLog}

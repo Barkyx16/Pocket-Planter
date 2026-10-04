@@ -389,3 +389,35 @@ describe("every way of watering", () => {
     });
   }
 });
+
+describe("logging a feed", () => {
+  const fs = require("fs");
+  const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const card = fs.readFileSync(path.join(ROOT, "components/SoilCareLogCard.js"), "utf8");
+  const tab = fs.readFileSync(path.join(ROOT, "screens/GardenTab.js"), "utf8");
+
+  it("restarts the fertilizer tracker", () => {
+    // Only the tracker's Start button ever set lastFertilized, so a plant fed on
+    // schedule stayed "fertilizer due" however many feeds were logged.
+    const at = app.indexOf("function recordFeeding(");
+    ok(at > 0, "there should be a way to record a feed");
+    const fn = app.slice(at, app.indexOf("\n}\n", at));
+    ok(/lastFertilized: new Date\(\)\.toISOString\(\)/.test(fn), "the feed must reset the count");
+    ok(/cancelFertilizerReminder\(plantName\)/.test(fn), "the reminder from the previous feed must go");
+  });
+  it("is wired from the care log through to the app", () => {
+    ok(/onFertilized=\{recordFeeding\}/.test(app), "App must hand recordFeeding to the Garden tab");
+    ok(/onFertilized=\{onFertilized\}/.test(tab), "the Garden tab must pass it to the care log");
+    ok(/selectedAction === "fertilize"[^\n]*onFertilized\(selectedPlant\)/.test(card), "the care log must call it");
+  });
+});
+
+describe("a fertilizer tracker after a feed", () => {
+  const core = require(path.join(ROOT, "core.js"));
+  it("is not due the day it was fed, and is due again after the plant's interval", () => {
+    const fed = { lastFertilized: new Date().toISOString() };
+    eq(core.isFertilizerDue("Tomato", fed), false);
+    const old = new Date(); old.setDate(old.getDate() - core.getFertilizerDays("Tomato"));
+    eq(core.isFertilizerDue("Tomato", { lastFertilized: old.toISOString() }), true);
+  });
+});
