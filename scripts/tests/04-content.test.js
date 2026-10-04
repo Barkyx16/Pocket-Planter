@@ -351,3 +351,19 @@ describe("a backup carries the whole garden", () => {
     ok(core.MODULE_STORAGE_KEYS.length >= 20, "every self-persisting card must be listed");
   });
 });
+
+describe("removing a plant", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const start = app.indexOf("function toggleSavedPlant(name)");
+  const removal = start < 0 ? "" : app.slice(start, app.indexOf("return;\n    }", start));
+
+  it("stops every reminder the plant had", () => {
+    // The daily check-in repeats and has no per-plant off switch, so a plant
+    // removed without cancelling it kept announcing itself every morning.
+    ok(start > 0, "there should be a save/remove toggle");
+    ok(/cancelPlantWaterReminder\(name\)/.test(removal), "the water reminder must be cancelled");
+    ok(/cancelFertilizerReminder\(name\)/.test(removal), "the fertilizer reminder must be cancelled");
+    ok(/cancelReminder\(`plant-\$\{name\}`\)/.test(removal), "the daily check-in must be cancelled");
+    ok(/dropKey\(setWateringReminders\)/.test(removal), "the check-in must be forgotten too");
+  });
+});

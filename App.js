@@ -4632,6 +4632,10 @@ useEffect(() => {
         return next;
       });
       cancelFertilizerReminder(name);
+      // The daily check-in is a repeating reminder with no per-plant control of
+      // its own, so a removed plant's one kept firing every morning for ever.
+      cancelReminder(`plant-${name}`);
+      dropKey(setWateringReminders);
       dropKey(setHarvestTrackers);
       dropKey(setFertilizerTrackers);
       dropKey(setSnoozedPlants);
