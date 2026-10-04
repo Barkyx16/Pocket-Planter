@@ -558,9 +558,42 @@ describe("the daily watering switch", () => {
 describe("a plant's daily check-in", () => {
   const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
   it("does not bake today's weather into a daily repeat", () => {
-    const at = app.indexOf("async function scheduleReminder(plantName, hour, minute)");
-    const fn = app.slice(at, app.indexOf("\n}\n", at));
+    const at = app.indexOf("function schedulePlantCheckIn(");
+    const fn = app.slice(at, app.indexOf("\n  }\n", at));
     ok(at > 0 && /scheduleDailyReminder\(/.test(fn), "the check-in should be a daily reminder");
     ok(!/precipChance|rainLikely/.test(fn), "a repeating reminder cannot carry today's forecast");
+  });
+});
+
+describe("switches that come back on are re-armed", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const at = app.indexOf("async function notificationsAlreadyAllowed(");
+  const block = at < 0 ? "" : app.slice(at, app.indexOf("}, [remindersOn, wateringReminders, savedPlants]);", at) + 60);
+  it("for the monthly guides, the plant of the day and each plant's check-in", () => {
+    // Restored from a backup or the cloud row onto a fresh device, these read
+    // "on" and never fired, because nothing re-scheduled them.
+    ok(at > 0, "there should be a re-arm pass");
+    ok(/\[monthlyPlantingOn\]/.test(block) && /scheduleMonthlyPlantingReminders\(\)/.test(block));
+    ok(/\[plantOfDayOn\]/.test(block) && /schedulePlantOfDayReminder\(\)/.test(block));
+    ok(/schedulePlantCheckIn\(plantName, r\.hour, r\.minute\)/.test(block));
+  });
+  it("only for saved plants, and never by asking", () => {
+    ok(/savedPlants\.includes\(plantName\)/.test(block), "a removed plant's check-in must stay gone");
+    ok(!/ensureNotificationPermission/.test(block), "re-arming must not prompt");
+  });
+  it("using the same schedulers as the switches", () => {
+    const settings = require("fs").readFileSync(path.join(ROOT, "screens/SettingsTab.js"), "utf8");
+    ok(/await scheduleMonthlyPlantingReminders\(\)/.test(settings));
+    ok(/const ok = await schedulePlantOfDayReminder\(\)/.test(app));
+    ok(/const ok = await schedulePlantCheckIn\(plantName, hour, minute\)/.test(app));
+  });
+});
+
+describe("re-arming the check-ins", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("stops a run that a newer one has overtaken", () => {
+    const at = app.indexOf("}, [remindersOn, wateringReminders, savedPlants]);");
+    const effect = app.slice(app.lastIndexOf("useEffect(() => {", at), at);
+    ok(/if \(stale\) return;/.test(effect) && /return \(\) => \{ stale = true; \};/.test(effect));
   });
 });

@@ -79,6 +79,7 @@ import {
   getTodayKey,
   getTomorrowKey,
   getFrostSeasonMonths,
+  MONTH_NAMES,
   getWeekKey,
   getTotalWaterings,
   getUpcomingFrost,
@@ -2082,6 +2083,44 @@ useEffect(() => {
   })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [frostAlertsOn, zone, southernHemisphere]);
+
+// Re-arm what the switches say is on. A restore, or signing in on a new phone,
+// brings the switches and the per-plant check-ins back from the backup or the
+// cloud row — but nothing is scheduled on a fresh device, so they read "on" and
+// never fired. The daily watering check and the weekly recap already re-schedule
+// from their own effects, and frost from the one above; these three did not.
+// Fixed identifiers make it safe to repeat, and it never asks for permission.
+async function notificationsAlreadyAllowed() {
+  const { granted } = await Notifications.getPermissionsAsync().catch(() => ({ granted: false }));
+  return !!granted;
+}
+useEffect(() => {
+  if (!monthlyPlantingOn) return;
+  (async () => { if (await notificationsAlreadyAllowed()) await scheduleMonthlyPlantingReminders(); })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [monthlyPlantingOn]);
+useEffect(() => {
+  if (!plantOfDayOn) return;
+  (async () => { if (await notificationsAlreadyAllowed()) await schedulePlantOfDayReminder(); })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [plantOfDayOn]);
+useEffect(() => {
+  if (!remindersOn) return;
+  // A run overtaken by a newer one stops, so it cannot put back a check-in that
+  // removing its plant (or switching reminders off) has just cancelled.
+  let stale = false;
+  (async () => {
+    if (!(await notificationsAlreadyAllowed())) return;
+    for (const [plantName, r] of Object.entries(wateringReminders || {})) {
+      if (stale) return;
+      if (!r?.enabled || typeof r.hour !== "number" || typeof r.minute !== "number") continue;
+      if (!savedPlants.includes(plantName)) continue;
+      await schedulePlantCheckIn(plantName, r.hour, r.minute);
+    }
+  })();
+  return () => { stale = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [remindersOn, wateringReminders, savedPlants]);
 useEffect(() => {
   persist(STORAGE_KEYS.country, country);
 }, [country]);
@@ -2681,6 +2720,53 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
   // after a move, or once a southern location's latitude arrived, the evening
   // checks kept coming in the old place's winter and not at all in the new one's.
   // All twelve are cleared first, for the reason the off switch gives.
+  // The monthly planting guide: a yearly repeat on the 1st of every month.
+  async function scheduleMonthlyPlantingReminders() {
+    for (let month = 1; month <= 12; month += 1) {
+      const id = `monthly-planting-${month}`;
+      await cancelReminder(id);
+      await Notifications.scheduleNotificationAsync({
+        identifier: id,
+        content: {
+          title: `🌱 ${MONTH_NAMES[month - 1]} Planting Guide`,
+          body: `Open Pocket Planter to see what to plant this month in your zone.`,
+          sound: true,
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+          repeats: true,
+          month,
+          day: 1,
+          hour: 9,
+          minute: 0,
+        },
+      }).catch(() => {});
+    }
+  }
+
+  function schedulePlantOfDayReminder() {
+    return scheduleDailyReminder({
+      id: "plant-of-day",
+      hour: 8,
+      minute: 30,
+      title: t("notify.plantPickTitle"),
+      body: t("notify.plantPickBody"),
+    });
+  }
+
+  // A plant's daily check-in. A daily repeat keeps the text it was scheduled
+  // with, so it cannot mention today's forecast: set on a wet day, "Rain is
+  // expected today" came back every morning after.
+  function schedulePlantCheckIn(plantName, hour, minute) {
+    return scheduleDailyReminder({
+      id: `plant-${plantName}`,
+      hour,
+      minute,
+      title: `🌱 Good morning! Check on your ${plantName}`,
+      body: `Time for your daily ${plantName} check-in. Water if the top inch of soil feels dry.`,
+    });
+  }
+
   async function scheduleFrostSeasonReminders(forZone) {
     for (let month = 1; month <= 12; month += 1) await cancelReminder(`frost-daily-${month}`);
     for (const month of getFrostSeasonMonths(forZone)) {
@@ -3182,13 +3268,7 @@ async function togglePlantOfDay(value) {
         setPlantOfDayOn(false);
         return;
       }
-      const ok = await scheduleDailyReminder({
-        id: "plant-of-day",
-        hour: 8,
-        minute: 30,
-        title: t("notify.plantPickTitle"),
-        body: t("notify.plantPickBody"),
-      });
+      const ok = await schedulePlantOfDayReminder();
       if (ok) {
         Alert.alert(t("notify.plantOfDayOnTitle"), t("notify.plantOfDayOnBody"));
       }
@@ -3333,16 +3413,7 @@ async function scheduleFertilizerReminder(plantName, days) {
 
 async function scheduleReminder(plantName, hour, minute) {
   try {
-    // A daily repeat keeps the text it was scheduled with, so it cannot mention
-    // today's forecast: set on a wet day, "Rain is expected today" came back
-    // every morning after.
-    const ok = await scheduleDailyReminder({
-      id: `plant-${plantName}`,
-      hour,
-      minute,
-      title: `🌱 Good morning! Check on your ${plantName}`,
-      body: `Time for your daily ${plantName} check-in. Water if the top inch of soil feels dry.`,
-    });
+    const ok = await schedulePlantCheckIn(plantName, hour, minute);
 
     if (!ok) {
       Alert.alert(
@@ -5982,6 +6053,7 @@ const jumpToTab = useCallback((tab) => {
   deleteJournalEntriesOlderThan={deleteJournalEntriesOlderThan}
   ensureNotificationPermission={ensureNotificationPermission}
   scheduleFrostSeasonReminders={scheduleFrostSeasonReminders}
+  scheduleMonthlyPlantingReminders={scheduleMonthlyPlantingReminders}
   frostAlertsOn={frostAlertsOn}
   gardenAreas={gardenAreas}
   gardenMap={gardenMap}

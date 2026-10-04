@@ -1,8 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Alert, Pressable, Switch, Text, View } from "react-native";
-import * as Notifications from "expo-notifications";
 import { LANGUAGES, t } from "../lib/i18n";
-import { MONTH_NAMES, formatReminderTime, formatTemp, getUpcomingFrost } from "../core";
+import { formatReminderTime, formatTemp, getUpcomingFrost } from "../core";
 import { AccountCloudCard } from "../components/AccountCloudCard";
 import { CollapsibleCard } from "../components/CollapsibleCard";
 import { CustomTasksCard } from "../components/CustomTasksCard";
@@ -15,7 +14,7 @@ import { ShareGardenCard } from "../components/ShareGardenCard";
 import { YearInReviewCard } from "../components/YearInReviewCard";
 import { IconText } from "../components/IconText";
 
-export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn, toggleWeeklyRecap, appearanceMode, setAppearanceMode, hapticsOn, setHapticsOn, exportFullBackup, restoreFromBackup, cancelReminder, careLog, dailyWateringOn, deleteJournalEntriesOlderThan, ensureNotificationPermission, frostAlertsOn, gardenAreas, gardenMap, gardenXP, harvestLog, journalEntries, monthlyPlantingOn, newEmail, plantOfDayOn, premiumUnlocked, reminderY, remindersOn, savedPlants, scheduleDailyReminder, scheduleFrostSeasonReminders, setDailyWateringOn, setFrostAlertsOn, setMonthlyPlantingOn, setNewEmail, setPremiumUnlocked, setRemindersOn, setSubscriptionPlan, setUnitSystem, setWateringReminderTime, streakData, subscriptionPlan, theme, togglePlantOfDay, unitSystem, unlockPremium, user, wateringHistory, wateringReminderTime, weather, zone }) {
+export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn, toggleWeeklyRecap, appearanceMode, setAppearanceMode, hapticsOn, setHapticsOn, exportFullBackup, restoreFromBackup, cancelReminder, careLog, dailyWateringOn, deleteJournalEntriesOlderThan, ensureNotificationPermission, frostAlertsOn, gardenAreas, gardenMap, gardenXP, harvestLog, journalEntries, monthlyPlantingOn, newEmail, plantOfDayOn, premiumUnlocked, reminderY, remindersOn, savedPlants, scheduleDailyReminder, scheduleFrostSeasonReminders, scheduleMonthlyPlantingReminders, setDailyWateringOn, setFrostAlertsOn, setMonthlyPlantingOn, setNewEmail, setPremiumUnlocked, setRemindersOn, setSubscriptionPlan, setUnitSystem, setWateringReminderTime, streakData, subscriptionPlan, theme, togglePlantOfDay, unitSystem, unlockPremium, user, wateringHistory, wateringReminderTime, weather, zone }) {
   return (
     <View>
       <View style={{ marginTop: 8, marginBottom: 16, paddingHorizontal: 4 }}>
@@ -105,26 +104,7 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn
               if (value) {
                 const granted = await ensureNotificationPermission();
                 if (granted) {
-                  for (let month = 1; month <= 12; month++) {
-                    const id = `monthly-planting-${month}`;
-                    await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
-                    await Notifications.scheduleNotificationAsync({
-                      identifier: id,
-                      content: {
-                        title: `🌱 ${MONTH_NAMES[month - 1]} Planting Guide`,
-                        body: `Open Pocket Planter to see what to plant this month in your zone.`,
-                        sound: true,
-                      },
-                      trigger: {
-                        type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
-                        repeats: true,
-                        month,
-                        day: 1,
-                        hour: 9,
-                        minute: 0,
-                      },
-                    });
-                  }
+                  await scheduleMonthlyPlantingReminders();
                   Alert.alert(t("alerts.monthlyOnTitle"), t("alerts.monthlyOnBody"));
                 } else {
                   // Back off, as the frost switch does. It used to stay on over
