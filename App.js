@@ -2532,6 +2532,36 @@ useEffect(() => {
   });
 }, []);
 
+// Kept on the device as well as in the cloud row. The profile name and photo had
+// storage keys that launch read and nothing ever wrote, and the monthly guide
+// and daily watering switches had none — so whenever the cloud load could not
+// run (offline, or the request failed, when by design the device's own copy is
+// what the app goes on) the gardener's name and photo reverted to the defaults
+// and both switches read "off" over reminders that were still scheduled.
+useEffect(() => {
+  if (profileName) persist(STORAGE_KEYS.profileName, profileName);
+}, [profileName]);
+useEffect(() => {
+  if (profilePhoto) persist(STORAGE_KEYS.profilePhoto, profilePhoto);
+  else persist(STORAGE_KEYS.profilePhoto, "");
+}, [profilePhoto]);
+useEffect(() => {
+  persist("pp_monthlyPlantingOn", JSON.stringify(monthlyPlantingOn));
+}, [monthlyPlantingOn]);
+useEffect(() => {
+  persist("pp_dailyWateringOn", JSON.stringify(dailyWateringOn));
+}, [dailyWateringOn]);
+useEffect(() => {
+  hydrate("pp_monthlyPlantingOn", (val) => {
+    if (!val || cloudProfileLoadedRef.current) return;
+    try { setMonthlyPlantingOn(JSON.parse(val) === true); } catch { /* keep the default */ }
+  });
+  hydrate("pp_dailyWateringOn", (val) => {
+    if (!val || cloudProfileLoadedRef.current) return;
+    try { setDailyWateringOn(JSON.parse(val) === true); } catch { /* keep the default */ }
+  });
+}, []);
+
 useEffect(() => {
   hydrate("pp_plantOfDayOn", (val) => {
     if (val) {

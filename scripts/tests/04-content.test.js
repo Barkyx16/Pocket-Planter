@@ -874,3 +874,17 @@ describe("the cloud save", () => {
     eq(written.filter((n) => !new RegExp(`\\b${n}\\b`).test(deps)), [], "written to the cloud but not watched");
   });
 });
+
+describe("what an offline launch falls back to", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("has the profile and every reminder switch on the device", () => {
+    // Read at launch and never written, or never stored at all: offline, the
+    // name and photo reverted and two switches read "off" over live reminders.
+    ok(/persist\(STORAGE_KEYS\.profileName, profileName\)/.test(app));
+    ok(/persist\(STORAGE_KEYS\.profilePhoto, profilePhoto\)/.test(app));
+    for (const k of ["monthlyPlantingOn", "dailyWateringOn", "weeklyRecapOn", "plantOfDayOn"]) {
+      ok(new RegExp(`persist\\("pp_${k}"`).test(app), `${k} must be saved on the device`);
+      ok(new RegExp(`hydrate\\("pp_${k}"`).test(app), `${k} must be read back at launch`);
+    }
+  });
+});
