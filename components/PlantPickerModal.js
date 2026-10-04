@@ -46,7 +46,7 @@ export function PlantPickerModal({ theme, visible, bedName, plants = [], current
               <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900" }}>{t("plantPicker.addAPlant")}</Text>
               {bedName ? <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>to {bedName}</Text> : null}
             </View>
-            <Pressable onPress={close} hitSlop={12} style={{ padding: 4 }}>
+            <Pressable onPress={close} hitSlop={12} accessibilityRole="button" accessibilityLabel={t("a11y.close")} style={{ padding: 4 }}>
               <Text style={{ color: theme.secondaryText, fontSize: 20, fontWeight: "900" }}>✕</Text>
             </Pressable>
           </View>

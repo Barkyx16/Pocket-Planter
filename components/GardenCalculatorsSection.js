@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { successHaptic, tapHaptic } from "../core";
+import { t } from "../lib/i18n";
 
 // ── Unit + mixing constants ──────────────────────────────────────────────────
 const GAL_TO_L = 3.785;
@@ -272,7 +273,7 @@ function WateringTimer({ theme }) {
         <Pressable onPress={toggle} style={{ flex: 1, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: running ? "rgba(255,159,67,0.9)" : "#6bc7ff" }}>
           <Text style={{ color: "#07120b", fontSize: 15, fontWeight: "900" }}>{running ? "Pause" : left <= 0 ? "Restart" : "Start"}</Text>
         </Pressable>
-        <Pressable onPress={reset} style={{ width: 44, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
+        <Pressable onPress={reset} accessibilityRole="button" accessibilityLabel={t("a11y.resetTimer")} style={{ width: 44, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
           <Text style={{ color: theme.text, fontSize: 16, fontWeight: "900" }}>↺</Text>
         </Pressable>
         <Pressable onPress={() => adjust(30)} disabled={running} style={{ width: 44, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", opacity: running ? 0.4 : 1 }}>

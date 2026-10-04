@@ -841,3 +841,20 @@ describe("the widget's water count", () => {
     eq(snap({ wateringHistory: {} }).waterDue.count, 3, "a plant never watered is due");
   });
 });
+
+describe("icon-only buttons", () => {
+  const fs = require("fs");
+  it("say what they do to a screen reader", () => {
+    // A Pressable whose only child is a symbol reads as that symbol, or nothing.
+    const files = [...fs.readdirSync(path.join(ROOT, "components")).map((f) => `components/${f}`),
+      ...fs.readdirSync(path.join(ROOT, "screens")).map((f) => `screens/${f}`), "App.js"].filter((f) => f.endsWith(".js"));
+    const bare = [];
+    for (const f of files) {
+      const src = fs.readFileSync(path.join(ROOT, f), "utf8");
+      const re = /<Pressable\b([^>]*)>\s*<Text\b[^>]*>\s*([^<{\w\s]{1,2})\s*<\/Text>\s*<\/Pressable>/g;
+      let m;
+      while ((m = re.exec(src))) if (!/accessibilityLabel/.test(m[1])) bare.push(`${f}: ${m[2]}`);
+    }
+    eq(bare, []);
+  });
+});
