@@ -4,7 +4,7 @@ import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { IconText } from "./IconText";
-import { localizeTemps } from "../core";
+import { localizeAdvice } from "../core";
 
 // Disease counterpart of PestDetailScreen. Same layout and section rhythm, but
 // amber-themed (matching the "Common Diseases" section) and with disease-shaped
@@ -55,12 +55,12 @@ export const DiseaseDetailScreen = memo(function DiseaseDetailScreen({ theme, di
       </View>
 
       {/* INFO SECTIONS */}
-      <Section icon="🔍" title="What it is" text={disease.description} />
-      <Section icon="👀" title="Signs & symptoms" text={disease.sign} color={AMBER} />
-      <Section icon="💥" title="Damage it causes" text={disease.damage} color="#ff9f9f" />
-      <Section icon="🛡️" title="How to prevent it" text={disease.prevent} color="#8effab" />
-      <Section icon="✅" title="How to treat it" text={disease.treat} color="#5cff89" />
-      <Section icon="🌡️" title="Favorable conditions" text={localizeTemps(disease.spreads, unitSystem)} color={AMBER} />
+      <Section icon="🔍" title="What it is" text={localizeAdvice(disease.description, unitSystem)} />
+      <Section icon="👀" title="Signs & symptoms" text={localizeAdvice(disease.sign, unitSystem)} color={AMBER} />
+      <Section icon="💥" title="Damage it causes" text={localizeAdvice(disease.damage, unitSystem)} color="#ff9f9f" />
+      <Section icon="🛡️" title="How to prevent it" text={localizeAdvice(disease.prevent, unitSystem)} color="#8effab" />
+      <Section icon="✅" title="How to treat it" text={localizeAdvice(disease.treat, unitSystem)} color="#5cff89" />
+      <Section icon="🌡️" title="Favorable conditions" text={localizeAdvice(disease.spreads, unitSystem)} color={AMBER} />
 
       {/* PLANTS AT RISK */}
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>

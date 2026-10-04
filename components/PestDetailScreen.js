@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
-import { flipMonth } from "../core";
+import { flipMonth, localizeAdvice } from "../core";
 import { getPestImage } from "../data/pestImageMap";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
@@ -10,7 +10,7 @@ import { useTranslation } from "../lib/i18n";
 const MONTH_ABBR = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
 const MONTH_FULL = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, onBack, onOpenPlant }) {
+export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, onBack, onOpenPlant, unitSystem }) {
   const { t } = useTranslation();
   if (!pest) return null;
 
@@ -61,11 +61,11 @@ export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, on
       </View>
 
       {/* INFO SECTIONS */}
-      <Section icon="🔍" title={t("pestDetailScreen.whatItIs")} text={pest.description} />
-      <Section icon="👀" title={t("pestDetailScreen.whatToLookFor")} text={pest.sign} color="#ffd86b" />
-      <Section icon="💥" title={t("pestDetailScreen.damageItCauses")} text={pest.damage} color="#ff9f9f" />
-      <Section icon="🛡️" title={t("pestDetailScreen.howToPreventIt")} text={pest.prevent} color="#8effab" />
-      <Section icon="✅" title={t("pestDetailScreen.howToTreatIt")} text={pest.fix} color="#5cff89" />
+      <Section icon="🔍" title={t("pestDetailScreen.whatItIs")} text={localizeAdvice(pest.description, unitSystem)} />
+      <Section icon="👀" title={t("pestDetailScreen.whatToLookFor")} text={localizeAdvice(pest.sign, unitSystem)} color="#ffd86b" />
+      <Section icon="💥" title={t("pestDetailScreen.damageItCauses")} text={localizeAdvice(pest.damage, unitSystem)} color="#ff9f9f" />
+      <Section icon="🛡️" title={t("pestDetailScreen.howToPreventIt")} text={localizeAdvice(pest.prevent, unitSystem)} color="#8effab" />
+      <Section icon="✅" title={t("pestDetailScreen.howToTreatIt")} text={localizeAdvice(pest.fix, unitSystem)} color="#5cff89" />
 
       {/* PLANTS AT RISK */}
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>

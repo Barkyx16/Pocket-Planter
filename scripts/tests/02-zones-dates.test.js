@@ -445,3 +445,39 @@ describe("localizeTemps", () => {
     eq(left, []);
   });
 });
+
+describe("localizeLengths", () => {
+  const m = (s) => core.localizeAdvice(s, "metric");
+  it("converts spacing, depth and height in advice text", () => {
+    eq(m("Space plants 24–36 inches apart to allow airflow."), "Space plants 61–91 cm apart to allow airflow.");
+    eq(m("Space plants 3–4 feet apart"), "Space plants 0.9–1.2 m apart");
+    eq(m("10–20 ft apart"), "3–6.1 m apart");
+    eq(m("8–18 in apart"), "20–46 cm apart");
+    eq(m('Plant 18" apart'), "Plant 46 cm apart");
+    eq(m("3 ft apart"), "91 cm apart");
+    eq(m("Dig trenches 4 inches deep"), "Dig trenches 10 cm deep");
+    eq(m("Add a 2–3 inch layer of mulch"), "Add a 5–7.5 cm layer of mulch");
+    eq(m("a 6-inch pot"), "a 15 cm pot");
+  });
+  it("turns small and fractional depths into millimetres", () => {
+    eq(m("Sow seeds 1/8 inch deep"), "Sow seeds 3 mm deep");
+    eq(m("sow a quarter inch deep"), "sow 6 mm deep");
+    eq(m("cover with half an inch of soil"), "cover with 13 mm of soil");
+    eq(m("corn needs 1 inch of water weekly"), "corn needs 2.5 cm of water weekly");
+    eq(m("Water when the top inch of soil is dry"), "Water when the top 2–3 cm of soil is dry");
+  });
+  it("leaves imperial alone, and does temperatures too", () => {
+    eq(core.localizeAdvice("Space 18 inches apart above 60°F", "imperial"), "Space 18 inches apart above 60°F");
+    eq(m("Space 18 inches apart above 60°F"), "Space 46 cm apart above 16°C");
+  });
+  it("leaves no inch or foot behind in any advice string", () => {
+    const fs = require("fs");
+    const src = ["core.js", "data/diseaseData.js", "data/plantHealth.js", "data/flowerHomeData.js"]
+      .map((f) => fs.readFileSync(path.join(ROOT, f), "utf8")).join("\n");
+    const lines = src.split("\n").filter((l) => !/^\s*\/\//.test(l) && !/\.replace\(/.test(l) && /["`]/.test(l)
+      && /\d\s?(inch|inches|feet|foot|ft\b)|\d-inch|\d"\s?apart|(eighth|quarter|half) (of )?an? inch|top inch/.test(l));
+    ok(lines.length >= 40, `only ${lines.length} advice lines with lengths found`);
+    const left = lines.map(m).filter((l) => /\d\s?(inch|inches|feet|foot|ft\b)|\d-inch|\d"\s?apart|(eighth|quarter|half) (of )?an? inch|top inch/.test(l));
+    eq(left, []);
+  });
+});

@@ -3673,6 +3673,55 @@ export function localizeTemps(text, units) {
     .replace(/(-?\d+(?:\.\d+)?)\s?°F/g, (m, f) => `${c(f)}°C`);
 }
 
+// Lengths in advice text — "space plants 18–24 inches apart", "sow 1/4 inch
+// deep", "plants grow 6–8 feet tall" — in the gardener's units. Authored in
+// inches and feet throughout, and shown that way to metric gardeners until now.
+// Both ends of a range share one unit, picked by the larger end.
+function metricLength(inches, unit) {
+  const cm = inches * 2.54;
+  if (unit === "m") { const m = cm / 100; return String(m >= 10 ? Math.round(m) : Math.round(m * 10) / 10); }
+  if (unit === "mm") return String(Math.max(1, Math.round(cm * 10)));
+  // Half centimetres below ten, so an inch is 2.5 cm rather than 3.
+  return String(cm < 10 ? Math.round(cm * 2) / 2 : Math.round(cm));
+}
+function metricUnitFor(inches) {
+  const cm = inches * 2.54;
+  return cm >= 100 ? "m" : cm < 2 ? "mm" : "cm";
+}
+function metricLengthText(inches) {
+  const unit = metricUnitFor(inches);
+  return `${metricLength(inches, unit)} ${unit}`;
+}
+export function localizeLengths(text, units) {
+  if (typeof text !== "string" || units !== "metric") return text;
+  const NUM = "(\\d+(?:\\.\\d+)?)";
+  const SEP = "(\\s?(?:–|-|to)\\s?)";
+  const IN = "(?:inches|inch|in\\b(?=\\s(?:apart|deep|tall|long|wide|high|across))|\"(?=\\s?(?:apart|deep|tall|long|wide|high|across)))";
+  const FT = "(?:feet|foot|ft\\b)";
+  const range = (a, sep, b, mult) => {
+    const lo = parseFloat(a) * mult, hi = parseFloat(b) * mult;
+    const unit = metricUnitFor(hi);
+    return `${metricLength(lo, unit)}${sep}${metricLength(hi, unit)} ${unit}`;
+  };
+  return text
+    .replace(/an eighth of an inch/g, metricLengthText(0.125))
+    .replace(/three quarters of an inch/g, metricLengthText(0.75))
+    .replace(/a quarter inch/g, metricLengthText(0.25))
+    .replace(/half an inch/g, metricLengthText(0.5))
+    .replace(/\btop inch\b/g, "top 2–3 cm")
+    .replace(/(\d+)\/(\d+) inch(?:es)?\b/g, (m, n, d) => metricLengthText(parseInt(n, 10) / parseInt(d, 10)))
+    .replace(new RegExp(`${NUM}${SEP}${NUM}\\s?${FT}`, "g"), (m, a, sep, b) => range(a, sep, b, 12))
+    .replace(new RegExp(`${NUM}${SEP}${NUM}\\s?${IN}`, "g"), (m, a, sep, b) => range(a, sep, b, 1))
+    .replace(new RegExp(`${NUM}\\s?${FT}`, "g"), (m, a) => metricLengthText(parseFloat(a) * 12))
+    .replace(new RegExp(`${NUM}-inch\\b`, "g"), (m, a) => metricLengthText(parseFloat(a)))
+    .replace(new RegExp(`${NUM}\\s?${IN}`, "g"), (m, a) => metricLengthText(parseFloat(a)));
+}
+
+// Both conversions, for any piece of authored advice.
+export function localizeAdvice(text, units) {
+  return localizeLengths(localizeTemps(text, units), units);
+}
+
 // Rainfall/length: inches → mm for metric.
 export function formatLength(inches, units) {
   if (inches == null || Number.isNaN(Number(inches))) return "—";

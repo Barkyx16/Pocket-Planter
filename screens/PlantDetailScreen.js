@@ -6,7 +6,7 @@ import { PlantGrowthTimeline } from "../components/PlantGrowthTimeline";
 import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { PremiumLockedSection } from "../components/PremiumLockedSection";
 import { WeatherParticles } from "../components/WeatherParticles";
-import { getCompanionInfo, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeTemps, normalizeType, resolvePlantImageSource } from "../core";
+import { getCompanionInfo, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeAdvice, normalizeType, resolvePlantImageSource } from "../core";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { getPestImage } from "../data/pestImageMap";
 import { formatDate, t } from "../lib/i18n";
@@ -246,7 +246,7 @@ export function PlantDetailScreen({
 
 <View style={styles.card}>
   <Text style={styles.cardEyebrow}>Smart Care</Text>
-  <Text style={styles.cardText}>{localizeTemps(getShouldGrowText(selectedPlant, zone, weather), unitSystem)}</Text>
+  <Text style={styles.cardText}>{localizeAdvice(getShouldGrowText(selectedPlant, zone, weather), unitSystem)}</Text>
   <View style={styles.detailMiniGrid}>
     {[
       { icon: "☀️", label: "Sun", value: quickFacts.sun },
@@ -265,7 +265,7 @@ export function PlantDetailScreen({
         <Text style={styles.detailMiniIcon}>{fact.icon}</Text>
         <View style={{ flex: 1 }}>
           <Text style={styles.detailMiniLabel}>{fact.label}</Text>
-          <Text style={styles.detailMiniValue}>{localizeTemps(fact.value, unitSystem)}</Text>
+          <Text style={styles.detailMiniValue}>{localizeAdvice(fact.value, unitSystem)}</Text>
         </View>
       </View>
     ))}
@@ -395,7 +395,7 @@ export function PlantDetailScreen({
                 <View style={{ width: 2, flex: 1, backgroundColor: "rgba(92, 255, 137, 0.24)", marginTop: 2, minHeight: 14 }} />
               ) : null}
             </View>
-            <Text style={styles.stepText}>{localizeTemps(step, unitSystem)}</Text>
+            <Text style={styles.stepText}>{localizeAdvice(step, unitSystem)}</Text>
           </View>
         ))}
       </View>

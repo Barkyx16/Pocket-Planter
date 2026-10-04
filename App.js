@@ -5123,6 +5123,7 @@ const jumpToTab = useCallback((tab) => {
         <PestDetailScreen
           theme={theme}
           pest={selectedPest}
+          unitSystem={unitSystem}
           onBack={handleBackFromPest}
           onOpenPlant={(name) => { setSelectedPest(null); openPlantByName(name); }}
         />

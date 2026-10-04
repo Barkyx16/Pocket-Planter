@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { styles } from "../styles";
-import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, flipMonth, getClimateBucket, getTodayKey, isFertilizerDue, localizeTemps } from "../core";
+import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, flipMonth, getClimateBucket, getTodayKey, isFertilizerDue, localizeAdvice } from "../core";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
@@ -181,7 +181,7 @@ return (
         {tip.season} {t("fertilizerIntelligence.feedingGuide")}
       </Text>
       <Text style={[styles.fertilizerSubtext, { color: theme.secondaryText }]}>
-        {localizeTemps(tip.reason, unitSystem)}
+        {localizeAdvice(tip.reason, unitSystem)}
       </Text>
 
       <View style={styles.fertilizerGrid}>
@@ -207,13 +207,13 @@ return (
           borderColor: weatherWarning.icon === "✅" ? "rgba(92, 255, 137, 0.3)" : "rgba(255, 216, 107, 0.3)",
         }]}>
           <Text style={styles.fertilizerWeatherIcon}>{weatherWarning.icon}</Text>
-          <Text style={[styles.fertilizerWeatherText, { color: theme.secondaryText }]}>{localizeTemps(weatherWarning.text, unitSystem)}</Text>
+          <Text style={[styles.fertilizerWeatherText, { color: theme.secondaryText }]}>{localizeAdvice(weatherWarning.text, unitSystem)}</Text>
         </View>
       ) : null}
 
       <View style={styles.fertilizerTipBox}>
         <IconText label={t("fertilizerIntelligence.proTip")} style={styles.fertilizerTipTitle} />
-        <Text style={[styles.fertilizerTipText, { color: theme.secondaryText }]}>{localizeTemps(tip.tip, unitSystem)}</Text>
+        <Text style={[styles.fertilizerTipText, { color: theme.secondaryText }]}>{localizeAdvice(tip.tip, unitSystem)}</Text>
       </View>
 
       {plantsDue.length > 0 ? (

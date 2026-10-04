@@ -626,16 +626,18 @@ describe("advice temperatures follow the units setting", () => {
   const read = (f) => fs.readFileSync(path.join(ROOT, f), "utf8");
   it("on the plant page, the fertilizer card, the forecast and disease pages", () => {
     const detail = read("screens/PlantDetailScreen.js");
-    ok(/localizeTemps\(getShouldGrowText\(/.test(detail));
-    ok(/localizeTemps\(step, unitSystem\)/.test(detail));
-    ok(/localizeTemps\(fact\.value, unitSystem\)/.test(detail));
+    ok(/localizeAdvice\(getShouldGrowText\(/.test(detail));
+    ok(/localizeAdvice\(step, unitSystem\)/.test(detail));
+    ok(/localizeAdvice\(fact\.value, unitSystem\)/.test(detail));
     const fert = read("components/FertilizerIntelligenceCard.js");
-    ok(/localizeTemps\(tip\.tip, unitSystem\)/.test(fert) && /localizeTemps\(weatherWarning\.text, unitSystem\)/.test(fert));
+    ok(/localizeAdvice\(tip\.tip, unitSystem\)/.test(fert) && /localizeAdvice\(weatherWarning\.text, unitSystem\)/.test(fert));
     ok(/unitSystem=\{unitSystem\}\s*\n\s*weather=\{weather\}/.test(read("screens/GardenTab.js")), "the Garden tab must pass units to the fertilizer card");
     ok(!/above 95°F/.test(read("components/ForecastCard.js")), "the forecast must format its threshold");
-    ok(/localizeTemps\(disease\.spreads, unitSystem\)/.test(read("components/DiseaseDetailScreen.js")));
+    ok(/localizeAdvice\(disease\.spreads, unitSystem\)/.test(read("components/DiseaseDetailScreen.js")));
     const app = read("App.js");
     ok(/<PlantDetailScreen\s+unitSystem=\{unitSystem\}/.test(app) || /<PlantDetailScreen[\s\S]{0,200}unitSystem=\{unitSystem\}/.test(app));
     ok(/<DiseaseDetailScreen[\s\S]{0,120}unitSystem=\{unitSystem\}/.test(app));
+    ok(/<PestDetailScreen[\s\S]{0,120}unitSystem=\{unitSystem\}/.test(app));
+    ok(/localizeAdvice\(pest\.description, unitSystem\)/.test(read("components/PestDetailScreen.js")));
   });
 });
