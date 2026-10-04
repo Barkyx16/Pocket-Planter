@@ -20,9 +20,9 @@ export const WateringRhythmCard = memo(function WateringRhythmCard({ theme, save
   if (!rows.length) return null;
 
   const STATUS = {
-    "on-track": { color: "#5cff89", icon: "✅", label: "On track" },
-    under: { color: "#ffd86b", icon: "🌵", label: "Water sooner" },
-    over: { color: "#6bc7ff", icon: "💧", label: "Space it out" },
+    "on-track": { color: "#5cff89", icon: "✅", label: t("miscCards.onTrack") },
+    under: { color: "#ffd86b", icon: "🌵", label: t("miscCards.waterSooner") },
+    over: { color: "#6bc7ff", icon: "💧", label: t("miscCards.spaceOut") },
   };
 
 return (

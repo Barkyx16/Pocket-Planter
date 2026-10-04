@@ -71,7 +71,7 @@ export const AchievementCard = memo(function AchievementCard({ theme, badges, ea
             ) : (
               <Text style={{ fontSize: 64, marginBottom: 6 }}>{selectedBadge.icon}</Text>
             )}
-            <Text style={{ color: "#5cff89", fontSize: 12, fontWeight: "900", letterSpacing: 1, marginBottom: 6 }}>ACHIEVEMENT</Text>
+            <Text style={{ color: "#5cff89", fontSize: 12, fontWeight: "900", letterSpacing: 1, marginBottom: 6 }}>{t("miscCards.achievement")}</Text>
             <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "900", textAlign: "center" }}>{selectedBadge.title}</Text>
             <Text style={{ color: "#d7ebdc", fontSize: 14, fontWeight: "700", textAlign: "center", lineHeight: 20, marginTop: 10 }}>{selectedBadge.text}</Text>
             {fmtDate(earnedDates?.[selectedBadge.id]) ? (
@@ -85,7 +85,7 @@ export const AchievementCard = memo(function AchievementCard({ theme, badges, ea
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
         {unlockedCount === 0
           ? t("achievement.noAchievementsYetKeepGrowing")
-          : `${unlockedCount} of ${totalCount} achievements earned · 🔥 ${streakData?.count || 0} day streak`}
+          : t("miscCards.achievementsEarned", { unlocked: unlockedCount, total: totalCount, streak: streakData?.count || 0 })}
       </Text>
 
       {earnedBadges.length === 0 ? (

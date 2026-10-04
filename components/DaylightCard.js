@@ -19,10 +19,10 @@ export const DaylightCard = memo(function DaylightCard({ theme, zipCoords, onVie
 
   const accent = info.longDay ? "#ffd86b" : info.shortDay ? "#6bc7ff" : "#8effab";
   const note = info.longDay
-    ? "Long days now — cool crops like lettuce, spinach, and cilantro may bolt. Harvest young and give afternoon shade."
+    ? t("miscCards.daylightLong")
     : info.shortDay
-    ? "Short days slow most growth. Focus on cold-hardy greens and root crops, and don't expect fast results."
-    : "Good daylight for steady growth across most vegetables.";
+    ? t("miscCards.daylightShort")
+    : t("miscCards.daylightGood");
 
 return (
     <View>

@@ -20,7 +20,7 @@ export const HarvestLogCard = memo(function HarvestLogCard({ theme, harvestLog, 
     tapHaptic("light");
     setHarvestLog((c) => c.filter((h) => h.id !== id));
     if (onUndoToast) {
-      onUndoToast("Harvest deleted", () => {
+      onUndoToast(t("miscCards.harvestDeleted"), () => {
         setHarvestLog((c) => [removed, ...c].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
       });
     }
@@ -37,7 +37,7 @@ return (
         <View style={styles.careLogStatDivider} />
         <View style={styles.careLogStatTile}>
           <Text style={styles.careLogStatValue}>{plantsHarvested}</Text>
-          <Text style={[styles.careLogStatLabel, { color: theme.secondaryText }]}>Plants</Text>
+          <Text style={[styles.careLogStatLabel, { color: theme.secondaryText }]}>{t("miscCards.plants")}</Text>
         </View>
         <View style={styles.careLogStatDivider} />
         <View style={styles.careLogStatTile}>

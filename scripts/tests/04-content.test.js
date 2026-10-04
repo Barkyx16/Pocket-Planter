@@ -947,24 +947,47 @@ describe("Home's daily plan", () => {
   });
 });
 
-describe("screens that are fully translated", () => {
-  // Measured by the repo's own coverage script, so a string added in English to
-  // one of these fails here instead of shipping untranslated in nine languages.
-  const { execFileSync } = require("child_process");
-  const DONE = [...require("fs").readdirSync(path.join(ROOT, "screens")).filter((f) => f.endsWith(".js")).map((f) => `screens/${f}`), "components/DiseaseDetailScreen.js", "components/WeatherTeaserCard.js", "components/QuizGame.js",
-    "components/MyGardenTodayCard.js", "components/LiveWeatherCard.js", "components/GardenIntelligenceCard.js",
-    "components/OnboardingCard.js", "components/GardenStatsPreview.js",
-    "components/ForecastCard.js", "components/CustomTasksCard.js", "components/GardenStoryCard.js",
-    "components/ShareGardenCard.js", "components/GardenStatsDashboard.js", "components/YearInReviewCard.js",
-    "components/GardenerProfileCard.js"];
-  for (const file of DONE) {
+describe("screens and components are fully translated", () => {
+  // Measured by the repo's own coverage script, so a string added in English
+  // fails here instead of shipping untranslated in nine languages. Every screen
+  // and component is held to zero, except the ones still listed below — strike
+  // a name off as it is translated, and never add one.
+  const { analyse } = require(path.join(ROOT, "scripts/i18n-coverage.js"));
+  const TODO = new Set([
+    "AccountCloudCard", "AreaPlannerMap", "BloomSuccessionSection", "BudgetTrackerCard",
+    "CalendarExportSection", "ChoreRotationSection", "CompostTrackerSection", "CutFlowerGuideCard",
+    "DailyQuestsCard", "DataExportCard", "EmptyGardenStarterCard", "FertilizerIntelligenceCard",
+    "FixMyGardenCard", "FrostWindowCard", "GardenCalculatorsSection", "GardenPlacementModal",
+    "GardenPlanExportCard", "GardenShoppingListCard", "GardenTimelineCard", "GardenToolkitCard",
+    "GerminationTestSection", "GlowPlantCard", "GrowLightSection", "GuildTemplatesCard",
+    "HarvestRecipesCard", "HarvestStorageGuideCard", "HouseplantCareCard",
+    "HouseplantCareLogSection", "JournalCard", "MoonPhaseSection", "OnThisDayCard",
+    "PersonalPlantingCalendar", "PetSafeSection", "PhotoStorageCard", "PlantLabelsSection",
+    "PlantRoomsSection", "PlantTodayHero", "PollinatorPlannerCard", "PowerPairsCard",
+    "PropagationTrackerCard", "PruningScheduleSection", "RainBarrelSection", "RainfallLogCard",
+    "SeasonalChallengesCard", "SeedInventoryCard", "SettingsCard", "ShadeAdvisorCard",
+    "SoilCareLogCard", "SoilTempSection", "SuccessionSowingCard", "SunlightTrackerCard",
+    "ToolMaintenanceSection", "VaseTrackerSection", "WaterTriageCard", "WateringForecastCard",
+    "WateringHeatmapCard", "WateringStreakNudge"
+  ]);
+  const files = ["screens", "components"].flatMap((dir) =>
+    fs.readdirSync(path.join(ROOT, dir)).filter((f) => f.endsWith(".js")).map((f) => `${dir}/${f}`));
+  for (const file of files) {
+    const name = path.basename(file, ".js");
+    if (file.startsWith("components/") && TODO.has(name)) continue;
     it(`${file} has no hard-coded English`, () => {
-      const out = execFileSync(process.execPath, [path.join(ROOT, "scripts/i18n-coverage.js"), file], { cwd: ROOT, encoding: "utf8" });
-      const m = out.match(/— (\d+) hardcoded/);
-      ok(m, "the coverage script should report on the file");
-      eq(Number(m[1]), 0, out.split("\n").slice(2, 12).join("\n"));
+      const { hardcoded } = analyse(path.join(ROOT, file));
+      eq(hardcoded.map((h) => `${h.line}: ${h.text}`), []);
     });
   }
+  it("the to-do list only names files that still need work", () => {
+    // A translated file left on the list would lose its protection silently.
+    const stale = [...TODO].filter((name) => {
+      const file = path.join(ROOT, "components", `${name}.js`);
+      return !fs.existsSync(file) || analyse(file).hardcoded.length === 0;
+    });
+    eq(stale, []);
+  });
 });
 
 describe("the weather cards", () => {

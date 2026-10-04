@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { getTodayKey, tapHaptic } from "../core";
-import { useTranslation, formatDate } from "../lib/i18n";
+import { formatDate, t, useTranslation } from "../lib/i18n";
 import { SoilTempSection } from "./SoilTempSection";
 import { touchSlop } from "../lib/a11y";
 
@@ -10,9 +10,9 @@ const STORAGE_KEY = "pp_soilTests";
 
 const phAdvice = (ph) => {
   if (ph == null || Number.isNaN(ph)) return null;
-  if (ph < 6.0) return { color: "#ff9f43", text: "Acidic — add garden lime or wood ash to raise pH toward 6.5." };
-  if (ph > 7.5) return { color: "#6bc7ff", text: "Alkaline — add elemental sulfur, peat, or compost to lower pH." };
-  return { color: "#5cff89", text: "Ideal range (6.0–7.5) for most vegetables. Nice soil!" };
+  if (ph < 6.0) return { color: "#ff9f43", text: t("miscCards.phAcidic") };
+  if (ph > 7.5) return { color: "#6bc7ff", text: t("miscCards.phAlkaline") };
+  return { color: "#5cff89", text: t("miscCards.phIdeal") };
 };
 
 export const SoilTestLogCard = memo(function SoilTestLogCard({ theme }) {

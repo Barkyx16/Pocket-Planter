@@ -58,7 +58,7 @@ export const RescueModeCard = memo(function RescueModeCard({ theme, savedPlants,
               <Pressable
                 onPress={() => onWater(p.name)}
                 accessibilityRole="button"
-                accessibilityLabel={`Water ${p.name} now`}
+                accessibilityLabel={t("miscCards.waterNow", { plant: p.name })}
                 style={{ backgroundColor: "#6bc7ff", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12 }}
               >
                 <IconText label={t("rescueMode.rescue")} style={{

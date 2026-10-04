@@ -47,7 +47,7 @@ export const FrostChecklistCard = memo(function FrostChecklistCard({ theme, weat
         <View style={{ flex: 1 }}>
           <Text style={{ color: "#a3d5ff", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>{t("frostChecklist.coldWeatherPrep")}</Text>
           <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900", marginTop: 2 }}>
-            {allDone ? t("frostChecklist.youreColdready") : `Protect your garden — cold ${isTonight ? "tonight" : "coming"}`}
+            {allDone ? t("frostChecklist.youreColdready") : t(isTonight ? "miscCards.protectTonight" : "miscCards.protectComing")}
           </Text>
         </View>
       </View>

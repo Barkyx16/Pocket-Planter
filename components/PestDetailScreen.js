@@ -22,7 +22,7 @@ export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, on
   const months = (Array.isArray(pest.months) ? pest.months : []).map(flipMonth).sort((a, b) => a - b);
   const activeLabel = months.length
     ? months.map((m) => MONTH_FULL[m - 1]).join(" · ")
-    : "Varies by region";
+    : t("miscCards.variesByRegion");
 
   // Affected = user's own plants this pest hits (passed from Pest Watch). Targets = general list.
   const affected = Array.isArray(pest.affected) ? pest.affected : [];
@@ -41,7 +41,7 @@ export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, on
       <View style={styles.detailHeader}>
         <Pressable onPress={onBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={22} color="#ffffff" />
-          <Text style={styles.backButtonText}>Back</Text>
+          <Text style={styles.backButtonText}>{t("miscCards.back")}</Text>
         </Pressable>
       </View>
 

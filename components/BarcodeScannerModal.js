@@ -41,7 +41,7 @@ function ScannerBody({ onScanned, onClose }) {
           <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{t("barcodeScanner.allowCamera")}</Text>
         </Pressable>
         <Pressable onPress={onClose} style={{ marginTop: 12 }}>
-          <Text style={{ color: "#8fbf9d", fontSize: 13, fontWeight: "800" }}>Cancel</Text>
+          <Text style={{ color: "#8fbf9d", fontSize: 13, fontWeight: "800" }}>{t("miscCards.cancel")}</Text>
         </Pressable>
       </View>
     );

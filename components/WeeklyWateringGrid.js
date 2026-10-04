@@ -6,7 +6,7 @@ import { formatDate, useTranslation } from "../lib/i18n";
 import { EmptyState } from "./EmptyState";
 
 export const WeeklyWateringGrid = memo(function WeeklyWateringGrid({ theme, savedPlants, wateringHistory }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   if (!savedPlants || savedPlants.length === 0) return null;
 
   // Build the last 7 days (oldest → today)
@@ -62,7 +62,7 @@ return (
     <View>
       {weekTotal > 0 ? (
         <Text style={[styles.cardText, { color: theme.secondaryText }]}>
-          {`${wateredTodayCount} of ${savedPlants.length} plant${savedPlants.length === 1 ? "" : "s"} watered today · ${weekTotal} logged this week.`}
+          {tn("miscCards.wateredSummary", savedPlants.length, { watered: wateredTodayCount, week: weekTotal })}
         </Text>
       ) : (
         <EmptyState compact icon="water" title={t("empty.noWateringTitle")} body={t("empty.noWateringBody")} />
@@ -79,7 +79,7 @@ return (
           </View>
         ))}
         <View style={{ width: 46, alignItems: "flex-end" }}>
-          <Text style={{ color: theme.secondaryText, fontSize: 9.5, fontWeight: "900" }}>LAST</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 9.5, fontWeight: "900" }}>{t("miscCards.last")}</Text>
         </View>
       </View>
 

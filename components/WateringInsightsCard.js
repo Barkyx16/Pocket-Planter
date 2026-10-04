@@ -6,16 +6,16 @@ import { WateringHeatmapCard } from "./WateringHeatmapCard";
 import { useTranslation } from "../lib/i18n";
 
 const TABS = [
-  { id: "week", label: "📅 Week" },
-  { id: "rhythm", label: "📊 Rhythm" },
-  { id: "heatmap", label: "🔥 Heatmap" },
+  { id: "week", label: "miscCards.tabWeek" },
+  { id: "rhythm", label: "miscCards.tabRhythm" },
+  { id: "heatmap", label: "miscCards.tabHeatmap" },
 ];
 
 export const WateringInsightsCard = memo(function WateringInsightsCard({ theme, savedPlants, wateringHistory, onOpenPlant, extraTabs = [] }) {
   const { t } = useTranslation();
   const [tab, setTab] = useState("week");
   const hasHistory = Object.values(wateringHistory || {}).some((d) => (d || []).length);
-  const allTabs = [...TABS, ...extraTabs.map((t) => ({ id: t.id, label: t.label }))];
+  const allTabs = [...TABS.map((tab) => ({ ...tab, label: t(tab.label) })), ...extraTabs.map((t) => ({ id: t.id, label: t.label }))];
   const activeExtra = extraTabs.find((t) => t.id === tab);
 
   return (

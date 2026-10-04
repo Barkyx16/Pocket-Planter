@@ -34,7 +34,7 @@ export const SunlightMismatchCard = memo(function SunlightMismatchCard({ theme, 
   const rank = { high: 0, medium: 1, low: 2 };
   mismatches.sort((a, b) => rank[a.level] - rank[b.level]);
 
-  const sunLabel = { full: "☀️ Full sun", partial: "⛅ Partial", shade: "🌥️ Shade" };
+  const sunLabel = { full: t("miscCards.sunFull"), partial: t("miscCards.sunPartial"), shade: t("miscCards.sunShade") };
   const levelColor = { high: "#ff7b7b", medium: "#ffd86b", low: "#8effab" };
   const hasHigh = mismatches.some((m) => m.level === "high");
   const accent = hasHigh ? "#ff7b7b" : "#ffd86b";

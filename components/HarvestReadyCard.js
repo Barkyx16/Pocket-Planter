@@ -5,7 +5,7 @@ import { HARVEST_SOON_DAYS, getHarvestDaysLeft, resolvePlantImageSource } from "
 import { useTranslation } from "../lib/i18n";
 
 export const HarvestReadyCard = memo(function HarvestReadyCard({ theme, harvestTrackers, onOpenPlant }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const entries = Object.entries(harvestTrackers || {})
     .map(([name, tracker]) => {
       return { name, daysLeft: getHarvestDaysLeft(tracker) };
@@ -18,8 +18,8 @@ export const HarvestReadyCard = memo(function HarvestReadyCard({ theme, harvestT
   const ready = entries.filter((e) => e.daysLeft === 0);
   const accent = ready.length ? "#ffd86b" : "#8effab";
   const headline = ready.length
-    ? `${ready.length} plant${ready.length === 1 ? "" : "s"} ready to harvest!`
-    : "Harvest coming up";
+    ? tn("miscCards.plantsReady", ready.length)
+    : t("miscCards.harvestComing");
 
   return (
     <View style={{ borderRadius: 24, padding: 18, marginBottom: 18, borderWidth: 1.5, backgroundColor: `${accent}12`, borderColor: accent }}>
@@ -52,7 +52,7 @@ export const HarvestReadyCard = memo(function HarvestReadyCard({ theme, harvestT
               <View style={{ flex: 1 }}>
                 <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{e.name}</Text>
                 <Text style={{ color: isReady ? "#ffd86b" : "#8effab", fontSize: 12, fontWeight: "900", marginTop: 2 }}>
-                  {isReady ? t("harvestReady.readyToHarvestNow") : `⏳ ~${e.daysLeft} day${e.daysLeft === 1 ? "" : "s"} to harvest`}
+                  {isReady ? t("harvestReady.readyToHarvestNow") : `⏳ ${tn("miscCards.daysToHarvest", e.daysLeft)}`}
                 </Text>
               </View>
               <Text style={{ color: accent, fontSize: 20, fontWeight: "900" }}>›</Text>

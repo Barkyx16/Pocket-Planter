@@ -5,7 +5,7 @@ import { getDaysSince, resolvePlantImageSource } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const PlantAnniversaryCard = memo(function PlantAnniversaryCard({ theme, plantSaveDates, savedPlants, onOpenPlant }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const milestones = (savedPlants || [])
     .map((name) => {
       const saved = plantSaveDates?.[name];
@@ -17,8 +17,8 @@ export const PlantAnniversaryCard = memo(function PlantAnniversaryCard({ theme, 
       let label = null;
       const years = Math.floor(days / 365);
       const months = Math.floor(days / 30);
-      if (years >= 1 && days % 365 < 3) label = years === 1 ? "1 year" : `${years} years`;
-      else if (months >= 1 && days % 30 < 3) label = months === 1 ? "1 month" : `${months} months`;
+      if (years >= 1 && days % 365 < 3) label = tn("miscCards.years", years);
+      else if (months >= 1 && days % 30 < 3) label = tn("miscCards.months", months);
       if (!label) return null;
       return { name, label, days };
     })
@@ -34,7 +34,7 @@ export const PlantAnniversaryCard = memo(function PlantAnniversaryCard({ theme, 
         <View style={{ flex: 1 }}>
           <Text style={{ color: "#ffb6c1", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>{t("plantAnniversary.plantAnniversary")}</Text>
           <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900", marginTop: 2 }}>
-            {milestones.length === 1 ? t("plantAnniversary.aPlantMilestone") : `${milestones.length} plant milestones!`}
+            {milestones.length === 1 ? t("plantAnniversary.aPlantMilestone") : tn("miscCards.milestones", milestones.length)}
           </Text>
         </View>
       </View>

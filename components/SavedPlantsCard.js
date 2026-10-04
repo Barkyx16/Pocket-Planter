@@ -65,7 +65,7 @@ const [sortMode, setSortMode] = useState("recent");
             style={styles.compactUpgradeButton}
           >
             <Text style={styles.compactUpgradeButtonText}>
-              Upgrade
+              {t("miscCards.upgrade")}
             </Text>
           </Pressable>
         ) : null}

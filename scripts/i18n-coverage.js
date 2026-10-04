@@ -136,40 +136,46 @@ function analyse(file) {
   return { file: path.relative(ROOT, file), hardcoded, translated };
 }
 
-const args = process.argv.slice(2);
-const showAll = args.includes("--all");
-const target = args.find((a) => !a.startsWith("--"));
+module.exports = { analyse };
 
-if (target) {
-  const result = analyse(path.resolve(ROOT, target));
-  if (!result) { console.error("Could not parse", target); process.exit(1); }
-  console.log(`\n${result.file} — ${result.hardcoded.length} hardcoded, ${result.translated} via t()\n`);
-  result.hardcoded.forEach((h) => {
-    const text = h.text.length > 90 ? `${h.text.slice(0, 90)}…` : h.text;
-    console.log(`  ${String(h.line).padStart(5)}  ${text.replace(/\s+/g, " ")}`);
+function main() {
+  const args = process.argv.slice(2);
+  const showAll = args.includes("--all");
+  const target = args.find((a) => !a.startsWith("--"));
+
+  if (target) {
+    const result = analyse(path.resolve(ROOT, target));
+    if (!result) { console.error("Could not parse", target); process.exit(1); }
+    console.log(`\n${result.file} — ${result.hardcoded.length} hardcoded, ${result.translated} via t()\n`);
+    result.hardcoded.forEach((h) => {
+      const text = h.text.length > 90 ? `${h.text.slice(0, 90)}…` : h.text;
+      console.log(`  ${String(h.line).padStart(5)}  ${text.replace(/\s+/g, " ")}`);
+    });
+    process.exit(0);
+  }
+
+  const results = walk(ROOT).map(analyse).filter(Boolean);
+  const totalHard = results.reduce((s, r) => s + r.hardcoded.length, 0);
+  const totalDone = results.reduce((s, r) => s + r.translated, 0);
+  const pct = totalDone + totalHard === 0 ? 100 : (totalDone / (totalDone + totalHard)) * 100;
+
+  console.log("\n  i18n coverage\n  " + "─".repeat(52));
+  console.log(`  translated via t()     ${String(totalDone).padStart(6)}`);
+  console.log(`  still hardcoded        ${String(totalHard).padStart(6)}`);
+  console.log(`  coverage               ${pct.toFixed(1).padStart(6)}%`);
+  console.log("  " + "─".repeat(52) + "\n");
+
+  const ranked = results.filter((r) => r.hardcoded.length).sort((a, b) => b.hardcoded.length - a.hardcoded.length);
+  const shown = showAll ? ranked : ranked.slice(0, 15);
+  console.log(`  Remaining work${showAll ? "" : " (top 15)"}:\n`);
+  shown.forEach((r) => {
+    console.log(`  ${String(r.hardcoded.length).padStart(5)}  ${r.file}${r.translated ? `   (${r.translated} done)` : ""}`);
   });
-  process.exit(0);
+  if (!showAll && ranked.length > 15) {
+    const rest = ranked.slice(15).reduce((s, r) => s + r.hardcoded.length, 0);
+    console.log(`  ${String(rest).padStart(5)}  …${ranked.length - 15} more files (--all to list)`);
+  }
+  console.log();
 }
 
-const results = walk(ROOT).map(analyse).filter(Boolean);
-const totalHard = results.reduce((s, r) => s + r.hardcoded.length, 0);
-const totalDone = results.reduce((s, r) => s + r.translated, 0);
-const pct = totalDone + totalHard === 0 ? 100 : (totalDone / (totalDone + totalHard)) * 100;
-
-console.log("\n  i18n coverage\n  " + "─".repeat(52));
-console.log(`  translated via t()     ${String(totalDone).padStart(6)}`);
-console.log(`  still hardcoded        ${String(totalHard).padStart(6)}`);
-console.log(`  coverage               ${pct.toFixed(1).padStart(6)}%`);
-console.log("  " + "─".repeat(52) + "\n");
-
-const ranked = results.filter((r) => r.hardcoded.length).sort((a, b) => b.hardcoded.length - a.hardcoded.length);
-const shown = showAll ? ranked : ranked.slice(0, 15);
-console.log(`  Remaining work${showAll ? "" : " (top 15)"}:\n`);
-shown.forEach((r) => {
-  console.log(`  ${String(r.hardcoded.length).padStart(5)}  ${r.file}${r.translated ? `   (${r.translated} done)` : ""}`);
-});
-if (!showAll && ranked.length > 15) {
-  const rest = ranked.slice(15).reduce((s, r) => s + r.hardcoded.length, 0);
-  console.log(`  ${String(rest).padStart(5)}  …${ranked.length - 15} more files (--all to list)`);
-}
-console.log();
+if (require.main === module) main();

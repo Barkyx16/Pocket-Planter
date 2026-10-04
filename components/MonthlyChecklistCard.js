@@ -32,7 +32,7 @@ export const MonthlyChecklistCard = memo(function MonthlyChecklistCard({ theme, 
     <View>
       <Text style={[styles.cardTitle, { color: theme.text }]}>{monthName} {t("monthlyChecklist.gardenChecklist")}</Text>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "600", marginTop: 4 }}>
-        {doneCount}/{tasks.length} done{remaining > 0 ? ` · ${remaining} to go this month` : t("monthlyChecklist.allWrappedUp")}
+        {t("miscCards.checklistDone", { done: doneCount, total: tasks.length })}{remaining > 0 ? t("miscCards.toGoMonth", { count: remaining }) : t("monthlyChecklist.allWrappedUp")}
       </Text>
       <View style={{ height: 6, borderRadius: 999, backgroundColor: "rgba(255, 255, 255, 0.08)", overflow: "hidden", marginTop: 10 }}>
         <View style={{ height: 6, borderRadius: 999, backgroundColor: "#8effab", width: `${(doneCount / tasks.length) * 100}%` }} />

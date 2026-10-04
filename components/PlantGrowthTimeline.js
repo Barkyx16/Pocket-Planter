@@ -84,7 +84,7 @@ export const PlantGrowthTimeline = memo(function PlantGrowthTimeline({ theme, pl
                     {growthStageLabel(e.growthStage || "Seedling")}
                   </Text>
                   <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 2 }}>
-                    Day {dayNumber(e)} · {formatDate(new Date(e.createdAt), {
+                    {t("miscCards.dayN", { day: dayNumber(e) })} · {formatDate(new Date(e.createdAt), {
   month: "short",
   day: "numeric"
 })}
@@ -117,7 +117,7 @@ export const PlantGrowthTimeline = memo(function PlantGrowthTimeline({ theme, pl
                         <Text style={{ color: stageColor(e.growthStage), fontSize: 10, fontWeight: "900" }}>{e.growthStage || "Seedling"}</Text>
                       </View>
                       <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "800" }}>
-                        Day {dayNumber(e)} · {formatDate(new Date(e.createdAt), {
+                        {t("miscCards.dayN", { day: dayNumber(e) })} · {formatDate(new Date(e.createdAt), {
   month: "short",
   day: "numeric",
   year: "numeric"
