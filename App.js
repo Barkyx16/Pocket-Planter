@@ -736,6 +736,42 @@ const clearLocalAccountData = async () => {
   setCountry(DEFAULT_COUNTRY);
   setRecord(null);
   setLanguage(detectDeviceLocale());
+  // The rest of what the cloud row carries. Storage is swept below, but state in
+  // memory outlives it: the next account to sign in on this device saw the last
+  // one's beds, harvest log and sow dates, and a brand-new account — whose row
+  // has none of these to load over them — saved them to the cloud as its own.
+  setZip("");
+  setGardenAreas([]);
+  setAreaHistory({});
+  setSowLog({});
+  setFrostOverrides({});
+  setFrostOverrideRef({});
+  setHarvestLog([]);
+  setPlantFolders({ "🌿 Herbs": [], "🍓 Fruit Garden": [], "🥕 Spring Garden": [] });
+  setSuppliesSpent(0);
+  setWateringAmounts([]);
+  setSeenGardenGod(false);
+  setBadgeEarnedDates({});
+  setBannerEarnedDates({});
+  setPlantSaveDates({});
+  setPinnedPlants([]);
+  setSnoozedPlants({});
+  setHarvestGoal(null);
+  setMonthlyChecklist({});
+  setFrostChecklist({});
+  setStreakFreeze({ available: true, lastUsed: null, weekKey: null });
+  setSelectedMonth(new Date().getMonth() + 1);
+  setSelectedType("All");
+  setShowPremiumIntro(true);
+  setShowOnboarding(true);
+  // Every notification was cancelled above, so the switches go back to off
+  // rather than reading "on" over nothing.
+  setRemindersOn(false);
+  setFrostAlertsOn(false);
+  setMonthlyPlantingOn(false);
+  setDailyWateringOn(false);
+  setPlantOfDayOn(false);
+  setWeeklyRecapOn(false);
   try {
     // Sweep every app-owned key rather than a hand-kept list. STORAGE_KEYS only
     // covers the state App.js threads itself, so signing out used to leave the

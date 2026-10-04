@@ -486,3 +486,28 @@ describe("the plant pick of the day", () => {
     ok(!/toISOString\(\)\.slice\(0, 10\)/.test(hero));
   });
 });
+
+describe("signing out leaves nothing of the account in memory", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const start = app.indexOf("const clearLocalAccountData");
+  const reset = start < 0 ? "" : app.slice(start, app.indexOf("\n};", start));
+  const rowAt = app.indexOf("const profileRow = {");
+  const row = app.slice(rowAt, app.indexOf("\n  };", rowAt));
+  // `snake_key: stateName,` — the state each cloud column is written from.
+  const synced = [...row.matchAll(/^\s+[a-z_]+: ([a-zA-Z]+),/gm)].map((m) => m[1]);
+  // Settings of the device rather than of the account, and values that are
+  // not state.
+  const DEVICE = new Set(["appearanceMode", "subscriptionPlan", "moduleData"]);
+
+  it("finds the cloud row", () => {
+    ok(synced.length >= 40, `only ${synced.length} synced fields found`);
+  });
+  it("resets every piece of state the cloud row is written from", () => {
+    // Anything left in memory shows the next account the last one's garden, and
+    // a new account with nothing to load over it saves it to the cloud as its own.
+    const missing = synced.filter((name) => !DEVICE.has(name))
+      .filter((name) => new RegExp(`const \\[${name}, set`).test(app))
+      .filter((name) => !reset.includes(`set${name[0].toUpperCase()}${name.slice(1)}(`));
+    eq(missing, [], "synced to the account but not reset on sign-out");
+  });
+});
