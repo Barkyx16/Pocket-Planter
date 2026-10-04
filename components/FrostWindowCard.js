@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
-import { getFirstFrostDate, getFrostMaturityInfo, getPlantSeasonLabel, resolvePlantImageSource } from "../core";
+import { getFrostMaturityInfo, getNextFirstFrost, getPlantSeasonLabel, resolvePlantImageSource } from "../core";
 import { formatDate, useTranslation } from "../lib/i18n";
 
 export const FrostWindowCard = memo(function FrostWindowCard({ theme, plants, zone, onOpenPlant }) {
@@ -15,7 +15,9 @@ export const FrostWindowCard = memo(function FrostWindowCard({ theme, plants, zo
 
   if (!atRisk.length) return null;
 
-  const firstFrost = getFirstFrostDate(zone);
+  // The same frost the crops were measured against, so the label and the day
+  // counts agree.
+  const firstFrost = getNextFirstFrost(zone);
   const frostLabel = formatDate(firstFrost, {
   month: "short",
   day: "numeric"

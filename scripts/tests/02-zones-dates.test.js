@@ -326,3 +326,43 @@ describe("the streak freeze refresh", () => {
     ok(!/oneJan/.test(fn), "no week-of-year arithmetic");
   });
 });
+
+describe("the first frost of the season", () => {
+  const at = (iso) => new Date(`${iso}T12:00:00`);
+  const md = (d) => (d ? `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}` : null);
+
+  it("is this year's in the north, and nothing once it has passed", () => {
+    // Zone 7 (moderate): last frost mid March, first frost mid November.
+    eq(md(core.getNextFirstFrost("7a", at("2026-02-10"))), "2026-11-15");
+    eq(md(core.getNextFirstFrost("7a", at("2026-07-01"))), "2026-11-15");
+    eq(core.getNextFirstFrost("7a", at("2026-12-01")), null);
+  });
+  it("runs into next year in the south", () => {
+    // Sydney-ish, zone 7: last frost mid September, first frost mid May.
+    core.setHemisphereFromLatitude(-33.87);
+    try {
+      // Spring: the season that just started ends next May, not this one.
+      eq(md(core.getNextFirstFrost("7a", at("2026-10-15"))), "2027-5-15");
+      // Late summer: last year's season is still running.
+      eq(md(core.getNextFirstFrost("7a", at("2026-02-10"))), "2026-5-15");
+      eq(md(core.getFirstFrostAfter("7a", at("2026-09-15"))), "2027-5-15");
+    } finally {
+      core.setHemisphereFromLatitude(40.7);
+    }
+  });
+  it("lets a southern spring crop be measured at all", () => {
+    core.setHemisphereFromLatitude(-33.87);
+    try {
+      const info = core.getFrostMaturityInfo({ name: "Tomato", type: "Vegetables" }, "7a");
+      const now = new Date();
+      // Between mid May and mid September it is frost season; October to April
+      // must give a real count of days to a frost in the future.
+      const m = now.getMonth() + 1;
+      if (m >= 10 || m <= 4) {
+        ok(info && info.daysUntilFrost > 0, "a southern spring/summer crop must get a frost count");
+      }
+    } finally {
+      core.setHemisphereFromLatitude(40.7);
+    }
+  });
+});

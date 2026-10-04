@@ -1,7 +1,7 @@
 import { memo, useState } from "react";
 import { Alert, Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
-import { getFirstFrostDate, getHarvestDays, getLastFrostDate, getSeedStartWeeks, isOrnamental, resolvePlantImageSource, tapHaptic } from "../core";
+import { getFirstFrostAfter, getHarvestDays, getLastFrostDate, getSeedStartWeeks, isOrnamental, resolvePlantImageSource, tapHaptic } from "../core";
 import { IconText } from "./IconText";
 import { DatePickerModal } from "./DatePickerModal";
 import { formatDate, useTranslation } from "../lib/i18n";
@@ -19,7 +19,9 @@ export const PlantingCalendarCard = memo(function PlantingCalendarCard({ theme, 
   if (!zone || !savedPlants || savedPlants.length === 0) return null;
 
   const lastFrost = getLastFrostDate(zone);
-  const firstFrost = getFirstFrostDate(zone);
+  // The frost that ends the season starting at lastFrost. In the south that is
+  // next year's, and comparing against this year's flagged every crop as risky.
+  const firstFrost = getFirstFrostAfter(zone, lastFrost);
 
   const rows = savedPlants
     .map((name) => produceData.find((p) => p.name === name))

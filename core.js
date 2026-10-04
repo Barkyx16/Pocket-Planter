@@ -2614,6 +2614,38 @@ export function getFirstFrostDate(zone) {
   return flipDate(new Date(year, 11, 5));                             // ~early December (hot)
 }
 
+// The frost estimates are pinned to the current calendar year, which is right
+// in the north, where the frost-free season sits inside one year, and wrong in
+// the south, where it runs from spring in one year to autumn in the next. A
+// Sydney gardener in October was measured against a first frost that came in
+// March of this year — already gone — so every crop either had no frost date or
+// was flagged as finishing after it.
+//
+// The first frost that follows a given date: this year's, or next year's once
+// this year's is on or before it.
+export function getFirstFrostAfter(zone, date) {
+  const from = new Date(date);
+  const first = new Date(getFirstFrostDate(zone));
+  first.setFullYear(from.getFullYear());
+  if (first <= from) first.setFullYear(first.getFullYear() + 1);
+  return first;
+}
+
+// The first frost ending the growing season we are in or about to start, or null
+// between a first frost and the spring that follows it. A season starts at a
+// last frost; last year's can still be running in the south, so it is tried
+// first. In the north that one always ended last year, so the answer is this
+// year's first frost, as it always was.
+export function getNextFirstFrost(zone, now = new Date()) {
+  for (const offset of [-1, 0]) {
+    const last = new Date(getLastFrostDate(zone));
+    last.setFullYear(now.getFullYear() + offset);
+    const first = getFirstFrostAfter(zone, last);
+    if (now < first) return first;
+  }
+  return null;
+}
+
 export function dayOfYear(date) {
   const start = new Date(date.getFullYear(), 0, 0);
   const diff = date - start;
@@ -2658,8 +2690,9 @@ export function getDaylightInfo(coords) {
 export function getFrostMaturityInfo(item, zone) {
   if (!zone) return null;
   const days = getHarvestDays(item);
-  const firstFrost = getFirstFrostDate(zone);
   const now = new Date(); now.setHours(12, 0, 0, 0);
+  const firstFrost = getNextFirstFrost(zone, now);
+  if (!firstFrost) return null; // between a first frost and the next spring
   const daysUntilFrost = Math.round((firstFrost - now) / (1000 * 60 * 60 * 24));
   if (daysUntilFrost <= 0) return null; // already in/after frost season
   const short = days - daysUntilFrost;
