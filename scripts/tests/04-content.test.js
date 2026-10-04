@@ -797,3 +797,16 @@ describe("the garden quiz's Next button", () => {
     ok(!/setTimeout\(\(\) => \{ advancingRef/.test(quiz));
   });
 });
+
+describe("claiming a reward", () => {
+  const fs = require("fs");
+  const read = (f) => fs.readFileSync(path.join(ROOT, f), "utf8");
+  it("pays once however fast the taps: daily bonus, quests, seasonal challenges", () => {
+    const app = read("App.js");
+    ok(/if \(claimingBonusRef\.current\) return;\s*\n\s*claimingBonusRef\.current = true;/.test(app), "the daily bonus must lock at once");
+    const profile = read("screens/ProfileTab.js");
+    ok(/questClaimsRef\.current\.has\(claimKey\)\) return;\s*\n\s*questClaimsRef\.current\.add\(claimKey\);/.test(profile), "a quest must lock at once");
+    const seasonal = read("components/SeasonalChallengesCard.js");
+    ok(/claimingRef\.current\.has\(key\)\) return;\s*\n\s*claimingRef\.current\.add\(key\);/.test(seasonal), "a challenge must lock at once");
+  });
+});

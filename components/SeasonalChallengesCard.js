@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
 import {
@@ -61,9 +61,13 @@ export const SeasonalChallengesCard = memo(function SeasonalChallengesCard({ the
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
   };
 
+  // Claimed this session, set at once: `claimed` is state and only updates on the
+  // next render, so a double tap rewarded the same challenge twice.
+  const claimingRef = useRef(new Set());
   const claim = (ch) => {
     const key = `${seasonKey}-${ch.id}`;
-    if (claimed[key]) return;
+    if (claimed[key] || claimingRef.current.has(key)) return;
+    claimingRef.current.add(key);
     successHaptic();
     vibrate(60);
     persist({ ...claimed, [key]: true });

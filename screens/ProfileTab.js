@@ -1,5 +1,5 @@
 import { Pressable, Text, View } from "react-native";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { SCREEN_WIDTH, getTodayKey, profileBuddyImage, successHaptic, vibrate } from "../core";
 import { AchievementCard } from "../components/AchievementCard";
 import { TabHero } from "../components/TabHero";
@@ -18,6 +18,7 @@ import { t } from "../lib/i18n";
 export function ProfileTab({ achievementBadges, badgeEarnedDates, bannerEarnedDates, activeBannerId, avatarGlow, cancelReminder, careLog, completedQuestIds, dailyQuests, dailyWateringOn, ensureNotificationPermission, frostAlertsOn, gardenAreas, gardenMap, gardenXP, harvestGoal, harvestLog, harvestTrackers, journalEntries, jumpToTab, monthlyPlantingOn, newEmail, plantOfDayOn, premiumUnlocked, premiumY, profileBanners, profileName, profilePhoto, reminderY, remindersOn, savedPlants, scheduleDailyReminder, seenGardenGod, selectedProfileTheme, setActiveBannerId, setAppearanceMode, setCompletedQuestIds, setDailyWateringOn, setFrostAlertsOn, setHarvestGoal, setMonthlyPlantingOn, setNewEmail, setProfileName, setProfilePhoto, setQuestXP, setRemindersOn, setSeenGardenGod, setSelectedProfileTheme, setSuppliesSpent, setWateringReminderTime, setXpPopups, streakData, subscriptionPlan, suppliesSpent, theme, togglePlantOfDay, user, wateredPlants, wateringHistory, wateringReminderTime, weather, zone }) {
   const [showAchievements, setShowAchievements] = useState(false);
   const [showBanners, setShowBanners] = useState(false);
+  const questClaimsRef = useRef(new Set());
   const achievementsEarned = (achievementBadges || []).filter((b) => b.unlocked).length;
   const achievementsTotal = (achievementBadges || []).length;
   const bannersEarned = (profileBanners || []).filter((b) => b.unlocked).length;
@@ -115,7 +116,11 @@ export function ProfileTab({ achievementBadges, badgeEarnedDates, bannerEarnedDa
   onQuestComplete={(quest) => {
     const today = getTodayKey();
     const todayCompleted = completedQuestIds[today] || [];
-    if (todayCompleted.includes(quest.id)) return;
+    // The state above only updates on the next render, so a double tap paid the
+    // quest's XP twice; the ref is set at once.
+    const claimKey = `${today}:${quest.id}`;
+    if (todayCompleted.includes(quest.id) || questClaimsRef.current.has(claimKey)) return;
+    questClaimsRef.current.add(claimKey);
     setCompletedQuestIds(current => ({
       ...current,
       [today]: [...(current[today] || []), quest.id],

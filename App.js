@@ -3618,7 +3618,19 @@ useEffect(() => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [user?.id]);
 
+const claimingBonusRef = useRef(false);
 async function claimDailyBonus() {
+  // Set at once: the claimed date below is only written after a storage await,
+  // so a second tap arriving in that gap passed the check and paid out again.
+  if (claimingBonusRef.current) return;
+  claimingBonusRef.current = true;
+  try {
+    await claimDailyBonusOnce();
+  } finally {
+    claimingBonusRef.current = false;
+  }
+}
+async function claimDailyBonusOnce() {
   // A day key, not a timestamp: this was written as an ISO string and then read
   // back with `=== getTodayKey()` in three places, which never matched — so the
   // bonus always looked unclaimed on launch and then refused to be claimed.
