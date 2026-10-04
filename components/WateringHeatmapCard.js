@@ -87,9 +87,9 @@ export const WateringHeatmapCard = memo(function WateringHeatmapCard({ theme, wa
   });
 
   const stats = [
-    { value: String(thisWeek), label: "This week", color: "#5cff89" },
-    { value: busiestDay, label: "Top day", color: "#6bc7ff" },
-    { value: `${longestStreak}d`, label: "Best streak", color: "#ffd86b" },
+    { value: String(thisWeek), label: t("moreCards.thisWeek"), color: "#5cff89" },
+    { value: busiestDay, label: t("moreCards.topDay"), color: "#6bc7ff" },
+    { value: t("shareText.daysShort", { count: longestStreak }), label: t("moreCards.bestStreak"), color: "#ffd86b" },
   ];
 
 return (
@@ -138,11 +138,11 @@ return (
 
       {/* Legend */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 14, justifyContent: "flex-end" }}>
-        <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700" }}>Less</Text>
+        <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700" }}>{t("moreCards.less")}</Text>
         {["rgba(255, 255, 255, 0.06)", "rgba(92, 255, 137, 0.4)", "#5cff89", "#2fbf5f"].map((c) => (
           <View key={c} style={{ width: 13, height: 13, borderRadius: 4, backgroundColor: c }} />
         ))}
-        <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700" }}>More</Text>
+        <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700" }}>{t("moreCards.more")}</Text>
       </View>
     </View>
   );

@@ -6,12 +6,12 @@ import { PlantLabelsSection } from "./PlantLabelsSection";
 import { useTranslation } from "../lib/i18n";
 
 export const GardenPlanExportCard = memo(function GardenPlanExportCard({ theme, gardenAreas, savedPlants, zone }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const areas = (gardenAreas || []).filter((a) => a && a.name);
   const totalPlanted = areas.reduce((sum, a) => sum + Object.values(a.plots || {}).filter(Boolean).length, 0);
 
   const buildPlan = () => {
-    const lines = [`🌱 My Pocket Planter Garden Plan${zone ? ` (Zone ${zone})` : ""}`, ""];
+    const lines = [zone ? t("moreCards.planHeaderZone", { zone }) : t("moreCards.planHeader"), ""];
     areas.forEach((a) => {
       const plants = Object.values(a.plots || {}).filter(Boolean);
       lines.push(`${a.emoji || "🌿"} ${a.name} (${plants.length}/${a.size || plants.length})`);
@@ -21,11 +21,11 @@ export const GardenPlanExportCard = memo(function GardenPlanExportCard({ theme, 
     });
     const conflicts = findGardenConflicts(gardenAreas);
     if (conflicts.length) {
-      lines.push(`⚠️ ${conflicts.length} companion conflict${conflicts.length === 1 ? "" : "s"} to review.`);
+      lines.push(`⚠️ ${tn("moreCards.conflictsToReview", conflicts.length)}`);
       lines.push("");
     }
-    lines.push(`Total: ${totalPlanted} plants across ${areas.length} bed${areas.length === 1 ? "" : "s"}.`);
-    lines.push("Planned with Pocket Planter 🌿");
+    lines.push(tn("moreCards.planTotal", areas.length, { plants: totalPlanted }));
+    lines.push(t("moreCards.plannedWith"));
     return lines.join("\n");
   };
 
@@ -54,7 +54,7 @@ export const GardenPlanExportCard = memo(function GardenPlanExportCard({ theme, 
       <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
         <View style={{ flex: 1, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, paddingVertical: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
           <Text style={{ color: "#5cff89", fontSize: 20, fontWeight: "900" }}>{areas.length}</Text>
-          <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "800", marginTop: 2 }}>Beds</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "800", marginTop: 2 }}>{t("moreCards.beds")}</Text>
         </View>
         <View style={{ flex: 1, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, paddingVertical: 12, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
           <Text style={{ color: "#8effab", fontSize: 20, fontWeight: "900" }}>{totalPlanted}</Text>

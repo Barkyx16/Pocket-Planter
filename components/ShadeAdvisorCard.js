@@ -3,8 +3,10 @@ import { Text, View } from "react-native";
 import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
-// Rough height class by plant name keyword.
+// Rough height class by plant name keyword. Matched against plant names, never
+// shown, so not translated (i18n-ignore).
 const TALL = ["corn", "tomato", "sunflower", "pole bean", "bean, pole", "okra", "trellis", "pea", "amaranth", "sorghum"];
+// i18n-ignore
 const SHORT_SUN = ["lettuce", "spinach", "arugula", "radish", "carrot", "beet", "basil", "cilantro", "strawberry", "bush bean", "pepper"];
 
 const isTall = (n) => TALL.some((t) => n.includes(t));

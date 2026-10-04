@@ -954,21 +954,15 @@ describe("screens and components are fully translated", () => {
   // a name off as it is translated, and never add one.
   const { analyse } = require(path.join(ROOT, "scripts/i18n-coverage.js"));
   const TODO = new Set([
-    "AccountCloudCard", "AreaPlannerMap", "BloomSuccessionSection", "BudgetTrackerCard",
-    "CalendarExportSection", "ChoreRotationSection", "CompostTrackerSection", "CutFlowerGuideCard",
-    "DailyQuestsCard", "DataExportCard", "EmptyGardenStarterCard", "FertilizerIntelligenceCard",
-    "FixMyGardenCard", "FrostWindowCard", "GardenCalculatorsSection", "GardenPlacementModal",
-    "GardenPlanExportCard", "GardenShoppingListCard", "GardenTimelineCard", "GardenToolkitCard",
-    "GerminationTestSection", "GlowPlantCard", "GrowLightSection", "GuildTemplatesCard",
-    "HarvestRecipesCard", "HarvestStorageGuideCard", "HouseplantCareCard",
-    "HouseplantCareLogSection", "JournalCard", "MoonPhaseSection", "OnThisDayCard",
-    "PersonalPlantingCalendar", "PetSafeSection", "PhotoStorageCard", "PlantLabelsSection",
-    "PlantRoomsSection", "PlantTodayHero", "PollinatorPlannerCard", "PowerPairsCard",
-    "PropagationTrackerCard", "PruningScheduleSection", "RainBarrelSection", "RainfallLogCard",
-    "SeasonalChallengesCard", "SeedInventoryCard", "SettingsCard", "ShadeAdvisorCard",
-    "SoilCareLogCard", "SoilTempSection", "SuccessionSowingCard", "SunlightTrackerCard",
-    "ToolMaintenanceSection", "VaseTrackerSection", "WaterTriageCard", "WateringForecastCard",
-    "WateringHeatmapCard", "WateringStreakNudge"
+    "AreaPlannerMap", "BloomSuccessionSection", "CalendarExportSection", "ChoreRotationSection",
+    "CompostTrackerSection", "CutFlowerGuideCard", "DataExportCard", "FertilizerIntelligenceCard",
+    "FixMyGardenCard", "GardenCalculatorsSection", "GardenPlacementModal", "GardenShoppingListCard",
+    "GardenTimelineCard", "GardenToolkitCard", "GerminationTestSection", "GlowPlantCard",
+    "GrowLightSection", "GuildTemplatesCard", "HarvestRecipesCard", "HarvestStorageGuideCard",
+    "HouseplantCareCard", "JournalCard", "MoonPhaseSection", "PetSafeSection", "PlantLabelsSection",
+    "PlantTodayHero", "PollinatorPlannerCard", "PropagationTrackerCard", "PruningScheduleSection",
+    "RainBarrelSection", "SeasonalChallengesCard", "SeedInventoryCard", "SettingsCard",
+    "SoilCareLogCard", "SoilTempSection", "SuccessionSowingCard", "ToolMaintenanceSection"
   ]);
   const files = ["screens", "components"].flatMap((dir) =>
     fs.readdirSync(path.join(ROOT, dir)).filter((f) => f.endsWith(".js")).map((f) => `${dir}/${f}`));

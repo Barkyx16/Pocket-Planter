@@ -2,15 +2,15 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
 import { tapHaptic } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { t, useTranslation } from "../lib/i18n";
 
 const STORAGE_KEY = "pp_sunlightByArea";
 
 const sunLabel = (hours) => {
   if (hours == null) return null;
-  if (hours >= 6) return { label: "Full sun", color: "#ffd86b", note: "Great for tomatoes, peppers, squash, most veggies." };
-  if (hours >= 4) return { label: "Partial sun", color: "#8effab", note: "Good for greens, herbs, root crops, brassicas." };
-  return { label: "Shade", color: "#6bc7ff", note: "Best for leafy greens, mint, and shade-tolerant herbs." };
+  if (hours >= 6) return { label: t("moreCards.fullSun"), color: "#ffd86b", note: t("moreCards.fullSunNote") };
+  if (hours >= 4) return { label: t("moreCards.partialSun"), color: "#8effab", note: t("moreCards.partialSunNote") };
+  return { label: t("moreCards.shade"), color: "#6bc7ff", note: t("moreCards.shadeNote") };
 };
 
 export const SunlightTrackerCard = memo(function SunlightTrackerCard({ theme, gardenAreas }) {

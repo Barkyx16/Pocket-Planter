@@ -53,7 +53,7 @@ function isProse(value) {
   const s = value.trim();
   if (s.length < 3) return false;
   if (EN_KEYS.has(s)) return false;
-  if (/^(rgba?|#[0-9a-f]{3,8}|https?:|\.\/|\/|@)/i.test(s)) return false;
+  if (/^(rgba?|#[0-9a-f]{3,8}|[a-z][a-z0-9+.-]*:\/\/|https?:|\.\/|\/|@)/i.test(s)) return false;
   if (/^[a-z0-9_-]+$/i.test(s) && !s.includes(" ")) return false;
   if (/^[\d\s.,:%°·-]+$/.test(s)) return false;
   if (/^(row|column|center|bold|absolute|relative|none|cover|contain|flex-start|flex-end|space-between|space-around|handled|slide|fade|small|large|button|text|default|characters|numeric|number-pad|destructive|cancel)$/.test(s)) return false;
@@ -93,6 +93,10 @@ function analyse(file) {
       if (parent.type === "CallExpression" && parent.callee.name === "t") return;
       if (parent.type === "ImportDeclaration") return;
       if (parent.type === "ObjectProperty" && parent.key === p.node) return;
+      // Compared, not shown: `label === "Plant now"` matches core's English value.
+      if (parent.type === "BinaryExpression" && /^[!=]==?$/.test(parent.operator)) return;
+      // Match lists of plant names and similar data, marked at the declaration.
+      if (p.findParent((a) => a.isVariableDeclaration() && (a.node.leadingComments || []).some((c) => /i18n-ignore/.test(c.value)))) return;
       // Developer-facing only: console output, AsyncStorage keys, accessibility
       // roles, and require() paths are never shown as copy.
       if (

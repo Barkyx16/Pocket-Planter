@@ -7,10 +7,10 @@ import { touchSlop } from "../lib/a11y";
 
 const STORAGE_KEY = "pp_gardenExpenses";
 const CATS = [
-  { id: "seeds", label: "🌱 Seeds", color: "#8effab" },
-  { id: "soil", label: "🪴 Soil", color: "#bf7a12" },
-  { id: "tools", label: "🧰 Tools", color: "#6bc7ff" },
-  { id: "other", label: "📦 Other", color: "#d8c8ff" },
+  { id: "seeds", label: "moreCards.budgetSeeds", color: "#8effab" },
+  { id: "soil", label: "moreCards.budgetSoil", color: "#bf7a12" },
+  { id: "tools", label: "moreCards.budgetTools", color: "#6bc7ff" },
+  { id: "other", label: "moreCards.budgetOther", color: "#d8c8ff" },
 ];
 const catOf = (id) => CATS.find((c) => c.id === id) || CATS[3];
 
@@ -57,7 +57,7 @@ export const BudgetTrackerCard = memo(function BudgetTrackerCard({ theme }) {
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{t("budgetTracker.totalInvested")}</Text>
         {byCat.length ? (
           <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 6, textAlign: "center" }}>
-            {byCat.map((c) => `${c.label} $${c.sum.toFixed(0)}`).join("  ·  ")}
+            {byCat.map((c) => `${t(c.label)} $${c.sum.toFixed(0)}`).join("  ·  ")}
           </Text>
         ) : null}
       </View>
@@ -73,7 +73,7 @@ export const BudgetTrackerCard = memo(function BudgetTrackerCard({ theme }) {
           const active = cat === c.id;
           return (
             <Pressable key={c.id} onPress={() => setCat(c.id)} style={{ borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: active ? c.color + "22" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? c.color : "rgba(255, 255, 255, 0.1)" }}>
-              <Text style={{ color: active ? c.color : theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{c.label}</Text>
+              <Text style={{ color: active ? c.color : theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{t(c.label)}</Text>
             </Pressable>
           );
         })}
@@ -86,7 +86,7 @@ export const BudgetTrackerCard = memo(function BudgetTrackerCard({ theme }) {
             return (
               <View key={e.id} style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 8, paddingVertical: 8, paddingHorizontal: 10 }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.color }} />
-                <Text style={{ flex: 1, color: theme.text, fontSize: 12, fontWeight: "700" }} numberOfLines={1}>{e.label || c.label.replace(/^\S+\s/, "")}</Text>
+                <Text style={{ flex: 1, color: theme.text, fontSize: 12, fontWeight: "700" }} numberOfLines={1}>{e.label || t(c.label).replace(/^\S+\s/, "")}</Text>
                 <Text style={{ color: theme.text, fontSize: 12, fontWeight: "900" }}>${e.amount.toFixed(2)}</Text>
                 <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.removeItem")} onPress={() => remove(e.id)} hitSlop={touchSlop(14)}><Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text></Pressable>
               </View>

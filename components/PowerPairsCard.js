@@ -4,7 +4,7 @@ import produceData from "../data/produceData";
 import { styles } from "../styles";
 import { getPowerPairs, normalizeType, resolvePlantImageSource } from "../core";
 import { IconText } from "./IconText";
-import { useTranslation } from "../lib/i18n";
+import { t, useTranslation } from "../lib/i18n";
 
 // A short, plausible explanation for why two plants help each other in a shared bed.
 const pairReason = (aObj, bObj) => {
@@ -18,24 +18,24 @@ const pairReason = (aObj, bObj) => {
   if (isLegume(nameA) || isLegume(nameB)) {
     const legume = isLegume(nameA) ? aObj?.name : bObj?.name;
     const other = isLegume(nameA) ? bObj?.name : aObj?.name;
-    return `${legume} pulls nitrogen from the air into the soil, feeding ${other} naturally so it grows leafier and stronger.`;
+    return t("moreCards.pairLegume", { legume, other });
   }
   if (isAromatic(nameA) || isAromatic(nameB)) {
     const herb = isAromatic(nameA) ? aObj?.name : bObj?.name;
     const other = isAromatic(nameA) ? bObj?.name : aObj?.name;
-    return `${herb}'s strong scent masks ${other} and confuses or repels the pests that would normally target it.`;
+    return t("moreCards.pairAromatic", { herb, other });
   }
   if ((isTall(nameA) && isGround(nameB)) || (isTall(nameB) && isGround(nameA))) {
     const tall = isTall(nameA) ? aObj?.name : bObj?.name;
     const low = isTall(nameA) ? bObj?.name : aObj?.name;
-    return `${tall} offers light shade and a windbreak while ${low} shades the soil below — they stack neatly in the same space instead of competing.`;
+    return t("moreCards.pairLayers", { tall, low });
   }
   const ta = aObj ? normalizeType(aObj.type, aObj.name) : "";
   const tb = bObj ? normalizeType(bObj.type, bObj.name) : "";
   if (ta && tb && ta !== tb) {
-    return `Different families with different appetites — they draw on different nutrients and root depths, so they share the bed without fighting for the same resources.`;
+    return t("moreCards.pairFamilies");
   }
-  return "They grow happily side by side, making better use of the bed without competing for light, water, or root space.";
+  return t("moreCards.pairHappy");
 };
 
 export const PowerPairsCard = memo(function PowerPairsCard({ theme, gardenAreas, onOpenPlant }) {
@@ -66,7 +66,7 @@ export const PowerPairsCard = memo(function PowerPairsCard({ theme, gardenAreas,
               onPress={() => setExpanded(isOpen ? null : key)}
               accessibilityRole="button"
               accessibilityState={{ expanded: isOpen }}
-              accessibilityLabel={`${a} and ${b}, great pairing. Tap for why it works.`}
+              accessibilityLabel={t("moreCards.pairA11y", { a, b })}
               style={{ backgroundColor: "rgba(92, 255, 137, 0.08)", borderRadius: 16, padding: 12, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>

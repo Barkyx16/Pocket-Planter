@@ -22,7 +22,7 @@ export const DailyQuestsCard = memo(function DailyQuestsCard({ theme, dailyQuest
     const msLeft = midnight - now;
     const hoursLeft = Math.floor(msLeft / (1000 * 60 * 60));
     const minsLeft = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60));
-    return hoursLeft >= 1 ? `Resets in ${hoursLeft}h` : `Resets in ${minsLeft}m`;
+    return hoursLeft >= 1 ? t("moreCards.resetsInHours", { count: hoursLeft }) : t("moreCards.resetsInMinutes", { count: minsLeft });
   };
 
   const diffColorOf = (d) =>
@@ -36,7 +36,7 @@ export const DailyQuestsCard = memo(function DailyQuestsCard({ theme, dailyQuest
           <Text style={{ color: "#ffd86b", fontSize: 10, fontWeight: "800" }}>⏳ {getResetText()}</Text>
         </View>
         <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "800" }}>
-          {claimedCount}/{total} {t("dailyQuests.claimed")}{claimedXP} XP
+          {claimedCount}/{total} {t("dailyQuests.claimed")}{t("moreCards.xpAmount", { amount: claimedXP })}
         </Text>
       </View>
       <View style={{ height: 6, borderRadius: 999, backgroundColor: "rgba(255, 255, 255, 0.08)", overflow: "hidden", marginBottom: 14 }}>
@@ -97,7 +97,7 @@ export const DailyQuestsCard = memo(function DailyQuestsCard({ theme, dailyQuest
                   </View>
                 ) : (
                   <View style={{ backgroundColor: c, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 }}>
-                    <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "800" }}>Claim</Text>
+                    <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "800" }}>{t("moreCards.claim")}</Text>
                   </View>
                 )
               ) : null}

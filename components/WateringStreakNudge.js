@@ -6,7 +6,7 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const WateringStreakNudge = memo(function WateringStreakNudge({ theme, savedPlants, wateringHistory, snoozedPlants, onOpenPlant, onWater }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const tomorrowKey = getTomorrowKey();
   const atRisk = (savedPlants || [])
     .filter((name) => snoozedPlants?.[name] !== tomorrowKey)
@@ -23,8 +23,8 @@ export const WateringStreakNudge = memo(function WateringStreakNudge({ theme, sa
   const urgentToday = atRisk.filter((p) => p.daysLeft === 1);
   const accent = urgentToday.length ? "#ff9f43" : "#ffd86b";
   const headline = urgentToday.length
-    ? `Water ${urgentToday.length === 1 ? urgentToday[0].name : `${urgentToday.length} plants`} today to keep your streak`
-    : `${atRisk.length} watering streak${atRisk.length === 1 ? "" : "s"} winding down`;
+    ? (urgentToday.length === 1 ? t("moreCards.waterOneToday", { plant: urgentToday[0].name }) : t("moreCards.waterManyToday", { count: urgentToday.length }))
+    : tn("moreCards.streaksWinding", atRisk.length);
 
   return (
     <View style={{ borderRadius: 24, padding: 18, marginBottom: 18, borderWidth: 1.5, backgroundColor: `${accent}12`, borderColor: accent }}>
@@ -62,14 +62,14 @@ export const WateringStreakNudge = memo(function WateringStreakNudge({ theme, sa
                   <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{p.name}</Text>
                   <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "900", marginTop: 2 }}>🔥 {p.streak}{t("wateringStreakNudge.dayStreak")}</Text>
                   <Text style={{ color: critical ? accent : theme.secondaryText, fontSize: 10, fontWeight: "800", marginTop: 2 }}>
-                    {critical ? t("wateringStreakNudge.lastDayToKeepIt") : `⏳ ${p.daysLeft} days left`}
+                    {critical ? t("wateringStreakNudge.lastDayToKeepIt") : `⏳ ${tn("moreCards.daysLeft", p.daysLeft)}`}
                   </Text>
                 </View>
               </Pressable>
               <Pressable
                 onPress={() => onWater(p.name)}
                 accessibilityRole="button"
-                accessibilityLabel={`Water ${p.name} to keep its streak`}
+                accessibilityLabel={t("moreCards.waterToKeepStreak", { plant: p.name })}
                 style={{ backgroundColor: "#6bc7ff", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12 }}
               >
                 <IconText label={t("wateringStreakNudge.water")} style={{

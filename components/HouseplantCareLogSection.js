@@ -5,6 +5,7 @@ import produceData from "../data/produceData";
 import { getDaysSince, getTodayKey, normalizeType, resolvePlantImageSource, tapHaptic } from "../core";
 import { HOUSEPLANT_CARE, HOUSEPLANT_CARE_DEFAULT } from "../data/flowerHomeData";
 import { SkeletonSection } from "./Skeleton";
+import { useTranslation } from "../lib/i18n";
 
 export const HOUSEPLANT_CARELOG_STORAGE_KEY = "pp_houseplantCare";
 
@@ -13,6 +14,7 @@ export const HOUSEPLANT_CARELOG_STORAGE_KEY = "pp_houseplantCare";
 const daysSince = (dateKey) => getDaysSince(dateKey);
 
 export const HouseplantCareLogSection = memo(function HouseplantCareLogSection({ theme, savedPlants, onOpenPlant }) {
+  const { t } = useTranslation();
   const [log, setLog] = useState({}); // { name: { watered: dateKey, repot: dateKey } }
   const [loaded, setLoaded] = useState(false);
 
@@ -40,7 +42,7 @@ export const HouseplantCareLogSection = memo(function HouseplantCareLogSection({
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Log watering and repotting so you always know what's due.
+        {t("moreCards.careLogIntro")}
       </Text>
 
       {houseplants.length ? (
@@ -63,7 +65,7 @@ export const HouseplantCareLogSection = memo(function HouseplantCareLogSection({
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }}>{item.name}</Text>
                     <Text style={{ color: waterDue ? "#6bc7ff" : theme.secondaryText, fontSize: 10, fontWeight: "800", marginTop: 1 }}>
-                      💧 {wSince == null ? "not logged" : waterDue ? "water due" : `in ${wLeft}d`}{repotDue ? " · 🪴 repot due" : ""}
+                      💧 {wSince == null ? t("moreCards.notLogged") : waterDue ? t("moreCards.waterDue") : t("moreCards.inDays", { count: wLeft })}{repotDue ? ` · ${t("moreCards.repotDue")}` : ""}
                     </Text>
                   </View>
                   <Pressable onPress={() => mark(item.name, "watered")} style={{ backgroundColor: waterDue ? "#6bc7ff" : "rgba(255,255,255,0.08)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}>
@@ -78,7 +80,7 @@ export const HouseplantCareLogSection = memo(function HouseplantCareLogSection({
           })}
         </View>
       ) : (
-        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", fontStyle: "italic", marginTop: 12 }}>Save some houseplants to track their care.</Text>
+        <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", fontStyle: "italic", marginTop: 12 }}>{t("moreCards.saveHouseplantsCare")}</Text>
       )}
     </View>
   );

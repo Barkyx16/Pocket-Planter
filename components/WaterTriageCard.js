@@ -6,13 +6,13 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const WaterTriageCard = memo(function WaterTriageCard({ theme, savedPlants, wateringHistory, wateredPlants, weather, onWater, onOpenPlant }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const rows = getWaterTriage(savedPlants, wateringHistory, wateredPlants, weather);
   if (!rows.length) return null;
 
   const BUCKET = {
     overdue: { color: "#ff7b7b", icon: "🔴", label: "Overdue" },
-    today: { color: "#ffd86b", icon: "🟡", label: "Due today" },
+    today: { color: "#ffd86b", icon: "🟡", label: t("moreCards.dueToday") },
     tomorrow: { color: "#6bc7ff", icon: "🔵", label: "Tomorrow" },
   };
   const overdueCount = rows.filter((r) => r.bucket === "overdue").length;
@@ -20,10 +20,10 @@ export const WaterTriageCard = memo(function WaterTriageCard({ theme, savedPlant
 
   const summary =
     overdueCount > 0
-      ? `${overdueCount} overdue${todayCount ? `, ${todayCount} due today` : ""} — start at the top.`
+      ? (todayCount ? t("moreCards.overdueTodaySummary", { overdue: overdueCount, today: todayCount }) : t("moreCards.overdueSummary", { overdue: overdueCount }))
       : todayCount > 0
-      ? `${todayCount} due today, plus tomorrow's coming up.`
-      : "Nothing overdue — just tomorrow's on deck.";
+      ? t("moreCards.todaySummary", { today: todayCount })
+      : t("moreCards.nothingOverdue");
 
   return (
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: overdueCount ? "#ff7b7b" : "rgba(107, 199, 255, 0.3)" }]}>
@@ -36,7 +36,7 @@ export const WaterTriageCard = memo(function WaterTriageCard({ theme, savedPlant
           const img = resolvePlantImageSource(item);
           const detail =
             bucket === "overdue"
-              ? `${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? "" : "s"} overdue`
+              ? tn("moreCards.daysOverdue", Math.abs(daysUntil))
               : bucket === "today"
               ? t("waterTriage.dueToday")
               : t("waterTriage.dueTomorrow");

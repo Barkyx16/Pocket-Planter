@@ -3,10 +3,10 @@ import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { MONTH_NAMES, getMonthEmoji, localPlantMonths, tapHaptic } from "../core";
 import { getMonthImage } from "../data/monthImageMap";
-import { useTranslation } from "../lib/i18n";
+import { formatDate, useTranslation } from "../lib/i18n";
 
 export const PersonalPlantingCalendar = memo(function PersonalPlantingCalendar({ theme, savedPlants, zone, onOpenPlant }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const saved = produceData.filter((item) => savedPlants.includes(item.name));
   const currentMonth = new Date().getMonth() + 1;
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
@@ -26,9 +26,9 @@ export const PersonalPlantingCalendar = memo(function PersonalPlantingCalendar({
   const peakLabel = peak && peak.plants.length ? MONTH_NAMES[peak.monthNum - 1].slice(0, 3) : "—";
 
   const stats = [
-    { label: "To sow now", value: String(thisMonthCount), color: thisMonthCount ? "#8effab" : theme.secondaryText },
-    { label: "Active months", value: String(activeMonths), color: "#6bc7ff" },
-    { label: "Peak month", value: peakLabel, color: "#ffd86b" },
+    { label: t("moreCards.toSowNow"), value: String(thisMonthCount), color: thisMonthCount ? "#8effab" : theme.secondaryText },
+    { label: t("moreCards.activeMonths"), value: String(activeMonths), color: "#6bc7ff" },
+    { label: t("moreCards.peakMonth"), value: peakLabel, color: "#ffd86b" },
   ];
 
   return (
@@ -44,7 +44,7 @@ export const PersonalPlantingCalendar = memo(function PersonalPlantingCalendar({
       </View>
 
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18, marginTop: 12 }}>
-        {t("personalPlantingCalendar.tapAMonthToSee")}{zone ? ` in Zone ${zone}` : ""}.
+        {t("personalPlantingCalendar.tapAMonthToSee")}{zone ? t("moreCards.inZone", { zone }) : ""}.
       </Text>
 
       {/* COMPACT MONTH GRID — 4 per row */}
@@ -59,7 +59,7 @@ export const PersonalPlantingCalendar = memo(function PersonalPlantingCalendar({
               onPress={() => { tapHaptic("light"); setSelectedMonth(monthNum); }}
               accessibilityRole="button"
               accessibilityState={{ selected: isSelected }}
-              accessibilityLabel={`${MONTH_NAMES[monthNum - 1]}: ${has ? `${plants.length} plant${plants.length === 1 ? "" : "s"} to sow` : t("personalPlantingCalendar.nothingToSow")}`}
+              accessibilityLabel={has ? tn("moreCards.monthToSow", plants.length, { month: formatDate(new Date(2000, monthNum - 1, 1), { month: "long" }) }) : `${formatDate(new Date(2000, monthNum - 1, 1), { month: "long" })}: ${t("personalPlantingCalendar.nothingToSow")}`}
               style={{
                 width: "22.7%",
                 borderRadius: 12,
@@ -105,7 +105,7 @@ export const PersonalPlantingCalendar = memo(function PersonalPlantingCalendar({
                 key={`cal-${item.name}`}
                 onPress={() => onOpenPlant(item)}
                 accessibilityRole="button"
-                accessibilityLabel={`Open ${item.name} care guide`}
+                accessibilityLabel={t("moreCards.openCareGuide", { plant: item.name })}
                 style={{ backgroundColor: "rgba(92, 255, 137, 0.12)", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
               >
                 <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "800" }}>{item.name} ›</Text>

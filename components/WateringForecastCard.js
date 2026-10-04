@@ -7,7 +7,7 @@ import { IconText } from "./IconText";
 import { formatDate, useTranslation } from "../lib/i18n";
 
 export const WateringForecastCard = memo(function WateringForecastCard({ theme, savedPlants, wateringHistory, wateredPlants, weather, onOpenPlant }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   // Default to today so the useful info is visible without a tap.
   const [selectedDay, setSelectedDay] = useState(0);
 
@@ -48,10 +48,10 @@ export const WateringForecastCard = memo(function WateringForecastCard({ theme, 
   const busiest = days.reduce((a, b) => (b.plants.length > a.plants.length ? b : a), days[0]);
 
   const headline = dueToday > 0
-    ? `💧 ${dueToday} plant${dueToday === 1 ? "" : "s"} to water today`
+    ? tn("moreCards.plantsToWaterToday", dueToday)
     : nextDue
-    ? `✅ Nothing due today — next up ${weekdayFmt(nextDue.date, nextDue.offset)}`
-    : "✅ You're all caught up this week!";
+    ? t("moreCards.nothingDueNext", { day: weekdayFmt(nextDue.date, nextDue.offset) })
+    : t("moreCards.caughtUpWeek");
 
 return (
     <View>
@@ -91,7 +91,7 @@ return (
                   key={d.offset}
                   onPress={() => setSelectedDay(isSel ? null : d.offset)}
                   accessibilityRole="button"
-                  accessibilityLabel={`${weekdayFmt(d.date, d.offset)}: ${count} plant${count === 1 ? "" : "s"} due`}
+                  accessibilityLabel={tn("moreCards.dayPlantsDue", count, { day: weekdayFmt(d.date, d.offset) })}
                   style={{ flex: 1, alignItems: "center", borderRadius: 12, paddingVertical: 10, backgroundColor: `rgba(107,199,255,${intensity})`, borderWidth: isSel ? 2 : 1, borderColor: isSel ? "#6bc7ff" : isToday ? "rgba(107, 199, 255, 0.4)" : "rgba(255, 255, 255, 0.08)" }}
                 >
                   <Text style={{ color: isToday ? "#6bc7ff" : theme.secondaryText, fontSize: 10, fontWeight: "800" }}>{weekdayFmt(d.date, d.offset)}</Text>
@@ -105,7 +105,7 @@ return (
           {active ? (
             <View style={{ marginTop: 14, backgroundColor: "rgba(107, 199, 255, 0.08)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.2)" }}>
               <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: active.plants.length ? 10 : 0 }}>
-                {weekdayFmt(active.date, active.offset).toUpperCase()} · {active.plants.length} DUE
+                {t("moreCards.dayDue", { day: weekdayFmt(active.date, active.offset).toUpperCase(), count: active.plants.length })}
               </Text>
               {active.plants.length === 0 ? (
                 <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>{t("wateringForecast.nothingDueAFreeDay")}</Text>

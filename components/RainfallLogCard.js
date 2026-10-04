@@ -41,10 +41,10 @@ export const RainfallLogCard = memo(function RainfallLogCard({ theme, weather, u
   if (!loaded) return null;
 
   const advice = weekTotal >= 1
-    ? { color: "#5cff89", text: "Your garden's had plenty of rain this week — most established plants can skip watering. Check the soil first." }
+    ? { color: "#5cff89", text: t("moreCards.rainPlenty") }
     : weekTotal >= 0.4
-    ? { color: "#8effab", text: "A decent soaking this week. Water only the thirstiest plants and containers." }
-    : { color: "#ffd86b", text: "Dry week so far — keep up with your normal watering, especially seedlings and pots." };
+    ? { color: "#8effab", text: t("moreCards.rainDecent") }
+    : { color: "#ffd86b", text: t("moreCards.rainDry") };
 
   return (
     <View>
@@ -59,7 +59,7 @@ export const RainfallLogCard = memo(function RainfallLogCard({ theme, weather, u
       </View>
 
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800", marginTop: 14, marginBottom: 6 }}>
-        {t("rainfallLog.logTodaysRain")}{log[today] ? ` · ${formatLength(log[today], unitSystem)} so far` : ""}
+        {t("rainfallLog.logTodaysRain")}{log[today] ? t("moreCards.soFar", { amount: formatLength(log[today], unitSystem) }) : ""}
       </Text>
       <View style={{ flexDirection: "row", gap: 6 }}>
         {[0.1, 0.25, 0.5, 1].map((v) => (
@@ -69,7 +69,7 @@ export const RainfallLogCard = memo(function RainfallLogCard({ theme, weather, u
         ))}
         {log[today] ? (
           <Pressable onPress={clearToday} style={{ alignItems: "center", justifyContent: "center", paddingHorizontal: 12, borderRadius: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.12)" }}>
-            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "900" }}>Clear</Text>
+            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{t("moreCards.clear")}</Text>
           </Pressable>
         ) : null}
       </View>

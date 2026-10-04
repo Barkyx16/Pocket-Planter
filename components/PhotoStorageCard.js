@@ -7,7 +7,7 @@ const DAY = 24 * 60 * 60 * 1000;
 const EST_MB_PER_PHOTO = 0.4;
 
 export const PhotoStorageCard = memo(function PhotoStorageCard({ theme, journalEntries, onDeleteOlderThan }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const entries = journalEntries || [];
   const total = entries.length;
   const now = Date.now();
@@ -20,13 +20,13 @@ export const PhotoStorageCard = memo(function PhotoStorageCard({ theme, journalE
 
   const stats = [
     { value: String(total), label: "Photos", color: "#8effab" },
-    { value: `~${estMB}`, label: "MB (est.)", color: "#6bc7ff" },
-    { value: String(thisMonth), label: "This month", color: "#ffd86b" },
+    { value: `~${estMB}`, label: t("moreCards.mbEst"), color: "#6bc7ff" },
+    { value: String(thisMonth), label: t("moreCards.thisMonth"), color: "#ffd86b" },
   ];
 
   const cleanupOptions = [
-    { days: 365, count: older1yr, label: "Older than 1 year" },
-    { days: 182, count: older6mo, label: "Older than 6 months" },
+    { days: 365, count: older1yr, label: t("moreCards.olderYear") },
+    { days: 182, count: older6mo, label: t("moreCards.olderSixMonths") },
   ];
 
   return (
@@ -34,7 +34,7 @@ export const PhotoStorageCard = memo(function PhotoStorageCard({ theme, journalE
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
         {total === 0
           ? t("photoStorage.noGardenPhotosYetAs")
-          : `You've saved ${total} garden photo${total === 1 ? "" : "s"} (roughly ${estMB} MB). Clear out old ones to free up space.`}
+          : tn("moreCards.photosSaved", total, { mb: estMB })}
       </Text>
 
       {total > 0 ? (

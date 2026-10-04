@@ -2,7 +2,7 @@ import { memo, useEffect } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { getTodayKey, resolvePlantImageSource } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { tn, useTranslation } from "../lib/i18n";
 
 export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries, harvestLog, onOpenPlant, seen, onShown }) {
   const { t, growthStageLabel } = useTranslation();
@@ -21,12 +21,12 @@ export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries
     // Year anniversary — exact month + day, a year or more back.
     if (then.getMonth() === now.getMonth() && then.getDate() === now.getDate()) {
       const years = now.getFullYear() - then.getFullYear();
-      if (years >= 1) return { label: years === 1 ? "1 year ago" : `${years} years ago`, years };
+      if (years >= 1) return { label: tn("moreCards.yearsAgo", years), years };
     }
     // Month milestone — same day-of-month, at least a month back.
     if (then.getDate() === now.getDate()) {
       const months = (now.getFullYear() - then.getFullYear()) * 12 + (now.getMonth() - then.getMonth());
-      if (months >= 1) return { label: months === 1 ? "1 month ago" : `${months} months ago`, months };
+      if (months >= 1) return { label: tn("moreCards.monthsAgo", months), months };
     }
     return null;
   };
@@ -119,7 +119,7 @@ export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries
                 {img ? <Image source={img} style={{ width: 36, height: 36 }} resizeMode="contain" /> : <Text style={{ fontSize: 20 }}>🎉</Text>}
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>Harvested {m.entry.plantName}</Text>
+                <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{t("moreCards.harvested", { plant: m.entry.plantName })}</Text>
                 <Text style={{ color: "#d8c8ff", fontSize: 12, fontWeight: "900", marginTop: 2 }}>
                   🕐 {m.match.label}{m.entry.amount ? ` · ${m.entry.amount} ${m.entry.unit || ""}`.trimEnd() : ""}
                 </Text>

@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { getDaysSince, getTodayKey, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
+import { useTranslation } from "../lib/i18n";
 import { touchSlop } from "../lib/a11y";
 
 export const VASE_STORAGE_KEY = "pp_vases";
@@ -13,6 +14,7 @@ const LIFE_OPTS = [5, 7, 10, 14];
 const daysSince = (dateKey) => getDaysSince(dateKey) ?? 0;
 
 export const VaseTrackerSection = memo(function VaseTrackerSection({ theme }) {
+  const { t, tn } = useTranslation();
   const [vases, setVases] = useState([]); // { id, name, date, days }
   const [loaded, setLoaded] = useState(false);
   const [name, setName] = useState("");
@@ -40,12 +42,12 @@ export const VaseTrackerSection = memo(function VaseTrackerSection({ theme }) {
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Started a fresh vase? Track how many days it has left.
+        {t("moreCards.vaseIntro")}
       </Text>
 
       <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
-        <TextInput value={name} onChangeText={setName} onSubmitEditing={add} placeholder="Vase / bouquet name" placeholderTextColor="#8fbf9d" style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 9, fontSize: 14, fontWeight: "700" }} />
-        <Pressable onPress={add} accessibilityRole="button" accessibilityLabel="Add vase" style={{ backgroundColor: "#ffb6c1", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
+        <TextInput value={name} onChangeText={setName} onSubmitEditing={add} placeholder={t("moreCards.vasePlaceholder")} placeholderTextColor="#8fbf9d" style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 9, fontSize: 14, fontWeight: "700" }} />
+        <Pressable onPress={add} accessibilityRole="button" accessibilityLabel={t("moreCards.addVase")} style={{ backgroundColor: "#ffb6c1", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
           <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>＋</Text>
         </Pressable>
       </View>
@@ -72,8 +74,8 @@ export const VaseTrackerSection = memo(function VaseTrackerSection({ theme }) {
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                   <Text style={{ fontSize: 15 }}>🏺</Text>
                   <Text style={{ flex: 1, color: theme.text, fontSize: 13, fontWeight: "800" }} numberOfLines={1}>{v.name}</Text>
-                  <Text style={{ color, fontSize: 12, fontWeight: "900" }}>{left <= 0 ? "past its best" : `${left} day${left === 1 ? "" : "s"} left`}</Text>
-                  <Pressable onPress={() => remove(v.id)} hitSlop={touchSlop(13)} accessibilityRole="button" accessibilityLabel="Remove vase"><Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>✕</Text></Pressable>
+                  <Text style={{ color, fontSize: 12, fontWeight: "900" }}>{left <= 0 ? t("moreCards.pastBest") : tn("moreCards.daysLeft", left)}</Text>
+                  <Pressable onPress={() => remove(v.id)} hitSlop={touchSlop(13)} accessibilityRole="button" accessibilityLabel={t("moreCards.removeVase")}><Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>✕</Text></Pressable>
                 </View>
                 <View style={{ height: 5, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden", marginTop: 8 }}>
                   <View style={{ height: 5, borderRadius: 3, width: `${pct}%`, backgroundColor: color }} />
