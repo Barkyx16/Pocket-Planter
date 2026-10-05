@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 const { describe, it, eq, ok, ROOT } = require("../test.js");
 const core = require(path.join(ROOT, "core.js"));
 const produce = require(path.join(ROOT, "data/produceData.js"));
@@ -284,6 +285,43 @@ describe("getPlantingSteps", () => {
   });
   it("tells a perennial it will come back", () => {
     ok(/comes back next year/.test(steps("Grapes")));
+  });
+  it("translates the hand-written guides with the measurements in the user's units", () => {
+    const i18n = require(path.join(ROOT, "lib/i18n.js"));
+    const en = require(path.join(ROOT, "lib/locales/en.js"));
+    const guides = (en.default || en).plantingGuide;
+    // The English dictionary is the guide with its measurements lifted out; put
+    // back in order they must give the sentence core actually shows.
+    const tomato = core.getPlantingSteps(plantOf("Tomato"));
+    tomato.forEach((english, i) => {
+      const measures = [...english.matchAll(/(\d+(?:\/\d+)?(?:–\d+)?)\s?(inches|inch|feet|foot|°F)/g)].map((m) => m[0]);
+      eq(guides[`tomato_${i + 1}`].replace(/\{m(\d+)\}/g, (_, n) => measures[n - 1]), english);
+    });
+    try {
+      i18n.setLocale("de");
+      const metric = core.getPlantingSteps(plantOf("Tomato"), "metric").join(" ");
+      ok(/61–91 cm/.test(metric) && !/inch|\{m/.test(metric), metric);
+      const imperial = core.getPlantingSteps(plantOf("Tomato"), "imperial").join(" ");
+      ok(/24–36″/.test(imperial) && !/inch|\{m/.test(imperial), imperial);
+      ok(!/Choose a sunny spot/.test(imperial), "still English");
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+  it("keeps every guide's English source in step with core", () => {
+    const en = require(path.join(ROOT, "lib/locales/en.js"));
+    const guides = (en.default || en).plantingGuide;
+    const src = fs.readFileSync(path.join(ROOT, "core.js"), "utf8");
+    const missing = [];
+    for (const m of src.matchAll(/return guide\("(\w+)", \[\n([\s\S]*?)\n {2}\]\);/g)) {
+      m[2].split("\n").filter((l) => l.trim()).forEach((line, i) => {
+        const english = JSON.parse(line.trim().replace(/,$/, ""));
+        const measures = [...english.matchAll(/(\d+(?:\/\d+)?(?:–\d+)?)\s?(inches|inch|feet|foot|°F)/g)].map((x) => x[0]);
+        const entry = guides[`${m[1]}_${i + 1}`];
+        if (!entry || entry.replace(/\{m(\d+)\}/g, (_, n) => measures[n - 1]) !== english) missing.push(`${m[1]}_${i + 1}`);
+      });
+    }
+    eq(missing, []);
   });
   it("gives every plant at least four usable steps", () => {
     const bad = items.filter((i) => {

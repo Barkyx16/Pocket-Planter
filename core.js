@@ -6,7 +6,7 @@ import zipZoneData from "./data/zipZoneData";
 import { PLANT_DETAILS } from "./data/plantDetails";
 import { PLANT_HEALTH } from "./data/plantHealth";
 import { DISEASE_LIBRARY } from "./data/diseaseData";
-import { formatDate, formatTime, moodLabel, t, tn } from "./lib/i18n";
+import { DEFAULT_LOCALE, formatDate, formatTime, getLocale, moodLabel, t, tn } from "./lib/i18n";
 
 export const loadingScreenImage = require("./assets/loading-screen.png");
 
@@ -2955,13 +2955,34 @@ export function getPlantSpecificTip(item, zone, weather) {
   return t("adviceText.tipLater");
 }
 
+// The hand-written guides are English data, translated under
+// plantingGuide.<crop>_<n>. Their measurements ("18–24 inches", "60°F") are
+// {m1}, {m2}… in the translations and filled from the English in order:
+// converted for metric, written as symbols (18–24″) for imperial, since
+// "inches" would otherwise sit untranslated inside the sentence. English is
+// returned as written; the plant screen converts it for metric itself.
+const GUIDE_MEASURE = /(\d+(?:\/\d+)?(?:–\d+)?)\s?(inches|inch|feet|foot|°F)/g;
+export function localizeGuideStep(key, english, units) {
+  if (getLocale() === DEFAULT_LOCALE) return english;
+  const translated = t(key);
+  if (translated === key) return english;
+  const measures = [...english.matchAll(GUIDE_MEASURE)];
+  return translated.replace(/\{m(\d+)\}/g, (match, n) => {
+    const m = measures[Number(n) - 1];
+    if (!m) return match;
+    if (units === "metric") return localizeAdvice(m[0], "metric");
+    return m[2] === "°F" ? `${m[1]}°F` : m[2] === "inch" || m[2] === "inches" ? `${m[1]}″` : `${m[1]} ft`;
+  });
+}
+
 export function getPlantingSteps(item, units) {
   if (Array.isArray(item.plantingSteps) && item.plantingSteps.length) return item.plantingSteps;
 
   const name = String(item?.name || "").toLowerCase();
+  const guide = (id, list) => list.map((english, i) => localizeGuideStep(`plantingGuide.${id}_${i + 1}`, english, units));
 
   // VEGETABLES
-  if (matchesCrop(name, "tomato")) return [
+  if (matchesCrop(name, "tomato")) return guide("tomato", [
     "Choose a sunny spot with at least 8 hours of direct sunlight daily.",
     "Dig a deep hole and bury the stem up to the lowest set of leaves — tomatoes root along buried stems.",
     "Space plants 24–36 inches apart to allow airflow and prevent disease.",
@@ -2969,8 +2990,8 @@ export function getPlantingSteps(item, units) {
     "Add a 2–3 inch layer of mulch around the base to retain moisture and reduce weeds.",
     "Install a cage or stake at planting time before roots establish.",
     "Feed with a balanced fertilizer every 2 weeks once flowers appear.",
-  ];
-  if (matchesCrop(name, "pepper")) return [
+  ]);
+  if (matchesCrop(name, "pepper")) return guide("pepper", [
     "Start seeds indoors 8–10 weeks before last frost or buy transplants.",
     "Choose a warm, sunny location with well-draining soil.",
     "Plant 18–24 inches apart after all frost risk has passed.",
@@ -2978,8 +2999,8 @@ export function getPlantingSteps(item, units) {
     "Mulch around plants to keep roots cool and retain moisture.",
     "Feed with a low-nitrogen fertilizer once flowering begins.",
     "Harvest regularly to encourage more fruit production throughout the season.",
-  ];
-  if (matchesCrop(name, "cucumber")) return [
+  ]);
+  if (matchesCrop(name, "cucumber")) return guide("cucumber", [
     "Wait until soil temperature reaches at least 60°F before planting.",
     "Sow seeds 1 inch deep directly in the garden or start indoors 3 weeks early.",
     "Plant in hills of 2–3 seeds or space transplants 12 inches apart.",
@@ -2987,8 +3008,8 @@ export function getPlantingSteps(item, units) {
     "Water deeply and consistently — cucumbers are 95% water and need steady moisture.",
     "Mulch heavily to keep soil cool and moist during hot weather.",
     "Harvest when cucumbers reach full size but before they yellow — pick often to keep plants producing.",
-  ];
-  if (matchesCrop(name, "zucchini") || matchesCrop(name, "squash")) return [
+  ]);
+  if (matchesCrop(name, "zucchini") || matchesCrop(name, "squash")) return guide("zucchini", [
     "Direct sow seeds 1 inch deep after last frost when soil is warm.",
     "Plant in groups of 2–3 seeds and thin to the strongest plant.",
     "Space plants 3–4 feet apart — zucchini gets large quickly.",
@@ -2996,8 +3017,8 @@ export function getPlantingSteps(item, units) {
     "Hand pollinate early flowers if bees are scarce by transferring pollen with a small brush.",
     "Harvest zucchini when 6–8 inches long for best flavor and texture.",
     "Check plants daily during peak season — zucchini grows extremely fast.",
-  ];
-  if (matchesCrop(name, "carrot")) return [
+  ]);
+  if (matchesCrop(name, "carrot")) return guide("carrot", [
     "Loosen soil at least 12 inches deep and remove all rocks and debris.",
     "Sow seeds directly — carrots do not transplant well.",
     "Sprinkle seeds thinly in rows 12 inches apart and cover with just 1/4 inch of soil.",
@@ -3005,8 +3026,8 @@ export function getPlantingSteps(item, units) {
     "Thin seedlings to 3 inches apart once they reach 2 inches tall.",
     "Avoid heavy nitrogen fertilizer — it causes forked roots.",
     "Harvest when tops reach full color — gently loosen soil with a fork before pulling.",
-  ];
-  if (matchesCrop(name, "lettuce")) return [
+  ]);
+  if (matchesCrop(name, "lettuce")) return guide("lettuce", [
     "Choose a spot with morning sun and afternoon shade in warm climates.",
     "Sow seeds 1/8 inch deep directly in loose, fertile soil.",
     "Keep rows 12 inches apart and thin seedlings to 6 inches once established.",
@@ -3014,8 +3035,8 @@ export function getPlantingSteps(item, units) {
     "Harvest outer leaves as needed or cut the whole head at soil level.",
     "Replant every 2–3 weeks for a continuous harvest throughout the season.",
     "Bolt prevention: harvest before temperatures consistently exceed 80°F.",
-  ];
-  if (matchesCrop(name, "spinach")) return [
+  ]);
+  if (matchesCrop(name, "spinach")) return guide("spinach", [
     "Plant in early spring or fall — spinach struggles in summer heat.",
     "Sow seeds 1/2 inch deep in rows 12 inches apart.",
     "Thin seedlings to 6 inches apart when they reach 2 inches tall.",
@@ -3023,8 +3044,8 @@ export function getPlantingSteps(item, units) {
     "Fertilize with nitrogen-rich fertilizer for lush leafy growth.",
     "Harvest outer leaves when they reach 3–4 inches or cut the whole plant.",
     "Plant a new batch every 2 weeks for continuous harvest before summer.",
-  ];
-  if (matchesCrop(name, "kale")) return [
+  ]);
+  if (matchesCrop(name, "kale")) return guide("kale", [
     "Start seeds indoors 6 weeks before last frost or direct sow in late summer for fall harvest.",
     "Plant in full sun to partial shade in rich, well-draining soil.",
     "Space transplants 18–24 inches apart for large healthy plants.",
@@ -3032,8 +3053,8 @@ export function getPlantingSteps(item, units) {
     "Fertilize monthly with a balanced fertilizer.",
     "Harvest outer leaves first, leaving the center to keep growing.",
     "Flavor improves after a light frost — fall kale is often sweeter than spring kale.",
-  ];
-  if (matchesCrop(name, "broccoli")) return [
+  ]);
+  if (matchesCrop(name, "broccoli")) return guide("broccoli", [
     "Start seeds indoors 6–8 weeks before last frost.",
     "Transplant outdoors 2–3 weeks before last frost — broccoli tolerates light frost.",
     "Space plants 18 inches apart in rows 24 inches wide.",
@@ -3041,8 +3062,8 @@ export function getPlantingSteps(item, units) {
     "Feed with nitrogen-rich fertilizer every 3 weeks.",
     "Harvest the main head before flowers open — cut at an angle to allow side shoots to form.",
     "Continue harvesting side shoots for weeks after the main head is cut.",
-  ];
-  if (matchesCrop(name, "cabbage")) return [
+  ]);
+  if (matchesCrop(name, "cabbage")) return guide("cabbage", [
     "Start seeds indoors 6–8 weeks before last frost.",
     "Harden off transplants for one week before moving outside.",
     "Space plants 12–24 inches apart depending on desired head size.",
@@ -3050,8 +3071,8 @@ export function getPlantingSteps(item, units) {
     "Mulch around plants to retain moisture and suppress weeds.",
     "Watch for cabbage worms and treat with Bt spray if needed.",
     "Harvest when heads feel solid and firm when squeezed.",
-  ];
-  if (matchesCrop(name, "potato")) return [
+  ]);
+  if (matchesCrop(name, "potato")) return guide("potato", [
     "Cut seed potatoes into chunks with at least 2 eyes each and let them cure for 24 hours.",
     "Dig trenches 4 inches deep and 12 inches apart.",
     "Place seed potato chunks cut side down, 12 inches apart in the trench.",
@@ -3059,8 +3080,8 @@ export function getPlantingSteps(item, units) {
     "Hill soil around stems as plants grow — keeping tubers covered prevents greening.",
     "Stop watering when foliage begins to yellow and die back.",
     "Harvest 2–3 weeks after foliage dies — dig carefully to avoid damaging tubers.",
-  ];
-  if (matchesCrop(name, "onion")) return [
+  ]);
+  if (matchesCrop(name, "onion")) return guide("onion", [
     "Plant sets or transplants in early spring as soon as soil can be worked.",
     "Choose a sunny spot with loose, well-draining soil.",
     "Plant sets 1 inch deep and 4–6 inches apart in rows 12 inches apart.",
@@ -3068,8 +3089,8 @@ export function getPlantingSteps(item, units) {
     "Stop watering when tops begin to fall over naturally.",
     "Push over any remaining tops to redirect energy to the bulb.",
     "Harvest when tops are fully brown and dry — cure in a warm dry place for 2–4 weeks before storing.",
-  ];
-  if (matchesCrop(name, "garlic")) return [
+  ]);
+  if (matchesCrop(name, "garlic")) return guide("garlic", [
     "Plant individual cloves in fall, 4–6 weeks before ground freezes.",
     "Choose the largest cloves from the bulb for the best yield.",
     "Plant cloves pointed end up, 2 inches deep and 6 inches apart.",
@@ -3077,8 +3098,8 @@ export function getPlantingSteps(item, units) {
     "Remove mulch in spring when green shoots emerge.",
     "Snap off scapes (curly shoots) in early summer to redirect energy to the bulb.",
     "Harvest when lower leaves turn brown but upper leaves are still green — usually June or July.",
-  ];
-  if (matchesCrop(name, "corn")) return [
+  ]);
+  if (matchesCrop(name, "corn")) return guide("corn", [
     "Wait until soil reaches 60°F before planting — corn needs warm soil to germinate.",
     "Plant in blocks of at least 4 rows rather than single rows for good pollination.",
     "Sow seeds 1 inch deep, 9–12 inches apart in rows 30–36 inches apart.",
@@ -3086,8 +3107,8 @@ export function getPlantingSteps(item, units) {
     "Side dress with nitrogen fertilizer when plants reach knee height.",
     "Silk turns brown and dries out when ears are ready — check by peeling back husk.",
     "Harvest immediately when ready — sugar converts to starch quickly after picking.",
-  ];
-  if (matchesCrop(name, "bean") || matchesCrop(name, "greenbean")) return [
+  ]);
+  if (matchesCrop(name, "bean") || matchesCrop(name, "greenbean")) return guide("bean", [
     "Direct sow after last frost when soil reaches 60°F.",
     "Plant seeds 1–2 inches deep, 3 inches apart in rows 18 inches apart.",
     "For pole beans install support before planting — plants grow 6–8 feet tall.",
@@ -3095,8 +3116,8 @@ export function getPlantingSteps(item, units) {
     "Avoid overhead watering to prevent fungal disease on leaves.",
     "Begin harvesting when pods are firm and snap cleanly — don't let pods mature on plant.",
     "Pick every 2–3 days to keep plants producing throughout the season.",
-  ];
-  if (matchesCrop(name, "pea")) return [
+  ]);
+  if (matchesCrop(name, "pea")) return guide("pea", [
     "Plant in early spring as soon as soil can be worked — peas prefer cool weather.",
     "Sow seeds 1 inch deep, 2 inches apart in rows 18 inches apart.",
     "Install a trellis or netting before planting for climbing varieties.",
@@ -3104,8 +3125,8 @@ export function getPlantingSteps(item, units) {
     "Do not fertilize with nitrogen — peas fix their own nitrogen from the air.",
     "Harvest when pods are plump and bright green — taste one to check sweetness.",
     "Pick regularly to keep plants producing — leaving pods on the vine stops new growth.",
-  ];
-  if (matchesCrop(name, "radish")) return [
+  ]);
+  if (matchesCrop(name, "radish")) return guide("radish", [
     "Sow seeds directly in spring or fall — radishes bolt quickly in summer heat.",
     "Plant 1/2 inch deep, 1 inch apart in rows 6 inches apart.",
     "Thin to 2 inches apart once seedlings emerge.",
@@ -3113,8 +3134,8 @@ export function getPlantingSteps(item, units) {
     "Radishes are ready in just 25–30 days — check size by gently exposing the top of the root.",
     "Harvest promptly when mature — leaving them in ground makes them woody and hot.",
     "Succession plant every 2 weeks for continuous harvest throughout cool season.",
-  ];
-  if (matchesCrop(name, "beet")) return [
+  ]);
+  if (matchesCrop(name, "beet")) return guide("beet", [
     "Sow seeds directly in early spring or late summer for fall harvest.",
     "Plant 1/2 inch deep, 3 inches apart in rows 12 inches apart.",
     "Soak seeds in water for 24 hours before planting to improve germination.",
@@ -3122,8 +3143,8 @@ export function getPlantingSteps(item, units) {
     "Keep soil consistently moist for smooth, uniform root development.",
     "Harvest when roots reach 1.5–3 inches in diameter for best flavor.",
     "Don't forget the greens — beet tops are edible and highly nutritious.",
-  ];
-  if (matchesCrop(name, "eggplant")) return [
+  ]);
+  if (matchesCrop(name, "eggplant")) return guide("eggplant", [
     "Start seeds indoors 8–10 weeks before last frost — eggplant needs a long warm season.",
     "Transplant outdoors only when night temperatures stay above 55°F consistently.",
     "Space plants 18–24 inches apart in full sun.",
@@ -3131,8 +3152,8 @@ export function getPlantingSteps(item, units) {
     "Mulch heavily to keep soil warm and retain moisture.",
     "Feed with a balanced fertilizer every 3 weeks once flowering begins.",
     "Harvest when skin is glossy and bright — dull skin means the fruit is overripe.",
-  ];
-  if (matchesCrop(name, "celery")) return [
+  ]);
+  if (matchesCrop(name, "celery")) return guide("celery", [
     "Start seeds indoors 10–12 weeks before last frost — celery has a very long growing season.",
     "Transplant when seedlings are 3–4 inches tall and frost risk has passed.",
     "Space plants 12 inches apart in rich, moisture-retentive soil.",
@@ -3140,8 +3161,8 @@ export function getPlantingSteps(item, units) {
     "Side dress with compost or fertilizer every 3 weeks.",
     "Blanch stalks by wrapping with newspaper 2 weeks before harvest for milder flavor.",
     "Harvest by cutting the whole plant at soil level when stalks reach full size.",
-  ];
-  if (matchesCrop(name, "pumpkin")) return [
+  ]);
+  if (matchesCrop(name, "pumpkin")) return guide("pumpkin", [
     "Sow seeds directly after last frost when soil is warm.",
     "Plant 3–5 seeds per hill, 1 inch deep, in hills spaced 6 feet apart.",
     "Thin to 2–3 plants per hill once seedlings emerge.",
@@ -3149,8 +3170,8 @@ export function getPlantingSteps(item, units) {
     "Feed with a high-potassium fertilizer once flowers form.",
     "Pinch off excess small pumpkins to direct energy into 1–2 large fruits.",
     "Harvest when skin is hard, color is fully developed, and stem begins to dry.",
-  ];
-  if (matchesCrop(name, "watermelon")) return [
+  ]);
+  if (matchesCrop(name, "watermelon")) return guide("watermelon", [
     "Start seeds indoors 2–3 weeks before last frost or direct sow when soil reaches 70°F.",
     "Plant in hills 6 feet apart — watermelons need a lot of space to spread.",
     "Water deeply but infrequently — deep roots prefer long dry periods between waterings.",
@@ -3158,8 +3179,8 @@ export function getPlantingSteps(item, units) {
     "Place a board or straw under developing melons to prevent rot.",
     "Tap the melon — a hollow thump means it's ripe.",
     "Check the tendril closest to the fruit — when it dries and browns the melon is ready.",
-  ];
-  if (matchesCrop(name, "okra")) return [
+  ]);
+  if (matchesCrop(name, "okra")) return guide("okra", [
     "Soak seeds overnight in water to improve germination.",
     "Direct sow after last frost when soil reaches 65°F.",
     "Plant 1 inch deep, 12 inches apart in rows 3 feet apart.",
@@ -3167,10 +3188,10 @@ export function getPlantingSteps(item, units) {
     "Fertilize with a balanced fertilizer at planting and again at first flowering.",
     "Harvest pods when 3–4 inches long — larger pods become tough and fibrous.",
     "Harvest every 2 days during peak season — okra grows extremely fast in heat.",
-  ];
+  ]);
 
   // HERBS
-  if (matchesCrop(name, "basil")) return [
+  if (matchesCrop(name, "basil")) return guide("basil", [
     "Start seeds indoors 6 weeks before last frost or direct sow after frost.",
     "Plant in a warm, sunny location with at least 6 hours of direct sun.",
     "Space plants 12–18 inches apart in well-draining fertile soil.",
@@ -3178,8 +3199,8 @@ export function getPlantingSteps(item, units) {
     "Pinch off flower buds as soon as they appear to keep leaves flavorful.",
     "Harvest by pinching stems just above a leaf node to encourage bushy growth.",
     "Bring containers indoors before first frost to extend the season.",
-  ];
-  if (matchesCrop(name, "mint")) return [
+  ]);
+  if (matchesCrop(name, "mint")) return guide("mint", [
     "Plant in a container — mint spreads aggressively and will take over a garden bed.",
     "Choose a spot with partial shade to full sun.",
     "Plant in moist, rich soil and water regularly.",
@@ -3187,8 +3208,8 @@ export function getPlantingSteps(item, units) {
     "Pinch off flowers to keep leaves at peak flavor.",
     "Harvest stems regularly — the more you pick the bushier it grows.",
     "Bring containers indoors before frost for year-round fresh mint.",
-  ];
-  if (matchesCrop(name, "rosemary")) return [
+  ]);
+  if (matchesCrop(name, "rosemary")) return guide("rosemary", [
     "Plant in full sun with excellent drainage — rosemary hates wet feet.",
     "Space plants 2–3 feet apart in sandy or loamy soil.",
     "Water deeply but infrequently — rosemary is drought tolerant once established.",
@@ -3196,8 +3217,8 @@ export function getPlantingSteps(item, units) {
     "Prune after flowering to keep plants compact and bushy.",
     "Harvest by snipping young stem tips — never cut back more than one third at a time.",
     "In cold zones grow in containers and bring indoors for winter.",
-  ];
-  if (matchesCrop(name, "thyme")) return [
+  ]);
+  if (matchesCrop(name, "thyme")) return guide("thyme", [
     "Plant in full sun with very well-draining soil — thyme tolerates drought well.",
     "Space plants 12 inches apart.",
     "Water sparingly once established — overwatering is the most common mistake.",
@@ -3205,8 +3226,8 @@ export function getPlantingSteps(item, units) {
     "Harvest stems before flowers open for the strongest flavor.",
     "Divide plants every 2–3 years to keep them vigorous.",
     "Thyme is cold hardy in most zones and can overwinter outdoors.",
-  ];
-  if (matchesCrop(name, "cilantro")) return [
+  ]);
+  if (matchesCrop(name, "cilantro")) return guide("cilantro", [
     "Direct sow seeds in cool weather — cilantro bolts quickly in heat.",
     "Plant 1/4 inch deep in rows 12 inches apart.",
     "Succession sow every 3 weeks for continuous harvest.",
@@ -3214,8 +3235,8 @@ export function getPlantingSteps(item, units) {
     "Harvest outer leaves when plants reach 6 inches tall.",
     "Let some plants bolt and go to seed — coriander seeds are also edible.",
     "Plant in fall in warm climates for the best cool-season harvest.",
-  ];
-  if (matchesCrop(name, "parsley")) return [
+  ]);
+  if (matchesCrop(name, "parsley")) return guide("parsley", [
     "Soak seeds in water for 24 hours before planting to speed germination.",
     "Sow 1/4 inch deep in rich, moist soil in full sun to partial shade.",
     "Thin seedlings to 8 inches apart — parsley needs room to develop.",
@@ -3223,8 +3244,8 @@ export function getPlantingSteps(item, units) {
     "Fertilize monthly with a balanced fertilizer.",
     "Harvest outer stems first, cutting at the base of the stem.",
     "Parsley is biennial — it will overwinter and flower in its second year.",
-  ];
-  if (matchesCrop(name, "fennel")) return [
+  ]);
+  if (matchesCrop(name, "fennel")) return guide("fennel", [
     "Direct sow in a dedicated spot away from other vegetables.",
     "Plant in full sun in well-draining soil.",
     "Sow seeds 1/4 inch deep, 12 inches apart.",
@@ -3232,10 +3253,10 @@ export function getPlantingSteps(item, units) {
     "Avoid planting near tomatoes, peppers, or most vegetables — fennel inhibits their growth.",
     "Harvest leaves anytime and bulb when it reaches tennis ball size.",
     "Let some plants go to seed for harvesting fennel seeds in late summer.",
-  ];
+  ]);
 
   // BERRIES
-  if (matchesCrop(name, "strawberry")) return [
+  if (matchesCrop(name, "strawberry")) return guide("strawberry", [
     "Plant in early spring in full sun with well-draining, slightly acidic soil.",
     "Set crowns at soil level — planting too deep causes rot, too shallow causes drying.",
     "Space plants 12–18 inches apart in rows 24 inches apart.",
@@ -3243,8 +3264,8 @@ export function getPlantingSteps(item, units) {
     "Remove flowers in the first year to establish strong roots before fruiting.",
     "Feed with a high-potassium fertilizer in spring and after harvest.",
     "Replace plants every 3 years as productivity declines with age.",
-  ];
-  if (matchesCrop(name, "blueberry")) return [
+  ]);
+  if (matchesCrop(name, "blueberry")) return guide("blueberry", [
     "Choose a spot with full sun and very acidic soil (pH 4.5–5.5).",
     "Amend soil with sulfur or peat moss to lower pH if needed.",
     "Plant at least 2 different varieties for cross-pollination and higher yield.",
@@ -3252,8 +3273,8 @@ export function getPlantingSteps(item, units) {
     "Mulch deeply with wood chips or pine bark to maintain soil acidity.",
     "Water consistently — blueberries have shallow roots that dry out quickly.",
     "Do not expect a full harvest for 3 years — patience pays off with long-lived productive bushes.",
-  ];
-  if (matchesCrop(name, "raspberry")) return [
+  ]);
+  if (matchesCrop(name, "raspberry")) return guide("raspberry", [
     "Plant bare root canes in early spring in full sun.",
     "Space canes 2 feet apart in rows 8 feet apart.",
     "Install a trellis or post-and-wire support system before planting.",
@@ -3261,10 +3282,10 @@ export function getPlantingSteps(item, units) {
     "Water deeply once per week — raspberries need consistent moisture.",
     "Mulch heavily to suppress weeds and retain moisture.",
     "Prune out old fruited canes after harvest to make room for new growth.",
-  ];
+  ]);
 
   // TREE FRUITS
-  if (matchesCrop(name, "apple")) return [
+  if (matchesCrop(name, "apple")) return guide("apple", [
     "Choose a sunny location with good air circulation to prevent disease.",
     "Plant bare root trees in early spring before buds break.",
     "Dig a hole twice as wide as the root ball and just as deep.",
@@ -3272,8 +3293,8 @@ export function getPlantingSteps(item, units) {
     "Plant at least 2 compatible varieties for cross-pollination.",
     "Stake young trees for the first 2 years for stability.",
     "Prune annually in late winter to maintain an open canopy and good airflow.",
-  ];
-  if (matchesCrop(name, "peach")) return [
+  ]);
+  if (matchesCrop(name, "peach")) return guide("peach", [
     "Plant in full sun with well-draining soil in spring.",
     "Dig a hole wide enough to spread roots without bending.",
     "Keep the bud union 2 inches above soil level.",
@@ -3281,8 +3302,8 @@ export function getPlantingSteps(item, units) {
     "Thin fruit to 6 inches apart when they reach marble size for larger peaches.",
     "Prune to an open vase shape annually in late winter.",
     "Apply dormant oil spray in late winter to control overwintering pests.",
-  ];
-  if (matchesCrop(name, "lemon") || matchesCrop(name, "lime") || matchesCrop(name, "orange") || matchesCrop(name, "grapefruit") || matchesCrop(name, "mandarin")) return [
+  ]);
+  if (matchesCrop(name, "lemon") || matchesCrop(name, "lime") || matchesCrop(name, "orange") || matchesCrop(name, "grapefruit") || matchesCrop(name, "mandarin")) return guide("lemon", [
     "Plant in the warmest, sunniest spot in your garden or in a large container.",
     "Use well-draining citrus mix soil and ensure excellent drainage.",
     "Plant with the bud union above soil line.",
@@ -3290,8 +3311,8 @@ export function getPlantingSteps(item, units) {
     "Feed with citrus-specific fertilizer every 6–8 weeks during the growing season.",
     "Protect from frost — cover or bring containers indoors when temps drop below 32°F.",
     "Prune only to remove dead wood and crossing branches — citrus needs minimal pruning.",
-  ];
-  if (matchesCrop(name, "avocado")) return [
+  ]);
+  if (matchesCrop(name, "avocado")) return guide("avocado", [
     "Plant in full sun in a warm frost-free location.",
     "Use fast-draining soil — avocados are extremely sensitive to root rot.",
     "Dig a hole as deep as the root ball and 3 times as wide.",
@@ -3299,8 +3320,8 @@ export function getPlantingSteps(item, units) {
     "Water deeply but allow soil to dry out between waterings.",
     "Fertilize with a nitrogen-rich fertilizer 4 times per year.",
     "Mulch around the base but keep mulch away from the trunk to prevent rot.",
-  ];
-  if (matchesCrop(name, "fig")) return [
+  ]);
+  if (matchesCrop(name, "fig")) return guide("fig", [
     "Plant in full sun against a south-facing wall in cooler climates for extra warmth.",
     "Dig a hole twice the width of the root ball.",
     "Figs tolerate poor soil but need excellent drainage.",
@@ -3308,8 +3329,8 @@ export function getPlantingSteps(item, units) {
     "Prune in late winter to remove dead wood and maintain shape.",
     "In cold zones wrap trunk with burlap in winter or grow in containers.",
     "Harvest when fruit softens and hangs downward — figs do not ripen off the tree.",
-  ];
-  if (matchesCrop(name, "pomegranate")) return [
+  ]);
+  if (matchesCrop(name, "pomegranate")) return guide("pomegranate", [
     "Plant in full sun in well-draining soil — pomegranates tolerate drought and heat.",
     "Space plants 15–20 feet apart or prune as a shrub.",
     "Water regularly for the first 2 years while roots establish.",
@@ -3317,34 +3338,34 @@ export function getPlantingSteps(item, units) {
     "Fertilize in spring with a balanced fertilizer.",
     "Prune suckers from the base regularly to maintain tree form.",
     "Harvest when skin turns deep red and makes a metallic sound when tapped.",
-  ];
+  ]);
 
   // DEFAULT
   const type = normalizeType(item.type, item.name);
-  if (type === "Herbs") return [
+  if (type === "Herbs") return guide("typeHerbs", [
     "Choose a sunny container, raised bed, or garden spot with excellent drainage.",
     "Use loose potting mix or compost-rich soil.",
     "Plant at the same depth as the nursery pot or slightly shallower.",
     "Water at the base and keep soil evenly moist while establishing.",
     "Pinch growing tips regularly to encourage bushy compact growth.",
     "Harvest frequently once established — regular picking improves plant health.",
-  ];
-  if (type === "Tree Fruits") return [
+  ]);
+  if (type === "Tree Fruits") return guide("typeTreeFruits", [
     "Choose a full-sun location with enough long-term space for a mature tree.",
     "Dig a wide shallow hole and avoid planting the trunk too deep.",
     "Keep the graft union above soil level.",
     "Water deeply after planting and mulch around the base.",
     "Stake young trees for the first 2 years.",
     "Prune annually in late winter to maintain shape and airflow.",
-  ];
-  if (type === "Berries") return [
+  ]);
+  if (type === "Berries") return guide("typeBerries", [
     "Pick a sunny spot with rich, well-draining, slightly acidic soil.",
     "Plant with correct spacing so leaves can dry after rain.",
     "Mulch around the base to hold moisture and suppress weeds.",
     "Water consistently — berries need steady moisture during fruiting.",
     "Feed with a high-potassium fertilizer in spring.",
     "Watch for birds and pests once fruit begins forming.",
-  ];
+  ]);
   // Everything without a hand-written guide used to land on six sentences that
   // said nothing a gardener could act on — the same six for 380 of the 612
   // plants, while PLANT_DETAILS held that plant's sowing depth, spacing, light
