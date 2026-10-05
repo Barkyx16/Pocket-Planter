@@ -647,7 +647,7 @@ describe("advice temperatures follow the units setting", () => {
     ok(/localizeAdvice\(tip\.tip, unitSystem\)/.test(fert) && /localizeAdvice\(t\(weatherWarning\.key\), unitSystem\)/.test(fert));
     ok(/unitSystem=\{unitSystem\}\s*\n\s*weather=\{weather\}/.test(read("screens/GardenTab.js")), "the Garden tab must pass units to the fertilizer card");
     ok(!/above 95°F/.test(read("components/ForecastCard.js")), "the forecast must format its threshold");
-    ok(/localizeAdvice\(disease\.spreads, unitSystem\)/.test(read("components/DiseaseDetailScreen.js")));
+    ok(/localizeAdvice\(diseaseText\(disease, "spreads", unitSystem\), unitSystem\)/.test(read("components/DiseaseDetailScreen.js")));
     const app = read("App.js");
     ok(/<PlantDetailScreen\s+unitSystem=\{unitSystem\}/.test(app) || /<PlantDetailScreen[\s\S]{0,200}unitSystem=\{unitSystem\}/.test(app));
     ok(/<DiseaseDetailScreen[\s\S]{0,120}unitSystem=\{unitSystem\}/.test(app));
@@ -1185,17 +1185,21 @@ describe("curated pair reasons", () => {
   });
 });
 
-describe("pest guide text", () => {
+describe("pest and disease guide text", () => {
   const i18n = require(path.join(ROOT, "lib/i18n.js"));
-  const FIELDS = ["name", "sign", "fix", "description", "damage", "prevent"];
-  it("has every field of every pest in the English dictionary", () => {
-    // English is returned as written; the dictionary is what translators work
-    // from, so a pest added to core without an entry would stay English.
+  const { DISEASE_LIBRARY } = require(path.join(ROOT, "data/diseaseData.js"));
+  const LIBRARIES = [
+    ["pest", core.PEST_WATCH_DATA, core.pestText, ["name", "sign", "fix", "description", "damage", "prevent"]],
+    ["disease", DISEASE_LIBRARY, core.diseaseText, ["name", "description", "sign", "damage", "prevent", "treat", "spreads"]],
+  ];
+  it("has every field of every entry translated", () => {
+    // English is returned as written; an entry added without dictionary keys
+    // would stay English in every language.
     const missing = [];
     try {
       i18n.setLocale("de");
-      for (const p of core.PEST_WATCH_DATA) for (const f of FIELDS) {
-        if (core.pestText(p, f) === p[f]) missing.push(`${p.name}.${f}`);
+      for (const [label, list, text, fields] of LIBRARIES) for (const e of list) for (const f of fields) {
+        if (text(e, f) === e[f]) missing.push(`${label}: ${e.name}.${f}`);
       }
     } finally {
       i18n.setLocale("en");
@@ -1203,7 +1207,7 @@ describe("pest guide text", () => {
     eq(missing, []);
   });
   it("leaves English untouched", () => {
-    for (const p of core.PEST_WATCH_DATA) for (const f of FIELDS) eq(core.pestText(p, f), p[f]);
+    for (const [, list, text, fields] of LIBRARIES) for (const e of list) for (const f of fields) eq(text(e, f), e[f]);
   });
 });
 

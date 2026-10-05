@@ -4730,17 +4730,20 @@ export function getFrameColor(level) {
   return "#5cff89";
 }
 
-// PEST_WATCH_DATA is English; pest.name stays the identifier (images, lookups,
-// authored plant profiles) and each shown field is translated under
-// pestText.<pest>_<field>, measurements and all, via localizeMeasuredText.
-const pestSlug = (name) =>
+// PEST_WATCH_DATA and DISEASE_LIBRARY are English. An entry's name stays its
+// identifier (images, lookups, authored plant profiles) and each shown field is
+// translated under <ns>.<entry>_<field>, measurements and all, via
+// localizeMeasuredText.
+const librarySlug = (name) =>
   String(name || "").replace(/['’]/g, "").split(/[^A-Za-z0-9]+/).filter(Boolean)
     .map((w, i) => (i ? w[0].toUpperCase() + w.slice(1).toLowerCase() : w.toLowerCase())).join("");
-export function pestText(pest, field, units) {
-  const english = pest?.[field];
-  if (typeof english !== "string") return english;
-  return localizeMeasuredText(`pestText.${pestSlug(pest.name)}_${field}`, english, units);
+function libraryText(key, english, units) {
+  return typeof english === "string" ? localizeMeasuredText(key, english, units) : english;
 }
+export const pestText = (pest, field, units) =>
+  libraryText(`pestText.${librarySlug(pest?.name)}_${field}`, pest?.[field], units);
+export const diseaseText = (disease, field, units) =>
+  libraryText(`diseaseText.${librarySlug(disease?.name)}_${field}`, disease?.[field], units);
 
 export const PEST_WATCH_DATA = [
   { name: "Aphids", emoji: "🐛", climates: ["hot","moderate","cold"], months: [3,4,5,6,9,10], targets: ["Vegetables","Herbs","lettuce","kale","pepper","tomato","cabbage","broccoli"], sign: "Clusters of tiny green/black bugs on new growth and leaf undersides; sticky residue.", fix: "Blast off with water, then treat with insecticidal soap. Ladybugs help long-term.",

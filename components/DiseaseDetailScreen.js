@@ -4,7 +4,7 @@ import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { IconText } from "./IconText";
-import { localizeAdvice } from "../core";
+import { diseaseText, localizeAdvice } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 // Disease types as authored in diseaseData, to their translated labels.
@@ -53,19 +53,19 @@ export const DiseaseDetailScreen = memo(function DiseaseDetailScreen({ theme, di
             <Text style={{ fontSize: 48 }}>{disease.emoji || "🦠"}</Text>
           )}
         </View>
-        <Text style={{ color: theme.text, fontSize: 24, fontWeight: "900", marginTop: 14, textAlign: "center" }}>{disease.name}</Text>
+        <Text style={{ color: theme.text, fontSize: 24, fontWeight: "900", marginTop: 14, textAlign: "center" }}>{diseaseText(disease, "name")}</Text>
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4, textAlign: "center" }}>
           {t(`diseaseDetailScreen.${TYPE_KEYS[disease.type] || "plantDisease"}`)}
         </Text>
       </View>
 
       {/* INFO SECTIONS */}
-      <Section icon="🔍" title={t("diseaseDetailScreen.whatItIs")} text={localizeAdvice(disease.description, unitSystem)} />
-      <Section icon="👀" title={t("diseaseDetailScreen.signs")} text={localizeAdvice(disease.sign, unitSystem)} color={AMBER} />
-      <Section icon="💥" title={t("diseaseDetailScreen.damage")} text={localizeAdvice(disease.damage, unitSystem)} color="#ff9f9f" />
-      <Section icon="🛡️" title={t("diseaseDetailScreen.prevent")} text={localizeAdvice(disease.prevent, unitSystem)} color="#8effab" />
-      <Section icon="✅" title={t("diseaseDetailScreen.treat")} text={localizeAdvice(disease.treat, unitSystem)} color="#5cff89" />
-      <Section icon="🌡️" title={t("diseaseDetailScreen.conditions")} text={localizeAdvice(disease.spreads, unitSystem)} color={AMBER} />
+      <Section icon="🔍" title={t("diseaseDetailScreen.whatItIs")} text={localizeAdvice(diseaseText(disease, "description", unitSystem), unitSystem)} />
+      <Section icon="👀" title={t("diseaseDetailScreen.signs")} text={localizeAdvice(diseaseText(disease, "sign", unitSystem), unitSystem)} color={AMBER} />
+      <Section icon="💥" title={t("diseaseDetailScreen.damage")} text={localizeAdvice(diseaseText(disease, "damage", unitSystem), unitSystem)} color="#ff9f9f" />
+      <Section icon="🛡️" title={t("diseaseDetailScreen.prevent")} text={localizeAdvice(diseaseText(disease, "prevent", unitSystem), unitSystem)} color="#8effab" />
+      <Section icon="✅" title={t("diseaseDetailScreen.treat")} text={localizeAdvice(diseaseText(disease, "treat", unitSystem), unitSystem)} color="#5cff89" />
+      <Section icon="🌡️" title={t("diseaseDetailScreen.conditions")} text={localizeAdvice(diseaseText(disease, "spreads", unitSystem), unitSystem)} color={AMBER} />
 
       {/* PLANTS AT RISK */}
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
