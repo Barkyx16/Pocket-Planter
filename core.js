@@ -6,7 +6,7 @@ import zipZoneData from "./data/zipZoneData";
 import { PLANT_DETAILS } from "./data/plantDetails";
 import { PLANT_HEALTH } from "./data/plantHealth";
 import { DISEASE_LIBRARY } from "./data/diseaseData";
-import { formatDate, formatTime, t } from "./lib/i18n";
+import { formatDate, formatTime, moodLabel, t, tn } from "./lib/i18n";
 
 export const loadingScreenImage = require("./assets/loading-screen.png");
 
@@ -1702,7 +1702,10 @@ export const PAIR_REASONS = {
   "thyme|tomato": "Thyme's scent deters worms and draws pollinators to tomatoes.",
 };
 
-const SUN_WORDS = { full: "full sun", partial: "part shade", shade: "shade" };
+const SUN_WORDS = { full: "coreText.sunFull", partial: "coreText.sunPartial", shade: "coreText.sunShade" };
+const WATER_WORDS = { low: "coreText.waterLow", medium: "coreText.waterMedium", high: "coreText.waterHigh" };
+const sunWords = (sun) => (SUN_WORDS[sun] ? t(SUN_WORDS[sun]) : sun);
+const waterWords = (water) => (WATER_WORDS[water] ? t(WATER_WORDS[water]) : `${water} water`);
 export function getPairReason(a, b) {
   const key = [String(a || ""), String(b || "")]
     .map((s) => s.trim().toLowerCase())
@@ -1716,15 +1719,15 @@ export function getPairReason(a, b) {
     if (curated) return curated;
     const attrs = getFlowerAttrs();
     const A = attrs[a], B = attrs[b];
-    if (flowerLightConflict(A.sun, B.sun)) return `${a} wants ${SUN_WORDS[A.sun] || A.sun} and ${b} wants ${SUN_WORDS[B.sun] || B.sun} — one will struggle in the same spot. Give them separate beds.`;
-    if (flowerWaterConflict(A.water, B.water)) return `${a} likes ${A.water} water while ${b} likes ${B.water} — hard to keep both happy in one bed.`;
-    if (A.sun && A.sun === B.sun && A.water && A.water === B.water) return `${a} and ${b} share the same light and water needs — easy neighbors in the same bed.`;
-    return `${a} and ${b} coexist fine in a mixed flower bed.`;
+    if (flowerLightConflict(A.sun, B.sun)) return t("coreText.flowerLightConflict", { a, b, sunA: sunWords(A.sun), sunB: sunWords(B.sun) });
+    if (flowerWaterConflict(A.water, B.water)) return t("coreText.flowerWaterConflict", { a, b, waterA: waterWords(A.water), waterB: waterWords(B.water) });
+    if (A.sun && A.sun === B.sun && A.water && A.water === B.water) return t("coreText.flowerSameNeeds", { a, b });
+    return t("coreText.flowerCoexist", { a, b });
   }
   const score = getCompatibilityScore(a, b);
-  if (score.label === "Excellent Pair") return `${a} and ${b} grow well together and support each other in the same bed.`;
-  if (score.label === "Avoid") return `${a} and ${b} compete for nutrients or attract the same pests — try separate beds.`;
-  return `${a} and ${b} coexist fine — no known conflict.`;
+  if (score.label === "Excellent Pair") return t("coreText.pairExcellent", { a, b });
+  if (score.label === "Avoid") return t("coreText.pairAvoid", { a, b });
+  return t("coreText.pairNeutral", { a, b });
 }
 
 export function findGardenConflicts(gardenAreas) {
@@ -2285,20 +2288,20 @@ export function getPlantHealth(item) {
 
 export function getHarvestCountdown(item) {
   const ornType = normalizeType(item?.type, item?.name);
-  if (ornType === "Flowers") return "Blooms seasonally";
-  if (ornType === "Houseplants") return "Grown for foliage";
+  if (ornType === "Flowers") return t("coreText.bloomsSeasonally");
+  if (ornType === "Houseplants") return t("coreText.grownForFoliage");
   const authored = getPlantDetails(item);
   if (authored) {
     // Authored plants with a real maturity window (incl. perennial herbs that
     // still crop the first season) show a day count; trees/berries carry
     // daysToMaturity: null and fall through to the seasonal label.
-    if (authored.daysToMaturity) return `~${authored.daysToMaturity} day harvest`;
-    if (authored.perennial) return "Perennial — harvests seasonally";
+    if (authored.daysToMaturity) return t("coreText.dayHarvest", { count: authored.daysToMaturity });
+    if (authored.perennial) return t("coreText.perennialSeasonal");
   }
-  if (isPerennial(item)) return "Perennial — harvests seasonally";
+  if (isPerennial(item)) return t("coreText.perennialSeasonal");
   const key = String(item?.name || "").replace(/\s+/g, "_");
   const days = harvestDays[key] || harvestDays[item?.name] || 75;
-  return `~${days} day harvest`;
+  return t("coreText.dayHarvest", { count: days });
 }
 
 // Whether a plant has a harvest countdown at all — the same question
@@ -3781,12 +3784,12 @@ export function getLastWateredText(plantName, wateredPlants, wateringHistory) {
     ? history[history.length - 1]
     : wateredPlants?.[plantName];
   const days = getDaysSince(lastDate);
-  if (days === null) return "Never watered";
-  if (days <= 0) return "Watered today";
-  if (days === 1) return "Watered yesterday";
-  if (days < 14) return `Watered ${days} days ago`;
+  if (days === null) return t("coreText.neverWatered");
+  if (days <= 0) return t("coreText.wateredToday");
+  if (days === 1) return t("coreText.wateredYesterday");
+  if (days < 14) return t("coreText.wateredDaysAgo", { count: days });
   const weeks = Math.floor(days / 7);
-  return `Watered ${weeks} week${weeks === 1 ? "" : "s"} ago`;
+  return tn("coreText.wateredWeeksAgo", weeks);
 }
 
 export function getWateringCount(plantName, wateringHistory) {
@@ -3858,10 +3861,10 @@ export function getNextWaterInfo(plantName, item, wateringHistory, wateredPlants
   if (rainSoon && daysUntil <= 0) daysUntil = 1;
 
   let label, urgency;
-  if (daysUntil <= 0) { label = "Water due today"; urgency = "due"; }
-  else if (daysUntil === 1) { label = "Water tomorrow"; urgency = "soon"; }
-  else { label = `Water in ${daysUntil} days`; urgency = "ok"; }
-  if (rainSoon) { label = "Rain expected — check soil first"; urgency = "soon"; }
+  if (daysUntil <= 0) { label = t("coreText.waterDueToday"); urgency = "due"; }
+  else if (daysUntil === 1) { label = t("coreText.waterTomorrow"); urgency = "soon"; }
+  else { label = t("coreText.waterInDays", { count: daysUntil }); urgency = "ok"; }
+  if (rainSoon) { label = t("coreText.rainCheckSoil"); urgency = "soon"; }
 
   return { daysUntil, label, urgency, interval, rainSoon };
 }
@@ -5011,6 +5014,15 @@ export function countInSeason(items, dateField, year, seasonMonths) {
 // ── Garden Timeline ──────────────────────────────────────────────────────────
 // Merges every dated garden signal the app already tracks into one newest-first
 // feed for the Journal. Waterings are grouped per day so they don't flood it.
+// Care entries store their English label; the SoilCareLogCard action ids map to
+// keys by name (pruned → soilCareText.actionPruned), so the timeline can show
+// them in the gardener's language and fall back to the stored text otherwise.
+const CARE_ACTION_IDS = ["compost", "repot", "pests", "ph", "fertilize", "pruned", "mulch", "transplant", "watered", "staked", "harvest", "custom"];
+function careActionTitle(entry) {
+  if (CARE_ACTION_IDS.includes(entry.actionId)) return t(`soilCareText.action${entry.actionId[0].toUpperCase()}${entry.actionId.slice(1)}`);
+  return entry.actionLabel || t("coreText.tlGardenCare");
+}
+
 export function buildGardenTimeline({
   journalEntries = [], harvestLog = [], wateringHistory = {}, careLog = [],
   sowLog = {}, plantSaveDates = {}, badgeEarnedDates = {}, achievementBadges = [],
@@ -5023,28 +5035,28 @@ export function buildGardenTimeline({
 
   Object.entries(plantSaveDates || {}).forEach(([plant, dk]) => {
     if (!dk) return;
-    events.push({ ts: tsOf(dk), dateKey: keyOf(dk), kind: "plant", icon: "🌱", color: "#5cff89", title: `Added ${plant}`, subtitle: "Saved to your garden", plantName: plant });
+    events.push({ ts: tsOf(dk), dateKey: keyOf(dk), kind: "plant", icon: "🌱", color: "#5cff89", title: t("coreText.tlAdded", { plant }), subtitle: t("coreText.tlSavedToGarden"), plantName: plant });
   });
   Object.entries(sowLog || {}).forEach(([plant, dk]) => {
     if (!dk) return;
-    events.push({ ts: tsOf(dk), dateKey: keyOf(dk), kind: "sow", icon: "🌾", color: "#8effab", title: `Sowed ${plant}`, subtitle: "Succession sowing", plantName: plant });
+    events.push({ ts: tsOf(dk), dateKey: keyOf(dk), kind: "sow", icon: "🌾", color: "#8effab", title: t("coreText.tlSowed", { plant }), subtitle: t("coreText.tlSuccession"), plantName: plant });
   });
   (journalEntries || []).forEach((e) => {
     if (!e) return;
     const when = e.createdAt || e.date;
-    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "photo", icon: "📸", color: "#6bc7ff", title: e.plantName && e.plantName !== "Garden" ? `Photo of ${e.plantName}` : "Garden photo", subtitle: e.mood ? `Feeling ${e.mood}` : "Added a photo", plantName: e.plantName && e.plantName !== "Garden" ? e.plantName : null, imageUri: e.imageUri });
+    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "photo", icon: "📸", color: "#6bc7ff", title: e.plantName && e.plantName !== "Garden" ? t("coreText.tlPhotoOf", { plant: e.plantName }) : t("coreText.tlGardenPhoto"), subtitle: e.mood ? t("coreText.tlFeeling", { mood: moodLabel(e.mood) }) : t("coreText.tlAddedPhoto"), plantName: e.plantName && e.plantName !== "Garden" ? e.plantName : null, imageUri: e.imageUri });
   });
   (harvestLog || []).forEach((h) => {
     if (!h) return;
     const when = h.createdAt || h.date;
     const amt = [h.amount, h.unit].filter(Boolean).join(" ").trim();
-    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "harvest", icon: "🎉", color: "#ffd86b", title: `Harvested ${h.plantName}`, subtitle: amt || "Logged a harvest", plantName: h.plantName });
+    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "harvest", icon: "🎉", color: "#ffd86b", title: t("coreText.tlHarvested", { plant: h.plantName }), subtitle: amt || t("coreText.tlLoggedHarvest"), plantName: h.plantName });
   });
   (careLog || []).forEach((c) => {
     if (!c) return;
     const when = c.createdAt || c.date;
-    const who = c.plant && c.plant !== "Garden" ? c.plant : "the whole garden";
-    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "care", icon: c.actionIcon || "🌿", color: c.actionColor || "#8effab", title: c.actionLabel || "Garden care", subtitle: c.note ? c.note : who, plantName: c.plant && c.plant !== "Garden" ? c.plant : null });
+    const who = c.plant && c.plant !== "Garden" ? c.plant : t("coreText.tlWholeGarden");
+    events.push({ ts: tsOf(when), dateKey: keyOf(when), kind: "care", icon: c.actionIcon || "🌿", color: c.actionColor || "#8effab", title: careActionTitle(c), subtitle: c.note ? c.note : who, plantName: c.plant && c.plant !== "Garden" ? c.plant : null });
   });
   const waterByDay = {};
   Object.entries(wateringHistory || {}).forEach(([plant, dates]) => {
@@ -5056,14 +5068,14 @@ export function buildGardenTimeline({
   });
   Object.entries(waterByDay).forEach(([dk, set]) => {
     const n = set.size;
-    events.push({ ts: tsOf(dk), dateKey: dk, kind: "water", icon: "💧", color: "#6bc7ff", title: `Watered ${n} plant${n === 1 ? "" : "s"}`, subtitle: Array.from(set).slice(0, 3).join(", ") + (n > 3 ? ` +${n - 3}` : "") });
+    events.push({ ts: tsOf(dk), dateKey: dk, kind: "water", icon: "💧", color: "#6bc7ff", title: tn("coreText.tlWatered", n), subtitle: Array.from(set).slice(0, 3).join(", ") + (n > 3 ? ` +${n - 3}` : "") });
   });
   const badgeById = {};
   (achievementBadges || []).forEach((b) => { if (b && b.id) badgeById[b.id] = b; });
   Object.entries(badgeEarnedDates || {}).forEach(([id, dk]) => {
     if (!dk) return;
     const b = badgeById[id];
-    events.push({ ts: tsOf(dk), dateKey: keyOf(dk), kind: "badge", icon: (b && b.emoji) || "🏆", color: "#ffd86b", title: `Earned "${(b && b.title) || id}"`, subtitle: "Achievement unlocked" });
+    events.push({ ts: tsOf(dk), dateKey: keyOf(dk), kind: "badge", icon: (b && b.emoji) || "🏆", color: "#ffd86b", title: t("coreText.tlEarned", { badge: (b && b.title) || id }), subtitle: t("coreText.tlAchievement") });
   });
 
   return events.filter((e) => e.ts > 0).sort((a, b) => b.ts - a.ts);

@@ -1119,3 +1119,24 @@ describe("the plant page's floating popups", () => {
     ok(/typeof popup\.amount === "number" \? t\("plantsText\.xpGain"/.test(src));
   });
 });
+
+describe("core's display text", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("follows the app language", () => {
+    // These strings reach translated cards straight from core; left English they
+    // showed "Watered 3 days ago" inside a German card.
+    try {
+      i18n.setLocale("de");
+      const today = core.getTodayKey();
+      eq(core.getLastWateredText("T", {}, { T: [today] }), "Heute gegossen");
+      eq(core.getLastWateredText("T", {}, {}), "Noch nie gegossen");
+      ok(/Ernte/.test(core.getHarvestCountdown(items.find((i) => core.hasHarvestCountdown(i)))));
+      eq(core.getPairReason("Quux", "Zork"), "Quux und Zork vertragen sich – kein bekannter Konflikt.");
+      const tl = core.buildGardenTimeline({ plantSaveDates: { Tomato: today }, careLog: [{ actionId: "pruned", actionLabel: "Pruned", createdAt: new Date().toISOString() }] });
+      const titles = tl.map((e) => e.title).join(" | ");
+      ok(!/Added |Pruned/.test(titles), titles);
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});
