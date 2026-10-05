@@ -2686,8 +2686,8 @@ useEffect(() => {
         if (key === tomorrowKey || key === todayKey) fresh[name] = key;
       });
       setSnoozedPlants(fresh);
-      // If the summary was set for a day that's now passed, this clears it;
-      // if snoozes are still pending for tomorrow, it stays scheduled.
+      // Reschedules both summaries from what's still pending: this morning's
+      // (if 9 AM hasn't passed) and tomorrow's.
       scheduleSnoozeSummary(fresh);
     } catch (e) {}
   });
@@ -3466,39 +3466,48 @@ async function togglePlantOfDay(value) {
   }
 
 async function scheduleSnoozeSummary(snoozeMap) {
-    // One combined morning notification for everything snoozed to tomorrow.
+    // One combined 9 AM notification per day for everything snoozed to it.
+    // Today's has its own id: snoozing on day D promises a summary at 9 AM on
+    // D+1, and opening the app that morning before 9 recalculated "tomorrow"
+    // as D+2, found nothing due and cancelled the summary that was promised.
+    const todayKey = getTodayKey();
     const tomorrowKey = getTomorrowKey();
-    const dueTomorrow = Object.entries(snoozeMap || {})
-      .filter(([, key]) => key === tomorrowKey)
-      .map(([name]) => name);
+    const dueOn = (dayKey) => Object.entries(snoozeMap || {}).filter(([, key]) => key === dayKey).map(([name]) => name);
+    const nineToday = new Date();
+    nineToday.setHours(9, 0, 0, 0);
+    const nineTomorrow = new Date(nineToday);
+    nineTomorrow.setDate(nineTomorrow.getDate() + 1);
+    const plan = [
+      { id: "snooze-summary-today", names: nineToday > new Date() ? dueOn(todayKey) : [], date: nineToday },
+      { id: "snooze-summary", names: dueOn(tomorrowKey), date: nineTomorrow },
+    ];
 
-    await Notifications.cancelScheduledNotificationAsync("snooze-summary").catch(() => {});
-    if (!dueTomorrow.length) return;
+    for (const { id } of plan) await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
+    if (!plan.some((p) => p.names.length)) return;
 
     // Silent: it also runs on launch, and snoozing a plant is not asking for
     // notifications.
     if (!(await notificationsGranted())) return;
 
-    const count = dueTomorrow.length;
-    const preview = dueTomorrow.slice(0, 3).join(", ");
-    const body = count <= 3
-      ? tn("notifyText.snoozeBodyFew", count, { plants: preview })
-      : tn("notifyText.snoozeBodyMany", count - 3, { plants: preview });
-
-    const fireDate = new Date();
-    fireDate.setDate(fireDate.getDate() + 1);
-    fireDate.setHours(9, 0, 0, 0);
-
-    await Notifications.scheduleNotificationAsync({
-      identifier: "snooze-summary",
-      content: {
-        title: tn("notifyText.snoozeTitle", count),
-        body,
-        sound: true,
-      },
-      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: fireDate },
-    });
+    for (const { id, names, date } of plan) {
+      if (!names.length) continue;
+      const count = names.length;
+      const preview = names.slice(0, 3).join(", ");
+      const body = count <= 3
+        ? tn("notifyText.snoozeBodyFew", count, { plants: preview })
+        : tn("notifyText.snoozeBodyMany", count - 3, { plants: preview });
+      await Notifications.scheduleNotificationAsync({
+        identifier: id,
+        content: {
+          title: tn("notifyText.snoozeTitle", count),
+          body,
+          sound: true,
+        },
+        trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date },
+      });
+    }
   }
+
 
 
 async function scheduleFertilizerReminder(plantName, days) {

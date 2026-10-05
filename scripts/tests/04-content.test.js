@@ -1443,3 +1443,11 @@ describe("XP popups and the level-up card", () => {
     ok(/xpPopups\.map\(/.test(shell) && /\{showLevelUp \? \(/.test(shell));
   });
 });
+
+describe("the snooze summary", () => {
+  it("keeps this morning's 9 AM summary when the app opens before 9", () => {
+    const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    ok(/id: "snooze-summary-today", names: nineToday > new Date\(\) \? dueOn\(todayKey\) : \[\]/.test(app));
+    ok(/id: "snooze-summary", names: dueOn\(tomorrowKey\)/.test(app));
+  });
+});
