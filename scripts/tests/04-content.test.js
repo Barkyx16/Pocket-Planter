@@ -1276,3 +1276,19 @@ describe("monthly checklist labels", () => {
     for (const task of all) eq(i18n.fromEnglish("monthlyTask", task), task);
   });
 });
+
+describe("companion pairs are judged from both sides", () => {
+  it("whichever slot each plant is in", () => {
+    // Rosemary's chart says avoid Basil; Basil's says nothing about Rosemary.
+    // Read one way, the conflict only showed with Rosemary in the earlier slot.
+    eq(core.getCompatibilityScore("Basil", "Rosemary").label, core.getCompatibilityScore("Rosemary", "Basil").label);
+    const bed = (a, b) => [{ id: "a", name: "Bed", plots: { "slot-1": a, "slot-2": b } }];
+    eq(core.findGardenConflicts(bed("Basil", "Rosemary")).length, core.findGardenConflicts(bed("Rosemary", "Basil")).length);
+    ok(core.findGardenConflicts(bed("Basil", "Rosemary")).length > 0);
+    // Every pair in the catalog agrees with itself reversed.
+    const sample = names.slice(0, 120);
+    let asymmetric = 0;
+    for (const a of sample) for (const b of sample) if (a < b && core.getCompatibilityScore(a, b).label !== core.getCompatibilityScore(b, a).label) asymmetric += 1;
+    eq(asymmetric, 0);
+  });
+});

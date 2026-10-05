@@ -1805,7 +1805,27 @@ export function findGardenConflicts(gardenAreas) {
   return conflicts;
 }
 
+// The companion charts aren't symmetric: Rosemary lists Basil to avoid while
+// Basil's chart is silent about Rosemary, and Sage calls Basil excellent while
+// Basil's says avoid. Read one way only, whether a bed showed a conflict
+// depended on which plant sat in the earlier slot — the tile showed ⚠ while
+// Fix My Garden, the bed list and auto-optimize all saw nothing. A pair is
+// judged from both sides now: either chart's "avoid" wins, then either's
+// "excellent".
+const PAIR_RESULTS = {
+  excellent: { label: "Excellent Pair", color: "#5cff89", icon: "🟢" },
+  avoid: { label: "Avoid", color: "#ff7b7b", icon: "🔴" },
+  neutral: { label: "Neutral", color: "#ffd86b", icon: "🟡" },
+};
 export function getCompatibilityScore(plantName, comparePlant) {
+  const ab = oneWayCompatibility(plantName, comparePlant);
+  const ba = oneWayCompatibility(comparePlant, plantName);
+  if (ab === "avoid" || ba === "avoid") return { ...PAIR_RESULTS.avoid };
+  if (ab === "excellent" || ba === "excellent") return { ...PAIR_RESULTS.excellent };
+  return { ...PAIR_RESULTS.neutral };
+}
+
+function oneWayCompatibility(plantName, comparePlant) {
   const info = getCompanionInfo(plantName);
   // The charts name some companions generically ("Bean", "Squash"), so compare
   // the catalog plant each entry resolves to rather than the raw word. Corn lists
@@ -1818,9 +1838,9 @@ export function getCompatibilityScore(plantName, comparePlant) {
       const entry = resolveCompanionName(item) || String(item || "");
       return entry.toLowerCase() === target.toLowerCase();
     });
-  if (matches(info.excellent)) return { label: "Excellent Pair", color: "#5cff89", icon: "🟢" };
-  if (matches(info.avoid)) return { label: "Avoid", color: "#ff7b7b", icon: "🔴" };
-  return { label: "Neutral", color: "#ffd86b", icon: "🟡" };
+  if (matches(info.excellent)) return "excellent";
+  if (matches(info.avoid)) return "avoid";
+  return "neutral";
 }
 
 export function calculateGardenHealth(gardenMap) {
@@ -1852,25 +1872,25 @@ export function calculateGardenHealth(gardenMap) {
   const planted = new Map();
   counts.forEach((_, name) => planted.set(String(name).toLowerCase(), name));
 
-  let score = 100;
-  counts.forEach((plantCount, plant) => {
+  // Pairs are judged from both charts (see getCompatibilityScore), so gather
+  // every pair either plant's chart mentions, then score each pair once —
+  // counted in both orders, as the plot-by-plot loop did.
+  const candidates = new Map();
+  counts.forEach((_, plant) => {
     const info = getCompanionInfo(plant) || {};
-    // getCompatibilityScore answers "Excellent" before it answers "Avoid", and
-    // scores a given companion once however many times the chart names it.
-    const scored = new Set();
-    const apply = (list, delta) => {
-      (list || []).forEach((entry) => {
-        const canonical = resolveCompanionName(entry) || String(entry || "");
-        const key = canonical.toLowerCase();
-        if (scored.has(key)) return;
-        const match = planted.get(key);
-        if (!match || match === plant) return;
-        scored.add(key);
-        score += delta * plantCount * counts.get(match);
-      });
-    };
-    apply(info.excellent, 3);
-    apply(info.avoid, -8);
+    [...(info.excellent || []), ...(info.avoid || [])].forEach((entry) => {
+      const canonical = resolveCompanionName(entry) || String(entry || "");
+      const match = planted.get(canonical.toLowerCase());
+      if (!match || match === plant) return;
+      const [a, b] = [plant, match].sort();
+      candidates.set(`${a}\u0000${b}`, [a, b]);
+    });
+  });
+  let score = 100;
+  candidates.forEach(([a, b]) => {
+    const label = getCompatibilityScore(a, b).label;
+    const delta = label === "Avoid" ? -8 : label === "Excellent Pair" ? 3 : 0;
+    score += delta * 2 * counts.get(a) * counts.get(b);
   });
   score = Math.max(35, Math.min(100, score));
   let label = "Healthy";
