@@ -4659,13 +4659,19 @@ async function detectLocationAndZone() {
   async function loadWeather() {
     if (!record || !isPostalComplete(zip, country)) {
       setWeather(null);
+      setZipCoords(null);
       return;
     }
     try {
       const cacheKey = `pp_weatherCache_${country}_${zip}`;
       // Climate-resolved records already carry coordinates from the geocoder, so
       // only US table rows still need a lookup here.
-      let coords = zipCoords || (typeof record.lat === "number" ? { lat: record.lat, lon: record.lon } : null);
+      // zipCoords is not read here: it was only ever cleared by pull-to-refresh,
+      // so after a ZIP or country change the old place's coordinates were reused
+      // — the new ZIP got the old one's forecast, cached for good, and an
+      // Australian postcode entered after a US ZIP flipped the app back to the
+      // northern hemisphere.
+      let coords = typeof record.lat === "number" ? { lat: record.lat, lon: record.lon } : null;
       // Instant paint from the last cached forecast + reuse saved coords, so the
       // rate-limited geocoder is only ever called once per ZIP. A fresh forecast
       // is still fetched below and re-cached.
@@ -4698,11 +4704,14 @@ if (!coords) {
   const zipPlace = zipData?.[0];
   if (!zipPlace?.lat || !zipPlace?.lon) {
     setWeather(null);
+    setZipCoords(null);
     return;
   }
   coords = { lat: zipPlace.lat, lon: zipPlace.lon };
-  setZipCoords(coords);
 }
+// Published from every source, not just a fresh geocode: the Daylight card
+// reads it, and it never showed outside the US or after the first launch.
+setZipCoords(coords);
 if (coords?.lat != null) setLatitude(parseFloat(coords.lat));
 const weatherResponse = await fetch(
   `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&forecast_days=7`

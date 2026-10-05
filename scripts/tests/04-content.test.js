@@ -1378,3 +1378,17 @@ describe("a failed cloud save", () => {
     ok(/if \(syncFailed\) await saveProfileToSupabase\(\);\s*else await loadProfileFromSupabase\(\);/.test(app));
   });
 });
+
+describe("weather coordinates", () => {
+  const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const effect = app.slice(app.indexOf("async function loadWeather()"), app.indexOf("loadWeather();\n}, [zip, country, record, weatherRefreshToken]);"));
+  it("come from the current place, never a previous ZIP's", () => {
+    // zipCoords was reused after a ZIP or country change; the new place got
+    // the old one's forecast and hemisphere.
+    ok(!/let coords = zipCoords/.test(effect));
+    ok(/let coords = typeof record\.lat === "number"/.test(effect));
+  });
+  it("are published from every source, so the Daylight card can show", () => {
+    ok(/setZipCoords\(coords\);\nif \(coords\?\.lat != null\) setLatitude/.test(effect));
+  });
+});
