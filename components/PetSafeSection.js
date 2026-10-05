@@ -5,6 +5,14 @@ import { resolvePlantImageSource } from "../core";
 import { PET_TOXIC, PET_SAFE } from "../data/flowerHomeData";
 import { useTranslation } from "../lib/i18n";
 
+// PET_TOXIC notes are English data, translated by plant under petToxicNote.
+// i18n-ignore — builds a key, not text.
+const noteKey = (name) =>
+  "petToxicNote." +
+  String(name).replace(/\s*\([^)]*\)/g, "").replace(/['’]/g, "").split(/[^A-Za-z0-9]+/).filter(Boolean)
+    .map((w, i) => (i ? w[0].toUpperCase() + w.slice(1).toLowerCase() : w.toLowerCase())).join("");
+export { noteKey as petNoteKey };
+
 const SEV = {
   severe: { color: "#ff7b7b", labelKey: "petSafeText.severe" },
   toxic: { color: "#ff9f43", labelKey: "petSafeText.toxic" },
@@ -13,6 +21,8 @@ const SEV = {
 
 export const PetSafeSection = memo(function PetSafeSection({ theme, savedPlants, onOpenPlant }) {
   const { t } = useTranslation();
+  // Translate a key, falling back to the English data when no entry exists.
+  const tOr = (key, fallback) => { const v = t(key); return v === key ? fallback : v; };
   const { toxic, safe, unknown } = useMemo(() => {
     const tox = [], s = [], u = [];
     (savedPlants || []).forEach((n) => {
@@ -40,7 +50,7 @@ export const PetSafeSection = memo(function PetSafeSection({ theme, savedPlants,
             <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }}>{item.name}</Text>
             {meta ? <Text style={{ color: meta.color, fontSize: 10, fontWeight: "900" }}>{t(meta.labelKey)}</Text> : <Text style={{ color: tint, fontSize: 10, fontWeight: "900" }}>{t("petSafeText.safe")}</Text>}
           </View>
-          {note ? <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", lineHeight: 15, marginTop: 2 }}>{note}</Text> : null}
+          {note ? <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", lineHeight: 15, marginTop: 2 }}>{tOr(noteKey(item.name), note)}</Text> : null}
         </View>
       </Pressable>
     );

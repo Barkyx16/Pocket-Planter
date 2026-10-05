@@ -1211,6 +1211,15 @@ describe("pest and disease guide text", () => {
   });
 });
 
+describe("pet safety notes", () => {
+  it("have a translation for every toxic plant", () => {
+    const { petNoteKey } = require(path.join(ROOT, "components/PetSafeSection.js"));
+    const en = require(path.join(ROOT, "lib/locales/en.js"));
+    const notes = (en.default || en).petToxicNote || {};
+    eq(Object.entries(fh.PET_TOXIC).filter(([n, [, note]]) => notes[petNoteKey(n).split(".")[1]] !== note).map(([n]) => n), []);
+  });
+});
+
 describe("weekday labels", () => {
   const i18n = require(path.join(ROOT, "lib/i18n.js"));
   it("follow the app language and start the week on Sunday", () => {
