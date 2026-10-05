@@ -1163,3 +1163,29 @@ describe("daily quests", () => {
     }
   });
 });
+
+describe("achievements and banners", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  const args = { savedPlants: ["Tomato"], followedPlants: [], journalEntries: [], gardenMap: {}, wateredPlants: {}, streakData: { count: 3 },
+    gardenXP: { level: 4 }, careLog: [], harvestTrackers: {}, fertilizerTrackers: {}, harvestLog: [], wateringHistory: {}, completedQuestIds: [], comparePlants: [], premiumUnlocked: false };
+  it("are worded in every language, with nothing left in English", () => {
+    const enBadges = core.getAchievementBadges(args);
+    const enBanners = core.getProfileBanners(args);
+    try {
+      for (const { code } of i18n.LANGUAGES) {
+        if (code === "en") continue;
+        i18n.setLocale(code);
+        const badges = core.getAchievementBadges(args);
+        const banners = core.getProfileBanners(args);
+        badges.forEach((b, i) => {
+          ok(!/^(ach|achText|achTitle|levelTitles)\./.test(b.title + b.text + b.category), `${code} ${b.id}`);
+          if (b.id !== "garden_gnome_ultimate" || b.unlocked) ok(b.title !== enBadges[i].title, `${code} ${b.id} title`);
+          ok(b.text !== enBadges[i].text, `${code} ${b.id} text`);
+        });
+        banners.forEach((b, i) => ok(b.subtitle !== enBanners[i].subtitle, `${code} ${b.id}`));
+      }
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});

@@ -3966,6 +3966,79 @@ export function getStreakDaysLeft(plantName, wateringHistory) {
   return daysLeft;
 }
 
+// Achievements and banners are matched by id (earned dates, the active banner);
+// their words are translated as the list is built, so App rebuilds these when the
+// language changes. Titles shared with the level ranks reuse those keys.
+const BADGE_TITLE_KEYS = {
+  "First Plant Saved": "achTitle.firstPlantSaved", "Green Thumb": "levelTitles.greenThumb", "Garden Collector": "achTitle.gardenCollector",
+  "Zone Master": "levelTitles.zoneMaster", "Plant Library Master": "achTitle.plantLibraryMaster", "Plant Encyclopedia": "achTitle.plantEncyclopedia",
+  "Daily Water Check": "achTitle.dailyWaterCheck", "Water Watcher": "achTitle.waterWatcher", "Consistent Gardener": "achTitle.consistentGardener",
+  "Watering Legend": "achTitle.wateringLegend", "Water Master": "achTitle.waterMaster", "Getting Started": "achTitle.gettingStarted",
+  "7-Day Streak": "achTitle.sevenDayStreak", "Dedicated Grower": "achTitle.dedicatedGrower", "Garden Obsessed": "achTitle.gardenObsessed",
+  "Garden Master": "achTitle.gardenMaster", "First Garden Photo": "achTitle.firstGardenPhoto", "Snapshot Garden": "achTitle.snapshotGarden",
+  "Photo Logger": "achTitle.photoLogger", "Garden Historian": "achTitle.gardenHistorian", "Garden Documentarian": "achTitle.gardenDocumentarian",
+  "First Plot Filled": "achTitle.firstPlotFilled", "Plot Builder": "achTitle.plotBuilder", "Full Garden": "achTitle.fullGarden",
+  "First Care Entry": "achTitle.firstCareEntry", "Soil Scientist": "levelTitles.soilScientist", "Care Expert": "achTitle.careExpert",
+  "Garden Scientist": "achTitle.gardenScientist", "First Harvest Tracked": "achTitle.firstHarvestTracked", "Harvest King": "achTitle.harvestKing",
+  "Harvest Legend": "levelTitles.harvestLegend", "Harvest Day!": "achTitle.harvestDay", "The Garden Gnome": "achText.gnomeTitle",
+  "Seedling Starter": "achTitle.seedlingStarter", "Plant Collector": "achTitle.plantCollector", "Streak Keeper": "achTitle.streakKeeper",
+  "Water Wizard": "achTitle.waterWizard", "Master Waterer": "achTitle.masterWaterer", "Companion Pro": "achTitle.companionPro",
+  "Quest Crusher": "achTitle.questCrusher", "Garden Gnome": "achTitle.gardenGnome",
+};
+// Called at build time, not load time: LEVEL_TITLES is declared further down.
+function badgeTitle(title) {
+  if (BADGE_TITLE_KEYS[title]) return t(BADGE_TITLE_KEYS[title]);
+  const rank = LEVEL_TITLES.find(([, name]) => name === title);
+  return rank ? t(`levelTitles.${rank[2]}`) : title;
+}
+const BADGE_CATEGORY_KEYS = {
+  "🌱 Plant Saving": "achText.catPlantSaving", "💧 Watering": "achText.catWatering", "🔥 Streaks": "achText.catStreaks",
+  "📸 Journal": "achText.catJournal", "🗺️ Garden Map": "achText.catGardenMap", "🧪 Care Log": "achText.catCareLog",
+  "🚜 Harvest": "achText.catHarvest", "⭐ Levels": "achText.catLevels", "🌟 Legend": "achText.catLegend",
+};
+// Which sentence each badge's progress line uses; {progress} and {goal} come from the badge.
+const BADGE_TEXT_KEYS = [
+  [/^first_plant_saved$/, "saveFirst"], [/^save_\d+_plants$/, "saveN"], [/^water_\w+_today$/, "waterToday"],
+  [/^water_\d+_total$/, "waterTotal"], [/^streak_\d+$/, "streak"], [/^first_journal_photo$/, "photoFirst"],
+  [/^(photo_\d+|photo_logger|garden_album)$/, "photoN"], [/^first_plot$/, "plotFirst"], [/^plot_builder$/, "plotN"],
+  [/^full_garden$/, "plotAll"], [/^first_care_log$/, "careFirst"], [/^care_log_\d+$/, "careN"],
+  [/^first_harvest$/, "harvestFirst"], [/^harvest_\d+$/, "harvestN"], [/^harvest_ready$/, "harvestReady"], [/^level_\d+$/, "level"],
+];
+function localizeBadges(badges) {
+  return badges.map((b) => {
+    const textKey = (BADGE_TEXT_KEYS.find(([re]) => re.test(b.id)) || [])[1];
+    let text = b.text;
+    if (b.id === "garden_gnome_ultimate") text = t(b.unlocked ? "achText.gnomeDone" : "achText.gnomeLocked");
+    else if (textKey === "waterToday") text = tn("achText.waterToday", b.goal, { progress: b.progress });
+    else if (textKey) text = t(`achText.${textKey}`, { progress: b.progress, goal: b.goal });
+    return {
+      ...b,
+      category: BADGE_CATEGORY_KEYS[b.category] ? t(BADGE_CATEGORY_KEYS[b.category]) : b.category,
+      title: badgeTitle(b.title),
+      text,
+    };
+  });
+}
+const BANNER_SUBTITLES = {
+  seedling_banner: ["unlockedAtLevel", 1], green_thumb_banner: ["reachLevel", 5], harvest_banner: ["reachLevel", 8],
+  master_banner: ["reachLevel", 20], collector_banner: ["savePlants", 10], journal_banner: ["addPhotos", 10],
+  planner_banner: ["fillAllGardenPlots", 12], streak_banner: ["dayStreak", 7], obsessed_banner: ["dayStreak", 30],
+  water_wizard_banner: ["waterPlantsTotal", 50], master_waterer_banner: ["waterPlantsTotal", 100], soil_scientist_banner: ["logCare", 10],
+  care_expert_banner: ["logCare", 25], snapshot_banner: ["addPhotos", 5], garden_historian_banner: ["addPhotos", 25],
+  zone_master_banner: ["savePlants", 15], legendary_grower_banner: ["reachLevel", 15], full_garden_banner: ["fillAllGardenPlots", 12],
+  harvest_king_banner: ["trackHarvests", 5], companion_pro_banner: ["unlockCompanion", 0], quest_crusher_banner: ["completeQuests", 10],
+};
+function localizeBanners(banners) {
+  return banners.map((b) => {
+    const sub = BANNER_SUBTITLES[b.id];
+    return {
+      ...b,
+      title: badgeTitle(b.title),
+      subtitle: sub ? t(`bannerSub.${sub[0]}`, { count: sub[1] }) : b.subtitle,
+    };
+  });
+}
+
 export function getAchievementBadges({
   savedPlants,
   followedPlants,
@@ -3997,7 +4070,7 @@ const allUnlocked =
   (careLog || []).length >= 25 &&
   Object.keys(harvestTrackers || {}).length >= 5;
 
-  return [
+  return localizeBadges([
     // ── PLANT SAVING ─────────────────────────────────────────────
     {
       id: "first_plant_saved",
@@ -4366,7 +4439,7 @@ const allUnlocked =
     : "Complete every achievement and reach Level 100 to reveal this secret.",
   hidden: !allUnlocked,
 },
-  ];
+  ]);
 }
 
 export const PROFILE_THEMES = [
@@ -4391,7 +4464,7 @@ export function getProfileBanners({ gardenXP, savedPlants, journalEntries, garde
   const careLogCount = (careLog || []).length;
   const comparePlantCount = (comparePlants || []).length;
 
-  return [
+  return localizeBanners([
     // ORIGINAL 7
     { id: "seedling_banner", emoji: "🌱", title: "Seedling Starter", subtitle: "Unlocked at Level 1", unlocked: gardenXP.level >= 1, gradient: ["#5cff89","#1f7a3a"] },
     { id: "green_thumb_banner", emoji: "🪴", title: "Green Thumb", subtitle: "Reach Level 5", unlocked: gardenXP.level >= 5, gradient: ["#8effab","#2fbf5f"] },
@@ -4416,7 +4489,7 @@ export function getProfileBanners({ gardenXP, savedPlants, journalEntries, garde
     { id: "harvest_king_banner", emoji: "🍅", title: "Harvest King", subtitle: "Track 5 harvests", unlocked: harvestCount >= 5, gradient: ["#ff7675","#d63031"] },
     { id: "companion_pro_banner", emoji: "🌸", title: "Companion Pro", subtitle: "Unlock companion planting", unlocked: premiumUnlocked, gradient: ["#fd79a8","#e17055"] },
     { id: "quest_crusher_banner", emoji: "🎯", title: "Quest Crusher", subtitle: "Complete 10 daily quests", unlocked: questsCompleted >= 10, gradient: ["#74b9ff","#0984e3"] },
-  ];
+  ]);
 }
 
 // Harvests logged on a local day. By the entry's own day key: createdAt is UTC,

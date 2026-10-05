@@ -1504,7 +1504,10 @@ const achievementBadges = useMemo(
       wateringHistory,
       today: todayKey,
     }), badgeEarnedDates),
+  // `language`: badge titles and progress lines are translated as they are built.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   [
+    language,
     todayKey,
     badgeEarnedDates,
     savedPlants,
@@ -1572,7 +1575,10 @@ const profileBanners = useMemo(
       premiumUnlocked,
       wateringHistory,
     }), bannerEarnedDates),
+  // `language`: banner titles are translated as they are built.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   [
+    language,
     bannerEarnedDates,
     harvestLog,
     completedQuestIds,
