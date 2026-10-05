@@ -718,6 +718,11 @@ const clearLocalAccountData = async () => {
   if (!__DEV__) Purchases.logOut().catch(() => {});
   setSubscriptionPlan("Free");
   setLastSyncedAt(null);
+  // Neither is in the cloud profile, so nothing below replaced them: the next
+  // account saw the last one's recently viewed plants and never got the
+  // milestone celebrations the last one had already fired.
+  setRecentPlants([]);
+  setFiredMilestones([]);
   AsyncStorage.removeItem("pp_lastSyncedAt").catch(() => {});
   setSavedPlants([]);
   setComparePlants([]);

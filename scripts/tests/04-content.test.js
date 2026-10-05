@@ -1301,3 +1301,12 @@ describe("what the app writes to storage, it reads back", () => {
     ok(/hydrate\("pp_harvestLog"/.test(app), "the harvest log is read back");
   });
 });
+
+describe("signing out", () => {
+  it("clears the recently viewed plants and fired milestones", () => {
+    const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    const start = app.indexOf("const clearLocalAccountData = async () => {");
+    const body = app.slice(start, app.indexOf("\n};\n", start));
+    ok(/setRecentPlants\(\[\]\)/.test(body) && /setFiredMilestones\(\[\]\)/.test(body));
+  });
+});
