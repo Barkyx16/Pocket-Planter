@@ -1209,3 +1209,19 @@ describe("plant-page advice from core", () => {
     }
   });
 });
+
+describe("weather recommendation, sun warnings and the planting window", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("follow the app language", () => {
+    try {
+      i18n.setLocale("fr");
+      ok(!/Frost protection/.test(core.getSmartWeatherRecommendation("7", { minTempF: 20, maxTempF: 40 }, []).title));
+      ok(!/needs full sun/.test(core.getSunMismatch(items.find((i) => core.getPlantSunNeed(i).need === "full"), "shade").text));
+      const tomato = items.find((i) => i.name === "Tomato");
+      ok(!/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/.test(core.getPlantingWindowText(tomato)), core.getPlantingWindowText(tomato));
+      for (const key of core.WHATS_NEW_ITEMS) ok(i18n.t(key) !== key, key);
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});

@@ -1452,7 +1452,9 @@ const smartRecommendation = useMemo(
       weather,
       compatiblePlants
     ),
-  [zone, weather, compatiblePlants]
+  // `language`: the recommendation is worded as it is built.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [language, zone, weather, compatiblePlants]
 );
 
 const rarityStyle = selectedPlant

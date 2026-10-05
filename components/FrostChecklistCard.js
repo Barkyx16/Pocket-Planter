@@ -76,7 +76,7 @@ export const FrostChecklistCard = memo(function FrostChecklistCard({ theme, weat
               </View>
               <Text style={{ fontSize: 18 }}>{task.icon}</Text>
               <Text style={{ color: checked ? theme.secondaryText : theme.text, fontSize: 12, fontWeight: "800", flex: 1, textDecorationLine: checked ? "line-through" : "none" }}>
-                {task.text}
+                {t(`frostTask.${task.id}`)}
               </Text>
             </Pressable>
           );

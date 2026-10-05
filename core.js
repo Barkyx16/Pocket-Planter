@@ -1897,9 +1897,9 @@ export function getFirstPlantingMonth(item) {
 export function getPlantingWindowText(item) {
   const months = localPlantMonths(item);
   if (!months.length) {
-    return "Best months vary by zone. Use the Planting Calendar above for seasonal timing.";
+    return t("weatherRec.windowVaries");
   }
-  return months.map((month) => MONTH_LABELS[month - 1]?.slice(0, 3)).filter(Boolean).join(" • ");
+  return months.map((month) => formatDate(new Date(2000, month - 1, 1), { month: "short" })).join(" • ");
 }
 
 export function getPlantSeasonLabel(item, zone, monthOverride = null) {
@@ -2422,20 +2422,20 @@ export function getPlantSunNeed(item) {
 export function getSunMismatch(item, areaSun) {
   const sun = areaSun || "full";
   const { need, toleratesShade } = getPlantSunNeed(item);
-  const name = item?.name || "This plant";
+  const name = item?.name || t("weatherRec.thisPlant");
 
   if (sun === "shade" && need === "full") {
-    return { level: "high", text: `${name} needs full sun to fruit — a shade bed will give weak, leggy growth and little harvest.` };
+    return { level: "high", text: t("weatherRec.sunHigh", { plant: name }) };
   }
   if (sun === "partial" && need === "full") {
-    return { level: "medium", text: `${name} prefers full sun. In partial shade expect slower growth and a lighter harvest.` };
+    return { level: "medium", text: t("weatherRec.sunMedium", { plant: name }) };
   }
   if (sun === "full" && need === "partial" && !toleratesShade) {
-    return { level: "low", text: `${name} can take full sun, but watch for stress on the hottest afternoons.` };
+    return { level: "low", text: t("weatherRec.sunLowHot", { plant: name }) };
   }
   // Leafy greens in full sun during summer heat bolt fast — worth a gentle flag.
   if (sun === "full" && toleratesShade) {
-    return { level: "low", text: `${name} does fine in full sun, but in peak summer heat it may bolt — some afternoon shade helps.` };
+    return { level: "low", text: t("weatherRec.sunLowBolt", { plant: name }) };
   }
   return null; // good match, no warning
 }
@@ -2478,20 +2478,6 @@ export function getPlantQuickFacts(item) {
     containerFriendly: d ? d.containerFriendly : null,
     perennial: d ? d.perennial : null,
   };
-}
-
-export function getSeasonalIntelligenceLabel(item, zone, weather) {
-  const currentMonth = new Date().getMonth() + 1;
-  const months = localPlantMonths(item);
-  if (!zoneMatch(zone, item.minZone, item.maxZone)) return { icon: "📍", label: "Outside your zone", text: "This plant may need containers, shade, or protection in your area." };
-  if (!months.length) return { icon: "🌿", label: "Zone fit", text: "Season timing varies, but this plant matches your growing zone." };
-  if (months.includes(currentMonth)) {
-    if (weather?.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { icon: "🔥", label: "Plant early morning", text: "It is in season, but heat is high. Plant early and water deeply." };
-    return { icon: "✅", label: "Perfect planting week", text: "This is a strong time to plant it in your zone." };
-  }
-  const nextMonth = months.find((month) => month > currentMonth);
-  if (nextMonth) return { icon: "🌱", label: "Start indoors soon", text: `Outdoor planting begins around ${MONTH_NAMES[nextMonth - 1]}.` };
-  return { icon: "⏳", label: "Too late to plant", text: "Its main planting window has passed. Save it for next season." };
 }
 
 export const RAIN_SKIP_THRESHOLD = 65;
@@ -2579,18 +2565,6 @@ export function getFrostSeasonMonths(zone) {
   else if (bucket === "moderate") months = [1, 2, 3, 11, 12];
   else months = [12, 1, 2];
   return months.map(flipMonth).sort((a, b) => a - b);
-}
-
-export function getEstimatedLastFrost(zone) {
-  const bucket = getClimateBucket(zone);
-  if (!isSouthernHemisphere()) {
-    if (bucket === "cold") return "late May";
-    if (bucket === "moderate") return "mid March";
-    return "late January";
-  }
-  if (bucket === "cold") return "late November";
-  if (bucket === "moderate") return "mid September";
-  return "late July";
 }
 
 export const frostOverrideRef = { current: {} };
@@ -2772,12 +2746,12 @@ export function getSeedStartInfo(item, zone) {
 }
 
 export function getSmartWeatherRecommendation(zone, weather, plants = []) {
-  if (!weather) return { title: "Weather scan loading", body: "Once your forecast loads, Pocket Planter will suggest what to water, protect, or plant next.", level: "Common" };
+  if (!weather) return { title: t("weatherRec.loadingTitle"), body: t("weatherRec.loadingBody"), level: "Common" };
   const plantNowCount = plants.filter((item) => getPlantSeasonLabel(item, zone) === "Plant now").length;
-  if (weather.minTempF <= FROST_THRESHOLD_F) return { title: "Frost protection night", body: "Cover tender plants, move containers near shelter, and wait on transplanting until lows warm back up.", level: "Epic" };
-  if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { title: "Heat stress warning", body: "Water deeply before the afternoon, shade young starts, and skip transplanting today.", level: "Rare" };
-  if (weather.precipChance >= 70) return { title: "Rain-friendly garden day", body: "Let rain handle watering. Check drainage and avoid soaking containers twice.", level: "Rare" };
-  return { title: "Prime Garden Window!", body: `${plantNowCount || "Several"} zone-matched plants look reasonable right now. Focus on soil moisture and steady starts.`, level: "Common" };
+  if (weather.minTempF <= FROST_THRESHOLD_F) return { title: t("weatherRec.frostTitle"), body: t("weatherRec.frostBody"), level: "Epic" };
+  if (weather.maxTempF >= EXTREME_HEAT_THRESHOLD_F) return { title: t("weatherRec.heatTitle"), body: t("weatherRec.heatBody"), level: "Rare" };
+  if (weather.precipChance >= 70) return { title: t("weatherRec.rainTitle"), body: t("weatherRec.rainBody"), level: "Rare" };
+  return { title: t("weatherRec.primeTitle"), body: plantNowCount ? tn("weatherRec.primeBody", plantNowCount) : t("weatherRec.primeBodySeveral"), level: "Common" };
 }
 
 export function getWateringTip(weather) {
@@ -3921,14 +3895,8 @@ export const WATERING_STREAK_GAP_DAYS = 4;
 // was ever shown the notes again.
 export const WHATS_NEW_VERSION = "1.0.14";
 
-export const WHATS_NEW_ITEMS = [
-  "173 flowers and houseplants, with a garden of their own",
-  "Plant a whole companion combo in one tap, bed and all",
-  "Pick which bed a plant goes in, or swap one out",
-  "Pest Watch now has its own tab",
-  "Your daily plan stays put until every task is done",
-  "Fixed plants that were planted but never showed up",
-];
+// Translation keys, rendered with t() on the home screen.
+export const WHATS_NEW_ITEMS = ["whatsNew.item1", "whatsNew.item2", "whatsNew.item3", "whatsNew.item4", "whatsNew.item5", "whatsNew.item6"];
 
 export function getWateringStreak(plantName, wateringHistory) {
   const history = wateringHistory?.[plantName];
