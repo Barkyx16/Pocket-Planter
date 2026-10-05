@@ -1242,3 +1242,17 @@ describe("plant quick facts", () => {
     }
   });
 });
+
+describe("the monthly checklist", () => {
+  it("counts as complete once every task the card shows is ticked", () => {
+    // The card stores ticks by task; this read them by index, so the home
+    // screen's checklist never hid however many tasks were done.
+    const tasks = core.getMonthlyChecklistTasks("7");
+    const month = Object.fromEntries(tasks.map((task) => [task, true]));
+    eq(core.isMonthlyChecklistComplete("7", { [core.getMonthKey()]: month }), true);
+    const { [tasks[0]]: _first, ...rest } = month;
+    eq(core.isMonthlyChecklistComplete("7", { [core.getMonthKey()]: rest }), false);
+    const card = fs.readFileSync(path.join(ROOT, "components/MonthlyChecklistCard.js"), "utf8");
+    ok(/month\[task\] = !month\[task\]/.test(card), "the card still keys ticks by task");
+  });
+});

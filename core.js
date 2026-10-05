@@ -5501,5 +5501,6 @@ export function isMonthlyChecklistComplete(zone, monthlyChecklist) {
   const tasks = getMonthlyChecklistTasks(zone);
   if (!tasks.length) return false;
   const checked = (monthlyChecklist && monthlyChecklist[getMonthKey()]) || {};
-  return tasks.every((_, i) => checked[i]);
+  // By the task itself, as MonthlyChecklistCard stores the tick.
+  return tasks.every((task) => checked[task]);
 }
