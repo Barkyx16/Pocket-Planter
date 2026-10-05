@@ -2802,41 +2802,41 @@ export function getShouldGrowText(item, zone, weather) {
   if (edible && climate === "moderate") {
     // Zones 6-8: the temperate garden, and the largest group of gardeners here.
     // It had no tips at all, so 454 plants fell through to the generic line.
-    if (plantNameMatchesKey(name, "tomato")) return "Tomatoes do well in your zone with a little planning. Start seeds indoors six to eight weeks before your last frost, harden them off, and plant out once nights stay above 50°F.";
-    if (plantNameMatchesKey(name, "pepper")) return "Peppers need warmth to get going in a temperate zone. Start them indoors early, wait for the soil to warm before transplanting, and expect the heaviest picking in late summer.";
-    if (plantNameMatchesKey(name, "lettuce")) return "Lettuce is a spring and autumn crop in your zone — it bolts once summer heat arrives. Sow little and often, and give it afternoon shade to stretch the season.";
-    if (isKey("spinach")) return "Spinach suits your zone in the cooler halves of the year. Sow in early spring and again in late summer for an autumn cut; it will bolt if it is sown into midsummer heat.";
-    if (plantNameMatchesKey(name, "kale")) return "Kale is one of the easiest crops in a temperate zone and stands through most of the winter. Sow in midsummer for autumn and winter picking — the leaves sweeten after the first frosts.";
-    if (plantNameMatchesKey(name, "broccoli") || plantNameMatchesKey(name, "cauliflower") || plantNameMatchesKey(name, "cabbage")) return "Brassicas do best either side of summer in your zone. Start indoors and transplant for a spring crop, or sow in midsummer for a better autumn one, and net against cabbage white butterflies.";
-    if (plantNameMatchesKey(name, "carrot")) return "Carrots grow well in your zone from an early spring sowing and again in midsummer for autumn roots. Give them deep, stone-free soil and thin the seedlings, or you will get forked and stunted roots.";
-    if (isKey("garlic")) return "Garlic is a classic temperate crop and wants your winter. Plant cloves in autumn so they get the cold spell they need to split into a head, and lift them when the lower leaves brown in midsummer.";
-    if (isKey("pea")) return "Peas love the cool start to your season. Sow as soon as the soil can be worked, give them something to climb, and pick often — they stop cropping once the summer heat sets in.";
-    if (plantNameMatchesKey(name, "bean")) return "Beans are a reliable summer crop in your zone but hate cold soil. Sow after the last frost, sow a second batch a few weeks later, and keep picking to stop the plants shutting down.";
-    if (plantNameMatchesKey(name, "zucchini") || plantNameMatchesKey(name, "squash") || plantNameMatchesKey(name, "cucumber")) return "This one is happy in a temperate summer once the cold has passed. Plant out after the last frost into rich soil, water at the base rather than the leaves, and expect more than you planned for.";
-    if (plantNameMatchesKey(name, "sweet potato")) return "Sweet potatoes are not potatoes and want a warm season, which your zone gives them only just. Plant rooted slips well after the last frost once the soil is properly warm, and lift the roots before the first autumn frost.";
-    if (isKey("potato")) return "Potatoes suit your zone's long cool spring. Plant seed potatoes a couple of weeks before the last frost, earth them up as the shoots grow, and lift maincrops once the foliage dies back.";
-    if (plantNameMatchesKey(name, "strawberry")) return "Strawberries are perennial in your zone and crop harder in their second year. Plant in spring or autumn, mulch under the fruit to keep it clean, and cover the crowns through the coldest weeks.";
-    if (plantNameMatchesKey(name, "basil")) return "Basil is the tender one in a temperate garden. Keep it indoors until nights are reliably above 50°F, give it the sunniest spot you have, and pinch the tips to delay flowering.";
-    if (plantNameMatchesKey(name, "apple") || plantNameMatchesKey(name, "pear") || plantNameMatchesKey(name, "plum") || plantNameMatchesKey(name, "cherry")) return "Your zone gives this the winter chill it needs to set fruit properly, which warmer zones cannot. Plant a bare-root tree while dormant, prune to open the centre, and thin a heavy set so the branches carry it.";
+    if (plantNameMatchesKey(name, "tomato")) return t("growCrop.c1");
+    if (plantNameMatchesKey(name, "pepper")) return t("growCrop.c2");
+    if (plantNameMatchesKey(name, "lettuce")) return t("growCrop.c3");
+    if (isKey("spinach")) return t("growCrop.c4");
+    if (plantNameMatchesKey(name, "kale")) return t("growCrop.c5");
+    if (plantNameMatchesKey(name, "broccoli") || plantNameMatchesKey(name, "cauliflower") || plantNameMatchesKey(name, "cabbage")) return t("growCrop.c6");
+    if (plantNameMatchesKey(name, "carrot")) return t("growCrop.c7");
+    if (isKey("garlic")) return t("growCrop.c8");
+    if (isKey("pea")) return t("growCrop.c9");
+    if (plantNameMatchesKey(name, "bean")) return t("growCrop.c10");
+    if (plantNameMatchesKey(name, "zucchini") || plantNameMatchesKey(name, "squash") || plantNameMatchesKey(name, "cucumber")) return t("growCrop.c11");
+    if (plantNameMatchesKey(name, "sweet potato")) return t("growCrop.c12");
+    if (isKey("potato")) return t("growCrop.c13");
+    if (plantNameMatchesKey(name, "strawberry")) return t("growCrop.c14");
+    if (plantNameMatchesKey(name, "basil")) return t("growCrop.c15");
+    if (plantNameMatchesKey(name, "apple") || plantNameMatchesKey(name, "pear") || plantNameMatchesKey(name, "plum") || plantNameMatchesKey(name, "cherry")) return t("growCrop.c16");
   }
 
   if (edible && climate === "hot") {
-    if (plantNameMatchesKey(name, "tomato")) return "Tomatoes thrive in hot zones but need consistent deep watering and mulching to survive summer heat. Choose heat-tolerant varieties like Solar Fire or Heatmaster for best results in warm climates.";
-    if (plantNameMatchesKey(name, "pepper")) return "Peppers are one of the best vegetables for hot zones — they love the heat and produce abundantly in warm climates. Water consistently and expect a long productive season.";
-    if (plantNameMatchesKey(name, "basil")) return "Basil thrives in hot sunny conditions making it perfect for your zone. Plant after last frost in full sun and pinch flowers regularly to keep leaves flavorful all season.";
-    if (plantNameMatchesKey(name, "watermelon")) return "Watermelon is an excellent choice for hot zones — the heat accelerates growth and sweetness. Give plants plenty of space, deep water weekly, and expect a rewarding harvest.";
-    if (plantNameMatchesKey(name, "okra")) return "Okra is one of the best vegetables for hot climates and practically thrives on neglect in warm zones. Plant in full sun and harvest every 2 days during peak season.";
-    if (plantNameMatchesKey(name, "eggplant")) return "Eggplant loves heat and performs exceptionally well in warm zones. Keep soil consistently moist and expect a long productive growing season.";
-    if (plantNameMatchesKey(name, "sweet potato") || plantNameMatchesKey(name, "sweetpotato")) return "Sweet potatoes are perfectly suited for hot zones — they love the heat and produce abundantly in long warm seasons. Plant slips after last frost and give vines room to spread.";
+    if (plantNameMatchesKey(name, "tomato")) return t("growCrop.c17");
+    if (plantNameMatchesKey(name, "pepper")) return t("growCrop.c18");
+    if (plantNameMatchesKey(name, "basil")) return t("growCrop.c19");
+    if (plantNameMatchesKey(name, "watermelon")) return t("growCrop.c20");
+    if (plantNameMatchesKey(name, "okra")) return t("growCrop.c21");
+    if (plantNameMatchesKey(name, "eggplant")) return t("growCrop.c22");
+    if (plantNameMatchesKey(name, "sweet potato") || plantNameMatchesKey(name, "sweetpotato")) return t("growCrop.c23");
   }
 
   if (edible && climate === "cold") {
-    if (plantNameMatchesKey(name, "kale")) return "Kale is one of the best cold zone vegetables — it actually improves in flavor after frost. Plant in late summer for a fall and early winter harvest that gets sweeter with every cold snap.";
-    if (isKey("spinach")) return "Spinach thrives in cold zones and is one of the first crops you can plant in spring. It tolerates light frost and produces tender leaves in cool weather.";
-    if (isKey("pea")) return "Peas are perfect for cold zones — they prefer cool weather and can be planted as soon as soil can be worked in spring. Expect a productive harvest before summer heat arrives.";
-    if (isKey("potato")) return "Potatoes are well suited for cold zones with long cool growing seasons. Plant certified seed potatoes in early spring and expect a generous harvest by late summer.";
-    if (plantNameMatchesKey(name, "carrot")) return "Carrots thrive in cool climates and develop excellent sweetness after light frost exposure. Plant in deep, loose, rock-free soil for straight, full-sized roots.";
-    if (plantNameMatchesKey(name, "broccoli")) return "Broccoli is ideal for cold zones — it prefers cool temperatures and produces best in spring or fall. Start indoors early and transplant when weather cools for a premium harvest.";
+    if (plantNameMatchesKey(name, "kale")) return t("growCrop.c24");
+    if (isKey("spinach")) return t("growCrop.c25");
+    if (isKey("pea")) return t("growCrop.c26");
+    if (isKey("potato")) return t("growCrop.c27");
+    if (plantNameMatchesKey(name, "carrot")) return t("growCrop.c28");
+    if (plantNameMatchesKey(name, "broccoli")) return t("growCrop.c29");
   }
 
   // Difficulty based responses
