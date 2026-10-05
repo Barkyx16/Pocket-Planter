@@ -1,14 +1,14 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useEffect, useState } from "react";
 import { Modal, Pressable, Text, View } from "react-native";
-import { formatDate, useTranslation } from "../lib/i18n";
+import { formatDate, useTranslation, weekdayLabel } from "../lib/i18n";
 
 // A dependency-free month-grid date picker. The app has no native date-picker
 // module (adding one needs a dev-client rebuild), so this is pure JS/RN and can
 // ship in an OTA update. Modeled on the calendar grid already used in
 // SoilCareLogCard so it looks native to the app.
 
-const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
+const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
 
 function startOfDay(d) {
   const x = new Date(d);
@@ -103,8 +103,8 @@ export function DatePickerModal({ visible, initialDate, title, confirmLabel, onC
 
           {/* Day-of-week labels */}
           <View style={{ flexDirection: "row" }}>
-            {DAY_LABELS.map((d, i) => (
-              <Text key={i} style={{ flex: 1, textAlign: "center", color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginBottom: 4 }}>{d}</Text>
+            {WEEKDAYS.map((day, i) => (
+              <Text key={i} style={{ flex: 1, textAlign: "center", color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginBottom: 4 }}>{weekdayLabel(day, "narrow")}</Text>
             ))}
           </View>
 

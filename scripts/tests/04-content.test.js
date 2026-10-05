@@ -1207,6 +1207,24 @@ describe("pest guide text", () => {
   });
 });
 
+describe("weekday labels", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("follow the app language and start the week on Sunday", () => {
+    eq(i18n.weekdayLabel(0), "Sun");
+    eq(i18n.weekdayLabel(3, "narrow"), "W");
+    try {
+      i18n.setLocale("de");
+      eq(i18n.weekdayLabel(1, "long"), "Montag");
+    } finally {
+      i18n.setLocale("en");
+    }
+    // The heatmap and date picker printed English letters in every language.
+    for (const f of ["components/WateringHeatmapCard.js", "components/DatePickerModal.js"]) {
+      ok(!/"S", "M", "T", "W"|"Sun", "Mon"/.test(fs.readFileSync(path.join(ROOT, f), "utf8")), f);
+    }
+  });
+});
+
 describe("daily quests", () => {
   const i18n = require(path.join(ROOT, "lib/i18n.js"));
   const args = { savedPlants: [], journalEntries: [], gardenMap: {}, wateredPlants: {}, careLog: [], harvestTrackers: {}, streakData: { count: 1 }, harvestLog: [], fertilizerTrackers: {}, comparePlants: [] };

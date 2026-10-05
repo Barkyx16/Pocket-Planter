@@ -2,7 +2,7 @@ import { memo } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
 import { getDateKey } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { useTranslation, weekdayLabel } from "../lib/i18n";
 
 export const WateringHeatmapCard = memo(function WateringHeatmapCard({ theme, wateringHistory }) {
   const { t, tn } = useTranslation();
@@ -55,14 +55,13 @@ export const WateringHeatmapCard = memo(function WateringHeatmapCard({ theme, wa
   const activeDays = Object.keys(counts).length;
 
   // ── Useful stats derived from the same data ──
-  const DOW_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const dowCounts = [0, 0, 0, 0, 0, 0, 0];
   Object.entries(counts).forEach(([key, n]) => {
     const d = new Date(`${key}T12:00:00`);
     if (!Number.isNaN(d.getTime())) dowCounts[d.getDay()] += n;
   });
   const topDow = Math.max(...dowCounts);
-  const busiestDay = topDow > 0 ? DOW_NAMES[dowCounts.indexOf(topDow)] : "—";
+  const busiestDay = topDow > 0 ? weekdayLabel(dowCounts.indexOf(topDow)) : "—";
 
   // Waterings in the last 7 days.
   const weekAgo = new Date(today);
@@ -111,8 +110,8 @@ return (
       {/* GRID with weekday labels */}
       <View style={{ flexDirection: "row", marginTop: 16 }}>
         <View style={{ gap: 4, marginRight: 6 }}>
-          {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
-            <Text key={i} style={{ width: 12, height: 15, lineHeight: 15, fontSize: 8, fontWeight: "800", color: theme.secondaryText, opacity: i % 2 === 1 ? 1 : 0 }}>{d}</Text>
+          {[0, 1, 2, 3, 4, 5, 6].map((day, i) => (
+            <Text key={i} style={{ width: 12, height: 15, lineHeight: 15, fontSize: 8, fontWeight: "800", color: theme.secondaryText, opacity: i % 2 === 1 ? 1 : 0 }}>{weekdayLabel(day, "narrow")}</Text>
           ))}
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>

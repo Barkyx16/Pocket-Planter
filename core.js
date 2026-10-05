@@ -652,11 +652,6 @@ export const MONTH_NAMES = [
 
 export const PLANT_TYPES = ["All","Vegetables","Tree Fruits","Tropical Fruits","Berries","Herbs","Flowers","Houseplants","Grains","Nuts"];
 
-export const MONTH_LABELS = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December",
-];
-
 export const STORAGE_KEYS = {
   zip: "pp_zip",
   latitude: "pp_latitude",
