@@ -1392,3 +1392,14 @@ describe("weather coordinates", () => {
     ok(/setZipCoords\(coords\);\nif \(coords\?\.lat != null\) setLatitude/.test(effect));
   });
 });
+
+describe("a failed forecast request", () => {
+  const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+  const effect = app.slice(app.indexOf("async function loadWeather()"), app.indexOf("loadWeather();\n}, [zip, country, record, weatherRefreshToken]);"));
+  it("leaves the cached forecast alone instead of raising a false frost alert", () => {
+    ok(/if \(!weatherResponse\.ok\) \{ if \(!paintedFromCache\) setWeather\(null\); return; \}/.test(effect));
+    ok(/if \(!forecast\.length\) \{ if \(!paintedFromCache\) setWeather\(null\); return; \}/.test(effect));
+    const catchBlock = effect.slice(effect.lastIndexOf("} catch (error) {"));
+    ok(/if \(!paintedFromCache\) setWeather\(null\);/.test(catchBlock), "an offline error keeps this place's cached paint");
+  });
+});

@@ -4662,6 +4662,10 @@ async function detectLocationAndZone() {
       setZipCoords(null);
       return;
     }
+    // Whether this run showed a fresh-enough cached forecast for this place; if
+    // not, a failure below clears the screen rather than leaving another
+    // place's weather up.
+    let paintedFromCache = false;
     try {
       const cacheKey = `pp_weatherCache_${country}_${zip}`;
       // Climate-resolved records already carry coordinates from the geocoder, so
@@ -4684,7 +4688,7 @@ async function detectLocationAndZone() {
           // offline phone painted a days-old forecast as today's — and the frost
           // and heat effects below fired alerts off it.
           const age = Date.now() - (Number(cached?.ts) || 0);
-          if (cached?.weather && age < WEATHER_CACHE_MAX_AGE_MS) setWeather(cached.weather);
+          if (cached?.weather && age < WEATHER_CACHE_MAX_AGE_MS) { setWeather(cached.weather); paintedFromCache = true; }
           if (!coords && cached?.coords) coords = cached.coords;
         }
       } catch (e) {}
@@ -4716,6 +4720,11 @@ if (coords?.lat != null) setLatitude(parseFloat(coords.lat));
 const weatherResponse = await fetch(
   `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&forecast_days=7`
 );
+// A rate-limited or rejected request answers with an error body and no
+// `daily`. Built into a weather object it had null temperatures — and
+// `null <= 35` is true, so it raised a frost alert — and it was cached over
+// the last good forecast. Keep whatever the cache already painted instead.
+if (!weatherResponse.ok) { if (!paintedFromCache) setWeather(null); return; }
 const weatherData = await weatherResponse.json();
 const forecast = (weatherData?.daily?.time || []).map((date, index) => ({
   date,
@@ -4726,6 +4735,7 @@ const forecast = (weatherData?.daily?.time || []).map((date, index) => ({
 // nulls it read as 0°F wherever it was compared — `null <= 35` is true — so the
 // cards announced "Frost on Saturday" and a 0° weekly low for a missing day.
 })).filter((d) => typeof d.maxTempF === "number" && typeof d.minTempF === "number");
+if (!forecast.length) { if (!paintedFromCache) setWeather(null); return; }
 const freshWeather = {
   maxTempF: forecast[0]?.maxTempF ?? null,
   minTempF: forecast[0]?.minTempF ?? null,
@@ -4735,8 +4745,10 @@ const freshWeather = {
 setWeather(freshWeather);
 AsyncStorage.setItem(cacheKey, JSON.stringify({ coords, weather: freshWeather, ts: Date.now() })).catch(() => {});
     } catch (error) {
+      // Offline, most likely. A cached forecast painted above is still good
+      // (it was age-checked); clearing it left offline gardeners with nothing.
       console.log("Weather load error", error);
-      setWeather(null);
+      if (!paintedFromCache) setWeather(null);
     }
   }
 loadWeather();
