@@ -273,7 +273,7 @@ export function PlantDetailScreen({
       // Premium users already get a rich Watering Forecast in Daily controls above,
       // so only show the generic weather-based watering tip to free users (no duplicate).
       ...(!premiumUnlocked ? [{ icon: "🚿", label: t("plantDetailScreen.wateringToday"), value: getWateringTip(weather) }] : []),
-      { icon: "📍", label: t("plantDetailScreen.bestSpot"), value: getWhereToPlantText(selectedPlant) },
+      { icon: "📍", label: t("plantDetailScreen.bestSpot"), value: getWhereToPlantText(selectedPlant, unitSystem) },
       { icon: "🌤️", label: t("plantDetailScreen.weatherAdvice"), value: getPlantSpecificTip(selectedPlant, zone, weather) },
     ].map((fact) => (
       <View key={fact.label} style={styles.detailMiniCard}>

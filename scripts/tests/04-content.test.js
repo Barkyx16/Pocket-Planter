@@ -1189,3 +1189,23 @@ describe("achievements and banners", () => {
     }
   });
 });
+
+describe("plant-page advice from core", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("follows the app language and formats spacing in the gardener's units", () => {
+    const tomato = items.find((i) => i.name === "Tomato");
+    eq(core.getShouldGrowText({ ...tomato, name: "Quux" }, "", null).includes("Zone your area"), false);
+    try {
+      i18n.setLocale("de");
+      for (const item of items.slice(0, 60)) {
+        const where = core.getWhereToPlantText(item, "metric");
+        ok(!/inches| ft\b|sunniest|open ground/.test(where), where);
+        ok(!/^(adviceText|growText)\./.test(core.getShouldGrowText(item, "7", null)), item.name);
+      }
+      eq(core.getWateringTip(null), "Gieß gründlich und regelmäßig und behalte die Bodenfeuchte im Blick.");
+      ok(/Zoll/.test(core.getWhereToPlantText(tomato, "imperial")) || !/\d/.test(core.getWhereToPlantText(tomato, "imperial")));
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});

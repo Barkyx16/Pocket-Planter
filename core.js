@@ -2781,10 +2781,10 @@ export function getSmartWeatherRecommendation(zone, weather, plants = []) {
 }
 
 export function getWateringTip(weather) {
-  if (!weather) return "Water deeply and consistently while monitoring soil moisture.";
-  if (weather.maxTempF >= HEAT_THRESHOLD_F) return "Hot weather is coming. Deep morning watering will help reduce stress and evaporation.";
-  if (weather.precipChance >= 65) return "Rain is likely this week. Check the soil before watering again.";
-  return "Keep the soil lightly moist and avoid shallow watering.";
+  if (!weather) return t("adviceText.waterTipDefault");
+  if (weather.maxTempF >= HEAT_THRESHOLD_F) return t("adviceText.waterTipHot");
+  if (weather.precipChance >= 65) return t("adviceText.waterTipRain");
+  return t("adviceText.waterTipNormal");
 }
 
 export function getShouldGrowText(item, zone, weather) {
@@ -2795,23 +2795,23 @@ export function getShouldGrowText(item, zone, weather) {
   const climate = getClimateBucket(zone);
 
   if (seasonLabel === "Outside your zone") {
-    if (type === "Tropical Fruits") return `${item.name} thrives in warm tropical climates and struggles in zones below 9. In cooler zones consider growing in a large container that can be moved indoors during cold months.`;
-    if (type === "Tree Fruits") return `${item.name} grows best outside your current zone. Check with a local nursery about cold-hardy varieties that may work in your area.`;
-    return `${item.name} is typically grown outside your current zone. You may still have success with containers, raised beds, or a greenhouse setup depending on your microclimate.`;
+    if (type === "Tropical Fruits") return t("growText.outsideTropical", { plant: item.name });
+    if (type === "Tree Fruits") return t("growText.outsideTree", { plant: item.name });
+    return t("growText.outsideOther", { plant: item.name });
   }
 
   if (weather?.minTempF <= FROST_THRESHOLD_F) {
-    return `${item.name} is a good fit for your zone but frost is in the forecast. Hold off on transplanting outdoors until overnight lows stay consistently above 40°F. Starting seeds indoors now is a great option.`;
+    return t("growText.frost", { plant: item.name });
   }
 
   if (weather?.maxTempF >= EXTREME_HEAT_THRESHOLD_F) {
     if (plantNameMatchesKey(name, "lettuce") || plantNameMatchesKey(name, "spinach") || plantNameMatchesKey(name, "pea") || plantNameMatchesKey(name, "radish")) {
-      return `${item.name} prefers cooler temperatures and will struggle in the current heat. Wait for temperatures to drop below 80°F or plant in a shaded spot with morning sun only.`;
+      return t("growText.heatCool", { plant: item.name });
     }
     if (plantNameMatchesKey(name, "tomato") || plantNameMatchesKey(name, "pepper") || plantNameMatchesKey(name, "eggplant") || plantNameMatchesKey(name, "watermelon")) {
-      return `${item.name} loves heat and is a strong performer in your zone. Plant early morning, water deeply, and mulch heavily to protect roots during peak afternoon heat.`;
+      return t("growText.heatLover", { plant: item.name });
     }
-    return `${item.name} can handle warm conditions but the current heat is high. Water deeply in the morning, add mulch, and avoid transplanting during the hottest part of the day.`;
+    return t("growText.heatOther", { plant: item.name });
   }
 
   // Zone and season specific.
@@ -2866,12 +2866,12 @@ export function getShouldGrowText(item, zone, weather) {
 
   // Difficulty based responses
   if (difficulty.label === "Easy") {
-    return `${item.name} is beginner friendly and a great choice for your zone. It's forgiving, grows quickly, and rewards consistent watering and good soil with a reliable harvest. A great starting point for any gardener.`;
+    return t("growText.easy", { plant: item.name });
   }
   if (difficulty.label === "Hard") {
-    return `${item.name} requires more attention but is absolutely worth growing in Zone ${zone || "your area"}. Focus on proper soil preparation, consistent watering, and monitoring for pests. The effort pays off with an impressive and rewarding harvest.`;
+    return t("growText.hard", { plant: item.name, zone: zone ? t("statsPreview.zone", { zone }) : t("growText.yourArea") });
   }
-  return `${item.name} is a solid choice for Zone ${zone || "your area"} when planted during the proper season. Prepare your soil with compost, water consistently, and give plants enough space for airflow and healthy growth throughout the season.`;
+  return t("growText.medium", { plant: item.name, zone: zone ? t("statsPreview.zone", { zone }) : t("growText.yourArea") });
 }
 
 // Compact form for the planting-guide card, where the prose version would read
@@ -2898,7 +2898,7 @@ function formatInches(value) {
   return `${Number.isInteger(n) ? n : n.toFixed(1)} inch${n === 1 ? "" : "es"}`;
 }
 
-export function getWhereToPlantText(item) {
+export function getWhereToPlantText(item, units) {
   // This used to answer from the plant's type alone, which gave 387 of the 612
   // plants the same sentence — and told 109 of them to find a sunny spot while
   // the sun badge a few lines up on the same screen said "Partial shade OK".
@@ -2911,38 +2911,33 @@ export function getWhereToPlantText(item) {
   const sun = getPlantSunNeed(item);
   const spacing = typeof authored.spacingInches === "number" ? authored.spacingInches : null;
 
-  const light =
-    sun.need === "shade" ? "Keep it out of direct midday sun"
-      : sun.need === "partial" ? "Morning sun with shade through the hottest part of the day suits it best"
-        : "Give it the sunniest spot you have";
+  // Lengths are formatted here, in the gardener's units, rather than left as
+  // English "18 inches" for localizeLengths to find inside a translated sentence.
+  const metric = units === "metric";
+  const inches = (n) => (metric ? metricLengthText(n) : t("adviceText.inches", { count: n }));
+  const feet = (n) => (metric ? metricLengthText(n) : t("adviceText.feet", { count: Math.round(n / 12) }));
 
-  let place;
+  const parts = [t(sun.need === "shade" ? "adviceText.lightShade" : sun.need === "partial" ? "adviceText.lightPartial" : "adviceText.lightFull")];
   if (type === "Tree Fruits" || type === "Tropical Fruits") {
-    const feet = spacing ? `${Math.round(spacing / 12)} ft` : "plenty of";
-    place = `, and ${feet} of clear ground to spread into. It will be there for years, so settle the position before you dig`;
-    if (type === "Tropical Fruits") place += ", somewhere you can shelter it from frost";
+    parts.push(spacing ? t("adviceText.placeTree", { space: feet(spacing) }) : t("adviceText.placeTreeNoSpace"));
+    if (type === "Tropical Fruits") parts.push(t("adviceText.frostShelter"));
   } else if (authored.containerFriendly === true) {
-    place = spacing && spacing <= 12
-      ? `. It is happy in a pot or a bed — set plants about ${spacing} inches apart`
-      : `. A large container suits it if you are short of open ground${spacing ? `, and allow about ${spacing} inches between plants` : ""}`;
+    parts.push(spacing && spacing <= 12
+      ? t("adviceText.placePotSmall", { space: inches(spacing) })
+      : spacing ? t("adviceText.placePotLarge", { space: inches(spacing) }) : t("adviceText.placePotLargeNoSpace"));
   } else {
-    place = spacing
-      ? `. Give it open ground rather than a pot, with about ${spacing} inches between plants`
-      : ". Give it open ground rather than a pot";
+    parts.push(spacing ? t("adviceText.placeGround", { space: inches(spacing) }) : t("adviceText.placeGroundNoSpace"));
   }
-
-  const soil = authored.perennial === true
-    ? ". Work compost in before planting, since you will not get another easy chance."
-    : ". Loose soil and steady airflow do the rest.";
-  return `${light}${place}${soil}`;
+  parts.push(t(authored.perennial === true ? "adviceText.soilPerennial" : "adviceText.soilAnnual"));
+  return parts.join(" ");
 }
 
 export function getPlantSpecificTip(item, zone, weather) {
   const seasonLabel = getPlantSeasonLabel(item, zone);
-  if (seasonLabel === "Plant now" && weather?.maxTempF >= HEAT_THRESHOLD_F) return "This plant is in season, but the heat is high. Plant early in the morning, mulch well, and keep watering consistent.";
-  if (seasonLabel === "Plant now" && weather?.minTempF <= 38) return "This plant is in season, but nights are still chilly. Protect young starts until temperatures stay warmer.";
-  if (seasonLabel === "Plant now") return "This is a good time to grow it in your area. Focus on soil moisture, spacing, and steady care during the first few weeks.";
-  return "Save or follow this plant so you can come back when its planting window gets closer.";
+  if (seasonLabel === "Plant now" && weather?.maxTempF >= HEAT_THRESHOLD_F) return t("adviceText.tipHeat");
+  if (seasonLabel === "Plant now" && weather?.minTempF <= 38) return t("adviceText.tipChilly");
+  if (seasonLabel === "Plant now") return t("adviceText.tipGoodTime");
+  return t("adviceText.tipLater");
 }
 
 export function getPlantingSteps(item) {
@@ -5389,8 +5384,8 @@ export function getPowerPairs(gardenAreas) {
 
 export function getPlantHealthStatus({ plantName, item, wateredPlants, wateringHistory, weather }) {
   const wateredToday = wateredPlants?.[plantName] === getTodayKey();
-  if (weather?.minTempF <= FROST_THRESHOLD_F) return { label: "Frost Risk", icon: "❄️", color: "#6bc7ff" };
-  if (weather?.maxTempF >= HEAT_THRESHOLD_F && !wateredToday) return { label: "Heat Stressed", icon: "🔥", color: "#ff7a7a" };
+  if (weather?.minTempF <= FROST_THRESHOLD_F) return { label: t("adviceText.healthFrost"), icon: "❄️", color: "#6bc7ff" };
+  if (weather?.maxTempF >= HEAT_THRESHOLD_F && !wateredToday) return { label: t("adviceText.healthHeat"), icon: "🔥", color: "#ff7a7a" };
 
   // "Not watered today" is not the same as "thirsty". Every plant that had not
   // been watered since midnight read Needs Water, so an apple on a five-day
@@ -5402,8 +5397,8 @@ export function getPlantHealthStatus({ plantName, item, wateredPlants, wateringH
   // old question rather than guess.
   const next = item ? getNextWaterInfo(plantName, item, wateringHistory, wateredPlants, weather) : null;
   const thirsty = next ? next.daysUntil <= 0 : !wateredToday;
-  if (thirsty) return { label: "Needs Water", icon: "💧", color: "#ffd86b" };
-  return { label: "Healthy", icon: "🌿", color: "#5cff89" };
+  if (thirsty) return { label: t("adviceText.healthWater"), icon: "💧", color: "#ffd86b" };
+  return { label: t("adviceText.healthy"), icon: "🌿", color: "#5cff89" };
 }
 
 export const HARVEST_SOON_DAYS = 7;
