@@ -7,7 +7,7 @@ import { IconText } from "./IconText";
 import { formatDate, useTranslation } from "../lib/i18n";
 
 export const FrostOverrideCard = memo(function FrostOverrideCard({ theme, zone, frostOverrides, onSave, onHide }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const [lastFrost, setLastFrost] = useState(frostOverrides?.lastFrost || "");
   const [firstFrost, setFirstFrost] = useState(frostOverrides?.firstFrost || "");
   const [editing, setEditing] = useState(false);
@@ -88,7 +88,7 @@ export const FrostOverrideCard = memo(function FrostOverrideCard({ theme, zone, 
         <Text style={{ color: GROW, fontSize: 40, fontWeight: "900", marginTop: 6, letterSpacing: -1 }}>{frostFreeDays}</Text>
         <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900", marginTop: -2 }}>{t("frostOverride.frostfreeGrowingDays")}</Text>
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4, textAlign: "center" }}>
-          {t("frostOverride.thatsAbout")}{months} month{months === 1 ? "" : "s"} {t("frostOverride.ofPrimePlantingInZone")} {zone || "—"}
+          {tn("sentences.primeMonths", months, { zone: zone || "—" })}
         </Text>
         <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: isCustom ? "rgba(92, 255, 137, 0.16)" : "rgba(255, 255, 255, 0.06)", borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12, borderWidth: 1, borderColor: isCustom ? "rgba(92, 255, 137, 0.4)" : "rgba(255, 255, 255, 0.12)" }}>
           <Text style={{ color: isCustom ? GROW : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>

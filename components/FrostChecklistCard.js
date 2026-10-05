@@ -52,7 +52,7 @@ export const FrostChecklistCard = memo(function FrostChecklistCard({ theme, weat
         </View>
       </View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 8 }}>
-        {t("frostChecklist.lowOf")} {Math.round(coldestF)}{t("frostChecklist.f")}{coldestC}{t("frostChecklist.cExpectedCheckTheseOff")} {doneCount}/{FROST_TASKS.length} done.
+        {t("sentences.frostLow", { tempF: Math.round(coldestF), tempC: coldestC, done: doneCount, total: FROST_TASKS.length })}
       </Text>
 
       {/* progress bar */}

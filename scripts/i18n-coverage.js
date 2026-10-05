@@ -115,6 +115,13 @@ function analyse(file) {
         hardcoded.push({ line: p.node.loc.start.line, text: p.node.value });
       }
     },
+    ConditionalExpression(p) {
+      // `n === 1 ? "" : "s"` is English pluralisation; other languages need tn().
+      const { consequent: c, alternate: alt } = p.node;
+      if (c.type === "StringLiteral" && alt.type === "StringLiteral" && /^(|e?s)$/.test(c.value) && /^(|e?s)$/.test(alt.value) && c.value !== alt.value) {
+        hardcoded.push({ line: p.node.loc.start.line, text: `English plural ("${c.value}" / "${alt.value}")` });
+      }
+    },
     TemplateLiteral(p) {
       // `Filter by ${type}` is as much English copy as "Filter by", but has no
       // StringLiteral for the check above to see. Judge the literal text with
@@ -131,7 +138,9 @@ function analyse(file) {
     JSXText(p) {
       // A lone word between tags ("Best", "VS", "Streak") is always shown to the
       // user, even though it is too short to look like prose anywhere else.
-      if (isProse(p.node.value) || /^[A-Z][A-Za-z]{1,}[!?.:]?$/.test(p.node.value.trim())) {
+      // Any word between tags is shown to the user — a lone "Best", or the
+      // " plant" in `{n} plant{…}` — even when too short to look like prose.
+      if (isProse(p.node.value) || /[A-Za-z]{2,}/.test(p.node.value.replace(/\bpH\b/g, ""))) {
         hardcoded.push({ line: p.node.loc.start.line, text: p.node.value.trim() });
       }
     },

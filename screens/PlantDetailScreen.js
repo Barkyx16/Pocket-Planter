@@ -41,7 +41,7 @@ export function PlantDetailScreen({
         <StatusBar barStyle="light-content" />
         <BackgroundDecoration isDark={isDark} />
         <WeatherParticles weather={weather} />
-        {xpPopups.map((popup) => (<View key={popup.id} style={styles.xpPopup}><Text style={styles.xpPopupText}>{t("plantsText.xpGain", { amount: popup.amount })}</Text></View>))}
+        {xpPopups.map((popup) => (<View key={popup.id} style={styles.xpPopup}><Text style={styles.xpPopupText}>{typeof popup.amount === "number" ? t("plantsText.xpGain", { amount: popup.amount }) : popup.amount}</Text></View>))}
         {showLevelUp ? (
   <View style={styles.levelUpOverlay}>
     <ConfettiBurst />

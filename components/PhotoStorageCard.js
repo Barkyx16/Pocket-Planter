@@ -64,7 +64,7 @@ export const PhotoStorageCard = memo(function PhotoStorageCard({ theme, journalE
                 >
                   <Text style={{ color: disabled ? theme.secondaryText : "#ff9f9f", fontSize: 14, fontWeight: "800" }}>🗑 {opt.label}</Text>
                   <Text style={{ color: disabled ? theme.secondaryText : "#ff9f9f", fontSize: 12, fontWeight: "900" }}>
-                    {opt.count} photo{opt.count === 1 ? "" : "s"}
+                    {tn("sentences.photoCount", opt.count)}
                   </Text>
                 </Pressable>
               );

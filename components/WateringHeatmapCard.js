@@ -5,7 +5,7 @@ import { getDateKey } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const WateringHeatmapCard = memo(function WateringHeatmapCard({ theme, wateringHistory }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const WEEKS = 15; // ~15 weeks of history
 
   // Flatten all watering dates into a count per day-key
@@ -95,7 +95,7 @@ export const WateringHeatmapCard = memo(function WateringHeatmapCard({ theme, wa
 return (
     <View>
       <Text style={[styles.cardText, { color: theme.secondaryText }]}>
-        {totalWaterings} watering{totalWaterings === 1 ? "" : "s"} across {activeDays} day{activeDays === 1 ? "" : "s"}{t("wateringHeatmap.eachSquareIsADay")}
+        {tn("sentences.heatmapSummary", activeDays, { waterings: totalWaterings })}
       </Text>
 
       {/* STATS ROW */}

@@ -6,7 +6,7 @@ import { IconText } from "./IconText";
 import { formatDate, useTranslation } from "../lib/i18n";
 
 export const PlantGrowthTimeline = memo(function PlantGrowthTimeline({ theme, plant, journalEntries, premiumUnlocked, onAddPhoto, onUnlock }) {
-  const { t, growthStageLabel, moodLabel } = useTranslation();
+  const { t, tn, growthStageLabel, moodLabel } = useTranslation();
   const STAGE_COLORS = {
     "Seedling": "#8effab",
     "Leaf Growth": "#5cff89",
@@ -66,7 +66,7 @@ export const PlantGrowthTimeline = memo(function PlantGrowthTimeline({ theme, pl
       ) : (
         <>
           <Text style={styles.cardText}>
-            {entries.length} photo{entries.length === 1 ? "" : "s"} tracking {plant.name}{t("plantGrowthTimeline.sGrowth")}
+            {tn("sentences.photosTracking", entries.length, { plant: plant.name })}
           </Text>
 
           {/* BEFORE & AFTER */}

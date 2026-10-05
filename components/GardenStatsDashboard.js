@@ -211,14 +211,14 @@ return (
       {/* TODAY'S ACTION ITEMS — only what still needs doing */}
       {hasTodos ? (
       <View style={styles.dashActionSection}>
-        <Text style={styles.dashActionTitle}>To-Do</Text>
+        <Text style={styles.dashActionTitle}>{t("sentences.toDo")}</Text>
 
         {plantsNeedingWater > 0 ? (
           <View style={[styles.dashActionRow, { backgroundColor: "rgba(107, 199, 255, 0.1)", borderColor: "rgba(107, 199, 255, 0.24)", flexDirection: "column", alignItems: "stretch", gap: 12 }]}>
             <Pressable onPress={() => onNavigate && onNavigate("plants")} style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
               <Text style={styles.dashActionIcon}>💧</Text>
               <View style={{ flex: 1 }}>
-                <Text style={styles.dashActionLabel}>{plantsNeedingWater} plant{plantsNeedingWater === 1 ? "" : "s"} {t("gardenStatsDashboard.needWatering")}</Text>
+                <Text style={styles.dashActionLabel}>{tn("sentences.plantsNeedWater", plantsNeedingWater)}</Text>
                 <Text style={[styles.dashActionSub, { color: "#6bc7ff" }]}>{t("gardenStatsDashboard.tapToOpenThePlants")}</Text>
               </View>
               <View style={[styles.dashActionBadge, { backgroundColor: "rgba(107, 199, 255, 0.2)" }]}>
@@ -231,7 +231,7 @@ return (
               accessibilityLabel={t("gardenStatsDashboard.waterAllPlantsThatNeed")}
               style={{ backgroundColor: "#6bc7ff", borderRadius: 12, paddingVertical: 14, alignItems: "center" }}
             >
-              <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 14 }}>{t("gardenStatsDashboard.waterAll")} {plantsNeedingWater} now</Text>
+              <Text style={{ color: "#07120b", fontWeight: "900", fontSize: 14 }}>{t("sentences.waterAllNow", { count: plantsNeedingWater })}</Text>
             </Pressable>
           </View>
         ) : null}
@@ -240,7 +240,7 @@ return (
           <View style={[styles.dashActionRow, { backgroundColor: "rgba(255, 216, 107, 0.1)", borderColor: "rgba(255, 216, 107, 0.3)" }]}>
             <Text style={styles.dashActionIcon}>🎉</Text>
             <View style={{ flex: 1 }}>
-              <Text style={styles.dashActionLabel}>{harvestsReady} plant{harvestsReady === 1 ? "" : "s"} {t("gardenStatsDashboard.readyToHarvest")}</Text>
+              <Text style={styles.dashActionLabel}>{tn("statsPreview.plantsReadyHarvest", harvestsReady)}</Text>
               <Text style={[styles.dashActionSub, { color: theme.secondaryText }]}>{t("gardenStatsDashboard.checkYourPlantCardsTo")}</Text>
             </View>
             <View style={[styles.dashActionBadge, { backgroundColor: "rgba(255, 216, 107, 0.2)" }]}>
@@ -253,7 +253,7 @@ return (
           <View style={[styles.dashActionRow, { backgroundColor: "rgba(142, 255, 171, 0.08)", borderColor: "rgba(142, 255, 171, 0.2)" }]}>
             <Text style={styles.dashActionIcon}>🌿</Text>
             <View style={{ flex: 1 }}>
-              <Text style={styles.dashActionLabel}>{fertDue} plant{fertDue === 1 ? "" : "s"} {t("gardenStatsDashboard.dueForFertilizer")}</Text>
+              <Text style={styles.dashActionLabel}>{tn("statsPreview.plantsDueFertilizer", fertDue)}</Text>
               <Text style={[styles.dashActionSub, { color: theme.secondaryText }]}>{t("gardenStatsDashboard.itsBeen14DaysSince")}</Text>
             </View>
             <View style={[styles.dashActionBadge, { backgroundColor: "rgba(142, 255, 171, 0.16)" }]}>

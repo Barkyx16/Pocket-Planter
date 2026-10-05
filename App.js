@@ -2939,7 +2939,7 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
     if (!streakFreeze.available) { setStreakRecoveryOffer(null); return; }
     Alert.alert(
       t("streak.saveTitle"),
-      `You missed a day, so your streak reset. Use your weekly Streak Freeze to restore your ${prevCount}-day streak?`,
+      t("appAlerts.streakSaveBody", { count: prevCount }),
       [
         { text: t("common.noThanks"), style: "cancel", onPress: () => setStreakRecoveryOffer(null) },
         {
@@ -2949,7 +2949,7 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
             setStreakFreeze((f) => ({ ...f, available: false, lastUsed: today }));
             setStreakData({ count: prevCount, lastOpened: today });
             successHaptic();
-            const popup = { id: Date.now().toString(), amount: `❄️ ${prevCount}-day streak restored!` };
+            const popup = { id: Date.now().toString(), amount: t("appAlerts.streakRestored", { count: prevCount }) };
             setXpPopups((popups) => [...popups, popup]);
             setTimeout(() => setXpPopups((popups) => popups.filter((p) => p.id !== popup.id)), 2500);
             setStreakRecoveryOffer(null);
@@ -3771,7 +3771,7 @@ function markPlantWatered(plantName) {
     if (!alreadyLoggedToday && milestones.includes(newStreak)) {
       vibrate([0, 80, 60, 120]);
       successHaptic();
-      const popup = { id: Date.now().toString(), amount: `🔥 ${newStreak}-day streak!` };
+      const popup = { id: Date.now().toString(), amount: t("appAlerts.streakPopup", { count: newStreak }) };
       setXpPopups((popups) => [...popups, popup]);
       setTimeout(() => {
         setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
@@ -3815,7 +3815,7 @@ function markPlantWatered(plantName) {
       return next;
     });
     unwatered.forEach((name) => schedulePlantWaterReminder(name));
-    const popup = { id: Date.now().toString(), amount: `💧 Watered ${unwatered.length} plants!` };
+    const popup = { id: Date.now().toString(), amount: tn("appAlerts.wateredPopup", unwatered.length) };
     setXpPopups((popups) => [...popups, popup]);
     setTimeout(() => {
       setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
@@ -3836,7 +3836,7 @@ function markPlantWatered(plantName) {
       return { ...current, [plantName]: [...existing, today] };
     });
     schedulePlantWaterReminder(plantName);
-    const popup = { id: Date.now().toString(), amount: `💧 Watered ${plantName}!` };
+    const popup = { id: Date.now().toString(), amount: t("appAlerts.wateredName", { name: plantName }) };
     setXpPopups((popups) => [...popups, popup]);
     setTimeout(() => {
       setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
@@ -3987,7 +3987,7 @@ function waterArea(areaId) {
   // Saved plants only: the reminders switch cancels by the saved list, so a
   // reminder for a plant left in a bed after removal could never be turned off.
   unwatered.filter((name) => savedPlants.includes(name)).forEach((name) => schedulePlantWaterReminder(name));
-  const popup = { id: Date.now().toString(), amount: `💧 Watered ${area.name}!` };
+  const popup = { id: Date.now().toString(), amount: t("appAlerts.wateredName", { name: area.name }) };
   setXpPopups((popups) => [...popups, popup]);
   setTimeout(() => {
     setXpPopups((popups) => popups.filter((item) => item.id !== popup.id));
@@ -4105,7 +4105,7 @@ function assignPlantToAreaSlot(areaId, slotId, plantName, opts = {}) {
       setTimeout(() => {
         Alert.alert(
           t("garden.conflictTitle"),
-          `${plantName} doesn't pair well with ${conflictList} in the same bed — they can compete or attract the same pests. It's still planted; just something to keep in mind. Open Companion Check for a one-tap fix.`,
+          t("appAlerts.conflictPlacedBody", { plant: plantName, others: conflictList }),
           [{ text: t("common.gotIt") }]
         );
       }, 300);
@@ -4345,7 +4345,7 @@ function autoOptimizeGarden() {
 
   Alert.alert(
     t("garden.optimizeTitle"),
-    `This will move ${moved} plant${moved === 1 ? "" : "s"} and resolve ${resolved} of ${before} conflict${before === 1 ? "" : "s"}${after > 0 ? ` (${after} would need more space)` : ""}. Apply it?`,
+    [tn("appAlerts.optMove", moved), tn("appAlerts.optResolve", before, { resolved }), after > 0 ? tn("appAlerts.optNeedSpace", after) : null, t("appAlerts.applyIt")].filter(Boolean).join(" "),
     [
       { text: t("common.cancel"), style: "cancel" },
       {
@@ -4357,8 +4357,8 @@ function autoOptimizeGarden() {
           Alert.alert(
             t("garden.optimizedTitle"),
             after > 0
-              ? `Moved ${moved} plant${moved === 1 ? "" : "s"} to better beds. ${after} conflict${after === 1 ? "" : "s"} remain — you'll need more bed space to fix ${after === 1 ? "it" : "them"}.`
-              : `Moved ${moved} plant${moved === 1 ? "" : "s"} — every companion conflict is now resolved!`
+              ? `${tn("appAlerts.movedBetter", moved)} ${tn("appAlerts.conflictsRemain", after)}`
+              : tn("appAlerts.movedAllResolved", moved)
           );
         },
       },
@@ -5036,7 +5036,7 @@ useEffect(() => {
     setFollowedPlants((current) => current.includes(name) ? current.filter((item) => item !== name) : [...current, name].sort());
     tapHaptic("light");
     showUndoToast(
-      wasFollowing ? `Unfollowed ${name}` : `Following ${name} — you'll see its seasonal tips`,
+      wasFollowing ? t("appAlerts.unfollowed", { plant: name }) : t("appAlerts.following", { plant: name }),
       () => setFollowedPlants((current) =>
         wasFollowing ? [...current, name].sort() : current.filter((item) => item !== name)
       )
@@ -5491,7 +5491,7 @@ const jumpToTab = useCallback((tab) => {
           />
           <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
             <Pressable onPress={() => setHarvestLogPlant(null)} style={{ flex: 1, borderRadius: 14, paddingVertical: 13, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.12)" }}>
-              <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>Cancel</Text>
+              <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>{t("appAlerts.cancel")}</Text>
             </Pressable>
             <Pressable onPress={() => { if (harvestLogPlant) { logHarvest(harvestLogPlant, harvestLogText.trim(), "", ""); setHarvestLogPlant(null); } }} style={{ flex: 1, borderRadius: 14, paddingVertical: 13, alignItems: "center", backgroundColor: "#5cff89" }}>
               <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{t("appShell.logIt")}</Text>
@@ -5550,7 +5550,7 @@ const jumpToTab = useCallback((tab) => {
       <View style={{ position: "absolute", bottom: 96, left: 16, right: 16, zIndex: 900, flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(16, 41, 23, 0.98)", borderRadius: 16, paddingVertical: 14, paddingHorizontal: 18, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.3)", shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 20 }}>
         <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800", flex: 1 }}>{undoToast.message}</Text>
         <Pressable onPress={undoToast.onUndo} hitSlop={10} style={{ marginLeft: 12, backgroundColor: "#5cff89", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10 }}>
-          <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "900" }}>Undo</Text>
+          <Text style={{ color: "#07120b", fontSize: 12, fontWeight: "900" }}>{t("appAlerts.undo")}</Text>
         </Pressable>
       </View>
     ) : null}

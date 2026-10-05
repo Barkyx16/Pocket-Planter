@@ -1,13 +1,12 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
-import { getNextSeasonStart, getPlantDifficulty, getSeasonForDate, getSuggestionsForMonth, normalizeType, resolvePlantImageSource } from "../core";
+import { getNextSeasonStart, getPlantDifficulty, getSuggestionsForMonth, normalizeType, resolvePlantImageSource } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, zone, onOpenPlant, onBrowse }) {
-  const { t, difficultyLabel, plantTypeLabel } = useTranslation();
+  const { t, tn, difficultyLabel, plantTypeLabel } = useTranslation();
   const now = new Date();
   now.setHours(12, 0, 0, 0);
-  const currentSeason = getSeasonForDate(now);
 
   // The next season opens on its equinox or solstice, not on the first of the month.
   const next = getNextSeasonStart(now);
@@ -17,7 +16,6 @@ export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, 
   if (daysUntilNext > 21 || daysUntilNext < 0) return null;
   if (!zone) return null;
 
-  const seasonLabel = next.label;
   const seasonEmoji = next.emoji;
 
   // What to plant as the next season opens — pull zone-matched picks for that month.
@@ -30,12 +28,12 @@ export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, 
         <View style={{ flex: 1 }}>
           <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>{t("seasonTransition.seasonChangeAhead")}</Text>
           <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900", marginTop: 2 }}>
-            {seasonLabel} {t("seasonTransition.startsIn")} {daysUntilNext} day{daysUntilNext === 1 ? "" : "s"}
+            {tn(`sentences.${next.key}`, daysUntilNext)}
           </Text>
         </View>
       </View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 8 }}>
-        {currentSeason.label} {t("seasonTransition.isWindingDownGetA")} {seasonLabel.toLowerCase()} {t("seasonTransition.heresWhatDoesWellIn")} {zone} {t("seasonTransition.asItOpens")}
+        {t(`seasonTransitionText.intro_${next.key}`, { zone })}
       </Text>
 
       {picks.length ? (
@@ -65,13 +63,13 @@ export const SeasonTransitionCard = memo(function SeasonTransitionCard({ theme, 
         </View>
       ) : (
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 20, marginTop: 14 }}>
-          {t("seasonTransition.noStandout")} {seasonLabel.toLowerCase()} {t("seasonTransition.picksMatchedToZone")} {zone} {t("seasonTransition.yetBrowseAllPlantsTo")}
+          {t(`seasonTransitionText.none_${next.key}`, { zone })}
         </Text>
       )}
 
       {onBrowse ? (
         <Pressable onPress={onBrowse} style={{ marginTop: 14, backgroundColor: "#ff9f43", borderRadius: 16, paddingVertical: 14, alignItems: "center" }}>
-          <Text style={{ color: "#3d2c00", fontWeight: "900", fontSize: 14 }}>{t("seasonTransition.planMy")} {seasonLabel.toLowerCase()} {t("seasonTransition.garden")}</Text>
+          <Text style={{ color: "#3d2c00", fontWeight: "900", fontSize: 14 }}>{t(`seasonTransitionText.plan_${next.key}`)}</Text>
         </Pressable>
       ) : null}
     </View>

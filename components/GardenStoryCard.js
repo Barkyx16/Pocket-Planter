@@ -108,7 +108,7 @@ export const GardenStoryCard = memo(function GardenStoryCard({ theme, savedPlant
 
         {areaCount > 0 ? (
           <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", marginTop: 14, textAlign: "center" }}>
-            {t("gardenStory.growingAcross")} {areaCount} {t("gardenStory.gardenArea")}{areaCount === 1 ? "" : "s"}
+            {tn("sentences.areas", areaCount)}
           </Text>
         ) : null}
 

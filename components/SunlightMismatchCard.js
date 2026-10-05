@@ -7,7 +7,7 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const SunlightMismatchCard = memo(function SunlightMismatchCard({ theme, gardenAreas, onOpenPlant }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   // Only consider areas the user has actually tagged with a sun level.
   const tagged = (gardenAreas || []).filter((a) => a.sunExposure);
   if (!tagged.length) return null;
@@ -44,7 +44,7 @@ export const SunlightMismatchCard = memo(function SunlightMismatchCard({ theme, 
       <IconText label={t("sunlightMismatch.sunlightCheck")} style={styles.cardEyebrow} />
       <Text style={[styles.cardTitle, { color: theme.text }]}>{t("sunlightMismatch.sunPlacementWarnings")}</Text>
       <Text style={[styles.cardText, { color: theme.secondaryText }]}>
-        {mismatches.length} plant{mismatches.length === 1 ? "" : "s"} {t("sunlightMismatch.mayBeInTheWrong")} {mismatches.length === 1 ? t("sunlightMismatch.its") : t("sunlightMismatch.theyre")} {t("sunlightMismatch.plantedIn")}
+        {tn("sentences.wrongLight", mismatches.length)}
       </Text>
       <View style={{ gap: 10, marginTop: 16 }}>
         {mismatches.map((m) => {

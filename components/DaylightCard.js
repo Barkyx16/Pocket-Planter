@@ -4,7 +4,7 @@ import { getDaylightInfo } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const DaylightCard = memo(function DaylightCard({ theme, zipCoords, onViewed }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const info = getDaylightInfo(zipCoords);
 
   // The card only renders (inside its collapsible) once it's actually shown, so
@@ -38,7 +38,7 @@ return (
         </View>
       </View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 20, marginTop: 12 }}>
-        {info.gaining ? t("daylight.daysAreGettingLonger") : t("daylight.daysAreGettingShorter")} {t("daylight.byAbout")} {info.deltaMin} minute{info.deltaMin === 1 ? "" : "s"} {t("daylight.aDay")} {note}
+        {tn(info.gaining ? "sentences.daylightLonger" : "sentences.daylightShorter", info.deltaMin)} {note}
       </Text>
     </View>
   );

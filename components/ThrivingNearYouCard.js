@@ -8,7 +8,7 @@ import { resolvePlantImageSource } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const ThrivingNearYouCard = memo(function ThrivingNearYouCard({ theme, zone, onOpenPlant }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -67,7 +67,7 @@ export const ThrivingNearYouCard = memo(function ThrivingNearYouCard({ theme, zo
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{r.plant_name}</Text>
                   <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>
-                    🌱 {r.saves} saved{r.harvests > 0 ? ` · 🎉 ${r.harvests} harvested` : ""} · {r.gardeners} gardener{r.gardeners === 1 ? "" : "s"}
+                    {r.harvests > 0 ? tn("sentences.communityStatsHarvests", r.gardeners, { saves: r.saves, harvests: r.harvests }) : tn("sentences.communityStats", r.gardeners, { saves: r.saves })}
                   </Text>
                 </View>
                 {plant ? <Text style={{ color: "#8effab", fontSize: 20, fontWeight: "900" }}>›</Text> : null}

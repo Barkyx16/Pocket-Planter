@@ -6,7 +6,7 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const RescueModeCard = memo(function RescueModeCard({ theme, savedPlants, wateredPlants, wateringHistory, onOpenPlant, onWater }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const neglected = (savedPlants || [])
     .map((name) => {
       const history = wateringHistory?.[name];
@@ -28,7 +28,7 @@ export const RescueModeCard = memo(function RescueModeCard({ theme, savedPlants,
         <View style={{ flex: 1 }}>
           <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "900", letterSpacing: 0.5 }}>{t("rescueMode.rescueMode")}</Text>
           <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900", marginTop: 2 }}>
-            {neglected.length} plant{neglected.length === 1 ? "" : "s"} need{neglected.length === 1 ? "s" : ""} attention
+            {tn("sentences.needAttention", neglected.length)}
           </Text>
         </View>
       </View>

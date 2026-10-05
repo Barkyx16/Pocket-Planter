@@ -134,7 +134,7 @@ return (
 
           {untrackedCount > 0 ? (
             <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 12, fontStyle: "italic" }}>
-              {untrackedCount} plant{untrackedCount === 1 ? "" : "s"} {t("wateringForecast.notShownWaterOnceTo")}
+              {tn("sentences.untracked", untrackedCount)}
             </Text>
           ) : null}
         </>

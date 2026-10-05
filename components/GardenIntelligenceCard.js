@@ -102,7 +102,7 @@ export const GardenIntelligenceCard = memo(function GardenIntelligenceCard({ the
         <View style={[styles.gardenIntelInsightBanner, { backgroundColor: "rgba(255, 216, 107, 0.12)", borderColor: "rgba(255, 216, 107, 0.3)" }]}>
           <Text style={styles.gardenIntelInsightIcon}>🎉</Text>
           <Text style={[styles.gardenIntelInsightText, { color: "#ffd86b" }]}>
-            {harvestsReady} plant{harvestsReady === 1 ? "" : "s"} {t("gardenIntelligence.readyToHarvestToday")}
+            {tn("sentences.readyToday", harvestsReady)}
           </Text>
         </View>
       ) : null}

@@ -1071,3 +1071,51 @@ describe("plant labels from core", () => {
     eq(i18n.pairLabel("Excellent Pair"), "Excellent Pair");
   });
 });
+
+describe("the English dictionary", () => {
+  it("has no keys that nothing uses", () => {
+    // A rewrite that moves a string to a new key should delete the old one, or
+    // translators keep paying for copy nobody sees. Keys built at runtime count
+    // as used through any `ns.${…}` / "ns.prefix" + … reference in the code.
+    const parser = require("@babel/parser");
+    const traverse = require("@babel/traverse").default;
+    const ast = parser.parse(fs.readFileSync(path.join(ROOT, "lib/locales/en.js"), "utf8"), { sourceType: "module" });
+    const isPlural = (o) => o.properties.length && o.properties.every((x) => ["one", "other"].includes(x.key.name || x.key.value));
+    const keys = [];
+    const visit = (node, prefix) => {
+      for (const prop of node.properties || []) {
+        const key = prefix ? `${prefix}.${prop.key.name || prop.key.value}` : prop.key.name || prop.key.value;
+        if (prop.value.type === "ObjectExpression" && !isPlural(prop.value)) visit(prop.value, key);
+        else keys.push(key);
+      }
+    };
+    let found = false;
+    traverse(ast, { ObjectExpression(p) { if (!found && !p.parentPath.isObjectProperty()) { visit(p.node, ""); found = true; p.stop(); } } });
+    const files = [];
+    const walk = (dir) => {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        const f = path.join(dir, e.name);
+        if (e.isDirectory()) { if (!/node_modules|\.git|locales|assets|scripts/.test(f)) walk(f); }
+        else if (f.endsWith(".js")) files.push(f);
+      }
+    };
+    walk(ROOT);
+    const code = files.map((f) => fs.readFileSync(f, "utf8")).join("\n");
+    const literal = new Set([...code.matchAll(/["'`]([a-zA-Z0-9_]+\.[a-zA-Z0-9_.]+)["'`]/g)].map((m) => m[1]));
+    const prefixes = [...code.matchAll(/[`"']([a-zA-Z0-9_]+\.[a-zA-Z0-9_]*)(?:\$\{|["']\s*\+)/g)].map((m) => m[1]);
+    const dynamicNs = new Set([...code.matchAll(/`([a-zA-Z0-9_]+)\.\$\{/g)].map((m) => m[1]));
+    // difficultyLabel() reads `${key}Text` for each difficulty key.
+    const built = new Set(["difficulty.easyText", "difficulty.mediumText", "difficulty.hardText"]);
+    const unused = keys.filter((k) => !literal.has(k) && !built.has(k) && !dynamicNs.has(k.split(".")[0]) && !prefixes.some((p) => k.startsWith(p)));
+    eq(unused, []);
+  });
+});
+
+describe("the plant page's floating popups", () => {
+  it("only wrap numbers as '+N XP'", () => {
+    // Streak and watering popups carry a sentence, not a number; wrapping them
+    // read "+🔥 7-day streak! XP".
+    const src = fs.readFileSync(path.join(ROOT, "screens/PlantDetailScreen.js"), "utf8");
+    ok(/typeof popup\.amount === "number" \? t\("plantsText\.xpGain"/.test(src));
+  });
+});

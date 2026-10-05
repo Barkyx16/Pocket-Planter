@@ -54,7 +54,7 @@ export const SeedStartingCard = memo(function SeedStartingCard({ theme, plants, 
         {upcoming.map(({ item, info }) => (
           <View key={`soon-${item.name}`} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
             <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }}>{item.name}</Text>
-            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800" }}>in {info.daysUntilStart}d</Text>
+            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{t("sentences.inDays", { count: info.daysUntilStart })}</Text>
           </View>
         ))}
       </View>
