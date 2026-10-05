@@ -4508,6 +4508,13 @@ export function getDailyQuests({ savedPlants, journalEntries, gardenMap, watered
     { id: "harvest_and_care", icon: "🌾", title: "Harvest day care", description: "Pick something and log a care action the same day to keep the bed productive.", difficulty: "Bonus", progress: (harvestLogToday >= 1 && todayCareLog >= 1) ? 1 : 0, goal: 1, completed: harvestLogToday >= 1 && todayCareLog >= 1, reward: 75 },
   ];
 
+  // Quest ids are what gets stored and matched; the words are translated here,
+  // so App rebuilds these when the language changes.
+  allQuests.forEach((q) => {
+    q.title = t(`questText.${q.id}_title`);
+    q.description = t(`questText.${q.id}_desc`);
+  });
+
   // Pick 5 quests — always show 1 easy, 2 medium, 1 hard, 1 bonus
   const easy = allQuests.filter(q => q.difficulty === "Easy");
   const medium = allQuests.filter(q => q.difficulty === "Medium");

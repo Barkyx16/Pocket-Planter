@@ -1140,3 +1140,26 @@ describe("core's display text", () => {
     }
   });
 });
+
+describe("daily quests", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  const args = { savedPlants: [], journalEntries: [], gardenMap: {}, wateredPlants: {}, careLog: [], harvestTrackers: {}, streakData: { count: 1 }, harvestLog: [], fertilizerTrackers: {}, comparePlants: [] };
+  it("have a translated title and description for every quest, in every language", () => {
+    // Quests rotate by weekday, so walk a week to see all of them.
+    try {
+      for (const { code } of i18n.LANGUAGES) {
+        i18n.setLocale(code);
+        for (let d = 0; d < 7; d += 1) {
+          const day = core.getDateKey(new Date(2026, 0, 4 + d));
+          for (const q of core.getDailyQuests({ ...args, today: day })) {
+            ok(!/^questText\./.test(q.title) && !/^questText\./.test(q.description), `${code} ${q.id}`);
+          }
+        }
+      }
+      i18n.setLocale("de");
+      eq(core.getDailyQuests({ ...args, today: "2026-01-05" }).some((q) => /Pflanze|Ernte|Serie|Tagebuch|Gieß/.test(q.title)), true);
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});

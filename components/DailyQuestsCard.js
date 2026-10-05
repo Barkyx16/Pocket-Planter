@@ -4,7 +4,7 @@ import { getTodayKey } from "../core";
 import { useTranslation } from "../lib/i18n";
 
 export const DailyQuestsCard = memo(function DailyQuestsCard({ theme, dailyQuests, completedQuestIds, onQuestComplete }) {
-  const { t } = useTranslation();
+  const { t, difficultyLabel } = useTranslation();
   const total = dailyQuests.length || 1;
   const todayClaimed = completedQuestIds[getTodayKey()] || [];
   // Claimed quests disappear from the list — the card shrinks as you claim, and hides
@@ -77,7 +77,7 @@ export const DailyQuestsCard = memo(function DailyQuestsCard({ theme, dailyQuest
                     {quest.title}
                   </Text>
                   <View style={{ backgroundColor: `${c}22`, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
-                    <Text style={{ color: c, fontSize: 9.5, fontWeight: "800" }}>{quest.difficulty}</Text>
+                    <Text style={{ color: c, fontSize: 9.5, fontWeight: "800" }}>{quest.difficulty === "Bonus" ? t("questText.diffBonus") : difficultyLabel({ label: quest.difficulty }).label}</Text>
                   </View>
                 </View>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 }}>

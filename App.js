@@ -1539,7 +1539,10 @@ const dailyQuests = useMemo(
       comparePlants,
       today: todayKey,
     }),
+  // `language`: quest titles are translated as they are built.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   [
+    language,
     todayKey,
     savedPlants,
     journalEntries,
