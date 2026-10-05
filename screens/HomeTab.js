@@ -480,7 +480,7 @@ zone={zone}
 
 {savedPlants.length ? (
 <CollapsibleCard theme={theme} storageKey="savedplants" title={t("home.savedPlants")}>
-<SavedPlantsCard theme={theme} savedPlants={savedPlants} plantFolders={plantFolders} premiumUnlocked={premiumUnlocked} wateredPlants={wateredPlants} wateringHistory={wateringHistory} weather={weather} harvestTrackers={harvestTrackers} pinnedPlants={pinnedPlants} onTogglePin={togglePinnedPlant} onOpenPlant={openPlantFromList} onUpgrade={() => jumpToTab("premium")} />
+<SavedPlantsCard theme={theme} savedPlants={savedPlants} plantSaveDates={plantSaveDates} plantFolders={plantFolders} premiumUnlocked={premiumUnlocked} wateredPlants={wateredPlants} wateringHistory={wateringHistory} weather={weather} harvestTrackers={harvestTrackers} pinnedPlants={pinnedPlants} onTogglePin={togglePinnedPlant} onOpenPlant={openPlantFromList} onUpgrade={() => jumpToTab("premium")} />
 </CollapsibleCard>
 ) : null}
 

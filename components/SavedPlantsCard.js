@@ -20,6 +20,7 @@ export const SavedPlantsCard = memo(function SavedPlantsCard({
   weather,
   pinnedPlants = [],
   onTogglePin,
+  plantSaveDates,
 }) {
 const { t } = useTranslation();
 const [sortMode, setSortMode] = useState("recent");
@@ -37,9 +38,14 @@ const [sortMode, setSortMode] = useState("recent");
         if (aNeeds !== bNeeds) return aNeeds - bNeeds;
         return a.name.localeCompare(b.name);
       }
-      return savedPlants.indexOf(b.name) - savedPlants.indexOf(a.name);
+      // Newest first, by the day each was saved. savedPlants is kept sorted
+      // A–Z, so its order was never the save order and "Recent" read Z–A.
+      const aDate = plantSaveDates?.[a.name] || "";
+      const bDate = plantSaveDates?.[b.name] || "";
+      if (aDate !== bDate) return aDate < bDate ? 1 : -1;
+      return a.name.localeCompare(b.name);
     });
-  }, [savedPlants, pinnedPlants, sortMode, wateredPlants, today]);
+  }, [savedPlants, pinnedPlants, sortMode, wateredPlants, today, plantSaveDates]);
 
   if (!savedItems.length) {
     return null;

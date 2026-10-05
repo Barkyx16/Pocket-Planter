@@ -1338,3 +1338,12 @@ describe("Fix My Garden's move suggestion", () => {
     eq(conflict.suggestion && conflict.suggestion.toAreaId, "b");
   });
 });
+
+describe("the saved plants card's Recent sort", () => {
+  it("orders by the day each plant was saved, not by the A–Z list", () => {
+    const card = fs.readFileSync(path.join(ROOT, "components/SavedPlantsCard.js"), "utf8");
+    ok(!/savedPlants\.indexOf\(b\.name\) - savedPlants\.indexOf\(a\.name\)/.test(card));
+    ok(/plantSaveDates\?\.\[a\.name\]/.test(card));
+    ok(/<SavedPlantsCard[^>]*plantSaveDates=\{plantSaveDates\}/.test(fs.readFileSync(path.join(ROOT, "screens/HomeTab.js"), "utf8")));
+  });
+});
