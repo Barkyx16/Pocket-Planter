@@ -2441,38 +2441,39 @@ export function getSunMismatch(item, areaSun) {
 }
 
 // Inches → a friendly spacing string; feet once the gap gets big (trees/shrubs).
-function formatSpacingInches(inches) {
-  if (typeof inches !== "number") return null;
-  if (inches >= 48) {
-    const ft = inches / 12;
-    return `${Number.isInteger(ft) ? ft : ft.toFixed(1)} ft apart`;
-  }
-  return `${inches}" apart`;
-}
-
-export function getPlantQuickFacts(item) {
+export function getPlantQuickFacts(item, units) {
   const type = normalizeType(item.type, item.name);
   const difficulty = getPlantDifficulty(item);
   // Prefer the authored plantDetails record; fall back to type-based defaults
   // for any plant that hasn't been authored yet.
   const d = getPlantDetails(item);
 
-  const sun = d && d.sunlight
-    ? (d.sunlight === "full" ? "Full sun" : d.sunlight === "partial" ? "Full sun to partial shade" : "Shade / low light")
-    : (type === "Herbs" ? "Full sun to partial shade" : "Full sun");
+  const sun = t(d && d.sunlight
+    ? (d.sunlight === "full" ? "quickFacts.sunFull" : d.sunlight === "partial" ? "quickFacts.sunPartial" : "quickFacts.sunShade")
+    : (type === "Herbs" ? "quickFacts.sunPartial" : "quickFacts.sunFull"));
 
-  const water = d && d.waterNeeds
-    ? (d.waterNeeds === "low" ? "Low — let the soil dry out" : d.waterNeeds === "high" ? "High — keep evenly moist" : "Moderate — water when the top inch is dry")
-    : "Water when the top inch of soil is dry";
+  const water = t(d && d.waterNeeds
+    ? (d.waterNeeds === "low" ? "quickFacts.waterLow" : d.waterNeeds === "high" ? "quickFacts.waterHigh" : "quickFacts.waterModerate")
+    : "quickFacts.waterDefault");
 
-  const spacing = (d && formatSpacingInches(d.spacingInches))
-    || (type === "Tree Fruits" ? "10–20 ft apart" : type === "Berries" ? "2–4 ft apart" : type === "Herbs" ? "8–18 in apart" : "12–24 in apart");
+  // Spacing is converted here rather than by localizeLengths on the page, which
+  // only recognises English unit words around the number.
+  const length = (lo, hi, unit) => {
+    if (units === "metric") return localizeLengths(`${lo}${hi ? `–${hi}` : ""} ${unit === "ft" ? "ft" : "inches"}`, "metric");
+    return unit === "ft" ? `${lo}${hi ? `–${hi}` : ""} ft` : `${lo}${hi ? `–${hi}` : ""}"`;
+  };
+  const authoredSpacing = d && typeof d.spacingInches === "number" ? d.spacingInches : null;
+  const spacingLength = authoredSpacing !== null
+    ? (authoredSpacing >= 48
+      ? length(Number.isInteger(authoredSpacing / 12) ? authoredSpacing / 12 : (authoredSpacing / 12).toFixed(1), null, "ft")
+      : length(authoredSpacing, null, "in"))
+    : type === "Tree Fruits" ? length(10, 20, "ft") : type === "Berries" ? length(2, 4, "ft") : type === "Herbs" ? length(8, 18, "in") : length(12, 24, "in");
 
   return {
     sun,
     water,
-    soil: type === "Tree Fruits" || type === "Tropical Fruits" ? "Deep, well-draining soil" : "Loose, compost-rich soil",
-    spacing,
+    soil: t(type === "Tree Fruits" || type === "Tropical Fruits" ? "quickFacts.soilDeep" : "quickFacts.soilLoose"),
+    spacing: t("quickFacts.apart", { length: spacingLength }),
     harvest: getHarvestCountdown(item),
     difficulty: `${difficulty.icon} ${difficulty.label}`,
     containerFriendly: d ? d.containerFriendly : null,

@@ -27,7 +27,7 @@ export function PlantDetailScreen({
     const neutralCompanions = (Array.isArray(companionInfo.neutral) ? companionInfo.neutral : []).filter(inCatalog);
     const avoidCompanions = (Array.isArray(companionInfo.avoid) ? companionInfo.avoid : []).filter(inCatalog);
     const plantSeason = getPlantSeasonLabel(selectedPlant, zone);
-    const quickFacts = getPlantQuickFacts(selectedPlant);
+    const quickFacts = getPlantQuickFacts(selectedPlant, unitSystem);
     const plantHealth = getPlantHealth(selectedPlant);
     const plantingWindow = getPlantingWindowText(selectedPlant);
     const plantingSteps = getPlantingSteps(selectedPlant);

@@ -1225,3 +1225,20 @@ describe("weather recommendation, sun warnings and the planting window", () => {
     }
   });
 });
+
+describe("plant quick facts", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("keep English spacing unchanged and convert it before translating", () => {
+    const tomato = items.find((i) => i.name === "Tomato");
+    eq(core.getPlantQuickFacts(tomato, "imperial").spacing, '24" apart');
+    eq(core.getPlantQuickFacts(tomato, "metric").spacing, "61 cm apart");
+    try {
+      i18n.setLocale("de");
+      const facts = core.getPlantQuickFacts(tomato, "metric");
+      eq(facts.spacing, "61 cm Abstand");
+      ok(!/sun|water|soil/i.test(`${facts.sun} ${facts.water} ${facts.soil}`), JSON.stringify(facts));
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});
