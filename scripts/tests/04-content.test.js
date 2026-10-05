@@ -66,6 +66,20 @@ describe("supporting tables", () => {
   });
 });
 
+describe("houseplant care card", () => {
+  // The card kept its own 31-plant copy of the care table, so forty-odd
+  // houseplants the care log knew about showed the generic default here.
+  it("has a translated note for every plant in the shared care table", () => {
+    const { noteKey } = require(path.join(ROOT, "components/HouseplantCareCard.js"));
+    const en = require(path.join(ROOT, "lib/locales/en.js"));
+    const notes = (en.default || en).houseplantCareText;
+    const missing = Object.keys(fh.HOUSEPLANT_CARE).filter((n) => !notes[noteKey(n).split(".")[1]]);
+    eq(missing, []);
+    const keys = Object.keys(fh.HOUSEPLANT_CARE).map(noteKey);
+    eq(keys.length, new Set(keys).size, "note keys are unique");
+  });
+});
+
 describe("pet safety", () => {
   it("never calls a toxic plant safe", () => {
     const toxic = new Set(asList(fh.PET_TOXIC));

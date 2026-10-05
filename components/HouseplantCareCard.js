@@ -2,45 +2,25 @@ import { memo, useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { normalizeType, resolvePlantImageSource, tapHaptic } from "../core";
-import { AIR_PURIFYING, HOUSEPLANT_PESTS } from "../data/flowerHomeData";
+import { AIR_PURIFYING, HOUSEPLANT_CARE, HOUSEPLANT_CARE_DEFAULT, HOUSEPLANT_PESTS } from "../data/flowerHomeData";
 import { useTranslation } from "../lib/i18n";
 
+// Care values come from HOUSEPLANT_CARE (data/flowerHomeData), the table the care
+// log also reads; this card used to keep its own 31-plant copy, so Rubber Plant,
+// Peace Lily and forty others fell back to the generic default here while the log
+// had real numbers for them. Notes translate under houseplantCareText.note_<name>,
+// with the English note as the fallback.
 // light: 1 low-light tolerant · 2 bright indirect · 3 bright/direct
-// [light, waterDays, humidity, repotYears, noteKey] — noteKey lives under houseplantCareText.
-const CARE = {
-"Snake Plant": [1, 21, "Low", 4, "note_snakePlant"],
-"ZZ Plant": [1, 21, "Low", 3, "note_zzPlant"],
-Pothos: [1, 10, "Average", 2, "note_pothos"],
-"Chinese Evergreen": [1, 10, "Average", 2, "note_chineseEvergreen"],
-Monstera: [2, 9, "Average", 2, "note_monstera"],
-"Spider Plant": [2, 8, "Average", 2, "note_spiderPlant"],
-Philodendron: [2, 9, "Average", 2, "note_philodendron"],
-Dieffenbachia: [2, 8, "Average", 2, "note_dieffenbachia"],
-Calathea: [2, 7, "High", 1, "note_calathea"],
-"Prayer Plant": [2, 7, "High", 1, "note_prayerPlant"],
-"Areca Palm": [2, 8, "High", 2, "note_arecaPalm"],
-"Parlor Palm": [1, 9, "Average", 3, "note_parlorPalm"],
-"Kentia Palm": [2, 10, "Average", 3, "note_kentiaPalm"],
-"Boston Fern": [2, 5, "High", 2, "note_bostonFern"],
-"Maidenhair Fern": [2, 4, "High", 1, "note_maidenhairFern"],
-"Bird's Nest Fern": [1, 6, "High", 2, "note_birdsNestFern"],
-Fern: [2, 5, "High", 2, "note_fern"],
-"Fiddle Leaf Fig": [3, 9, "Average", 2, "note_fiddleLeafFig"],
-Alocasia: [3, 8, "High", 1, "note_alocasia"],
-"Elephant Ear": [3, 8, "High", 1, "note_elephantEar"],
-"Bird of Paradise": [3, 9, "Average", 2, "note_birdOfParadise"],
-Yucca: [3, 14, "Low", 3, "note_yucca"],
-Coleus: [3, 7, "Average", 1, "note_coleus"],
-"Aloe Vera": [3, 21, "Low", 3, "note_aloeVera"],
-"Jade Plant": [3, 21, "Low", 3, "note_jadePlant"],
-Echeveria: [3, 21, "Low", 3, "note_echeveria"],
-"Hens and Chicks": [3, 21, "Low", 3, "note_hensAndChicks"],
-"Burro's Tail": [3, 18, "Low", 3, "note_burrosTail"],
-"String of Pearls": [3, 14, "Low", 2, "note_stringOfPearls"],
-"Christmas Cactus": [2, 12, "Average", 3, "note_christmasCactus"],
-Agave: [3, 24, "Low", 4, "note_agave"],
-};
-const DEFAULT_CARE = [2, 9, "Average", 2, "note_default"];
+// [light, waterDays, humidity, repotYears, note]
+// i18n-ignore — builds a key, not text.
+const noteKey = (name) =>
+  "houseplantCareText.note_" +
+  String(name).replace(/\s*\([^)]*\)/g, "").replace(/['’]/g, "").trim().split(/[^A-Za-z0-9]+/)
+    .map((w, i) => (i ? w.charAt(0).toUpperCase() + w.slice(1) : w.toLowerCase())).join("");
+export { noteKey };
+// Air plants, bromeliads, staghorn ferns and lucky bamboo are never repotted.
+const NEVER_REPOT = 99;
+const CATALOG_NAMES = new Set(produceData.map((p) => p.name));
 
 const LIGHT_LABEL = { 1: "houseplantCareText.lightLow", 2: "houseplantCareText.lightBrightIndirect", 3: "houseplantCareText.lightBrightDirect" };
 const LEVELS = [
@@ -48,7 +28,7 @@ const LEVELS = [
   { v: 2, label: "houseplantCareText.levelMedium", thrives: "houseplantCareText.thrivesMedium" },
   { v: 3, label: "houseplantCareText.levelBright", thrives: "houseplantCareText.thrivesBright" },
 ];
-// Humidity values in CARE are data; these are their display labels.
+// Humidity values in HOUSEPLANT_CARE are data; these are their display labels.
 const HUMIDITY_LABEL = { Low: "houseplantCareText.humLow", Average: "houseplantCareText.humAverage", High: "houseplantCareText.humHigh" };
 // HOUSEPLANT_PESTS (data/flowerHomeData) is English; translate by pest name at render.
 const PEST_KEYS = { "Spider mites": "spiderMites", Mealybugs: "mealybugs", "Fungus gnats": "fungusGnats", Scale: "scale", Aphids: "aphids" };
@@ -65,13 +45,13 @@ export const HouseplantCareCard = memo(function HouseplantCareCard({ theme, save
 
   const [room, setRoom] = useState(2);
   const [showPests, setShowPests] = useState(false);
-  const care = (name) => CARE[name] || DEFAULT_CARE;
+  const care = (name) => HOUSEPLANT_CARE[name] || HOUSEPLANT_CARE_DEFAULT;
 
   // Catalog suggestions for the chosen room light (plants that thrive at ≤ room level).
   const suggestions = useMemo(() => {
     const owned = new Set(houseplants.map((h) => h.name));
-    return Object.entries(CARE)
-      .filter(([name, c]) => c[0] <= room && !owned.has(name))
+    return Object.entries(HOUSEPLANT_CARE)
+      .filter(([name, c]) => c[0] <= room && !owned.has(name) && CATALOG_NAMES.has(name))
       .slice(0, 6)
       .map(([name]) => name);
   }, [room, houseplants]);
@@ -120,7 +100,7 @@ export const HouseplantCareCard = memo(function HouseplantCareCard({ theme, save
                     </Text>
                   </View>
                 </View>
-                <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 16, marginTop: 8 }}>{t(`houseplantCareText.${note}`)} {tn("houseplantCareText.repotEvery", repot)}</Text>
+                <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 16, marginTop: 8 }}>{HOUSEPLANT_CARE[item.name] ? tOr(noteKey(item.name), note) : t("houseplantCareText.note_default")} {repot >= NEVER_REPOT ? t("houseplantCareText.noRepot") : tn("houseplantCareText.repotEvery", repot)}</Text>
               </Pressable>
             );
           })}
