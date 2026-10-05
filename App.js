@@ -3334,6 +3334,12 @@ function deleteJournalEntriesOlderThan(days) {
   );
 }
 
+// Captions live on the entry itself, so they're saved, synced and searchable.
+function updateJournalCaption(entryId, caption) {
+  const text = String(caption || "").trim();
+  setJournalEntries((current) => current.map((entry) => (entry.id === entryId ? { ...entry, caption: text } : entry)));
+}
+
 function deleteJournalEntry(entryId) {
   const removed = journalEntries.find((entry) => entry.id === entryId);
   if (!removed) return;
@@ -6194,6 +6200,7 @@ const jumpToTab = useCallback((tab) => {
   badgeEarnedDates={badgeEarnedDates}
   careLog={careLog}
   deleteJournalEntry={deleteJournalEntry}
+  updateJournalCaption={updateJournalCaption}
   harvestGoal={harvestGoal}
   harvestLog={harvestLog}
   journalEntries={journalEntries}

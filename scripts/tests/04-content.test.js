@@ -1410,3 +1410,13 @@ describe("the garden timeline", () => {
     ok(/onOpenPlant\(plantItem\)/.test(card) && !/onOpenPlant\(ev\.plantName\)/.test(card));
   });
 });
+
+describe("journal captions", () => {
+  it("are saved onto the entry, not into the card's own state", () => {
+    const card = fs.readFileSync(path.join(ROOT, "components/JournalCard.js"), "utf8");
+    ok(!/localCaptions/.test(card) && /onUpdateCaption\(entryId, captionDraft\)/.test(card));
+    const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    ok(/entry\.id === entryId \? \{ \.\.\.entry, caption: text \}/.test(app));
+    ok(/onUpdateCaption=\{updateJournalCaption\}/.test(fs.readFileSync(path.join(ROOT, "screens/JournalTab.js"), "utf8")));
+  });
+});

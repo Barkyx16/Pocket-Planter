@@ -12,7 +12,7 @@ import { foldForSearch } from "../core";
 const STAGE_COLORS = ["#8effab", "#5cff89", "#ffd86b", "#ff9f43", "#ff7b7b"];
 const STAGE_CAPTION_IDS = ["seedling", "leaf", "flowering", "fruit", "harvest"];
 
-export const JournalCard = memo(function JournalCard({ theme, journalEntries, onAddGeneralPhoto, onDeleteEntry, uploadingPhoto }) {
+export const JournalCard = memo(function JournalCard({ theme, journalEntries, onAddGeneralPhoto, onDeleteEntry, onUpdateCaption, uploadingPhoto }) {
   const { t, tn, growthStageLabel, moodLabel } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPlant, setFilterPlant] = useState("All");
@@ -20,7 +20,6 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
   const [expandedEntry, setExpandedEntry] = useState(null);
   const [editingCaption, setEditingCaption] = useState(null);
   const [captionDraft, setCaptionDraft] = useState("");
-  const [localCaptions, setLocalCaptions] = useState({});
   const [showCaptionSuggestions, setShowCaptionSuggestions] = useState(null);
   const [activeTab, setActiveTab] = useState("timeline");
 
@@ -125,8 +124,10 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
     }
   };
 
+  // Saved onto the entry. It used to live in this card's own state, so a
+  // caption vanished as soon as the card remounted and was never synced.
   const saveCaption = (entryId) => {
-    setLocalCaptions(current => ({ ...current, [entryId]: captionDraft }));
+    if (onUpdateCaption) onUpdateCaption(entryId, captionDraft);
     setEditingCaption(null);
     setCaptionDraft("");
   };
@@ -411,7 +412,7 @@ return (
                   </View>
 
                   {entries.map((entry) => {
-                    const caption = localCaptions[entry.id] || entry.caption;
+                    const caption = entry.caption;
                     const growthProgress = getGrowthProgress(entry.growthStage);
                     const stageColor = getStageColor(entry.growthStage);
                     const isExpanded = expandedEntry === entry.id;

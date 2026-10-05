@@ -18,7 +18,7 @@ import { ThrivingNearYouCard } from "../components/ThrivingNearYouCard";
 import { IconText } from "../components/IconText";
 import { t } from "../lib/i18n";
 
-export function JournalTab({ achievementBadges, badgeEarnedDates, careLog, deleteJournalEntry, harvestGoal, harvestLog, journalEntries, journalY, openPlantFromList, pickJournalPhoto, plantNotes, plantSaveDates, savedPlants, scheduleFertilizerReminder, setCareLog, setHarvestGoal, setHarvestLog, setWateringAmounts, showUndoToast, sowLog, theme, uploadingPhoto, wateringAmounts, wateringHistory, zone }) {
+export function JournalTab({ achievementBadges, badgeEarnedDates, careLog, deleteJournalEntry, updateJournalCaption, harvestGoal, harvestLog, journalEntries, journalY, openPlantFromList, pickJournalPhoto, plantNotes, plantSaveDates, savedPlants, scheduleFertilizerReminder, setCareLog, setHarvestGoal, setHarvestLog, setWateringAmounts, showUndoToast, sowLog, theme, uploadingPhoto, wateringAmounts, wateringHistory, zone }) {
   const [showHarvestGoal, setShowHarvestGoal] = useState(false);
   const [showRecipes, setShowRecipes] = useState(false);
   const [showStorage, setShowStorage] = useState(false);
@@ -35,7 +35,7 @@ export function JournalTab({ achievementBadges, badgeEarnedDates, careLog, delet
       }}
     />
 <CollapsibleCard theme={theme} storageKey="journal" title={t("journal.gardenJournal")} defaultOpen={true}>
-  <JournalCard theme={theme} journalEntries={journalEntries} onAddGeneralPhoto={() => pickJournalPhoto("Garden")} onDeleteEntry={deleteJournalEntry} uploadingPhoto={uploadingPhoto} />
+  <JournalCard theme={theme} journalEntries={journalEntries} onAddGeneralPhoto={() => pickJournalPhoto("Garden")} onDeleteEntry={deleteJournalEntry} onUpdateCaption={updateJournalCaption} uploadingPhoto={uploadingPhoto} />
   </CollapsibleCard>
 <CollapsibleCard theme={theme} storageKey="gardentimeline" title={t("journal.gardenTimeline")} defaultOpen={false}>
   <GardenTimelineCard
