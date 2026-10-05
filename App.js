@@ -2911,10 +2911,12 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
           body: t("notifyText.monthlyGuideBody"),
           sound: true,
         },
+        // YEARLY, not CALENDAR: Android has no calendar trigger and threw, so
+        // this was never scheduled there. YEARLY works on both, with months
+        // counted like Date's (January is 0).
         trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
-          repeats: true,
-          month,
+          type: Notifications.SchedulableTriggerInputTypes.YEARLY,
+          month: month - 1,
           day: 1,
           hour: 9,
           minute: 0,
@@ -2956,10 +2958,12 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
           body: t("notifyText.frostCheckBody"),
           sound: true,
         },
+        // YEARLY, not CALENDAR: Android has no calendar trigger and threw, so
+        // this was never scheduled there. YEARLY works on both, with months
+        // counted like Date's (January is 0).
         trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
-          repeats: true,
-          month,
+          type: Notifications.SchedulableTriggerInputTypes.YEARLY,
+          month: month - 1,
           day: 1,
           hour: 18,
           minute: 0,
@@ -3406,22 +3410,22 @@ function buildWeeklyRecapBody() {
       : await ensureNotificationPermission();
     if (!granted) return false;
     await Notifications.cancelScheduledNotificationAsync("weekly-recap").catch(() => {});
-    await Notifications.scheduleNotificationAsync({
+    const scheduledId = await Notifications.scheduleNotificationAsync({
       identifier: "weekly-recap",
       content: {
         title: t("notifyText.recapTitle"),
         body: buildWeeklyRecapBody(),
         sound: true,
       },
+      // WEEKLY, not CALENDAR, which Android doesn't support.
       trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
-        repeats: true,
-        weekday: 1, // Sunday (1=Sun ... 7=Sat in Expo's calendar trigger)
+        type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+        weekday: 1, // Sunday (1=Sun ... 7=Sat)
         hour: 18,
         minute: 0,
       },
-    });
-    return true;
+    }).catch(() => null);
+    return !!scheduledId;
   }
 
   async function cancelWeeklyRecap() {

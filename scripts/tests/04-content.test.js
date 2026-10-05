@@ -1451,3 +1451,14 @@ describe("the snooze summary", () => {
     ok(/id: "snooze-summary", names: dueOn\(tomorrowKey\)/.test(app));
   });
 });
+
+describe("repeating reminders", () => {
+  it("use trigger types Android supports", () => {
+    // expo-notifications has no calendar trigger on Android; it throws, and
+    // the monthly guides, frost-season reminders and weekly recap never ran.
+    const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    ok(!/type: Notifications\.SchedulableTriggerInputTypes\.CALENDAR/.test(app));
+    eq((app.match(/SchedulableTriggerInputTypes\.YEARLY,\n\s*month: month - 1,/g) || []).length, 2);
+    ok(/SchedulableTriggerInputTypes\.WEEKLY,\n\s*weekday: 1/.test(app));
+  });
+});
