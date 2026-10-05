@@ -1310,3 +1310,10 @@ describe("signing out", () => {
     ok(/setRecentPlants\(\[\]\)/.test(body) && /setFiredMilestones\(\[\]\)/.test(body));
   });
 });
+
+describe("turning weather alerts off", () => {
+  it("also cancels a heat alert already scheduled", () => {
+    const settings = fs.readFileSync(path.join(ROOT, "screens/SettingsTab.js"), "utf8");
+    ok(/cancelReminder\("heat-detected"\)/.test(settings));
+  });
+});

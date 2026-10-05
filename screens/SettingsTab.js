@@ -94,6 +94,10 @@ export function SettingsTab({ language, setLanguage, lastSyncedAt, weeklyRecapOn
                   await cancelReminder(`frost-daily-${month}`);
                 }
                 await cancelReminder("frost-detected");
+                // The extreme-heat alert rides the same switch and is
+                // scheduled for midnight of the hot day, so it would still
+                // arrive after the gardener turned weather alerts off.
+                await cancelReminder("heat-detected");
                 Alert.alert(t("alerts.frostOffTitle"), t("alerts.frostOffBody"));
               }
             }}
