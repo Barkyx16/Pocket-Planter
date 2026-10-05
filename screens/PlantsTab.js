@@ -12,7 +12,7 @@ import { PersonalPlantingCalendar } from "../components/PersonalPlantingCalendar
 import { difficultyLabel, formatDate, plantTypeLabel, seasonLabel, t, tn } from "../lib/i18n";
 import { IconText } from "../components/IconText";
 
-export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filteredPlants, followedPlants, markPlantWatered, monthScrollDone, monthScrollRef, monthlyPicksY, monthlySuggestions, openPlantFromList, openPlantFromMonthly, plantSearch, plantDifficultyFilter, setPlantDifficultyFilter, plantNowOnly, setPlantNowOnly, plantSortMode, setPlantSortMode, plantAttrFilters, setPlantAttrFilters, addPlantToGarden, gardenPlantNames, plantsListY, plantsVisibleCount, recentPlants, savedPlants, scrollRef, selectedMonth, selectedType, setComparePlants, setPlantSearch, setPlantsVisibleCount, setSelectedMonth, setSelectedType, snoozePlantWatering, snoozedPlants, theme, toggleComparePlant, toggleFollowPlant, toggleSavedPlant, wateredPlants, wateringHistory, weather, zone }) {
+export function PlantsTab({ comparePlants, onSaveMany, premiumUnlocked, onViewPremium, filteredPlants, followedPlants, markPlantWatered, monthScrollDone, monthScrollRef, monthlyPicksY, monthlySuggestions, openPlantFromList, openPlantFromMonthly, plantSearch, plantDifficultyFilter, setPlantDifficultyFilter, plantNowOnly, setPlantNowOnly, plantSortMode, setPlantSortMode, plantAttrFilters, setPlantAttrFilters, addPlantToGarden, gardenPlantNames, plantsListY, plantsVisibleCount, recentPlants, savedPlants, scrollRef, selectedMonth, selectedType, setComparePlants, setPlantSearch, setPlantsVisibleCount, setSelectedMonth, setSelectedType, snoozePlantWatering, snoozedPlants, theme, toggleComparePlant, toggleFollowPlant, toggleSavedPlant, wateredPlants, wateringHistory, weather, zone }) {
   const [selectMode, setSelectMode] = useState(false);
   const [bulkSel, setBulkSel] = useState([]);
   const [showAllMonthly, setShowAllMonthly] = useState(false);
@@ -47,8 +47,11 @@ export function PlantsTab({ comparePlants, premiumUnlocked, onViewPremium, filte
   const exitSelect = () => { setSelectMode(false); setBulkSel([]); };
   const bulkSave = () => {
     const toSave = bulkSel.filter((n) => !savedPlants.includes(n));
-    toSave.forEach((n) => toggleSavedPlant(n));
-    Alert.alert(t("alerts.savedTitle"), toSave.length ? tn("alerts.savedGardenBody", toSave.length) : t("alerts.alreadySavedShortBody"));
+    // Through saveManyPlants, which applies the free-plan cap to the whole
+    // batch. Toggling each one in a loop read the same stale savedPlants every
+    // time, so the cap never tripped and a free gardener could save any number.
+    if (toSave.length) onSaveMany(toSave);
+    else Alert.alert(t("alerts.savedTitle"), t("alerts.alreadySavedShortBody"));
     exitSelect();
   };
   const bulkCompare = () => {

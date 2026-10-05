@@ -6009,6 +6009,7 @@ const jumpToTab = useCallback((tab) => {
 {record && activeTab === "plants" ? (
   <PlantsTab
   comparePlants={comparePlants}
+  onSaveMany={saveManyPlants}
   premiumUnlocked={premiumUnlocked}
   onViewPremium={() => jumpToTab("premium")}
   filteredPlants={filteredPlants}

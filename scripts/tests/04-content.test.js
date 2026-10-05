@@ -1317,3 +1317,12 @@ describe("turning weather alerts off", () => {
     ok(/cancelReminder\("heat-detected"\)/.test(settings));
   });
 });
+
+describe("saving several plants at once from the Plants tab", () => {
+  it("goes through saveManyPlants, which applies the free-plan cap", () => {
+    const tab = fs.readFileSync(path.join(ROOT, "screens/PlantsTab.js"), "utf8");
+    const bulk = tab.slice(tab.indexOf("const bulkSave = () => {"), tab.indexOf("const bulkCompare"));
+    ok(/onSaveMany\(toSave\)/.test(bulk) && !/toggleSavedPlant/.test(bulk), bulk);
+    ok(/<PlantsTab[\s\S]{0,80}onSaveMany=\{saveManyPlants\}/.test(fs.readFileSync(path.join(ROOT, "App.js"), "utf8")));
+  });
+});
