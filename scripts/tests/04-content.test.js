@@ -1292,3 +1292,12 @@ describe("companion pairs are judged from both sides", () => {
     eq(asymmetric, 0);
   });
 });
+
+describe("what the app writes to storage, it reads back", () => {
+  it("covers the theme, the daily bonus date and the harvest log", () => {
+    const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    const multiGet = app.slice(app.indexOf("const values = await AsyncStorage.multiGet(["), app.indexOf("]);", app.indexOf("const values = await AsyncStorage.multiGet([")));
+    for (const key of ["STORAGE_KEYS.profileTheme", "STORAGE_KEYS.dailyBonusDate"]) ok(multiGet.includes(key), `${key} is fetched at launch`);
+    ok(/hydrate\("pp_harvestLog"/.test(app), "the harvest log is read back");
+  });
+});

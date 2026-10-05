@@ -1920,6 +1920,10 @@ useEffect(() => {
         STORAGE_KEYS.seenOnboarding,
         STORAGE_KEYS.profileName,
         STORAGE_KEYS.profilePhoto,
+        // Both are read below and were never fetched, so every launch without
+        // a cloud profile reset the theme and re-offered the daily bonus.
+        STORAGE_KEYS.profileTheme,
+        STORAGE_KEYS.dailyBonusDate,
         "pp_homeBannerDismissedDate",
         "pp_plantPickDismissedDate",
         "pp_gettingStartedDismissed",
@@ -2711,6 +2715,11 @@ useEffect(() => {
   hydrate("pp_careLog", (val) => {
     if (!val || cloudProfileLoadedRef.current) return;
     try { const parsed = JSON.parse(val); if (Array.isArray(parsed)) setCareLog(parsed); } catch (e) {}
+  });
+  // Written on every change and, until now, never read back.
+  hydrate("pp_harvestLog", (val) => {
+    if (!val || cloudProfileLoadedRef.current) return;
+    try { const parsed = JSON.parse(val); if (Array.isArray(parsed)) setHarvestLog(parsed); } catch { /* keep the default */ }
   });
   hydrate("pp_bonusXP", (val) => {
     if (val == null || cloudProfileLoadedRef.current) return;
