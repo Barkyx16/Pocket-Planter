@@ -4861,7 +4861,14 @@ useEffect(() => {
       if (error) throw error;
       if (data) {
         const notExpired = !data.expires_at || new Date(data.expires_at).getTime() > Date.now();
-        setPremiumUnlocked(data.is_active === true && notExpired);
+        if (data.is_active === true && notExpired) { setPremiumUnlocked(true); return; }
+        // An inactive or expired row can be stale: a lapsed subscriber who buys
+        // again or restores has a fresh receipt before the webhook rewrites
+        // the row, and trusting the row re-locked Premium four seconds after
+        // "Premium unlocked". The receipt decides when it can be read; the
+        // row's "inactive" stands when it can't.
+        const fromStore = await reconcileFromStore();
+        if (fromStore === null) setPremiumUnlocked(false);
         return;
       }
       // No server row yet (e.g. the purchase just happened and the webhook hasn't
@@ -4875,13 +4882,17 @@ useEffect(() => {
 
   // The store's own receipt, via RevenueCat. Signed by Apple/Google, so it's a
   // sound fallback — just not something the server should take the app's word on.
+  // Returns what the receipt says, or null when it couldn't be read.
   async function reconcileFromStore() {
     try {
-      if (__DEV__) return;
+      if (__DEV__) return null;
       const customerInfo = await Purchases.getCustomerInfo();
-      setPremiumUnlocked(hasPremiumEntitlement(customerInfo));
+      const active = hasPremiumEntitlement(customerInfo);
+      setPremiumUnlocked(active);
+      return active;
     } catch (e) {
       console.log("Store entitlement check skipped:", e?.message);
+      return null;
     }
   }
 

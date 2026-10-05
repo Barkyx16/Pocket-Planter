@@ -1357,3 +1357,13 @@ describe("Home's plant-this-month pick", () => {
     ok(app.indexOf("const [todayKey, setTodayKey]") < app.indexOf("const thisMonthSuggestions"), "declared after todayKey");
   });
 });
+
+describe("the premium entitlement check", () => {
+  it("lets an active store receipt outrank a stale inactive server row", () => {
+    const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    const fn = app.slice(app.indexOf("async function refreshEntitlement"), app.indexOf("async function unlockPremium"));
+    ok(/if \(data\.is_active === true && notExpired\) \{ setPremiumUnlocked\(true\); return; \}/.test(fn));
+    ok(/const fromStore = await reconcileFromStore\(\);\s*if \(fromStore === null\) setPremiumUnlocked\(false\);/.test(fn));
+    ok(/return active;/.test(fn) && /return null;/.test(fn));
+  });
+});
