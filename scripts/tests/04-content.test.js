@@ -1103,7 +1103,7 @@ describe("the English dictionary", () => {
     const code = files.map((f) => fs.readFileSync(f, "utf8")).join("\n");
     const literal = new Set([...code.matchAll(/["'`]([a-zA-Z0-9_]+\.[a-zA-Z0-9_.]+)["'`]/g)].map((m) => m[1]));
     const prefixes = [...code.matchAll(/[`"']([a-zA-Z0-9_]+\.[a-zA-Z0-9_]*)(?:\$\{|["']\s*\+)/g)].map((m) => m[1]);
-    const dynamicNs = new Set([...code.matchAll(/`([a-zA-Z0-9_]+)\.\$\{/g)].map((m) => m[1]));
+    const dynamicNs = new Set([...code.matchAll(/`([a-zA-Z0-9_]+)\.\$\{/g), ...code.matchAll(/fromEnglish\(\s*"([a-zA-Z0-9_]+)"/g)].map((m) => m[1]));
     // difficultyLabel() reads `${key}Text` for each difficulty key.
     const built = new Set(["difficulty.easyText", "difficulty.mediumText", "difficulty.hardText"]);
     const unused = keys.filter((k) => !literal.has(k) && !built.has(k) && !dynamicNs.has(k.split(".")[0]) && !prefixes.some((p) => k.startsWith(p)));
@@ -1254,5 +1254,25 @@ describe("the monthly checklist", () => {
     eq(core.isMonthlyChecklistComplete("7", { [core.getMonthKey()]: rest }), false);
     const card = fs.readFileSync(path.join(ROOT, "components/MonthlyChecklistCard.js"), "utf8");
     ok(/month\[task\] = !month\[task\]/.test(card), "the card still keys ticks by task");
+  });
+});
+
+describe("monthly checklist labels", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  it("translate every task for display while ticks stay keyed by the English task", () => {
+    const all = new Set();
+    for (const bucket of Object.keys(core.SEASONAL_TASKS)) for (let m = 0; m < 12; m += 1) (core.SEASONAL_TASKS[bucket][m] || []).forEach((task) => all.add(task));
+    core.getMonthlyChecklistTasks("7").forEach((task) => all.add(task));
+    try {
+      for (const { code } of i18n.LANGUAGES) {
+        if (code === "en") continue;
+        i18n.setLocale(code);
+        const missed = [...all].filter((task) => i18n.fromEnglish("monthlyTask", task) === task);
+        eq(missed, [], code);
+      }
+    } finally {
+      i18n.setLocale("en");
+    }
+    for (const task of all) eq(i18n.fromEnglish("monthlyTask", task), task);
   });
 });

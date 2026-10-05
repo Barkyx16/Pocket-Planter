@@ -5,7 +5,7 @@ import { getMonthKey, getMonthlyChecklistTasks } from "../core";
 import { formatDate, useTranslation } from "../lib/i18n";
 
 export const MonthlyChecklistCard = memo(function MonthlyChecklistCard({ theme, zone, monthlyChecklist, setMonthlyChecklist }) {
-  const { t } = useTranslation();
+  const { t, fromEnglish } = useTranslation();
   const monthName = formatDate(new Date(), {
   month: "long"
 });
@@ -53,7 +53,7 @@ export const MonthlyChecklistCard = memo(function MonthlyChecklistCard({ theme, 
                 {isDone && <Text style={{ color: "#0e2414", fontSize: 14, fontWeight: "900" }}>✓</Text>}
               </View>
               <Text style={{ flex: 1, color: isDone ? theme.secondaryText : theme.text, fontSize: 14, fontWeight: "600", textDecorationLine: isDone ? "line-through" : "none" }}>
-                {task}
+                {fromEnglish("monthlyTask", task)}
               </Text>
             </Pressable>
           );
