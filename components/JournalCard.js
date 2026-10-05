@@ -24,12 +24,16 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
   const [activeTab, setActiveTab] = useState("timeline");
 
   const gardenUpdateLabel = t("journal.gardenUpdate");
-  const uniquePlants = ["All", ...Array.from(new Set(journalEntries.map(e => e.plantName || gardenUpdateLabel).filter(Boolean)))];
+  // General photos are stored with plantName "Garden" (the Add Photo button
+  // passes it), so `plantName || label` never fell back: "Garden" counted as a
+  // documented plant — and toward the Botanist badge — and showed untranslated.
+  const plantOf = (e) => (e.plantName && e.plantName !== "Garden" ? e.plantName : null);
+  const uniquePlants = ["All", ...Array.from(new Set(journalEntries.map(e => plantOf(e) || gardenUpdateLabel).filter(Boolean)))];
   const uniqueStages = ["All", ...GROWTH_STAGES];
 
   const filteredEntries = journalEntries.filter(entry => {
     const matchesSearch = !searchQuery || foldForSearch(entry.plantName).includes(foldForSearch(searchQuery)) || foldForSearch(entry.caption).includes(foldForSearch(searchQuery));
-    const matchesPlant = filterPlant === "All" || (entry.plantName || gardenUpdateLabel) === filterPlant;
+    const matchesPlant = filterPlant === "All" || (plantOf(entry) || gardenUpdateLabel) === filterPlant;
     const matchesStage = filterStage === "All" || entry.growthStage === filterStage;
     return matchesSearch && matchesPlant && matchesStage;
   });
@@ -47,7 +51,7 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
   }, {});
 
   const totalPhotos = journalEntries.length;
-  const plantsDocumented = new Set(journalEntries.map(e => e.plantName).filter(Boolean)).size;
+  const plantsDocumented = new Set(journalEntries.map(plantOf).filter(Boolean)).size;
   const harvestEntries = journalEntries.filter(e => String(e.growthStage || "").includes("Harvest")).length;
   const thisMonthEntries = journalEntries.filter(e => {
     const d = new Date(e.createdAt);
@@ -105,7 +109,7 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
   };
 
   const getSmartCaptions = (entry) => {
-    const plant = entry.plantName || t("journalText.plantFallback");
+    const plant = plantOf(entry) || t("journalText.plantFallback");
     const day = entry.daysSincePlanting || 1;
     const index = GROWTH_STAGES.indexOf(entry.growthStage || "Seedling");
     const id = STAGE_CAPTION_IDS[index === -1 ? 0 : index];
@@ -365,8 +369,8 @@ return (
                   </Pressable>
                 </View>
               ) : null}
-              {Array.from(new Set(filteredEntries.map(e => e.plantName || t("journal.gardenUpdate")))).map(plantName => {
-                const plantEntries = filteredEntries.filter(e => (e.plantName || t("journal.gardenUpdate")) === plantName);
+              {Array.from(new Set(filteredEntries.map(e => plantOf(e) || t("journal.gardenUpdate")))).map(plantName => {
+                const plantEntries = filteredEntries.filter(e => (plantOf(e) || t("journal.gardenUpdate")) === plantName);
                 return (
                   <View key={plantName} style={[styles.journalPlantGroup, { borderColor: "rgba(92, 255, 137, 0.16)" }]}>
                     <View style={styles.journalPlantGroupHeader}>
@@ -476,7 +480,7 @@ return (
                             <View style={styles.journalEntryHeaderV2}>
                               <View style={{ flex: 1 }}>
                                 <Text numberOfLines={1} style={[styles.journalEntryTitleV2, { color: theme.text }]}>
-                                  {entry.plantName || t("journal.gardenUpdate")}
+                                  {plantOf(entry) || t("journal.gardenUpdate")}
                                 </Text>
                                 <Text style={[styles.journalEntryDateV2, { color: theme.secondaryText }]}>
                                   {formatDate(new Date(entry.createdAt), {

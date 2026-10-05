@@ -1420,3 +1420,11 @@ describe("journal captions", () => {
     ok(/onUpdateCaption=\{updateJournalCaption\}/.test(fs.readFileSync(path.join(ROOT, "screens/JournalTab.js"), "utf8")));
   });
 });
+
+describe("the journal's general garden photos", () => {
+  it("aren't counted or shown as a plant called Garden", () => {
+    const card = fs.readFileSync(path.join(ROOT, "components/JournalCard.js"), "utf8");
+    ok(/e\.plantName !== "Garden"/.test(card));
+    ok(/new Set\(journalEntries\.map\(plantOf\)\.filter\(Boolean\)\)\.size/.test(card));
+  });
+});
