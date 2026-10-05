@@ -1220,6 +1220,24 @@ describe("pet safety notes", () => {
   });
 });
 
+describe("flower notes card", () => {
+  const card = require(path.join(ROOT, "components/FlowerNotesCard.js"));
+  const en = require(path.join(ROOT, "lib/locales/en.js"));
+  const dict = en.default || en;
+  it("shows on flowers and nothing else", () => {
+    ok(card.hasFlowerNotes(items.find((i) => i.name === "Rose")));
+    ok(!card.hasFlowerNotes(items.find((i) => i.name === "Tomato")));
+  });
+  it("has a translated tip and color name for everything it can show", () => {
+    eq(Object.entries(fh.DEADHEAD_TIPS).filter(([n, tip]) => dict.deadheadTip[card.deadheadTipKey(n).split(".")[1]] !== tip).map(([n]) => n), []);
+    eq(dict.deadheadTip.default, fh.DEADHEAD_DEFAULT);
+    eq([...new Set(Object.values(fh.FLOWER_COLORS).flat())].filter((c) => !dict.flowerColor[c]), []);
+  });
+  it("is on the plant page", () => {
+    ok(/<FlowerNotesCard theme=\{theme\} plant=\{selectedPlant\} \/>/.test(fs.readFileSync(path.join(ROOT, "screens/PlantDetailScreen.js"), "utf8")));
+  });
+});
+
 describe("weekday labels", () => {
   const i18n = require(path.join(ROOT, "lib/i18n.js"));
   it("follow the app language and start the week on Sunday", () => {

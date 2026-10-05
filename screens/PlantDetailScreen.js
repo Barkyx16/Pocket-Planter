@@ -1,5 +1,6 @@
 import { BackgroundDecoration } from "../components/BackgroundDecoration";
 import { ConfettiBurst } from "../components/ConfettiBurst";
+import { FlowerNotesCard } from "../components/FlowerNotesCard";
 import { GardenPlacementModal } from "../components/GardenPlacementModal";
 import { IconText } from "../components/IconText";
 import { PlantGrowthTimeline } from "../components/PlantGrowthTimeline";
@@ -286,6 +287,7 @@ export function PlantDetailScreen({
     ))}
   </View>
 </View>
+<FlowerNotesCard theme={theme} plant={selectedPlant} />
 {plantHealth ? (
 <View style={styles.card}>
   <IconText label={t("plantDetailScreen.problemsProtection")} style={styles.cardEyebrow} />
