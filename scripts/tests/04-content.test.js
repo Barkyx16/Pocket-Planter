@@ -1155,6 +1155,36 @@ describe("core's display text", () => {
   });
 });
 
+describe("curated pair reasons", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  const en = require(path.join(ROOT, "lib/locales/en.js"));
+  const dict = (en.default || en).pairReason || {};
+  const slug = (a, b) => [a, b].map((s) => s.toLowerCase()).sort().join("|").replace(/[^a-z0-9]+/g, "_");
+  it("has an English entry matching every curated sentence", () => {
+    // The English dictionary is the source the translators work from; a reason
+    // edited in core but not here would leave every other language stale.
+    const curated = [
+      ...Object.entries(core.PAIR_REASONS).map(([k, v]) => [slug(...k.split("|")), v]),
+      ...core.FLOWER_COMPANION_PAIRS.filter((p) => p[3]).map(([x, y, , r]) => [slug(x, y), r]),
+    ];
+    eq(curated.filter(([k, v]) => dict[k] !== v).map(([k]) => k), []);
+  });
+  it("keys every curated reason by its sorted pair", () => {
+    // getPairReason sorts the two names before looking up, so "onion|lettuce"
+    // could never be found; three reasons were written and never shown.
+    eq(Object.keys(core.PAIR_REASONS).filter((k) => k !== k.split("|").sort().join("|")), []);
+  });
+  it("follows the app language", () => {
+    try {
+      i18n.setLocale("fr");
+      ok(core.getPairReason("Basil", "Tomato") !== core.PAIR_REASONS["basil|tomato"]);
+      ok(core.getPairReason("Rose", "Peony") !== core.FLOWER_COMPANION_PAIRS.find((p) => p[0] === "Rose" && p[1] === "Peony")[3]);
+    } finally {
+      i18n.setLocale("en");
+    }
+  });
+});
+
 describe("daily quests", () => {
   const i18n = require(path.join(ROOT, "lib/i18n.js"));
   const args = { savedPlants: [], journalEntries: [], gardenMap: {}, wateredPlants: {}, careLog: [], harvestTrackers: {}, streakData: { count: 1 }, harvestLog: [], fertilizerTrackers: {}, comparePlants: [] };

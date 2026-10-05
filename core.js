@@ -1582,9 +1582,7 @@ export const PAIR_REASONS = {
   "carrot|onion": "Onions deter carrot flies, and carrots return the favor against onion flies.",
   "carrot|lettuce": "Lettuce shades the soil and keeps carrot roots cool and moist.",
   "carrot|tomato": "Tomatoes give carrots afternoon shade; carrots loosen the soil around the roots.",
-  "onion|lettuce": "Onions keep aphids and rabbits away from tender lettuce leaves.",
   "onion|strawberry": "Onions deter slugs and rabbits that would otherwise go after ripe berries.",
-  "onion|beet": "Classic pairing — they improve each other's growth and flavor.",
   "onion|tomato": "Onions repel aphids and spider mites that target tomato foliage.",
   "bean|corn": "Beans climb the corn stalks and fix nitrogen back into the soil — half of the Three Sisters.",
   "corn|squash": "Squash leaves shade the ground, block weeds, and hold soil moisture for the corn.",
@@ -1597,7 +1595,7 @@ export const PAIR_REASONS = {
   "marigold|tomato": "Marigolds deter nematodes and whiteflies in the tomato root zone.",
   "marigold|pepper": "Marigolds pull aphids away from peppers and attract beneficial insects.",
   "nasturtium|pea": "Nasturtiums attract beneficial insects and pull aphids off the pea vines.",
-  "nasturtium|cucumber": "Nasturtiums act as a trap crop for cucumber beetles and squash bugs.",
+  "cucumber|nasturtium": "Nasturtiums act as a trap crop for cucumber beetles and squash bugs.",
   "beet|lettuce": "Beets grow down, lettuce grows out — they use different layers of the bed.",
   "pepper|tomato": "Same soil, sun, and water needs, so they're easy to care for side by side.",
   "spinach|strawberry": "Spinach covers the soil between berry plants and keeps weeds down.",
@@ -1728,12 +1726,19 @@ export function getPairReason(a, b) {
     .map((s) => s.trim().toLowerCase())
     .sort()
     .join("|");
-  if (PAIR_REASONS[key]) return PAIR_REASONS[key];
+  // The curated sentences are English data; each is translated under
+  // pairReason.<a>_<b> (the sorted pair), with the English as the fallback.
+  const curatedText = (english) => {
+    const id = `pairReason.${key.replace(/[^a-z0-9]+/g, "_")}`;
+    const translated = t(id);
+    return translated === id ? english : translated;
+  };
+  if (PAIR_REASONS[key]) return curatedText(PAIR_REASONS[key]);
   // Flower-to-flower pairs explain themselves through light and water needs.
   if (isFlowerName(a) && isFlowerName(b)) {
     // A curated pairing's own wording wins.
     const curated = getFlowerPairReason(a, b);
-    if (curated) return curated;
+    if (curated) return curatedText(curated);
     const attrs = getFlowerAttrs();
     const A = attrs[a], B = attrs[b];
     if (flowerLightConflict(A.sun, B.sun)) return t("coreText.flowerLightConflict", { a, b, sunA: sunWords(A.sun), sunB: sunWords(B.sun) });
