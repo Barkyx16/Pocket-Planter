@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { careWindowKey, flipMonth, resolvePlantImageSource } from "../core";
+import { formatDate, useTranslation } from "../lib/i18n";
 
 const findItem = (name) => produceData.find((p) => p.name.toLowerCase() === String(name).toLowerCase());
 
@@ -48,8 +49,8 @@ const BLOOM_WINDOWS = {
   nasturtium: [6, 7, 8, 9],
 };
 
-const MONTH_LETTERS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
-const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const monthLetter = (m) => formatDate(new Date(2000, m - 1, 1), { month: "narrow" });
+const monthShort = (m) => formatDate(new Date(2000, m - 1, 1), { month: "short" });
 
 function bloomFor(name) {
   const key = careWindowKey(name, Object.keys(BLOOM_WINDOWS));
@@ -57,6 +58,7 @@ function bloomFor(name) {
 }
 
 export const BloomSuccessionSection = memo(function BloomSuccessionSection({ theme, savedPlants, onOpenPlant }) {
+  const { t } = useTranslation();
   // Localised bloom coverage: for each of the 12 local months, which owned
   // plants are flowering.
   const bloomers = [];
@@ -86,10 +88,10 @@ export const BloomSuccessionSection = memo(function BloomSuccessionSection({ the
   return (
     <View style={{ marginTop: 18, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 16 }}>
       <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 4 }}>
-        🌸 BLOOM SUCCESSION
+        🌸 {t("bloomSuccessionText.heading")}
       </Text>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Keep something in flower all season so pollinators always have a reason to visit.
+        {t("bloomSuccessionText.intro")}
       </Text>
 
       {/* 12-month coverage strip */}
@@ -100,7 +102,7 @@ export const BloomSuccessionSection = memo(function BloomSuccessionSection({ the
           return (
             <View key={m} style={{ flex: 1, alignItems: "center" }}>
               <View style={{ width: "100%", height: 26, borderRadius: 6, backgroundColor: on ? "#8effab" : inSeason ? "rgba(255,123,123,0.18)" : "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: on ? "#8effab" : "rgba(255,255,255,0.08)" }} />
-              <Text style={{ color: theme.secondaryText, fontSize: 9, fontWeight: "800", marginTop: 3 }}>{MONTH_LETTERS[m - 1]}</Text>
+              <Text style={{ color: theme.secondaryText, fontSize: 9, fontWeight: "800", marginTop: 3 }}>{monthLetter(m)}</Text>
             </View>
           );
         })}
@@ -124,7 +126,7 @@ export const BloomSuccessionSection = memo(function BloomSuccessionSection({ the
                   <Text style={{ color: theme.text, fontSize: 12, fontWeight: "800" }} numberOfLines={1}>{b.name}</Text>
                 </View>
                 <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700" }}>
-                  {[...b.months].sort((a, c) => a - c).map((m) => MONTH_SHORT[m - 1]).join(", ")}
+                  {[...b.months].sort((a, c) => a - c).map(monthShort).join(", ")}
                 </Text>
               </Pressable>
             );
@@ -132,7 +134,7 @@ export const BloomSuccessionSection = memo(function BloomSuccessionSection({ the
         </View>
       ) : (
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", fontStyle: "italic", marginTop: 12 }}>
-          Save some flowering plants and they'll map out here across the year.
+          {t("bloomSuccessionText.empty")}
         </Text>
       )}
 
@@ -140,16 +142,17 @@ export const BloomSuccessionSection = memo(function BloomSuccessionSection({ the
       <View style={{ marginTop: 12, backgroundColor: gaps.length ? "rgba(255,159,67,0.1)" : "rgba(92,255,137,0.1)", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: gaps.length ? "rgba(255,159,67,0.28)" : "rgba(92,255,137,0.28)" }}>
         {gaps.length ? (
           <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "800", lineHeight: 17 }}>
-            Bloom gap in {gaps.map((m) => MONTH_SHORT[m - 1]).join(", ")}.
-            {suggestion ? ` Add ${suggestion.plant} to cover ${MONTH_SHORT[suggestion.month - 1]}.` : " Add an early or late bloomer to fill it."}
+            {t("bloomSuccessionText.gap", { months: gaps.map(monthShort).join(", ") })}
+            {" "}
+            {suggestion ? t("bloomSuccessionText.suggest", { plant: suggestion.plant, month: monthShort(suggestion.month) }) : t("bloomSuccessionText.suggestGeneric")}
           </Text>
         ) : bloomers.length ? (
           <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "800", lineHeight: 17 }}>
-            Nice — you've got continuous bloom across the growing season. 🐝
+            {t("bloomSuccessionText.continuous")} 🐝
           </Text>
         ) : (
           <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "800", lineHeight: 17 }}>
-            Aim for at least one plant flowering in every month from spring to fall.
+            {t("bloomSuccessionText.aim")}
           </Text>
         )}
       </View>

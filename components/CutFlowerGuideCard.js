@@ -3,37 +3,52 @@ import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { normalizeType, resolvePlantImageSource, tapHaptic } from "../core";
 import { DRIES_WELL } from "../data/flowerHomeData";
+import { useTranslation } from "../lib/i18n";
+
+// DRIES_WELL (data/flowerHomeData) is English; its text is translated by flower at render.
+const DRY_KEYS = {
+  Yarrow: "yarrow", Lavender: "lavender", Statice: "statice", Strawflower: "strawflower", Hydrangea: "hydrangea",
+  Gomphrena: "gomphrena", "Bee Balm": "beeBalm", Cosmos: "cosmos", Rose: "rose", Zinnia: "zinnia", Larkspur: "larkspur",
+  Delphinium: "delphinium", "Celosia (Cockscomb)": "celosia", "Baby's Breath": "babysBreath", Nigella: "nigella", Poppy: "poppy",
+};
 
 // Vase life (days) + a conditioning tip for common cut flowers. Anything not
 // listed falls back to a sensible default so every saved flower still shows.
+// The tip is an id: its text lives at cutFlowerText.tip_<id>.
 const VASE = {
-  Rose: [7, "Recut stems under water at an angle; strip leaves below the waterline."],
-  Sunflower: [7, "Heavy drinkers — top the vase up daily and keep out of direct sun."],
-  Zinnia: [7, "Do the 'wiggle test' — only cut stems that feel stiff, not floppy."],
-  Dahlia: [5, "Sear stem ends in hot water for 7 seconds to keep them from wilting."],
-  Snapdragon: [7, "Keep upright — the tips bend toward light and set that way."],
-  "Sweet Pea": [4, "Short but sweet; pick often and they'll keep flowering."],
-  Cosmos: [5, "Cut when buds are just cracking open for the longest life."],
-  Ranunculus: [7, "One of the longest-lasting cut flowers — change water often."],
-  Tulip: [7, "Tulips keep growing in the vase; wrap them to keep stems straight."],
-  Peony: [5, "Harvest at the soft 'marshmallow' bud stage; they open in the vase."],
-  Lily: [10, "Snip the pollen anthers to avoid stains and extend the blooms."],
-  Gladiolus: [8, "Remove the top bud so the lower florets open evenly."],
-  Freesia: [7, "Wonderfully fragrant; cut when the first floret shows color."],
-  Delphinium: [5, "Tall spires — support them and keep the water topped up."],
-  Larkspur: [5, "Cut when a third of the spike is open."],
-  Hydrangea: [5, "If it wilts, submerge the whole head in cool water to revive it."],
-  Aster: [7, "Reliable and long-lasting; strip lower foliage to keep water clean."],
-  Yarrow: [8, "Dries beautifully too — hang upside down for everlasting bouquets."],
-  "Black-Eyed Susan": [7, "Cheerful and tough; change the water every couple of days."],
-  Calendula: [6, "Cut in the cool of the morning for the best vase life."],
-  Stock: [7, "Very fragrant; recut and refresh water to fight the strong stem smell."],
-  Anemone: [6, "Keep cool — they last far longer out of warm rooms."],
-  Coreopsis: [6, "Pinch spent blooms and the plant keeps producing stems."],
+  Rose: [7, "rose"],
+  Sunflower: [7, "sunflower"],
+  Zinnia: [7, "zinnia"],
+  Dahlia: [5, "dahlia"],
+  Snapdragon: [7, "snapdragon"],
+  "Sweet Pea": [4, "sweetPea"],
+  Cosmos: [5, "cosmos"],
+  Ranunculus: [7, "ranunculus"],
+  Tulip: [7, "tulip"],
+  Peony: [5, "peony"],
+  Lily: [10, "lily"],
+  Gladiolus: [8, "gladiolus"],
+  Freesia: [7, "freesia"],
+  Delphinium: [5, "delphinium"],
+  Larkspur: [5, "larkspur"],
+  Hydrangea: [5, "hydrangea"],
+  Aster: [7, "aster"],
+  Yarrow: [8, "yarrow"],
+  "Black-Eyed Susan": [7, "blackEyedSusan"],
+  Calendula: [6, "calendula"],
+  Stock: [7, "stock"],
+  Anemone: [6, "anemone"],
+  Coreopsis: [6, "coreopsis"],
 };
-const DEFAULT_VASE = [6, "Cut in the cool morning, strip lower leaves, and recut stems under water."];
+const DEFAULT_VASE = [6, "default"];
 
 export const CutFlowerGuideCard = memo(function CutFlowerGuideCard({ theme, savedPlants, onOpenPlant }) {
+  const { t, tn } = useTranslation();
+  const dryTip = (name) => {
+    const key = `cutFlowerText.dry_${DRY_KEYS[name]}`;
+    const v = DRY_KEYS[name] ? t(key) : key;
+    return v === key ? DRIES_WELL[name] : v;
+  };
   const flowers = useMemo(() => {
     return (savedPlants || [])
       .map((name) => produceData.find((p) => p.name === name))
@@ -52,7 +67,7 @@ export const CutFlowerGuideCard = memo(function CutFlowerGuideCard({ theme, save
   if (!flowers.length) {
     return (
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Save a few flowers from the Plants tab and their vase life and cutting tips will show up here.
+        {t("cutFlowerText.empty")}
       </Text>
     );
   }
@@ -60,7 +75,7 @@ export const CutFlowerGuideCard = memo(function CutFlowerGuideCard({ theme, save
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        How long each of your flowers lasts in a vase — and how to make them last.
+        {t("cutFlowerText.intro")}
       </Text>
 
       {/* Vase-life list */}
@@ -80,11 +95,11 @@ export const CutFlowerGuideCard = memo(function CutFlowerGuideCard({ theme, save
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                   <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{item.name}</Text>
-                  <Text style={{ color: "#ffb6c1", fontSize: 12, fontWeight: "900" }}>🏺 {days} days</Text>
+                  <Text style={{ color: "#ffb6c1", fontSize: 12, fontWeight: "900" }}>🏺 {tn("cutFlowerText.vaseDays", days)}</Text>
                 </View>
-                <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 16, marginTop: 2 }}>{tip}</Text>
+                <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 16, marginTop: 2 }}>{t(`cutFlowerText.tip_${tip}`)}</Text>
                 {DRIES_WELL[item.name] ? (
-                  <Text style={{ color: "#bf7a12", fontSize: 11, fontWeight: "800", lineHeight: 15, marginTop: 3 }}>🌾 Dries well — {DRIES_WELL[item.name]}</Text>
+                  <Text style={{ color: "#bf7a12", fontSize: 11, fontWeight: "800", lineHeight: 15, marginTop: 3 }}>🌾 {t("cutFlowerText.driesWell", { tip: dryTip(item.name) })}</Text>
                 ) : null}
               </View>
             </Pressable>
@@ -93,7 +108,7 @@ export const CutFlowerGuideCard = memo(function CutFlowerGuideCard({ theme, save
       </View>
 
       {/* Bouquet builder */}
-      <Text style={{ color: "#ffb6c1", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginTop: 18, marginBottom: 8 }}>💐 BUILD A BOUQUET</Text>
+      <Text style={{ color: "#ffb6c1", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginTop: 18, marginBottom: 8 }}>💐 {t("cutFlowerText.buildBouquet")}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 2 }}>
         {flowers.map((item) => {
           const active = bouquet.includes(item.name);
@@ -109,11 +124,11 @@ export const CutFlowerGuideCard = memo(function CutFlowerGuideCard({ theme, save
           <>
             <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }}>{bouquet.join(" · ")}</Text>
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4 }}>
-              {bouquet.length} stem type{bouquet.length === 1 ? "" : "s"} · stays fresh about {bouquetLife} days. Mix heights and one focal bloom for balance.
+              {tn("cutFlowerText.bouquetStemTypes", bouquet.length)} · {tn("cutFlowerText.bouquetFresh", bouquetLife)}
             </Text>
           </>
         ) : (
-          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>Tap a few flowers to design a bouquet (up to 5).</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>{t("cutFlowerText.bouquetEmpty")}</Text>
         )}
       </View>
     </View>

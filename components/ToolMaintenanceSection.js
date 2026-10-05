@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
 import { getDaysSince, getTodayKey, tapHaptic } from "../core";
-import { formatDate } from "../lib/i18n";
+import { formatDate, useTranslation } from "../lib/i18n";
 import { SkeletonSection } from "./Skeleton";
 
 export const TOOL_MAINT_STORAGE_KEY = "pp_toolMaint";
@@ -10,12 +10,12 @@ export const TOOL_MAINT_STORAGE_KEY = "pp_toolMaint";
 // Recommended upkeep intervals (days). Keeps blades sharp and clean so plants
 // get clean cuts and tools last for years.
 const MAINT_ITEMS = [
-  { id: "clean", label: "Clean & disinfect blades", icon: "🧽", days: 30 },
-  { id: "sharpen_pruners", label: "Sharpen pruners", icon: "✂️", days: 60 },
-  { id: "oil", label: "Oil handles & hinges", icon: "🛢️", days: 90 },
-  { id: "sharpen_shovel", label: "Sharpen shovel / hoe edge", icon: "🪏", days: 180 },
-  { id: "mower", label: "Sharpen mower blade", icon: "🌀", days: 180 },
-  { id: "hose", label: "Drain & store hose", icon: "💧", days: 365 },
+  { id: "clean", labelKey: "toolCareText.itemClean", icon: "🧽", days: 30 },
+  { id: "sharpen_pruners", labelKey: "toolCareText.itemSharpenPruners", icon: "✂️", days: 60 },
+  { id: "oil", labelKey: "toolCareText.itemOil", icon: "🛢️", days: 90 },
+  { id: "sharpen_shovel", labelKey: "toolCareText.itemSharpenShovel", icon: "🪏", days: 180 },
+  { id: "mower", labelKey: "toolCareText.itemMower", icon: "🌀", days: 180 },
+  { id: "hose", labelKey: "toolCareText.itemHose", icon: "💧", days: 365 },
 ];
 
 // core's getDaysSince compares midday to midday; measuring from the current
@@ -23,6 +23,7 @@ const MAINT_ITEMS = [
 const daysSince = (dateKey) => getDaysSince(dateKey);
 
 export const ToolMaintenanceSection = memo(function ToolMaintenanceSection({ theme, embedded }) {
+  const { t, tn } = useTranslation();
   const [log, setLog] = useState({}); // { itemId: lastDoneDateKey }
   const [loaded, setLoaded] = useState(false);
 
@@ -52,17 +53,17 @@ export const ToolMaintenanceSection = memo(function ToolMaintenanceSection({ the
     const since = daysSince(log[item.id]);
     const due = since == null || since >= item.days;
     const left = since == null ? null : item.days - since;
-    return { ...item, since, due, left };
+    return { ...item, label: t(item.labelKey), since, due, left };
   });
   const dueCount = rows.filter((r) => r.due).length;
 
   return (
     <View style={embedded ? undefined : { marginTop: 18, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 16 }}>
       <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 4 }}>
-        🔧 TOOL MAINTENANCE
+        🔧 {t("toolCareText.title")}
       </Text>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        {dueCount ? `${dueCount} task${dueCount === 1 ? "" : "s"} due — keep your tools sharp and clean.` : "All tools cared for. Nice. 🛠️"}
+        {dueCount ? tn("toolCareText.tasksDue", dueCount) : t("toolCareText.allDone")}
       </Text>
 
       <View style={{ gap: 6, marginTop: 12 }}>
@@ -73,19 +74,19 @@ export const ToolMaintenanceSection = memo(function ToolMaintenanceSection({ the
               <Text style={{ color: theme.text, fontSize: 13, fontWeight: "800" }}>{r.label}</Text>
               <Text style={{ color: r.due ? "#ff9f43" : theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 1 }}>
                 {r.since == null
-                  ? `Every ${r.days} days · not logged yet`
+                  ? tn("toolCareText.everyNotLogged", r.days)
                   : r.due
-                  ? `Due now · last done ${formatDate(new Date(log[r.id] + "T12:00:00"), { month: "short", day: "numeric" })}`
-                  : `Next in ${r.left} day${r.left === 1 ? "" : "s"}`}
+                  ? t("toolCareText.dueNow", { date: formatDate(new Date(log[r.id] + "T12:00:00"), { month: "short", day: "numeric" }) })
+                  : tn("toolCareText.nextIn", r.left)}
               </Text>
             </View>
             <Pressable
               onPress={() => markDone(r.id)}
               accessibilityRole="button"
-              accessibilityLabel={`Mark ${r.label} done`}
+              accessibilityLabel={t("toolCareText.markDoneA11y", { task: r.label })}
               style={{ backgroundColor: r.due ? "#ffd86b" : "rgba(255,255,255,0.08)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}
             >
-              <Text style={{ color: r.due ? "#07120b" : theme.secondaryText, fontSize: 11, fontWeight: "900" }}>Done</Text>
+              <Text style={{ color: r.due ? "#07120b" : theme.secondaryText, fontSize: 11, fontWeight: "900" }}>{t("toolCareText.done")}</Text>
             </Pressable>
           </View>
         ))}

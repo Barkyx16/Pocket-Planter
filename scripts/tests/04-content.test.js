@@ -630,7 +630,7 @@ describe("advice temperatures follow the units setting", () => {
     ok(/localizeAdvice\(step, unitSystem\)/.test(detail));
     ok(/localizeAdvice\(fact\.value, unitSystem\)/.test(detail));
     const fert = read("components/FertilizerIntelligenceCard.js");
-    ok(/localizeAdvice\(tip\.tip, unitSystem\)/.test(fert) && /localizeAdvice\(weatherWarning\.text, unitSystem\)/.test(fert));
+    ok(/localizeAdvice\(tip\.tip, unitSystem\)/.test(fert) && /localizeAdvice\(t\(weatherWarning\.key\), unitSystem\)/.test(fert));
     ok(/unitSystem=\{unitSystem\}\s*\n\s*weather=\{weather\}/.test(read("screens/GardenTab.js")), "the Garden tab must pass units to the fertilizer card");
     ok(!/above 95°F/.test(read("components/ForecastCard.js")), "the forecast must format its threshold");
     ok(/localizeAdvice\(disease\.spreads, unitSystem\)/.test(read("components/DiseaseDetailScreen.js")));
@@ -948,40 +948,18 @@ describe("Home's daily plan", () => {
 });
 
 describe("screens and components are fully translated", () => {
-  // Measured by the repo's own coverage script, so a string added in English
-  // fails here instead of shipping untranslated in nine languages. Every screen
-  // and component is held to zero, except the ones still listed below — strike
-  // a name off as it is translated, and never add one.
+  // Measured by the repo's own coverage script, so a string added in English to
+  // any screen or component fails here instead of shipping untranslated in nine
+  // languages.
   const { analyse } = require(path.join(ROOT, "scripts/i18n-coverage.js"));
-  const TODO = new Set([
-    "AreaPlannerMap", "BloomSuccessionSection", "CalendarExportSection", "ChoreRotationSection",
-    "CompostTrackerSection", "CutFlowerGuideCard", "DataExportCard", "FertilizerIntelligenceCard",
-    "FixMyGardenCard", "GardenCalculatorsSection", "GardenPlacementModal", "GardenShoppingListCard",
-    "GardenTimelineCard", "GardenToolkitCard", "GerminationTestSection", "GlowPlantCard",
-    "GrowLightSection", "GuildTemplatesCard", "HarvestRecipesCard", "HarvestStorageGuideCard",
-    "HouseplantCareCard", "JournalCard", "MoonPhaseSection", "PetSafeSection", "PlantLabelsSection",
-    "PlantTodayHero", "PollinatorPlannerCard", "PropagationTrackerCard", "PruningScheduleSection",
-    "RainBarrelSection", "SeasonalChallengesCard", "SeedInventoryCard", "SettingsCard",
-    "SoilCareLogCard", "SoilTempSection", "SuccessionSowingCard", "ToolMaintenanceSection"
-  ]);
   const files = ["screens", "components"].flatMap((dir) =>
     fs.readdirSync(path.join(ROOT, dir)).filter((f) => f.endsWith(".js")).map((f) => `${dir}/${f}`));
   for (const file of files) {
-    const name = path.basename(file, ".js");
-    if (file.startsWith("components/") && TODO.has(name)) continue;
     it(`${file} has no hard-coded English`, () => {
       const { hardcoded } = analyse(path.join(ROOT, file));
       eq(hardcoded.map((h) => `${h.line}: ${h.text}`), []);
     });
   }
-  it("the to-do list only names files that still need work", () => {
-    // A translated file left on the list would lose its protection silently.
-    const stale = [...TODO].filter((name) => {
-      const file = path.join(ROOT, "components", `${name}.js`);
-      return !fs.existsSync(file) || analyse(file).hardcoded.length === 0;
-    });
-    eq(stale, []);
-  });
 });
 
 describe("the weather cards", () => {

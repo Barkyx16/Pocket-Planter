@@ -11,7 +11,7 @@ const imgFor = (name) => {
 };
 
 export const GardenShoppingListCard = memo(function GardenShoppingListCard({ theme, gardenAreas, zip }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const plantNames = Array.from(new Set(
     (gardenAreas || []).flatMap((a) => Object.values(a.plots || {}).filter(Boolean))
   ));
@@ -22,14 +22,14 @@ export const GardenShoppingListCard = memo(function GardenShoppingListCard({ the
     try {
       tapHaptic("light");
       const lines = [
-        "🛒 My Pocket Planter shopping list:",
+        `🛒 ${t("gardenShoppingListText.shareTitle")}`,
         "",
-        ...plantNames.map((n) => `• ${n} seeds`),
-        "• Compost / potting mix",
-        "• Balanced fertilizer",
-        "• Mulch",
+        ...plantNames.map((n) => `• ${t("gardenShoppingListText.shareSeeds", { plant: n })}`),
+        `• ${t("gardenShoppingListText.shareCompost")}`,
+        `• ${t("gardenShoppingListText.shareFertilizer")}`,
+        `• ${t("gardenShoppingListText.shareMulch")}`,
         "",
-        "Planned in Pocket Planter 🌱",
+        `${t("gardenShoppingListText.shareFooter")} 🌱`,
       ];
       await Share.share({ message: lines.join("\n") });
     } catch (e) { console.log("Share list skipped:", e); }
@@ -38,7 +38,7 @@ export const GardenShoppingListCard = memo(function GardenShoppingListCard({ the
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "600", lineHeight: 19, marginTop: 2 }}>
-        {plantNames.length} plant{plantNames.length === 1 ? "" : "s"} {t("gardenShoppingList.plantedAcrossYourGardenRestock")}
+        {tn("gardenShoppingListText.intro", plantNames.length)}
       </Text>
 
       <View style={{ gap: 6, marginTop: 12 }}>
@@ -57,7 +57,7 @@ export const GardenShoppingListCard = memo(function GardenShoppingListCard({ the
             <Pressable
               onPress={() => Linking.openURL(`https://www.amazon.com/s?k=${encodeURIComponent(name + " seeds")}`)}
               accessibilityRole="button"
-              accessibilityLabel={`Shop for ${name} seeds`}
+              accessibilityLabel={t("gardenShoppingListText.a11yShopSeeds", { plant: name })}
               style={{ backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
             >
               <IconText label={t("gardenShoppingList.seeds")} style={{
@@ -69,7 +69,7 @@ export const GardenShoppingListCard = memo(function GardenShoppingListCard({ the
             <Pressable
               onPress={() => Linking.openURL(`https://www.amazon.com/s?k=${encodeURIComponent(name + " fertilizer")}`)}
               accessibilityRole="button"
-              accessibilityLabel={`Shop for ${name} fertilizer`}
+              accessibilityLabel={t("gardenShoppingListText.a11yShopFertilizer", { plant: name })}
               style={{ backgroundColor: "rgba(255, 216, 107, 0.1)", borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: "rgba(255, 216, 107, 0.2)" }}
             >
               <IconText label={t("gardenShoppingList.feed")} style={{
@@ -88,7 +88,7 @@ export const GardenShoppingListCard = memo(function GardenShoppingListCard({ the
           onPress={() => setVisible((c) => c + 8)}
           style={{ marginTop: 10, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.24)" }}
         >
-          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("gardenShoppingList.showMorePlants")}{plantNames.length - visible} {t("gardenShoppingList.more")}</Text>
+          <Text style={{ color: "#8effab", fontWeight: "900", fontSize: 14 }}>{t("gardenShoppingListText.showMore", { count: plantNames.length - visible })}</Text>
         </Pressable>
       ) : null}
 

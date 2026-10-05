@@ -12,16 +12,17 @@ import { touchSlop } from "../lib/a11y";
 const STORAGE_KEY = "pp_seedInventory";
 
 const CATEGORIES = [
-  { id: "seeds", label: "🌱 Seeds", color: "#8effab" },
-  { id: "soil", label: "🪴 Soil", color: "#bf7a12" },
-  { id: "fertilizer", label: "🌾 Fertilizer", color: "#ffd86b" },
-  { id: "tools", label: "🧰 Tools", color: "#6bc7ff" },
-  { id: "other", label: "📦 Other", color: "#d8c8ff" },
+  { id: "seeds", emoji: "🌱", labelKey: "seedInventoryText.catSeeds", color: "#8effab" },
+  { id: "soil", emoji: "🪴", labelKey: "seedInventoryText.catSoil", color: "#bf7a12" },
+  { id: "fertilizer", emoji: "🌾", labelKey: "seedInventoryText.catFertilizer", color: "#ffd86b" },
+  { id: "tools", emoji: "🧰", labelKey: "seedInventoryText.catTools", color: "#6bc7ff" },
+  { id: "other", emoji: "📦", labelKey: "seedInventoryText.catOther", color: "#d8c8ff" },
 ];
 const catOf = (id) => CATEGORIES.find((c) => c.id === id) || CATEGORIES[4];
 
 export const SeedInventoryCard = memo(function SeedInventoryCard({ theme }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
+  const catLabel = (c) => `${c.emoji} ${t(c.labelKey)}`;
   const [items, setItems] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [draft, setDraft] = useState("");
@@ -60,6 +61,8 @@ export const SeedInventoryCard = memo(function SeedInventoryCard({ theme }) {
     persist(items.map((i) => (i.id === id ? { ...i, low: !i.low } : i)));
   };
 
+  // The search terms target the English-language US store.
+  // i18n-ignore
   const shopFor = (name) => Linking.openURL(`https://www.amazon.com/s?k=${encodeURIComponent((name || "garden seeds") + " garden")}`);
 
   if (!loaded) return null;
@@ -69,14 +72,14 @@ export const SeedInventoryCard = memo(function SeedInventoryCard({ theme }) {
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        {t("seedInventory.trackTheSeedsAndSupplies")} {items.length} item{items.length === 1 ? "" : "s"} {t("seedInventory.onHand")}
+        {t("seedInventory.trackTheSeedsAndSupplies")} {tn("seedInventoryText.itemsOnHand", items.length)}
       </Text>
 
       {lowItems.length ? (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12, backgroundColor: "rgba(255, 159, 67, 0.1)", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "rgba(255, 159, 67, 0.3)" }}>
           <Text style={{ fontSize: 14 }}>⚠️</Text>
           <Text style={{ flex: 1, color: "#ff9f43", fontSize: 12, fontWeight: "800" }}>
-            {lowItems.length} item{lowItems.length === 1 ? "" : "s"} {t("seedInventory.runningLowReorderBeforePlanting")}
+            {tn("seedInventoryText.itemsRunningLow", lowItems.length)}
           </Text>
         </View>
       ) : null}
@@ -102,7 +105,7 @@ export const SeedInventoryCard = memo(function SeedInventoryCard({ theme }) {
           const active = draftCat === c.id;
           return (
             <Pressable key={c.id} onPress={() => setDraftCat(c.id)} style={{ borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: active ? c.color + "22" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: active ? c.color : "rgba(255, 255, 255, 0.1)" }}>
-              <Text style={{ color: active ? c.color : theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{c.label}</Text>
+              <Text style={{ color: active ? c.color : theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{catLabel(c)}</Text>
             </Pressable>
           );
         })}
@@ -112,10 +115,10 @@ export const SeedInventoryCard = memo(function SeedInventoryCard({ theme }) {
       <Pressable
         onPress={() => { tapHaptic("light"); setScanOpen(true); }}
         accessibilityRole="button"
-        accessibilityLabel="Scan a seed packet barcode"
+        accessibilityLabel={t("seedInventoryText.a11yScan")}
         style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8, backgroundColor: "rgba(107,199,255,0.1)", borderRadius: 12, paddingVertical: 11, borderWidth: 1, borderColor: "rgba(107,199,255,0.24)" }}
       >
-        <Text style={{ color: "#6bc7ff", fontSize: 13, fontWeight: "900" }}>📷 Scan a packet barcode</Text>
+        <Text style={{ color: "#6bc7ff", fontSize: 13, fontWeight: "900" }}>📷 {t("seedInventoryText.scan")}</Text>
       </Pressable>
 
       {scanOpen ? (
@@ -149,7 +152,7 @@ export const SeedInventoryCard = memo(function SeedInventoryCard({ theme }) {
 }} />
                   </Pressable>
                 ) : (
-                  <Text style={{ color: c.color, fontSize: 10, fontWeight: "900" }}>{c.label}</Text>
+                  <Text style={{ color: c.color, fontSize: 10, fontWeight: "900" }}>{catLabel(c)}</Text>
                 )}
                 <Pressable onPress={() => toggleLow(item.id)} hitSlop={touchSlop(14)} accessibilityRole="button" accessibilityLabel={item.low ? t("seedInventory.markAsStocked") : t("seedInventory.markAsRunningLow")} style={{ paddingHorizontal: 4 }}>
                   <Text style={{ fontSize: 14, opacity: item.low ? 1 : 0.4 }}>🚩</Text>

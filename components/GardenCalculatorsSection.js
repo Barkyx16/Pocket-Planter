@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { successHaptic, tapHaptic } from "../core";
-import { t } from "../lib/i18n";
+import { formatNumber, useTranslation } from "../lib/i18n";
 
 // ── Unit + mixing constants ──────────────────────────────────────────────────
 const GAL_TO_L = 3.785;
@@ -29,6 +29,9 @@ function Chip({ label, active, onPress, color = "#8effab" }) {
   );
 }
 
+// Unit amounts read differently by language ("大さじ2", "2 EL"), so each is a key.
+const galText = (t, n) => t("calculatorsText.galAmount", { n: formatNumber(n) });
+
 function numInput(theme, value, onChange, placeholder) {
   return (
     <TextInput
@@ -44,6 +47,7 @@ function numInput(theme, value, onChange, placeholder) {
 
 // ── Fertilizer mixing ────────────────────────────────────────────────────────
 function FertilizerCalc({ theme, metric }) {
+  const { t } = useTranslation();
   // Held in whatever unit the field is labelled with — imperial users type
   // gallons. It used to be litres either way, so "2" from an imperial gardener
   // was read as 2 litres and mixed the feed nearly four times too strong.
@@ -57,35 +61,35 @@ function FertilizerCalc({ theme, metric }) {
   const valid = containerVol > 0;
 
   const containerPresets = metric
-    ? [{ v: 4, label: "4 L" }, { v: 8, label: "8 L" }, { v: 10, label: "10 L" }]
-    : [{ v: 1, label: "1 gal" }, { v: 2, label: "2 gal" }, { v: 5, label: "5 gal" }];
+    ? [4, 8, 10].map((v) => ({ v, label: `${formatNumber(v)} L` }))
+    : [1, 2, 5].map((v) => ({ v, label: galText(t, v) }));
 
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Mix water-soluble fertilizer to the right strength — no more guessing at the scoop.
+        {t("calculatorsText.fertIntro")}
       </Text>
 
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>WATERING CONTAINER ({metric ? "litres" : "gallons"})</Text>
-      {numInput(theme, containerSize, setContainerSize, metric ? "e.g. 8" : "e.g. 2")}
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t(metric ? "calculatorsText.containerMetric" : "calculatorsText.containerImperial")}</Text>
+      {numInput(theme, containerSize, setContainerSize, t("calculatorsText.example", { value: metric ? 8 : 2 }))}
       <View style={{ flexDirection: "row", gap: 6, marginTop: 6 }}>
         {containerPresets.map((p) => (
           <Chip key={p.label} label={p.label} color="#6bc7ff" active={Math.abs(containerVol - p.v) < 0.05} onPress={() => setContainerSize(String(p.v))} />
         ))}
       </View>
 
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>LABEL RATE (from your fertilizer)</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("calculatorsText.labelRate")}</Text>
       <View style={{ flexDirection: "row", gap: 6 }}>
         {[0.5, 1, 1.5, 2].map((r) => (
-          <Chip key={r} label={`${r} tbsp/gal`} active={ratePerGal === r} onPress={() => setRatePerGal(r)} />
+          <Chip key={r} label={t("calculatorsText.tbspPerGal", { n: formatNumber(r) })} active={ratePerGal === r} onPress={() => setRatePerGal(r)} />
         ))}
       </View>
 
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>STRENGTH</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("calculatorsText.strength")}</Text>
       <View style={{ flexDirection: "row", gap: 6 }}>
-        <Chip label="Seedling ¼" active={strength === 0.25} onPress={() => setStrength(0.25)} color="#ffd86b" />
-        <Chip label="Half ½" active={strength === 0.5} onPress={() => setStrength(0.5)} color="#ffd86b" />
-        <Chip label="Full" active={strength === 1} onPress={() => setStrength(1)} color="#ffd86b" />
+        <Chip label={t("calculatorsText.seedling")} active={strength === 0.25} onPress={() => setStrength(0.25)} color="#ffd86b" />
+        <Chip label={t("calculatorsText.half")} active={strength === 0.5} onPress={() => setStrength(0.5)} color="#ffd86b" />
+        <Chip label={t("calculatorsText.full")} active={strength === 1} onPress={() => setStrength(1)} color="#ffd86b" />
       </View>
 
       {/* RESULT */}
@@ -93,17 +97,17 @@ function FertilizerCalc({ theme, metric }) {
         {valid ? (
           <>
             <Text style={{ color: "#8effab", fontSize: 22, fontWeight: "900" }}>
-              {round(tbsp, 2)} tbsp
+              {t("calculatorsText.tbspAmount", { n: formatNumber(round(tbsp, 2)) })}
             </Text>
             <Text style={{ color: theme.text, fontSize: 12, fontWeight: "800", marginTop: 2 }}>
-              ≈ {round(tbsp * TBSP_TO_TSP, 1)} tsp · {round(tbsp * TBSP_TO_ML)} mL
+              {t("calculatorsText.tspMl", { tsp: formatNumber(round(tbsp * TBSP_TO_TSP, 1)), ml: formatNumber(round(tbsp * TBSP_TO_ML)) })}
             </Text>
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 17, marginTop: 6 }}>
-              Stir into your {metric ? `${round(containerVol)} L` : `${round(gallons, 1)} gal`} container, then water as usual.
+              {t("calculatorsText.stirInto", { volume: metric ? `${formatNumber(round(containerVol))} L` : galText(t, round(gallons, 1)) })}
             </Text>
           </>
         ) : (
-          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>Enter a container size to see the mix.</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>{t("calculatorsText.enterContainer")}</Text>
         )}
       </View>
     </View>
@@ -112,6 +116,7 @@ function FertilizerCalc({ theme, metric }) {
 
 // ── Watering volume ──────────────────────────────────────────────────────────
 function WateringCalc({ theme, metric }) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState("bed"); // bed | pot
   const [area, setArea] = useState(metric ? "1" : "10"); // m² or sq ft
   const [inchesWeek, setInchesWeek] = useState(metric ? 25 : 1); // mm/week (metric) or in/week (imperial)
@@ -120,7 +125,7 @@ function WateringCalc({ theme, metric }) {
 
   // Weekly targets differ by unit: inches vs mm.
   const targetOpts = metric
-    ? [{ v: 12, label: "12 mm" }, { v: 25, label: "25 mm" }, { v: 38, label: "38 mm" }]
+    ? [12, 25, 38].map((v) => ({ v, label: `${v} mm` }))
     : [{ v: 0.5, label: '0.5"' }, { v: 1, label: '1"' }, { v: 1.5, label: '1.5"' }];
 
   let weeklyGal = 0;
@@ -149,7 +154,7 @@ function WateringCalc({ theme, metric }) {
   }
 
   const perWaterGal = mode === "bed" ? (timesWeek ? weeklyGal / timesWeek : weeklyGal) : potGal;
-  const fmtVol = (gal) => (metric ? `${round(gal * GAL_TO_L, 1)} L` : `${round(gal, 2)} gal`);
+  const fmtVol = (gal) => (metric ? `${formatNumber(round(gal * GAL_TO_L, 1))} L` : galText(t, round(gal, 2)));
   const cans = perWaterGal / CAN_GAL;
   const hoseSec = Math.round((perWaterGal / HOSE_GAL_PER_MIN) * 60);
   const valid = perWaterGal > 0;
@@ -157,25 +162,25 @@ function WateringCalc({ theme, metric }) {
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Work out how much water a bed or pot actually needs — and how long that is on the hose.
+        {t("calculatorsText.waterIntro")}
       </Text>
 
       <View style={{ flexDirection: "row", gap: 6, marginTop: 12 }}>
-        <Chip label="🛏️ Garden bed" color="#6bc7ff" active={mode === "bed"} onPress={() => setMode("bed")} />
-        <Chip label="🪴 Pot / container" color="#6bc7ff" active={mode === "pot"} onPress={() => setMode("pot")} />
+        <Chip label={`🛏️ ${t("calculatorsText.gardenBed")}`} color="#6bc7ff" active={mode === "bed"} onPress={() => setMode("bed")} />
+        <Chip label={`🪴 ${t("calculatorsText.potContainer")}`} color="#6bc7ff" active={mode === "pot"} onPress={() => setMode("pot")} />
       </View>
 
       {mode === "bed" ? (
         <>
-          <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>BED AREA ({metric ? "m²" : "sq ft"})</Text>
-          {numInput(theme, area, setArea, metric ? "e.g. 1" : "e.g. 10")}
-          <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>WATER PER WEEK</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t(metric ? "calculatorsText.bedAreaMetric" : "calculatorsText.bedAreaImperial")}</Text>
+          {numInput(theme, area, setArea, t("calculatorsText.example", { value: metric ? 1 : 10 }))}
+          <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("calculatorsText.waterPerWeek")}</Text>
           <View style={{ flexDirection: "row", gap: 6 }}>
             {targetOpts.map((o) => (
               <Chip key={o.label} label={o.label} active={inchesWeek === o.v} onPress={() => setInchesWeek(o.v)} />
             ))}
           </View>
-          <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>WATERINGS PER WEEK</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("calculatorsText.wateringsPerWeek")}</Text>
           <View style={{ flexDirection: "row", gap: 6 }}>
             {[1, 2, 3, 7].map((n) => (
               <Chip key={n} label={`${n}×`} active={timesWeek === n} onPress={() => setTimesWeek(n)} />
@@ -184,8 +189,8 @@ function WateringCalc({ theme, metric }) {
         </>
       ) : (
         <>
-          <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>POT DIAMETER ({metric ? "cm" : "inches"})</Text>
-          {numInput(theme, diam, setDiam, metric ? "e.g. 25" : "e.g. 10")}
+          <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t(metric ? "calculatorsText.potDiameterMetric" : "calculatorsText.potDiameterImperial")}</Text>
+          {numInput(theme, diam, setDiam, t("calculatorsText.example", { value: metric ? 25 : 10 }))}
         </>
       )}
 
@@ -195,14 +200,14 @@ function WateringCalc({ theme, metric }) {
           <>
             <Text style={{ color: "#6bc7ff", fontSize: 22, fontWeight: "900" }}>{fmtVol(perWaterGal)}</Text>
             <Text style={{ color: theme.text, fontSize: 12, fontWeight: "800", marginTop: 2 }}>
-              per watering{mode === "bed" ? ` (${fmtVol(weeklyGal)}/week)` : ""}
+              {mode === "bed" ? t("calculatorsText.perWateringWeekly", { volume: fmtVol(weeklyGal) }) : t("calculatorsText.perWatering")}
             </Text>
             <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 17, marginTop: 6 }}>
-              ≈ {round(cans, 1)} watering can{cans >= 1.05 || cans < 0.95 ? "s" : ""} · or {hoseSec}s of hose
+              {t(cans >= 1.05 || cans < 0.95 ? "calculatorsText.cansHoseOther" : "calculatorsText.cansHoseOne", { cans: formatNumber(round(cans, 1)), seconds: hoseSec })}
             </Text>
           </>
         ) : (
-          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>Enter a size to estimate.</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>{t("calculatorsText.enterSize")}</Text>
         )}
       </View>
     </View>
@@ -214,6 +219,7 @@ const PRESETS_SEC = [30, 60, 120, 300, 600];
 const fmtClock = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
 function WateringTimer({ theme }) {
+  const { t } = useTranslation();
   const [total, setTotal] = useState(120);
   const [left, setLeft] = useState(120);
   const [running, setRunning] = useState(false);
@@ -226,7 +232,7 @@ function WateringTimer({ theme }) {
         if (l <= 1) {
           clearInterval(ref.current);
           setRunning(false);
-          try { successHaptic(); } catch (e) { /* ignore */ }
+          try { successHaptic(); } catch { /* ignore */ }
           return 0;
         }
         return l - 1;
@@ -254,7 +260,7 @@ function WateringTimer({ theme }) {
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        A hands-on timer for soaker hoses and hand-watering, so beds get an even, measured drink.
+        {t("calculatorsText.timerIntro")}
       </Text>
 
       <View style={{ alignItems: "center", marginTop: 14, backgroundColor: "rgba(107,199,255,0.1)", borderRadius: 16, padding: 18, borderWidth: 1, borderColor: "rgba(107,199,255,0.28)" }}>
@@ -262,7 +268,7 @@ function WateringTimer({ theme }) {
         <View style={{ width: "100%", height: 6, borderRadius: 4, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden", marginTop: 8 }}>
           <View style={{ height: 6, borderRadius: 4, width: `${pct}%`, backgroundColor: done ? "#8effab" : "#6bc7ff" }} />
         </View>
-        {done ? <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", marginTop: 8 }}>✅ Done watering!</Text> : null}
+        {done ? <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", marginTop: 8 }}>✅ {t("calculatorsText.doneWatering")}</Text> : null}
       </View>
 
       {/* +/- adjust */}
@@ -271,7 +277,7 @@ function WateringTimer({ theme }) {
           <Text style={{ color: theme.text, fontSize: 16, fontWeight: "900" }}>−30s</Text>
         </Pressable>
         <Pressable onPress={toggle} style={{ flex: 1, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: running ? "rgba(255,159,67,0.9)" : "#6bc7ff" }}>
-          <Text style={{ color: "#07120b", fontSize: 15, fontWeight: "900" }}>{running ? "Pause" : left <= 0 ? "Restart" : "Start"}</Text>
+          <Text style={{ color: "#07120b", fontSize: 15, fontWeight: "900" }}>{t(running ? "calculatorsText.pause" : left <= 0 ? "calculatorsText.restart" : "calculatorsText.start")}</Text>
         </Pressable>
         <Pressable onPress={reset} accessibilityRole="button" accessibilityLabel={t("a11y.resetTimer")} style={{ width: 44, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
           <Text style={{ color: theme.text, fontSize: 16, fontWeight: "900" }}>↺</Text>
@@ -292,40 +298,42 @@ function WateringTimer({ theme }) {
 }
 
 // ── Potting-mix blender ──────────────────────────────────────────────────────
+// Labels and ingredient names are keys under calculatorsText (recipe_<id>, ing_<name>).
 const MIX_RECIPES = [
-  { id: "seed", label: "Seed-starting", parts: { "Coir / peat": 4, Perlite: 1, Vermiculite: 1, Compost: 1 } },
-  { id: "general", label: "General potting", parts: { Compost: 2, "Coir / peat": 2, Perlite: 1 } },
-  { id: "cactus", label: "Cactus / succulent", parts: { "Potting mix": 2, "Coarse sand": 2, Perlite: 1 } },
-  { id: "raised", label: "Raised bed (Mel's mix)", parts: { Compost: 1, "Peat / coir": 1, Vermiculite: 1 } },
+  { id: "seed", parts: { coirPeat: 4, perlite: 1, vermiculite: 1, compost: 1 } },
+  { id: "general", parts: { compost: 2, coirPeat: 2, perlite: 1 } },
+  { id: "cactus", parts: { pottingMix: 2, coarseSand: 2, perlite: 1 } },
+  { id: "raised", parts: { compost: 1, peatCoir: 1, vermiculite: 1 } },
 ];
 
 function PottingMixCalc({ theme, metric }) {
+  const { t } = useTranslation();
   const [vol, setVol] = useState(metric ? "10" : "5"); // display units (L or gal)
   const [recipeId, setRecipeId] = useState("seed");
   const recipe = MIX_RECIPES.find((r) => r.id === recipeId) || MIX_RECIPES[0];
   const container = parseFloat(vol) || 0;
   const totalParts = Object.values(recipe.parts).reduce((a, b) => a + b, 0);
-  const unit = metric ? "L" : "gal";
+  const amountText = (n) => (metric ? `${formatNumber(n)} L` : galText(t, n));
 
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Blend your own mix — pick a recipe and container size for the exact amount of each ingredient.
+        {t("calculatorsText.mixIntro")}
       </Text>
 
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>BATCH SIZE ({unit})</Text>
-      {numInput(theme, vol, (t) => setVol(t), metric ? "e.g. 10" : "e.g. 5")}
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t(metric ? "calculatorsText.batchSizeMetric" : "calculatorsText.batchSizeImperial")}</Text>
+      {numInput(theme, vol, (txt) => setVol(txt), t("calculatorsText.example", { value: metric ? 10 : 5 }))}
       <View style={{ flexDirection: "row", gap: 6, marginTop: 6 }}>
         {(metric ? [5, 10, 20, 40] : [1, 2, 5, 10]).map((v) => (
-          <Chip key={v} label={`${v} ${unit}`} color="#bf7a12" active={container === v} onPress={() => setVol(String(v))} />
+          <Chip key={v} label={amountText(v)} color="#bf7a12" active={container === v} onPress={() => setVol(String(v))} />
         ))}
       </View>
 
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>RECIPE</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("calculatorsText.recipe")}</Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
         {MIX_RECIPES.map((r) => (
           <Pressable key={r.id} onPress={() => setRecipeId(r.id)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: recipeId === r.id ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: recipeId === r.id ? "#8effab" : "rgba(255,255,255,0.1)" }}>
-            <Text style={{ color: recipeId === r.id ? "#07120b" : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{r.label}</Text>
+            <Text style={{ color: recipeId === r.id ? "#07120b" : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{t(`calculatorsText.recipe_${r.id}`)}</Text>
           </Pressable>
         ))}
       </View>
@@ -337,17 +345,17 @@ function PottingMixCalc({ theme, metric }) {
               const amt = (part / totalParts) * container;
               return (
                 <View key={name} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                  <Text style={{ color: theme.text, fontSize: 13, fontWeight: "800" }}>{name}</Text>
-                  <Text style={{ color: "#ffd86b", fontSize: 13, fontWeight: "900" }}>{round(amt, 1)} {unit}</Text>
+                  <Text style={{ color: theme.text, fontSize: 13, fontWeight: "800" }}>{t(`calculatorsText.ing_${name}`)}</Text>
+                  <Text style={{ color: "#ffd86b", fontSize: 13, fontWeight: "900" }}>{amountText(round(amt, 1))}</Text>
                 </View>
               );
             })}
             <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 4, fontStyle: "italic" }}>
-              Ratio {Object.values(recipe.parts).join(":")} · mix dry, then moisten.
+              {t("calculatorsText.ratio", { ratio: Object.values(recipe.parts).join(":") })}
             </Text>
           </View>
         ) : (
-          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>Enter a batch size to see the recipe.</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>{t("calculatorsText.enterBatch")}</Text>
         )}
       </View>
     </View>
@@ -357,13 +365,14 @@ function PottingMixCalc({ theme, metric }) {
 export const GardenCalculatorsSection = memo(function GardenCalculatorsSection({ theme, unitSystem }) {
   const metric = unitSystem === "metric";
   const unitKey = metric ? "metric" : "imperial";
+  const { t } = useTranslation();
   const [tab, setTab] = useState("fert");
 
   const TABS = [
-    { id: "fert", label: "🌾 Feed", color: "#8effab" },
-    { id: "water", label: "💧 Water", color: "#6bc7ff" },
-    { id: "timer", label: "⏱️ Timer", color: "#6bc7ff" },
-    { id: "mix", label: "🪴 Mix", color: "#bf7a12" },
+    { id: "fert", label: `🌾 ${t("calculatorsText.tabFeed")}`, color: "#8effab" },
+    { id: "water", label: `💧 ${t("calculatorsText.tabWater")}`, color: "#6bc7ff" },
+    { id: "timer", label: `⏱️ ${t("calculatorsText.tabTimer")}`, color: "#6bc7ff" },
+    { id: "mix", label: `🪴 ${t("calculatorsText.tabMix")}`, color: "#bf7a12" },
   ];
 
   return (

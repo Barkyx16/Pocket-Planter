@@ -8,8 +8,41 @@ import { IconText } from "./IconText";
 import { CompostTrackerSection } from "./CompostTrackerSection";
 import { PruningScheduleSection } from "./PruningScheduleSection";
 
+const EN_WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+// `label` is the English value persisted on each care entry (`actionLabel`) and
+// read by the CSV export and the timeline, so it stays stable; what the user
+// sees is `labelKey`, translated at render.
+// i18n-ignore
+const CARE_ACTIONS = [
+  { id: "compost", label: "Added Compost", labelKey: "soilCareText.actionCompost", icon: "🌿", color: "#8effab" },
+  { id: "repot", label: "Repotted", labelKey: "soilCareText.actionRepot", icon: "🪴", color: "#ffd86b" },
+  { id: "pests", label: "Treated Pests", labelKey: "soilCareText.actionPests", icon: "🐛", color: "#ff7b7b" },
+  { id: "ph", label: "pH Tested", labelKey: "soilCareText.actionPh", icon: "🧪", color: "#6bc7ff" },
+  { id: "fertilize", label: "Fertilized", labelKey: "soilCareText.actionFertilize", icon: "🌾", color: "#ff9f43" },
+  { id: "pruned", label: "Pruned", labelKey: "soilCareText.actionPruned", icon: "✂️", color: "#d8c8ff" },
+  { id: "mulch", label: "Mulched", labelKey: "soilCareText.actionMulch", icon: "🍂", color: "#bf7a12" },
+  { id: "transplant", label: "Transplanted", labelKey: "soilCareText.actionTransplant", icon: "🚚", color: "#5cff89" },
+  { id: "watered", label: "Deep Watered", labelKey: "soilCareText.actionWatered", icon: "💧", color: "#6bc7ff" },
+  { id: "staked", label: "Staked/Trellised", labelKey: "soilCareText.actionStaked", icon: "🪵", color: "#d7ebdc" },
+  { id: "harvest", label: "Harvested", labelKey: "soilCareText.actionHarvest", icon: "🎉", color: "#ffd86b" },
+  { id: "custom", label: "Custom Note", labelKey: "soilCareText.actionCustom", icon: "📝", color: "#8effab" },
+];
+
+/** Translation key for a stored care action id, or null for unknown ids. */
+export function careActionLabelKey(actionId) {
+  const action = CARE_ACTIONS.find((a) => a.id === actionId);
+  return action ? action.labelKey : null;
+}
+
 export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlants, careLog, setCareLog, onFertilizerLogged, onFertilized, onUndoToast }) {
-  const { t } = useTranslation();
+  const { t, tn, language } = useTranslation();
+  // Entries store the English label; show it in the current language when the
+  // action id is one we know, and as written otherwise.
+  const entryLabel = (entry) => {
+    const key = careActionLabelKey(entry.actionId);
+    return key ? t(key) : entry.actionLabel;
+  };
   const [selectedPlant, setSelectedPlant] = useState("Garden");
   const [customNote, setCustomNote] = useState("");
   const [showAddPanel, setShowAddPanel] = useState(false);
@@ -18,21 +51,6 @@ export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlant
   const [selectedDate, setSelectedDate] = useState(getTodayKey());
   const [filterPlant, setFilterPlant] = useState("All");
   const [todayOnly, setTodayOnly] = useState(false);
-
-  const CARE_ACTIONS = [
-    { id: "compost", label: "Added Compost", icon: "🌿", color: "#8effab" },
-    { id: "repot", label: "Repotted", icon: "🪴", color: "#ffd86b" },
-    { id: "pests", label: "Treated Pests", icon: "🐛", color: "#ff7b7b" },
-    { id: "ph", label: "pH Tested", icon: "🧪", color: "#6bc7ff" },
-    { id: "fertilize", label: "Fertilized", icon: "🌾", color: "#ff9f43" },
-    { id: "pruned", label: "Pruned", icon: "✂️", color: "#d8c8ff" },
-    { id: "mulch", label: "Mulched", icon: "🍂", color: "#bf7a12" },
-    { id: "transplant", label: "Transplanted", icon: "🚚", color: "#5cff89" },
-    { id: "watered", label: "Deep Watered", icon: "💧", color: "#6bc7ff" },
-    { id: "staked", label: "Staked/Trellised", icon: "🪵", color: "#d7ebdc" },
-    { id: "harvest", label: "Harvested", icon: "🎉", color: "#ffd86b" },
-    { id: "custom", label: "Custom Note", icon: "📝", color: "#8effab" },
-  ];
 
   const plantOptions = ["Garden", ...savedPlants];
 
@@ -64,14 +82,14 @@ export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlant
         t("alerts.fertilizedTitle"),
         t("alerts.fertilizedBody", { plant: selectedPlant }),
         [
-          { text: "No thanks", style: "cancel" },
-          { text: "In 7 days", onPress: () => onFertilizerLogged(selectedPlant, 7) },
-          { text: "In 14 days", onPress: () => onFertilizerLogged(selectedPlant, 14) },
-          { text: "In 30 days", onPress: () => onFertilizerLogged(selectedPlant, 30) },
+          { text: t("soilCareText.noThanks"), style: "cancel" },
+          { text: tn("soilCareText.inDays", 7), onPress: () => onFertilizerLogged(selectedPlant, 7) },
+          { text: tn("soilCareText.inDays", 14), onPress: () => onFertilizerLogged(selectedPlant, 14) },
+          { text: tn("soilCareText.inDays", 30), onPress: () => onFertilizerLogged(selectedPlant, 30) },
         ]
       );
     } else {
-      Alert.alert(t("alerts.careLoggedTitle"), t("alerts.careLoggedBody", { icon: action.icon, label: action.label, plant: selectedPlant }));
+      Alert.alert(t("alerts.careLoggedTitle"), t("alerts.careLoggedBody", { icon: action.icon, label: t(action.labelKey), plant: selectedPlant }));
     }
   };
 
@@ -81,7 +99,7 @@ export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlant
     tapHaptic("light");
     setCareLog((current) => current.filter((e) => e.id !== id));
     if (onUndoToast) {
-      onUndoToast("Care entry deleted", () => {
+      onUndoToast(t("soilCareText.entryDeleted"), () => {
         setCareLog((current) => [removed, ...current].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
       });
     }
@@ -98,6 +116,12 @@ export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlant
   month: "long",
   year: "numeric"
 });
+
+  // English keeps its two-letter day labels; other languages get Intl's short
+  // weekday names (1 Jan 2023 was a Sunday).
+  const weekdayLabels = language === "en"
+    ? EN_WEEKDAYS
+    : EN_WEEKDAYS.map((d, i) => formatDate(new Date(2023, 0, 1 + i), { weekday: "short" }) || d);
 
   const getEntriesForDate = (dateStr) => {
     return careLog.filter(e => e.date === dateStr && (filterPlant === "All" || e.plant === filterPlant));
@@ -142,7 +166,7 @@ export const SoilCareLogCard = memo(function SoilCareLogCard({ theme, savedPlant
     const then = new Date(lastEntry.createdAt); then.setHours(0, 0, 0, 0);
     const now = new Date(); now.setHours(0, 0, 0, 0);
     const days = Math.round((now - then) / 86400000);
-    return days <= 0 ? "today" : days === 1 ? "yesterday" : `${days} days ago`;
+    return days <= 0 ? t("soilCareText.today") : days === 1 ? t("soilCareText.yesterday") : tn("soilCareText.daysAgo", days);
   })();
 
 return (
@@ -176,7 +200,7 @@ return (
         <View style={{ marginBottom: 12, flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(107, 199, 255, 0.08)", borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.2)" }}>
           <Text style={{ fontSize: 16 }}>🕒</Text>
           <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "800", flex: 1, lineHeight: 17 }}>
-            {t("soilCareLog.last")} {lastEntry.actionIcon} {lastEntry.actionLabel} · {lastEntry.plant === "Garden" ? t("soilCareLog.wholeGarden") : lastEntry.plant} · {lastAgo}
+            {t("soilCareLog.last")} {lastEntry.actionIcon} {entryLabel(lastEntry)} · {lastEntry.plant === "Garden" ? t("soilCareLog.wholeGarden") : lastEntry.plant} · {lastAgo}
           </Text>
         </View>
       ) : null}
@@ -229,7 +253,7 @@ return (
               >
                 <Text style={styles.careLogActionIcon}>{action.icon}</Text>
                 <Text style={[styles.careLogActionLabel, { color: selectedAction === action.id ? action.color : "#d7ebdc" }]}>
-                  {action.label}
+                  {t(action.labelKey)}
                 </Text>
                 {selectedAction === action.id ? (
                   <View style={[styles.careLogActionCheck, { backgroundColor: action.color }]}>
@@ -328,8 +352,8 @@ return (
 
               {/* DAY LABELS */}
               <View style={styles.careLogCalendarDayLabels}>
-                {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(d => (
-                  <Text key={d} style={styles.careLogCalendarDayLabel}>{d}</Text>
+                {weekdayLabels.map((d, i) => (
+                  <Text key={i} style={styles.careLogCalendarDayLabel}>{d}</Text>
                 ))}
               </View>
 
@@ -393,7 +417,7 @@ return (
                       <View key={entry.id} style={[styles.careLogEntryRow, { borderColor: entry.actionColor + "40", backgroundColor: entry.actionColor + "0D" }]}>
                         <Text style={styles.careLogEntryIcon}>{entry.actionIcon}</Text>
                         <View style={{ flex: 1 }}>
-                          <Text style={styles.careLogEntryLabel}>{entry.actionLabel}</Text>
+                          <Text style={styles.careLogEntryLabel}>{entryLabel(entry)}</Text>
                           {entry.plant !== "Garden" ? (
                             <Text style={[styles.careLogEntryPlant, { color: entry.actionColor }]}>🌱 {entry.plant}</Text>
                           ) : (
@@ -426,7 +450,7 @@ return (
                   <View key={entry.id} style={[styles.careLogEntryRow, { borderColor: entry.actionColor + "40", backgroundColor: entry.actionColor + "0D" }]}>
                     <Text style={styles.careLogEntryIcon}>{entry.actionIcon}</Text>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.careLogEntryLabel}>{entry.actionLabel}</Text>
+                      <Text style={styles.careLogEntryLabel}>{entryLabel(entry)}</Text>
                       <Text style={[styles.careLogEntryPlant, { color: entry.actionColor }]}>
                         {entry.plant === "Garden" ? t("soilCareLog.wholeGarden2") : `🌱 ${entry.plant}`}
                       </Text>

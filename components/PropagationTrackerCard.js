@@ -2,17 +2,18 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { getDaysSince, getTodayKey, tapHaptic } from "../core";
-import { formatDate } from "../lib/i18n";
+import { formatDate, useTranslation } from "../lib/i18n";
 import { SkeletonSection } from "./Skeleton";
 import { touchSlop } from "../lib/a11y";
 
 export const PROPAGATION_STORAGE_KEY = "pp_propagation";
 
+// `id` is what gets stored; `label` / `tip` are translation keys.
 const METHODS = [
-  { id: "water", label: "💧 Water", tip: "Change the water weekly; pot up once roots are 2–3″ long." },
-  { id: "cutting", label: "✂️ Cutting", tip: "Keep the mix moist and humid; roots usually form in 2–4 weeks." },
-  { id: "division", label: "🍴 Division", tip: "Water in well and keep out of harsh sun while it settles." },
-  { id: "leaf", label: "🍃 Leaf", tip: "Let the leaf callus a day, then lay on soil; be patient — weeks to months." },
+  { id: "water", emoji: "💧", label: "propagationText.methodWater", tip: "propagationText.tipWater" },
+  { id: "cutting", emoji: "✂️", label: "propagationText.methodCutting", tip: "propagationText.tipCutting" },
+  { id: "division", emoji: "🍴", label: "propagationText.methodDivision", tip: "propagationText.tipDivision" },
+  { id: "leaf", emoji: "🍃", label: "propagationText.methodLeaf", tip: "propagationText.tipLeaf" },
 ];
 const methodOf = (id) => METHODS.find((m) => m.id === id) || METHODS[0];
 
@@ -21,6 +22,8 @@ const methodOf = (id) => METHODS.find((m) => m.id === id) || METHODS[0];
 const daysSince = (dateKey) => Math.max(0, getDaysSince(dateKey) ?? 0);
 
 export const PropagationTrackerCard = memo(function PropagationTrackerCard({ theme }) {
+  const { t } = useTranslation();
+  const methodLabel = (m) => `${m.emoji} ${t(m.label)}`;
   const [items, setItems] = useState([]); // { id, name, method, date, rooted }
   const [loaded, setLoaded] = useState(false);
   const [name, setName] = useState("");
@@ -58,7 +61,7 @@ export const PropagationTrackerCard = memo(function PropagationTrackerCard({ the
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        Turn one plant into many — track your cuttings and divisions until they root.
+        {t("propagationText.intro")}
       </Text>
 
       {/* Add */}
@@ -67,11 +70,11 @@ export const PropagationTrackerCard = memo(function PropagationTrackerCard({ the
           value={name}
           onChangeText={setName}
           onSubmitEditing={add}
-          placeholder="What are you propagating?"
+          placeholder={t("propagationText.namePlaceholder")}
           placeholderTextColor="#8fbf9d"
           style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontWeight: "700" }}
         />
-        <Pressable onPress={add} accessibilityRole="button" accessibilityLabel="Add propagation" style={{ backgroundColor: "#8effab", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
+        <Pressable onPress={add} accessibilityRole="button" accessibilityLabel={t("propagationText.addA11y")} style={{ backgroundColor: "#8effab", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
           <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>＋</Text>
         </Pressable>
       </View>
@@ -80,12 +83,12 @@ export const PropagationTrackerCard = memo(function PropagationTrackerCard({ the
           const active = method === m.id;
           return (
             <Pressable key={m.id} onPress={() => setMethod(m.id)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: active ? "#8effab" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#8effab" : "rgba(255,255,255,0.12)" }}>
-              <Text style={{ color: active ? "#07120b" : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{m.label}</Text>
+              <Text style={{ color: active ? "#07120b" : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{methodLabel(m)}</Text>
             </Pressable>
           );
         })}
       </View>
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", fontStyle: "italic", marginTop: 8 }}>{methodOf(method).tip}</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", fontStyle: "italic", marginTop: 8 }}>{t(methodOf(method).tip)}</Text>
 
       {/* List */}
       {items.length ? (
@@ -100,10 +103,10 @@ export const PropagationTrackerCard = memo(function PropagationTrackerCard({ the
                 <View style={{ flex: 1 }}>
                   <Text numberOfLines={1} style={{ color: theme.text, fontSize: 13, fontWeight: "800" }}>{i.name}</Text>
                   <Text style={{ color: i.rooted ? "#8effab" : theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 1 }}>
-                    {methodOf(i.method).label} · {i.rooted ? "rooted!" : `day ${d}`} · {formatDate(new Date(i.date + "T12:00:00"), { month: "short", day: "numeric" })}
+                    {methodLabel(methodOf(i.method))} · {i.rooted ? t("propagationText.rooted") : t("propagationText.day", { count: d })} · {formatDate(new Date(i.date + "T12:00:00"), { month: "short", day: "numeric" })}
                   </Text>
                 </View>
-                <Pressable onPress={() => remove(i.id)} hitSlop={touchSlop(13)} accessibilityRole="button" accessibilityLabel="Delete">
+                <Pressable onPress={() => remove(i.id)} hitSlop={touchSlop(13)} accessibilityRole="button" accessibilityLabel={t("common.delete")}>
                   <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>✕</Text>
                 </Pressable>
               </View>
@@ -113,7 +116,7 @@ export const PropagationTrackerCard = memo(function PropagationTrackerCard({ the
       ) : null}
       {rooting ? (
         <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 10, fontStyle: "italic" }}>
-          {rooting} still rooting — tap the circle when roots appear.
+          {t("propagationText.stillRooting", { count: rooting })}
         </Text>
       ) : null}
     </View>

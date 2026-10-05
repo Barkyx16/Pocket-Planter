@@ -17,7 +17,7 @@ const catalogCompanions = (info) =>
   Array.from(new Set(((info && info.excellent) || []).map(resolveCompanionName).filter(Boolean)));
 
 export const AreaPlannerMap = memo(function AreaPlannerMap({ theme, gardenAreas, savedPlants, wateredPlants, onAssignSlot, onClearSlot, onWaterArea, zone, weather, harvestTrackers, onOpenPlant, onPickPhoto, onDeleteArea, focusAreaId, focusNonce }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const [selectedAreaId, setSelectedAreaId] = useState(null);
   const [pickerSlot, setPickerSlot] = useState(null); // { areaId, slotId } while the plant picker is open
 
@@ -132,10 +132,10 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
     if (!valid.length) {
       const flowerBed = area?.kind === "flower";
       Alert.alert(
-        flowerBed ? "No flowers saved yet" : "Nothing to plant here",
+        flowerBed ? t("areaPlannerMapText.noFlowersTitle") : t("areaPlannerMapText.nothingToPlantTitle"),
         flowerBed
-          ? "This is a flower bed — save some flowers, then place them here."
-          : "Save a plant that suits this bed, then place it here. (Flowers can't go in a regular garden — plant those on the Flowers tab.)"
+          ? t("areaPlannerMapText.noFlowersBody")
+          : t("areaPlannerMapText.nothingToPlantBody")
       );
       return;
     }
@@ -193,7 +193,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
               )}
               <View style={{ flex: 1 }}>
                 <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>{area.name}</Text>
-               <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", marginTop: 2 }}>{areaPlantCount} planted</Text>
+               <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700", marginTop: 2 }}>{tn("areaPlannerMapText.planted", areaPlantCount)}</Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: areaHasConflict ? "rgba(255, 123, 123, 0.12)" : "rgba(92, 255, 137, 0.12)", borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderColor: areaHasConflict ? "rgba(255, 123, 123, 0.3)" : "rgba(92, 255, 137, 0.3)" }}>
                 <Text style={{ fontSize: 12 }}>{areaHasConflict ? "⚠️" : "✓"}</Text>
@@ -302,14 +302,14 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                   )}
                 </Pressable>
                 <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900", flex: 1 }}>
-                  {area.name} <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700" }}>· {areaPlants.length} planted</Text>
+                  {area.name} <Text style={{ color: "#8fbf9d", fontSize: 12, fontWeight: "700" }}>· {tn("areaPlannerMapText.planted", areaPlants.length)}</Text>
                 </Text>
                 </View>
               {areaPlants.length > 0 && onWaterArea ? (
                 <Pressable
                   onPress={() => onWaterArea(area.id)}
                   accessibilityRole="button"
-                  accessibilityLabel={`Water all plants in ${area.name}`}
+                  accessibilityLabel={t("areaPlannerMapText.a11yWaterAll", { name: area.name })}
                   style={{ backgroundColor: "rgba(107, 199, 255, 0.16)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.3)" }}
                 >
                   <IconText label={t("areaPlannerMap.waterBed")} style={{
@@ -334,14 +334,14 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                 }
               }
               const stats = [
-                { icon: "🌱", value: areaPlants.length, label: "plants", color: "#8effab" },
-                { icon: "💧", value: needWater, label: t("areaPlannerMap.needWater"), color: needWater > 0 ? "#6bc7ff" : "#8fbf9d" },
-                { icon: conflicts > 0 ? "⚠️" : "✓", value: conflicts, label: "conflicts", color: conflicts > 0 ? "#ff7b7b" : "#5cff89" },
+                { id: "plants", icon: "🌱", value: areaPlants.length, label: tn("areaPlannerMapText.statPlants", areaPlants.length), color: "#8effab" },
+                { id: "water", icon: "💧", value: needWater, label: t("areaPlannerMap.needWater"), color: needWater > 0 ? "#6bc7ff" : "#8fbf9d" },
+                { icon: conflicts > 0 ? "⚠️" : "✓", id: "conflicts", value: conflicts, label: tn("areaPlannerMapText.statConflicts", conflicts), color: conflicts > 0 ? "#ff7b7b" : "#5cff89" },
               ];
               return (
                 <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
                   {stats.map((s) => (
-                    <View key={s.label} style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
+                    <View key={s.id} style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 12, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}>
                       <Text style={{ fontSize: 12 }}>{s.icon}</Text>
                       <Text style={{ color: s.color, fontSize: 14, fontWeight: "900" }}>{s.value}</Text>
                       <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700" }}>{s.label}</Text>
@@ -380,7 +380,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                       </View>
                     )}
                     <Text numberOfLines={2} style={[styles.gardenSlotLabelV2, { color: plantName ? "#ffffff" : "#5cff89" }]}>
-                      {plantName || "Empty"}
+                      {plantName || t("areaPlannerMapText.empty")}
                     </Text>
                     {hasConflict ? <Text style={styles.gardenSlotWarningV2}>⚠</Text> : hasExcellent ? <Text style={styles.gardenSlotGoodV2}>✓</Text> : null}
                   </Pressable>
@@ -431,7 +431,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                           key={`${area.id}-pair-${a}-${b}`}
                           onPress={() => openPairPicker(a, b)}
                           accessibilityRole="button"
-                          accessibilityLabel={`View ${a} or ${b}`}
+                          accessibilityLabel={t("areaPlannerMapText.a11yViewEither", { a, b })}
                           style={{
                             flexDirection: "row",
                             alignItems: "center",
@@ -508,7 +508,7 @@ const bedPlants = Object.values(area?.plots || {}).map((p) => getPlantName(p)).f
                           key={`${area.id}-comp-${s.name}`}
                           onPress={() => openPairPicker(s.pairsWith, s.name)}
                           accessibilityRole="button"
-                          accessibilityLabel={`View ${s.pairsWith} or ${s.name}`}
+                          accessibilityLabel={t("areaPlannerMapText.a11yViewEither", { a: s.pairsWith, b: s.name })}
                           style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "rgba(92, 255, 137, 0.1)", borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
                         >
                           <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>

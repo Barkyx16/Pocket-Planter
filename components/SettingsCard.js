@@ -96,7 +96,7 @@ async function choosePlan(plan) {
         <View style={styles.premiumHeroStatRow}>
           <View style={styles.premiumHeroStat}>
             <Text style={styles.premiumHeroStatValue}>600+</Text>
-            <Text style={styles.premiumHeroStatLabel}>Plants</Text>
+            <Text style={styles.premiumHeroStatLabel}>{t("settingsCardText.plants")}</Text>
           </View>
           <View style={styles.premiumHeroStatDivider} />
           <View style={styles.premiumHeroStat}>
@@ -105,8 +105,8 @@ async function choosePlan(plan) {
           </View>
           <View style={styles.premiumHeroStatDivider} />
           <View style={styles.premiumHeroStat}>
-            <Text style={styles.premiumHeroStatValue}>Cancel</Text>
-            <Text style={styles.premiumHeroStatLabel}>Anytime</Text>
+            <Text style={styles.premiumHeroStatValue}>{t("settingsCardText.cancel")}</Text>
+            <Text style={styles.premiumHeroStatLabel}>{t("settingsCardText.anytime")}</Text>
           </View>
         </View>
       </View>
@@ -141,11 +141,11 @@ async function choosePlan(plan) {
           {[
             {
               plan: "Monthly",
-              badge: "POPULAR",
+              badge: t("settingsCardText.popular"),
               badgeBg: "#5cff89",
               badgeColor: "#07120b",
               price: "$2.99",
-              per: "/ month",
+              per: t("settingsCardText.perMonth"),
               savings: null,
             },
             {
@@ -154,7 +154,7 @@ async function choosePlan(plan) {
               badgeBg: "#ffd86b",
               badgeColor: "#3d2c00",
               price: "$24.99",
-              per: "/ year",
+              per: t("settingsCardText.perYear"),
               savings: t("premiumCard.savings"),
             },
           ].map(({ plan, badge, badgeBg, badgeColor, price, per, savings }) => {
@@ -187,7 +187,7 @@ async function choosePlan(plan) {
                 ) : null}
 
                 <Text style={[styles.premiumPlanOptionName, { color: isSelected ? "#5cff89" : "#ffffff" }]}>
-                  {plan}
+                  {plan === "Monthly" ? t("settingsCardText.planMonthly") : t("settingsCardText.planYearly")}
                 </Text>
 
                 <Text style={[styles.premiumPlanOptionPrice, { color: "#ffffff" }]}>
@@ -266,14 +266,14 @@ async function choosePlan(plan) {
       {/* TRUST BADGES */}
       <View style={[styles.premiumTrustRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
         {[
-          { icon: "🔒", label: "Secure" },
+          { icon: "🔒", label: t("settingsCardText.secure") },
           { icon: "↩️", label: t("settings.cancelAnytime") },
           { icon: "📱", label: "iOS" },
           { icon: "☁️", label: t("settings.cloudSync") },
-        ].map((t) => (
-          <View key={t.label} style={styles.premiumTrustTile}>
-            <Text style={styles.premiumTrustIcon}>{t.icon}</Text>
-            <Text style={styles.premiumTrustLabel}>{t.label}</Text>
+        ].map((badge) => (
+          <View key={badge.icon} style={styles.premiumTrustTile}>
+            <Text style={styles.premiumTrustIcon}>{badge.icon}</Text>
+            <Text style={styles.premiumTrustLabel}>{badge.label}</Text>
           </View>
         ))}
       </View>
@@ -322,7 +322,7 @@ async function choosePlan(plan) {
           return;
         }
         await Notifications.scheduleNotificationAsync({
-          content: { title: "🔔 Test Notification", body: "If you see this, notifications are firing correctly!", sound: true },
+          content: { title: `🔔 ${t("settingsCardText.testNotificationTitle")}`, body: t("settingsCardText.testNotificationBody"), sound: true },
           trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 5 },
         });
         Alert.alert(t("alerts.testScheduledTitle"), t("alerts.testScheduledBody"));
@@ -364,10 +364,10 @@ async function choosePlan(plan) {
         if (!__DEV__) return;
         setPremiumUnlocked(!premiumUnlocked);
         Alert.alert(
-          premiumUnlocked ? "Premium Disabled" : "Premium Unlocked 👑",
+          premiumUnlocked ? t("settingsCardText.premiumDisabledTitle") : `${t("settingsCardText.premiumUnlockedTitle")} 👑`,
           premiumUnlocked
-            ? "App is now in free mode. All locks are active."
-            : "Full app unlocked for testing. All premium features are now accessible."
+            ? t("settingsCardText.premiumDisabledBody")
+            : t("settingsCardText.premiumUnlockedBody")
         );
       }}
     >

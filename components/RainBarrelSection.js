@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
 import { tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
+import { useTranslation } from "../lib/i18n";
 
 export const RAIN_BARREL_STORAGE_KEY = "pp_rainBarrel";
 
@@ -15,6 +16,7 @@ const TYPICAL_DAILY_L = 19; // ~5 gal/day covers a modest bed + a few pots
 const DEFAULT = { capacityL: 208, levelL: 0 }; // 208 L ≈ a standard 55-gal barrel
 
 export const RainBarrelSection = memo(function RainBarrelSection({ theme, unitSystem }) {
+  const { t, tn } = useTranslation();
   const metric = unitSystem === "metric";
   const [data, setData] = useState(DEFAULT);
   const [loaded, setLoaded] = useState(false);
@@ -54,7 +56,10 @@ export const RainBarrelSection = memo(function RainBarrelSection({ theme, unitSy
     );
   }
 
-  const fmt = (l) => (metric ? `${Math.round(l)} L` : `${Math.round(l / L_PER_GAL)} gal`);
+  const fmt = (l) => (metric
+    ? t("rainBarrelText.liters", { amount: Math.round(l) })
+    : t("rainBarrelText.gallons", { amount: Math.round(l / L_PER_GAL) }));
+  const fmtShort = (amt) => t(metric ? "rainBarrelText.litersShort" : "rainBarrelText.gallonsShort", { amount: amt });
   const pct = data.capacityL ? Math.round((data.levelL / data.capacityL) * 100) : 0;
   const daysLeft = Math.floor(data.levelL / TYPICAL_DAILY_L);
   const fillColor = pct >= 60 ? "#6bc7ff" : pct >= 25 ? "#8effab" : "#ffd86b";
@@ -64,16 +69,16 @@ export const RainBarrelSection = memo(function RainBarrelSection({ theme, unitSy
   const drawOpts = metric ? [10, 20, 40] : [2, 5, 10];
   const toL = (displayAmt) => (metric ? displayAmt : displayAmt * L_PER_GAL);
   const capacityOpts = metric
-    ? [{ l: 150, label: "150 L" }, { l: 208, label: "208 L" }, { l: 300, label: "300 L" }, { l: 400, label: "400 L" }]
-    : [{ l: 50 * L_PER_GAL, label: "50 gal" }, { l: 55 * L_PER_GAL, label: "55 gal" }, { l: 65 * L_PER_GAL, label: "65 gal" }, { l: 100 * L_PER_GAL, label: "100 gal" }];
+    ? [150, 208, 300, 400].map((n) => ({ l: n, label: t("rainBarrelText.liters", { amount: n }) }))
+    : [50, 55, 65, 100].map((n) => ({ l: n * L_PER_GAL, label: t("rainBarrelText.gallons", { amount: n }) }));
 
   return (
     <View style={{ marginTop: 16, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 14 }}>
       <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 4 }}>
-        🛢️ RAIN BARREL
+        🛢️ {t("rainBarrelText.title")}
       </Text>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Track your collected rainwater and how long it'll keep the garden going.
+        {t("rainBarrelText.intro")}
       </Text>
 
       {/* LEVEL DISPLAY */}
@@ -85,44 +90,44 @@ export const RainBarrelSection = memo(function RainBarrelSection({ theme, unitSy
         <View style={{ flex: 1 }}>
           <Text style={{ color: fillColor, fontSize: 24, fontWeight: "900" }}>{fmt(data.levelL)}</Text>
           <Text style={{ color: theme.text, fontSize: 12, fontWeight: "800" }}>
-            of {fmt(data.capacityL)} · {pct}% full
+            {t("rainBarrelText.ofCapacity", { capacity: fmt(data.capacityL), percent: pct })}
           </Text>
           <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 4 }}>
             {data.levelL <= 0
-              ? "Empty — waiting on rain."
-              : `≈ ${daysLeft} day${daysLeft === 1 ? "" : "s"} of watering left`}
+              ? t("rainBarrelText.emptyWaiting")
+              : tn("rainBarrelText.daysLeft", daysLeft)}
           </Text>
         </View>
       </View>
 
       {/* FILL (rain collected) */}
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>IT RAINED — ADD WATER</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("rainBarrelText.addHeading")}</Text>
       <View style={{ flexDirection: "row", gap: 6 }}>
         {fillOpts.map((amt) => (
           <Pressable key={amt} onPress={() => changeLevel(toL(amt))} style={{ flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12, backgroundColor: "rgba(107,199,255,0.12)", borderWidth: 1, borderColor: "rgba(107,199,255,0.26)" }}>
-            <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900" }}>+{amt}{metric ? "L" : "gal"}</Text>
+            <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900" }}>+{fmtShort(amt)}</Text>
           </Pressable>
         ))}
         <Pressable onPress={topUp} style={{ alignItems: "center", justifyContent: "center", paddingHorizontal: 12, borderRadius: 12, backgroundColor: "rgba(107,199,255,0.12)", borderWidth: 1, borderColor: "rgba(107,199,255,0.26)" }}>
-          <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900" }}>Full</Text>
+          <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900" }}>{t("rainBarrelText.full")}</Text>
         </Pressable>
       </View>
 
       {/* DRAW (watering used) */}
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 10, marginBottom: 6 }}>WATERED — USED WATER</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 10, marginBottom: 6 }}>{t("rainBarrelText.useHeading")}</Text>
       <View style={{ flexDirection: "row", gap: 6 }}>
         {drawOpts.map((amt) => (
           <Pressable key={amt} onPress={() => changeLevel(-toL(amt))} style={{ flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12, backgroundColor: "rgba(255,159,67,0.1)", borderWidth: 1, borderColor: "rgba(255,159,67,0.24)" }}>
-            <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "900" }}>−{amt}{metric ? "L" : "gal"}</Text>
+            <Text style={{ color: "#ff9f43", fontSize: 12, fontWeight: "900" }}>−{fmtShort(amt)}</Text>
           </Pressable>
         ))}
         <Pressable onPress={empty} style={{ alignItems: "center", justifyContent: "center", paddingHorizontal: 12, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
-          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "900" }}>Empty</Text>
+          <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{t("rainBarrelText.empty")}</Text>
         </Pressable>
       </View>
 
       {/* CAPACITY */}
-      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>BARREL SIZE</Text>
+      <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6 }}>{t("rainBarrelText.sizeHeading")}</Text>
       <View style={{ flexDirection: "row", gap: 6 }}>
         {capacityOpts.map((opt) => {
           const active = Math.round(data.capacityL) === Math.round(opt.l);

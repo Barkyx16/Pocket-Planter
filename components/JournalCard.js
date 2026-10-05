@@ -1,10 +1,16 @@
 import { memo } from "react";
 import { useState } from "react";
 import { Alert, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { formatDate, useTranslation } from "../lib/i18n";
+import { GROWTH_STAGES, formatDate, useTranslation } from "../lib/i18n";
 import { styles } from "../styles";
 import { IconText } from "./IconText";
 import { foldForSearch } from "../core";
+
+// Colors and caption-key ids for each canonical stage, aligned with GROWTH_STAGES
+// (Seedling, Leaf Growth, Flowering, Fruit Forming, Harvest Ready). Stored stage
+// values stay English; only the labels are translated.
+const STAGE_COLORS = ["#8effab", "#5cff89", "#ffd86b", "#ff9f43", "#ff7b7b"];
+const STAGE_CAPTION_IDS = ["seedling", "leaf", "flowering", "fruit", "harvest"];
 
 export const JournalCard = memo(function JournalCard({ theme, journalEntries, onAddGeneralPhoto, onDeleteEntry, uploadingPhoto }) {
   const { t, tn, growthStageLabel, moodLabel } = useTranslation();
@@ -18,12 +24,13 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
   const [showCaptionSuggestions, setShowCaptionSuggestions] = useState(null);
   const [activeTab, setActiveTab] = useState("timeline");
 
-  const uniquePlants = ["All", ...Array.from(new Set(journalEntries.map(e => e.plantName || "Garden Update").filter(Boolean)))];
-  const uniqueStages = ["All", "Seedling", "Leaf Growth", "Flowering", "Fruit Forming", "Harvest Ready"];
+  const gardenUpdateLabel = t("journal.gardenUpdate");
+  const uniquePlants = ["All", ...Array.from(new Set(journalEntries.map(e => e.plantName || gardenUpdateLabel).filter(Boolean)))];
+  const uniqueStages = ["All", ...GROWTH_STAGES];
 
   const filteredEntries = journalEntries.filter(entry => {
     const matchesSearch = !searchQuery || foldForSearch(entry.plantName).includes(foldForSearch(searchQuery)) || foldForSearch(entry.caption).includes(foldForSearch(searchQuery));
-    const matchesPlant = filterPlant === "All" || (entry.plantName || "Garden Update") === filterPlant;
+    const matchesPlant = filterPlant === "All" || (entry.plantName || gardenUpdateLabel) === filterPlant;
     const matchesStage = filterStage === "All" || entry.growthStage === filterStage;
     return matchesSearch && matchesPlant && matchesStage;
   });
@@ -73,10 +80,10 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
   const maxCount = Math.max(...growthChartData.map(d => d.count), 1);
 
   // Stage breakdown
-  const stageBreakdown = ["Seedling", "Leaf Growth", "Flowering", "Fruit Forming", "Harvest Ready"].map(stage => ({
+  const stageBreakdown = GROWTH_STAGES.map((stage, i) => ({
     stage,
     count: journalEntries.filter(e => e.growthStage === stage).length,
-    color: { "Seedling": "#8effab", "Leaf Growth": "#5cff89", "Flowering": "#ffd86b", "Fruit Forming": "#ff9f43", "Harvest Ready": "#ff7b7b" }[stage],
+    color: STAGE_COLORS[i],
   }));
 
   const journalAchievements = [
@@ -84,53 +91,26 @@ export const JournalCard = memo(function JournalCard({ theme, journalEntries, on
     { icon: "📸", title: t("journal.badgePhotoKeeper"), unlocked: journalEntries.length >= 3 },
     { icon: "📖", title: t("journal.badgeGardenStory"), unlocked: journalEntries.length >= 5 },
     { icon: "🍅", title: t("journal.badgeHarvestHero"), unlocked: harvestEntries > 0 },
-    { icon: "🌿", title: "Botanist", unlocked: plantsDocumented >= 5 },
+    { icon: "🌿", title: t("journalText.badgeBotanist"), unlocked: plantsDocumented >= 5 },
     { icon: "📅", title: t("journal.badgeMonthlyGrower"), unlocked: thisMonthEntries >= 3 },
   ];
 
   const getGrowthProgress = (stage) => {
-    const stages = ["Seedling", "Leaf Growth", "Flowering", "Fruit Forming", "Harvest Ready"];
-    const index = stages.indexOf(stage);
-    return index === -1 ? 0 : (index + 1) / stages.length;
+    const index = GROWTH_STAGES.indexOf(stage);
+    return index === -1 ? 0 : (index + 1) / GROWTH_STAGES.length;
   };
 
   const getStageColor = (stage) => {
-    const colors = { "Seedling": "#8effab", "Leaf Growth": "#5cff89", "Flowering": "#ffd86b", "Fruit Forming": "#ff9f43", "Harvest Ready": "#ff7b7b" };
-    return colors[stage] || "#5cff89";
+    const index = GROWTH_STAGES.indexOf(stage);
+    return index === -1 ? "#5cff89" : STAGE_COLORS[index];
   };
 
   const getSmartCaptions = (entry) => {
-    const plant = entry.plantName || "plant";
-    const stage = entry.growthStage || "Seedling";
-    const mood = entry.mood || "";
-    const suggestions = {
-      "Seedling": [
-        `${plant} is just getting started 🌱 Day ${entry.daysSincePlanting || 1} and already showing signs of life!`,
-        `Tiny but mighty 💚 Watching ${plant} push through the soil is pure magic.`,
-        `Day ${entry.daysSincePlanting || 1} — ${plant} seedling looking healthy and ready to grow!`,
-      ],
-      "Leaf Growth": [
-        `${plant} is really taking off now 🌿 The leaf growth this week has been incredible.`,
-        `Green and thriving! ${plant} is in full leaf growth mode 💪`,
-        `Look at those leaves! ${plant} is loving the conditions right now.`,
-      ],
-      "Flowering": [
-        `${plant} is flowering! 🌸 This is the moment I've been waiting for.`,
-        `Bloom time! ${plant} is showing off its beautiful flowers today.`,
-        `Flowers on the ${plant} — pollinators are going to love this 🐝`,
-      ],
-      "Fruit Forming": [
-        `Fruit is forming on the ${plant}! 🍅 Almost there — can't wait for harvest!`,
-        `${plant} is putting all its energy into this fruit. Looking plump and perfect!`,
-        `Day ${entry.daysSincePlanting || 1} — the ${plant} fruit is coming along beautifully.`,
-      ],
-      "Harvest Ready": [
-        `Harvest day! 🎉 ${plant} has been an incredible grower this season.`,
-        `It's time! ${plant} is ready to harvest and it looks absolutely perfect.`,
-        `From seed to harvest — ${plant} has been an amazing journey 🌱➡️🍽️`,
-      ],
-    };
-    return suggestions[stage] || suggestions["Seedling"];
+    const plant = entry.plantName || t("journalText.plantFallback");
+    const day = entry.daysSincePlanting || 1;
+    const index = GROWTH_STAGES.indexOf(entry.growthStage || "Seedling");
+    const id = STAGE_CAPTION_IDS[index === -1 ? 0 : index];
+    return [1, 2, 3].map((n) => t(`journalText.caption_${id}${n}`, { plant, day }));
   };
 
   const sharePhoto = async (imageUri) => {
@@ -175,7 +155,7 @@ return (
           <View style={[styles.journalDashTile, { borderColor: "rgba(255, 107, 107, 0.24)" }]}>
             <Text style={styles.journalDashTileIcon}>🚜</Text>
             <Text style={styles.journalDashTileValue}>{harvestEntries}</Text>
-            <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>Harvests</Text>
+            <Text style={[styles.journalDashTileLabel, { color: theme.secondaryText }]}>{t("journalText.harvests")}</Text>
           </View>
         </View>
       ) : null}
@@ -202,7 +182,7 @@ return (
           </View>
           {thisWeekEntries > 0 ? (
             <View style={styles.journalGrowthChartBadge}>
-              <Text style={styles.journalGrowthChartBadgeText}>{tn("journal.photosThisWeek", thisWeekEntries)}</Text>
+              <Text style={styles.journalGrowthChartBadgeText}>{tn("journalText.photosThisWeek", thisWeekEntries)}</Text>
             </View>
           ) : null}
         </View>
@@ -226,7 +206,7 @@ return (
               <View key={i} style={styles.journalStageLegendItem}>
                 <View style={[styles.journalStageLegendDot, { backgroundColor: s.color }]} />
                 <Text style={[styles.journalStageLegendText, { color: theme.secondaryText }]}>
-                  {s.stage.split(" ")[0]} ({s.count})
+                  {growthStageLabel(s.stage).split(" ")[0]} ({s.count})
                 </Text>
               </View>
             ))}
@@ -364,7 +344,7 @@ return (
           {/* ── RESULTS COUNT ── */}
           {(searchQuery || filterPlant !== "All" || filterStage !== "All") ? (
             <View style={styles.journalResultsRow}>
-              <Text style={styles.journalResultsText}>{filteredEntries.length} {filteredEntries.length === 1 ? "entry" : "entries"} found</Text>
+              <Text style={styles.journalResultsText}>{tn("journalText.entriesFound", filteredEntries.length)}</Text>
               <Pressable onPress={() => { setSearchQuery(""); setFilterPlant("All"); setFilterStage("All"); }}>
                 <Text style={styles.journalResultsClear}>{t("journal.clearFilters")}</Text>
               </Pressable>
@@ -391,7 +371,7 @@ return (
                     <View style={styles.journalPlantGroupHeader}>
                       <Text style={styles.journalPlantGroupName}>{plantName}</Text>
                       <View style={styles.journalPlantGroupBadge}>
-                        <Text style={styles.journalPlantGroupBadgeText}>{plantEntries.length} photo{plantEntries.length === 1 ? "" : "s"}</Text>
+                        <Text style={styles.journalPlantGroupBadgeText}>{tn("journalText.photoCount", plantEntries.length)}</Text>
                       </View>
                     </View>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingVertical: 8 }}>
@@ -564,7 +544,7 @@ return (
                                         <Text style={styles.journalCaptionSaveBtnText}>{t("journal.saveCaption")}</Text>
                                       </Pressable>
                                       <Pressable onPress={() => setEditingCaption(null)} style={styles.journalCaptionCancelBtn}>
-                                        <Text style={styles.journalCaptionCancelBtnText}>Cancel</Text>
+                                        <Text style={styles.journalCaptionCancelBtnText}>{t("journalText.cancel")}</Text>
                                       </Pressable>
                                     </View>
                                   </View>

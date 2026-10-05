@@ -2,24 +2,26 @@ import { memo, useState } from "react";
 import { Alert, Platform, Pressable, Share, Text, View } from "react-native";
 import * as Calendar from "expo-calendar";
 import { tapHaptic } from "../core";
-import { t } from "../lib/i18n";
+import { formatDate, formatTime, useTranslation } from "../lib/i18n";
 
 // Turns the garden's recurring chores into real calendar events. Uses
 // expo-calendar to write straight to the device calendar, and falls back to a
 // shareable .ics file so it also works in environments where calendar write
 // access isn't available (e.g. Expo Go).
 
+// `titleKey` / `labelKey` are translation keys, resolved at render (the event
+// is written in the language the user is using when they add it).
 const TASKS = [
-  { id: "water", title: "🌿 Water the garden", color: "#6bc7ff" },
-  { id: "fertilize", title: "🌾 Fertilize the garden", color: "#ffd86b" },
-  { id: "pests", title: "🐛 Check for pests", color: "#ff9f43" },
+  { id: "water", emoji: "🌿", titleKey: "calendarExportText.taskWater", color: "#6bc7ff" },
+  { id: "fertilize", emoji: "🌾", titleKey: "calendarExportText.taskFertilize", color: "#ffd86b" },
+  { id: "pests", emoji: "🐛", titleKey: "calendarExportText.taskPests", color: "#ff9f43" },
 ];
 
 const FREQS = [
-  { id: "d1", label: "Daily", freq: "DAILY", interval: 1 },
-  { id: "d2", label: "Every 2 days", freq: "DAILY", interval: 2 },
-  { id: "d3", label: "Every 3 days", freq: "DAILY", interval: 3 },
-  { id: "w1", label: "Weekly", freq: "WEEKLY", interval: 1 },
+  { id: "d1", labelKey: "calendarExportText.freqDaily", freq: "DAILY", interval: 1 },
+  { id: "d2", labelKey: "calendarExportText.freqEvery2", freq: "DAILY", interval: 2 },
+  { id: "d3", labelKey: "calendarExportText.freqEvery3", freq: "DAILY", interval: 3 },
+  { id: "w1", labelKey: "calendarExportText.freqWeekly", freq: "WEEKLY", interval: 1 },
 ];
 
 // Best-effort device timezone so recurring events land at the right local time
@@ -40,7 +42,8 @@ function nextEightAM() {
 function buildICS(title, freqObj, start) {
   const dt = (d) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
   const end = new Date(start.getTime() + 15 * 60000);
-  return [
+  // i18n-ignore
+  const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     "PRODID:-//Pocket Planter//Garden//EN",
@@ -59,7 +62,8 @@ function buildICS(title, freqObj, start) {
     "END:VALARM",
     "END:VEVENT",
     "END:VCALENDAR",
-  ].join("\r\n");
+  ];
+  return lines.join("\r\n");
 }
 
 async function getWritableCalendarId() {
@@ -75,9 +79,13 @@ async function getWritableCalendarId() {
 }
 
 export const CalendarExportSection = memo(function CalendarExportSection({ theme }) {
+  const { t } = useTranslation();
   const [task, setTask] = useState(TASKS[0]);
   const [freq, setFreq] = useState(FREQS[1]);
   const [busy, setBusy] = useState(false);
+
+  const taskTitle = (tk) => `${tk.emoji} ${t(tk.titleKey)}`;
+  const freqLabel = (f) => t(f.labelKey);
 
   const addToCalendar = async () => {
     if (busy) return;
@@ -99,7 +107,7 @@ export const CalendarExportSection = memo(function CalendarExportSection({ theme
       }
       const start = nextEightAM();
       await Calendar.createEventAsync(calId, {
-        title: task.title,
+        title: taskTitle(task),
         startDate: start,
         endDate: new Date(start.getTime() + 15 * 60000),
         timeZone: deviceTimeZone(),
@@ -108,9 +116,9 @@ export const CalendarExportSection = memo(function CalendarExportSection({ theme
           frequency: freq.freq === "WEEKLY" ? Calendar.Frequency.WEEKLY : Calendar.Frequency.DAILY,
           interval: freq.interval,
         },
-        notes: "Added by Pocket Planter 🌿",
+        notes: `${t("calendarExportText.eventNotes")} 🌿`,
       });
-      Alert.alert(t("alerts.addedToCalendarTitle"), t("alerts.addedToCalendarBody", { task: task.title, freq: freq.label.toLowerCase(), date: start.toLocaleDateString() }));
+      Alert.alert(t("alerts.addedToCalendarTitle"), t("alerts.addedToCalendarBody", { task: taskTitle(task), freq: freqLabel(freq).toLowerCase(), date: formatDate(start) }));
     } catch (e) {
       Alert.alert(t("alerts.calendarFailedTitle"), t("alerts.calendarFailedBody"));
     } finally {
@@ -121,18 +129,18 @@ export const CalendarExportSection = memo(function CalendarExportSection({ theme
   const shareIcs = async () => {
     try {
       tapHaptic("light");
-      const ics = buildICS(task.title, freq, nextEightAM());
-      await Share.share({ title: `${task.title} (Pocket Planter)`, message: ics });
+      const ics = buildICS(taskTitle(task), freq, nextEightAM());
+      await Share.share({ title: t("calendarExportText.shareTitle", { task: taskTitle(task) }), message: ics });
     } catch (e) { /* cancelled */ }
   };
 
   return (
     <View style={{ marginTop: 20, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 18 }}>
       <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 8 }}>
-        📅 ADD TO CALENDAR
+        📅 {t("calendarExportText.title")}
       </Text>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Put a recurring garden reminder on your real calendar.
+        {t("calendarExportText.intro")}
       </Text>
 
       {/* Task picker */}
@@ -141,7 +149,7 @@ export const CalendarExportSection = memo(function CalendarExportSection({ theme
           const active = task.id === tk.id;
           return (
             <Pressable key={tk.id} onPress={() => setTask(tk)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? tk.color + "26" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? tk.color : "rgba(255,255,255,0.1)" }}>
-              <Text style={{ color: active ? tk.color : theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{tk.title}</Text>
+              <Text style={{ color: active ? tk.color : theme.secondaryText, fontSize: 12, fontWeight: "800" }}>{taskTitle(tk)}</Text>
             </Pressable>
           );
         })}
@@ -153,20 +161,20 @@ export const CalendarExportSection = memo(function CalendarExportSection({ theme
           const active = freq.id === f.id;
           return (
             <Pressable key={f.id} onPress={() => setFreq(f)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? "#6bc7ff" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: active ? "#6bc7ff" : "rgba(255,255,255,0.1)" }}>
-              <Text style={{ color: active ? "#07120b" : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{f.label}</Text>
+              <Text style={{ color: active ? "#07120b" : theme.secondaryText, fontSize: 12, fontWeight: "900" }}>{freqLabel(f)}</Text>
             </Pressable>
           );
         })}
       </View>
 
       <Pressable onPress={addToCalendar} disabled={busy} style={{ marginTop: 12, backgroundColor: busy ? "rgba(92,255,137,0.4)" : "#5cff89", borderRadius: 12, paddingVertical: 13, alignItems: "center" }}>
-        <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{busy ? "Adding…" : "Add to device calendar"}</Text>
+        <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>{busy ? t("calendarExportText.adding") : t("calendarExportText.addToDevice")}</Text>
       </Pressable>
       <Pressable onPress={shareIcs} style={{ marginTop: 8, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, paddingVertical: 12, alignItems: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }}>
-        <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>Share as .ics file</Text>
+        <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>{t("calendarExportText.shareIcs")}</Text>
       </Pressable>
       <Text style={{ color: theme.secondaryText, fontSize: 10, fontWeight: "700", marginTop: 8, fontStyle: "italic" }}>
-        Reminders start at 8:00 AM. The .ics file works with any calendar app.
+        {t("calendarExportText.footnote", { time: formatTime(8, 0) })}
       </Text>
     </View>
   );

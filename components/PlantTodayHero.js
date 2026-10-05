@@ -5,7 +5,7 @@ import { FROST_THRESHOLD_F, HEAT_THRESHOLD_F, getHarvestCountdown, getPlantDiffi
 import { useTranslation } from "../lib/i18n";
 
 export const PlantTodayHero = memo(function PlantTodayHero({ theme, monthlySuggestions, compatiblePlants, savedPlants = [], zone, weather, onOpen }) {
-  const { t } = useTranslation();
+  const { t, language, difficultyLabel, plantTypeLabel } = useTranslation();
   const basePool = monthlySuggestions.length > 0 ? monthlySuggestions : compatiblePlants;
   const unsavedPool = basePool.filter((p) => !savedPlants.includes(p.name));
   const plantPool = unsavedPool.length > 0 ? unsavedPool : basePool;
@@ -29,15 +29,14 @@ export const PlantTodayHero = memo(function PlantTodayHero({ theme, monthlySugge
 
   const getWhyNow = () => {
     const seasonLabel = getPlantSeasonLabel(plant, zone);
-    if (weather?.minTempF <= FROST_THRESHOLD_F) return "Start it indoors now — frost is in the forecast, so it'll be ready to transplant once nights warm up.";
-    if (weather?.maxTempF >= HEAT_THRESHOLD_F && difficulty.label !== "Hard") return `It can handle the current heat — plant early morning and water deeply to get it established.`;
-    if (seasonLabel === "Plant now") return `This is a prime planting window for ${type.toLowerCase()} in Zone ${zone || "your area"} right now.`;
-    if (difficulty.label === "Easy") return `An easy, forgiving grower — a great low-effort pick to add to your garden this week.`;
-    return `A strong seasonal match for Zone ${zone || "your area"} worth planning into your garden this week.`;
-  };
-
-  const getDayLabel = () => {
-    return "This Week";
+    if (weather?.minTempF <= FROST_THRESHOLD_F) return t("plantTodayHeroText.whyFrost");
+    if (weather?.maxTempF >= HEAT_THRESHOLD_F && difficulty.label !== "Hard") return t("plantTodayHeroText.whyHeat");
+    if (seasonLabel === "Plant now") {
+      const typeName = language === "de" ? plantTypeLabel(type) : plantTypeLabel(type).toLowerCase();
+      return zone ? t("plantTodayHeroText.whyPrimeZone", { type: typeName, zone }) : t("plantTodayHeroText.whyPrime", { type: typeName });
+    }
+    if (difficulty.label === "Easy") return t("plantTodayHeroText.whyEasy");
+    return zone ? t("plantTodayHeroText.whyMatchZone", { zone }) : t("plantTodayHeroText.whyMatch");
   };
 
 return (
@@ -50,13 +49,13 @@ return (
         </Text>
         <View style={styles.plantTodayTagRow}>
           <View style={styles.plantTodayTag}>
-            <Text style={styles.plantTodayTagText}>{difficulty.icon} {difficulty.label}</Text>
+            <Text style={styles.plantTodayTagText}>{difficulty.icon} {difficultyLabel(difficulty).label}</Text>
           </View>
           <View style={styles.plantTodayTag}>
             <Text style={styles.plantTodayTagText}>🚜 {harvest}</Text>
           </View>
           <View style={styles.plantTodayTag}>
-            <Text style={styles.plantTodayTagText}>🌿 {type}</Text>
+            <Text style={styles.plantTodayTagText}>🌿 {plantTypeLabel(type)}</Text>
           </View>
         </View>
         <Text style={styles.plantTodayButtonText}>{t("plantTodayHero.viewCareGuide")}</Text>

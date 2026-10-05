@@ -8,17 +8,20 @@ import { useTranslation } from "../lib/i18n";
 
 const findItem = (name) => produceData.find((p) => p.name.toLowerCase() === String(name).toLowerCase());
 
+// `name` is a plant name (matched against produceData, never translated);
+// `attracts` and `note` are translation keys, resolved at render.
+// i18n-ignore
 const POLLINATOR_PLANTS = [
-  { name: "Marigold", icon: "🌼", attracts: "Bees, hoverflies", note: "Also repels aphids & nematodes — great veggie companion." },
-  { name: "Lavender", icon: "💜", attracts: "Bees, butterflies", note: "Drought-tough perennial that blooms for months." },
-  { name: "Borage", icon: "💙", attracts: "Bees", note: "A bee magnet that also improves tomato & strawberry growth." },
-  { name: "Sunflower", icon: "🌻", attracts: "Bees, birds", note: "Pollen powerhouse; seeds feed birds in fall." },
-  { name: "Zinnia", icon: "🌸", attracts: "Butterflies, bees", note: "Easy, colorful, and blooms all summer." },
-  { name: "Bee Balm", icon: "🌺", attracts: "Bees, hummingbirds", note: "Native perennial loved by pollinators of all kinds." },
-  { name: "Cosmos", icon: "🌷", attracts: "Bees, lacewings", note: "Airy blooms that draw pest-eating beneficials too." },
-  { name: "Calendula", icon: "🧡", attracts: "Hoverflies, bees", note: "Hoverfly larvae devour aphids — a natural pest control." },
-  { name: "Dill", icon: "🌿", attracts: "Lacewings, wasps", note: "Lets it flower to draw aphid-hunting beneficial insects." },
-  { name: "Yarrow", icon: "🤍", attracts: "Ladybugs, lacewings", note: "Insectary plant that hosts a small army of pest predators." },
+  { name: "Marigold", icon: "🌼", attracts: "pollinatorText.marigoldAttracts", note: "pollinatorText.marigoldNote" },
+  { name: "Lavender", icon: "💜", attracts: "pollinatorText.lavenderAttracts", note: "pollinatorText.lavenderNote" },
+  { name: "Borage", icon: "💙", attracts: "pollinatorText.borageAttracts", note: "pollinatorText.borageNote" },
+  { name: "Sunflower", icon: "🌻", attracts: "pollinatorText.sunflowerAttracts", note: "pollinatorText.sunflowerNote" },
+  { name: "Zinnia", icon: "🌸", attracts: "pollinatorText.zinniaAttracts", note: "pollinatorText.zinniaNote" },
+  { name: "Bee Balm", icon: "🌺", attracts: "pollinatorText.beeBalmAttracts", note: "pollinatorText.beeBalmNote" },
+  { name: "Cosmos", icon: "🌷", attracts: "pollinatorText.cosmosAttracts", note: "pollinatorText.cosmosNote" },
+  { name: "Calendula", icon: "🧡", attracts: "pollinatorText.calendulaAttracts", note: "pollinatorText.calendulaNote" },
+  { name: "Dill", icon: "🌿", attracts: "pollinatorText.dillAttracts", note: "pollinatorText.dillNote" },
+  { name: "Yarrow", icon: "🤍", attracts: "pollinatorText.yarrowAttracts", note: "pollinatorText.yarrowNote" },
 ];
 
 export const PollinatorPlannerCard = memo(function PollinatorPlannerCard({ theme, savedPlants, onOpenPlant }) {
@@ -65,9 +68,9 @@ export const PollinatorPlannerCard = memo(function PollinatorPlannerCard({ theme
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                   <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{p.name}</Text>
-                  <Text style={{ color: "#ffd86b", fontSize: 10, fontWeight: "800" }}>{p.attracts}</Text>
+                  <Text style={{ color: "#ffd86b", fontSize: 10, fontWeight: "800" }}>{t(p.attracts)}</Text>
                 </View>
-                <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 16, marginTop: 2 }}>{p.note}</Text>
+                <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 16, marginTop: 2 }}>{t(p.note)}</Text>
               </View>
             </Pressable>
           );

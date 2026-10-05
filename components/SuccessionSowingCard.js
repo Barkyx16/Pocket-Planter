@@ -23,9 +23,9 @@ export const SuccessionSowingCard = memo(function SuccessionSowingCard({ theme, 
   if (!rows.length) return null;
 
   const STATUS = {
-    due: { color: "#5cff89", icon: "🌱", label: "Sow again now" },
-    start: { color: "#6bc7ff", icon: "✨", label: "Start a first sowing" },
-    waiting: { color: "#8fbf9d", icon: "⏳", label: "On schedule" },
+    due: { color: "#5cff89", icon: "🌱", label: t("successionSowingText.statusDue") },
+    start: { color: "#6bc7ff", icon: "✨", label: t("successionSowingText.statusStart") },
+    waiting: { color: "#8fbf9d", icon: "⏳", label: t("successionSowingText.statusWaiting") },
   };
 
   return (
@@ -41,10 +41,10 @@ export const SuccessionSowingCard = memo(function SuccessionSowingCard({ theme, 
           const actionable = info.status !== "waiting";
           const detail =
             info.status === "due"
-              ? `Last sown ${info.daysSince}d ago · every ~${info.interval}d`
+              ? t("successionSowingText.detailDue", { days: info.daysSince, interval: info.interval })
               : info.status === "waiting"
-              ? `Next round in ~${info.daysUntil}d · every ~${info.interval}d`
-              : `Recommended every ~${info.interval}d in season`;
+              ? t("successionSowingText.detailWaiting", { days: info.daysUntil, interval: info.interval })
+              : t("successionSowingText.detailStart", { interval: info.interval });
           return (
             <View
               key={`succ-${name}`}
@@ -63,10 +63,10 @@ export const SuccessionSowingCard = memo(function SuccessionSowingCard({ theme, 
               <Pressable
                 onPress={() => onSow(name)}
                 accessibilityRole="button"
-                accessibilityLabel={`Log a sowing of ${name} today`}
+                accessibilityLabel={t("successionSowingText.a11ySow", { plant: name })}
                 style={{ backgroundColor: actionable ? s.color : "transparent", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10, borderWidth: 1, borderColor: actionable ? s.color : `${s.color}55` }}
               >
-                <Text style={{ color: actionable ? "#07120b" : s.color, fontSize: 12, fontWeight: "800" }}>{actionable ? "Sow" : t("successionSowing.sowAnyway")}</Text>
+                <Text style={{ color: actionable ? "#07120b" : s.color, fontSize: 12, fontWeight: "800" }}>{actionable ? t("successionSowingText.sow") : t("successionSowing.sowAnyway")}</Text>
               </Pressable>
             </View>
           );

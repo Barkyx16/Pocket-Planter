@@ -5,7 +5,7 @@ import { RARITY_STYLES, getHarvestCountdown, getLastWateredText, getNextWaterInf
 import { useTranslation } from "../lib/i18n";
 
 export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone, theme, isSaved, isCompared, isFollowed, isInGarden, isSnoozed, wateredDate, wateredPlants, wateringHistory, onOpen, onSave, onCompare, onFollow, onAddToGarden, onWater, onSnooze }) {
-  const { t, difficultyLabel, plantTypeLabel } = useTranslation();
+  const { t, tn, difficultyLabel, plantTypeLabel } = useTranslation();
   const imageSource = resolvePlantImageSource(plant);
   const rarity = RARITY_STYLES[getRarity(plant)];
   const wateredToday = wateredDate === getTodayKey();
@@ -47,14 +47,14 @@ export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone,
       <View style={{ flexDirection: "row", gap: 8 }}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={isSaved ? `Remove ${plant.name} from saved plants` : `Save ${plant.name}`}
+          accessibilityLabel={isSaved ? t("glowPlantText.a11yUnsave", { name: plant.name }) : t("glowPlantText.a11ySave", { name: plant.name })}
           onPress={(e) => { e.stopPropagation?.(); onSave(); }}
           style={[{ flex: 1, borderRadius: 16, paddingVertical: 12, alignItems: "center", borderWidth: 1 },
             isSaved ? { backgroundColor: "#5cff89", borderColor: "#5cff89" } : { backgroundColor: "rgba(255, 255, 255, 0.08)", borderColor: "rgba(255, 255, 255, 0.1)" }
           ]}
         >
           <Text style={{ fontSize: 12, fontWeight: "900", color: isSaved ? "#07120b" : "#ffffff" }}>
-            {isSaved ? t("glowPlant.saved") : "Save"}
+            {isSaved ? t("glowPlant.saved") : t("glowPlantText.save")}
           </Text>
         </Pressable>
 
@@ -65,20 +65,20 @@ export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone,
           ]}
         >
           <Text style={{ fontSize: 12, fontWeight: "900", color: isCompared ? "#07120b" : "#ffffff" }}>
-            {isCompared ? t("glowPlant.on") : "Compare"}
+            {isCompared ? t("glowPlant.on") : t("glowPlantText.compare")}
           </Text>
         </Pressable>
 
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={wateredToday ? `Undo watering for ${plant.name}` : `Mark ${plant.name} as watered today`}
+          accessibilityLabel={wateredToday ? t("glowPlantText.a11yUndoWater", { name: plant.name }) : t("glowPlantText.a11yWater", { name: plant.name })}
           onPress={(e) => { e.stopPropagation?.(); onWater(); }}
           style={[{ flex: 1, borderRadius: 16, paddingVertical: 12, alignItems: "center", borderWidth: 1 },
             wateredToday ? { backgroundColor: "#6bc7ff", borderColor: "#6bc7ff" } : { backgroundColor: "rgba(255, 255, 255, 0.08)", borderColor: "rgba(255, 255, 255, 0.1)" }
           ]}
         >
           <Text style={{ fontSize: 12, fontWeight: "900", color: wateredToday ? "#07120b" : "#ffffff" }}>
-            {wateredToday ? t("glowPlant.done") : "Water"}
+            {wateredToday ? t("glowPlant.done") : t("glowPlantText.water")}
           </Text>
         </Pressable>
       </View>
@@ -87,12 +87,12 @@ export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone,
       {onAddToGarden ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={isInGarden ? `${plant.name} is in your garden` : `Add ${plant.name} to your garden`}
+          accessibilityLabel={isInGarden ? t("glowPlantText.a11yInGarden", { name: plant.name }) : t("glowPlantText.a11yAddToGarden", { name: plant.name })}
           onPress={(e) => { e.stopPropagation?.(); onAddToGarden(); }}
           style={{ marginTop: 8, borderRadius: 14, paddingVertical: 11, alignItems: "center", borderWidth: 1, backgroundColor: isInGarden ? "rgba(92, 255, 137, 0.14)" : "rgba(92, 255, 137, 0.06)", borderColor: "rgba(92, 255, 137, 0.28)" }}
         >
           <Text style={{ fontSize: 12, fontWeight: "900", color: "#8effab" }}>
-            {isInGarden ? "🌿 In your garden" : "🌱 Add to garden"}
+            {isInGarden ? `🌿 ${t("glowPlantText.inGarden")}` : `🌱 ${t("glowPlantText.addToGarden")}`}
           </Text>
         </Pressable>
       ) : null}
@@ -101,7 +101,7 @@ export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone,
       {isSaved && !wateredToday && onSnooze ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={isSnoozed ? `${plant.name} snoozed until tomorrow` : `Snooze watering for ${plant.name} until tomorrow`}
+          accessibilityLabel={isSnoozed ? t("glowPlantText.a11ySnoozed", { name: plant.name }) : t("glowPlantText.a11ySnooze", { name: plant.name })}
           onPress={(e) => { e.stopPropagation?.(); if (!isSnoozed) onSnooze(); }}
           disabled={isSnoozed}
           style={{ marginTop: 8, borderRadius: 12, paddingVertical: 10, alignItems: "center", borderWidth: 1, backgroundColor: isSnoozed ? "rgba(255, 216, 107, 0.1)" : "rgba(255, 255, 255, 0.04)", borderColor: isSnoozed ? "rgba(255, 216, 107, 0.3)" : "rgba(255, 255, 255, 0.08)" }}
@@ -133,7 +133,7 @@ export const GlowPlantCard = memo(function GlowPlantCard({ plant, weather, zone,
         ) : null}
         {getStreakDaysLeft(plant.name, wateringHistory) ? (
           <Text style={{ color: "#ffd86b", fontSize: 10, fontWeight: "900", marginTop: 2 }}>
-            ⏳ {getStreakDaysLeft(plant.name, wateringHistory)} day{getStreakDaysLeft(plant.name, wateringHistory) === 1 ? "" : "s"} {t("glowPlant.leftToKeepYourStreak")}
+            ⏳ {tn("glowPlantText.daysLeftToKeepStreak", getStreakDaysLeft(plant.name, wateringHistory))}
           </Text>
         ) : null}
       </View>

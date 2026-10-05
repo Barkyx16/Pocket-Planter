@@ -4,11 +4,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { buildCsv, tapHaptic } from "../core";
 import { useTranslation } from "../lib/i18n";
 import { CalendarExportSection } from "./CalendarExportSection";
+import { careActionLabelKey } from "./SoilCareLogCard";
 
-const KIND_LABEL = { green: "Greens", brown: "Browns", turn: "Turned pile" };
+// Stored compost kinds → translation keys for the CSV's Type column.
+const KIND_LABEL = { green: "dataExportText.kindGreen", brown: "dataExportText.kindBrown", turn: "dataExportText.kindTurn" };
 
 export const DataExportCard = memo(function DataExportCard({ theme, harvestLog, careLog, journalEntries }) {
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   // Compost + germination live in their own AsyncStorage keys (self-persisting
   // module cards), so read their counts here for the export buttons.
   const [moduleCounts, setModuleCounts] = useState({ compost: 0, germ: 0 });
@@ -26,7 +28,7 @@ export const DataExportCard = memo(function DataExportCard({ theme, harvestLog, 
     return () => { alive = false; };
   }, []);
 
-  const shareCsv = async (label, csv, count) => {
+  const shareCsv = async (label, title, csv, count) => {
     if (!count) {
       Alert.alert(t("alerts.nothingToExportTitle"), t("alerts.nothingToExportBody", { label }));
       return;
@@ -34,7 +36,7 @@ export const DataExportCard = memo(function DataExportCard({ theme, harvestLog, 
     try {
       tapHaptic("light");
       await Share.share({
-        title: `Pocket Planter — ${label}`,
+        title: t("dataExportText.shareTitle", { label: title }),
         message: csv,
       });
     } catch (e) {
@@ -42,36 +44,38 @@ export const DataExportCard = memo(function DataExportCard({ theme, harvestLog, 
     }
   };
 
+  const cols = (...keys) => keys.map((k) => t(`dataExportText.${k}`));
+
   const exportHarvests = () => {
     const rows = (harvestLog || []).map((h) => [
       h.date || "", h.plantName || "", h.amount || "", h.unit || "", h.note || "", h.createdAt || "",
     ]);
-    const csv = buildCsv(["Date", "Plant", "Amount", "Unit", "Note", "Logged At"], rows);
-    shareCsv("harvest log", csv, rows.length);
+    const csv = buildCsv(cols("colDate", "colPlant", "colAmount", "colUnit", "colNote", "colLoggedAt"), rows);
+    shareCsv(t("dataExportText.harvestLogInline"), t("dataExportText.harvestLog"), csv, rows.length);
   };
 
   const exportCareLog = () => {
     const rows = (careLog || []).map((c) => [
-      c.date || "", c.plant || "", c.actionLabel || "", c.note || "", c.createdAt || "",
+      c.date || "", c.plant || "", careActionLabelKey(c.actionId) ? t(careActionLabelKey(c.actionId)) : c.actionLabel || "", c.note || "", c.createdAt || "",
     ]);
-    const csv = buildCsv(["Date", "Plant", "Action", "Note", "Logged At"], rows);
-    shareCsv("care log", csv, rows.length);
+    const csv = buildCsv(cols("colDate", "colPlant", "colAction", "colNote", "colLoggedAt"), rows);
+    shareCsv(t("dataExportText.careLogInline"), t("dataExportText.careLog"), csv, rows.length);
   };
 
   const exportJournal = () => {
     const rows = (journalEntries || []).map((e) => [
       e.plantName || "", e.growthStage || "", e.mood || "", e.imageUri || "", e.createdAt || "",
     ]);
-    const csv = buildCsv(["Plant", "Growth Stage", "Mood", "Photo URL", "Created At"], rows);
-    shareCsv("journal", csv, rows.length);
+    const csv = buildCsv(cols("colPlant", "colGrowthStage", "colMood", "colPhotoUrl", "colCreatedAt"), rows);
+    shareCsv(t("dataExportText.journalInline"), t("dataExportText.journal"), csv, rows.length);
   };
 
   const exportCompost = async () => {
     let entries = [];
     try { entries = JSON.parse(await AsyncStorage.getItem("pp_compostLog")) || []; } catch (e) { /* ignore */ }
-    const rows = entries.map((e) => [e.date || "", KIND_LABEL[e.kind] || e.kind || ""]);
-    const csv = buildCsv(["Date", "Type"], rows);
-    shareCsv("compost log", csv, rows.length);
+    const rows = entries.map((e) => [e.date || "", (KIND_LABEL[e.kind] ? t(KIND_LABEL[e.kind]) : e.kind || "")]);
+    const csv = buildCsv(cols("colDate", "colType"), rows);
+    shareCsv(t("dataExportText.compostLogInline"), t("dataExportText.compostLog"), csv, rows.length);
   };
 
   const exportGermination = async () => {
@@ -83,16 +87,16 @@ export const DataExportCard = memo(function DataExportCard({ theme, harvestLog, 
       const viability = sown ? Math.round((sprouted / sown) * 100) : 0;
       return [e.date || "", e.seedName || "", String(sown), String(sprouted), `${viability}%`];
     });
-    const csv = buildCsv(["Date", "Seed", "Sown", "Sprouted", "Viability"], rows);
-    shareCsv("germination test", csv, rows.length);
+    const csv = buildCsv(cols("colDate", "colSeed", "colSown", "colSprouted", "colViability"), rows);
+    shareCsv(t("dataExportText.germinationInline"), t("dataExportText.germinationTests"), csv, rows.length);
   };
 
   const buttons = [
-    { icon: "🚜", label: "Harvest Log", count: (harvestLog || []).length, onPress: exportHarvests, color: "#ffd86b" },
-    { icon: "🧪", label: "Care Log", count: (careLog || []).length, onPress: exportCareLog, color: "#6bc7ff" },
-    { icon: "📸", label: "Journal", count: (journalEntries || []).length, onPress: exportJournal, color: "#8effab" },
-    { icon: "♻️", label: "Compost Log", count: moduleCounts.compost, onPress: exportCompost, color: "#bf7a12" },
-    { icon: "🌱", label: "Germination Tests", count: moduleCounts.germ, onPress: exportGermination, color: "#5cff89" },
+    { icon: "🚜", id: "harvest", label: t("dataExportText.harvestLog"), count: (harvestLog || []).length, onPress: exportHarvests, color: "#ffd86b" },
+    { icon: "🧪", id: "care", label: t("dataExportText.careLog"), count: (careLog || []).length, onPress: exportCareLog, color: "#6bc7ff" },
+    { icon: "📸", id: "journal", label: t("dataExportText.journal"), count: (journalEntries || []).length, onPress: exportJournal, color: "#8effab" },
+    { icon: "♻️", id: "compost", label: t("dataExportText.compostLog"), count: moduleCounts.compost, onPress: exportCompost, color: "#bf7a12" },
+    { icon: "🌱", id: "germ", label: t("dataExportText.germinationTests"), count: moduleCounts.germ, onPress: exportGermination, color: "#5cff89" },
   ];
 
 return (
@@ -100,10 +104,10 @@ return (
       <View style={{ gap: 10, marginTop: 16 }}>
         {buttons.map((b) => (
           <Pressable
-            key={b.label}
+            key={b.id}
             onPress={b.onPress}
             accessibilityRole="button"
-            accessibilityLabel={`Export ${b.label} as CSV`}
+            accessibilityLabel={t("dataExportText.exportA11y", { label: b.label })}
             style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: `${b.color}30` }}
           >
             <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: `${b.color}1a`, alignItems: "center", justifyContent: "center" }}>
@@ -112,7 +116,7 @@ return (
             <View style={{ flex: 1 }}>
               <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{b.label}</Text>
               <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 2 }}>
-                {b.count} {b.count === 1 ? "entry" : "entries"}
+                {tn("dataExportText.entries", b.count)}
               </Text>
             </View>
             <Text style={{ color: b.color, fontSize: 14, fontWeight: "900" }}>{t("dataExport.export")}</Text>

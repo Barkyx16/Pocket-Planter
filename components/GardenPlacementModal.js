@@ -49,7 +49,7 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
   const SwapRow = ({ bed, occ }) => (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Replace ${occ.plant} in ${bed.areaName} with ${plantName}`}
+      accessibilityLabel={t("gardenPlacementText.a11yReplace", { old: occ.plant, bed: bed.areaName, plant: plantName })}
       onPress={() => { tapHaptic(); onReplace(bed, occ); }}
       style={{
         flexDirection: "row", alignItems: "center", gap: 10,
@@ -61,9 +61,9 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
     >
       <Thumb name={occ.plant} size={34} />
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }} numberOfLines={1}>Replace {occ.plant}</Text>
+        <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }} numberOfLines={1}>{t("gardenPlacementText.replace", { plant: occ.plant })}</Text>
         <Text style={{ color: occ.clashes ? "#ff9f9f" : theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 1 }} numberOfLines={1}>
-          {occ.clashes ? `⚠ Clashes with ${plantName}` : `Swaps it out for ${plantName}`}
+          {occ.clashes ? `⚠ ${t("gardenPlacementText.clashesWith", { plant: plantName })}` : t("gardenPlacementText.swapsFor", { plant: plantName })}
         </Text>
       </View>
       <Ionicons name="swap-horizontal" size={18} color={occ.clashes ? "#ff9f9f" : theme.secondaryText} />
@@ -104,7 +104,7 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
                       {hasRoom ? (
                         <Pressable
                           accessibilityRole="button"
-                          accessibilityLabel={`Add ${plantName} to ${b.areaName}`}
+                          accessibilityLabel={t("gardenPlacementText.a11yAddTo", { plant: plantName, bed: b.areaName })}
                           onPress={() => { tapHaptic(); onPlaceIn(b); }}
                           style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 16, backgroundColor: conflicts.length ? "rgba(255, 216, 107, 0.08)" : "rgba(92, 255, 137, 0.08)", borderWidth: 1, borderColor: conflicts.length ? "rgba(255, 216, 107, 0.3)" : "rgba(92, 255, 137, 0.24)" }}
                         >
@@ -142,7 +142,7 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
                         ) : (
                           <Pressable
                             accessibilityRole="button"
-                            accessibilityLabel={`Show all plants in ${b.areaName} you could swap out`}
+                            accessibilityLabel={t("gardenPlacementText.a11yShowSwaps", { bed: b.areaName })}
                             onPress={() => { tapHaptic(); setExpandedBed(b.areaId); }}
                             style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 6, marginLeft: 16, paddingVertical: 10, borderRadius: 14, backgroundColor: "rgba(92, 255, 137, 0.08)", borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.2)" }}
                           >
@@ -184,11 +184,11 @@ export function GardenPlacementModal({ prompt, theme, onPlaceIn, onReplace, onCr
 
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Cancel"
+              accessibilityLabel={t("common.cancel")}
               onPress={() => { tapHaptic(); onClose(); }}
               style={{ marginHorizontal: 20, marginTop: 8, borderRadius: 16, paddingVertical: 13, alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.12)" }}
             >
-              <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>Cancel</Text>
+              <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "900" }}>{t("common.cancel")}</Text>
             </Pressable>
           </ScrollView>
         </View>

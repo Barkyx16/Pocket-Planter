@@ -7,7 +7,7 @@ import { IconText } from "./IconText";
 import { useTranslation } from "../lib/i18n";
 
 export const FixMyGardenCard = memo(function FixMyGardenCard({ theme, gardenAreas, onOpenPlant, onFocusConflict }) {
-  const { t } = useTranslation();
+  const { t, tn, language, plantTypeLabel } = useTranslation();
   // O(n^2) over every bed, plus a relocation search per conflict — only redo it
   // when the beds actually change.
   const conflicts = useMemo(() => findGardenConflicts(gardenAreas), [gardenAreas]);
@@ -16,11 +16,15 @@ export const FixMyGardenCard = memo(function FixMyGardenCard({ theme, gardenArea
 
   // A short, plausible explanation for why a given pair shouldn't share a bed.
   const conflictReason = (aObj, bObj) => {
-    if (!aObj || !bObj) return "They compete for the same nutrients, water, and root space.";
+    if (!aObj || !bObj) return t("fixMyGardenText.reasonGeneric");
     const ta = normalizeType(aObj.type, aObj.name);
     const tb = normalizeType(bObj.type, bObj.name);
-    if (ta === tb) return `Both are ${ta.toLowerCase()} — grouping them concentrates the same pests and soil-borne diseases.`;
-    return "They compete for the same nutrients and root space, and can stunt each other's growth.";
+    if (ta === tb) {
+      // German capitalises nouns; the other shipped languages read naturally lower-cased mid-sentence.
+      const typeName = language === "de" ? plantTypeLabel(ta) : plantTypeLabel(ta).toLowerCase();
+      return t("fixMyGardenText.reasonSameType", { type: typeName });
+    }
+    return t("fixMyGardenText.reasonCompete");
   };
 
 return (
@@ -29,7 +33,7 @@ return (
   color: "#ff9f9f"
 }]} />
       <Text style={[styles.cardText, { color: theme.secondaryText, marginTop: 4 }]}>
-        {conflicts.length} pair{conflicts.length === 1 ? "" : "s"} {t("fixMyGarden.ofPlantsInYourBeds")}
+        {tn("fixMyGardenText.pairsIntro", conflicts.length)}
       </Text>
 
       <View style={{ gap: 10, marginTop: 16 }}>
@@ -47,8 +51,8 @@ return (
               accessibilityRole="button"
               accessibilityState={{ expanded: onFocusConflict ? undefined : isOpen }}
               accessibilityLabel={onFocusConflict
-                ? `${c.plantA} and ${c.plantB} conflict in ${c.areaName}. Tap to go to that bed and see how to fix it.`
-                : `${c.plantA} and ${c.plantB} conflict. Tap for why and how to fix it.`}
+                ? t("fixMyGardenText.a11yConflictInBed", { a: c.plantA, b: c.plantB, bed: c.areaName })
+                : t("fixMyGardenText.a11yConflict", { a: c.plantA, b: c.plantB })}
               style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "rgba(255, 123, 123, 0.2)" }}
             >
               {/* the conflicting pair */}
@@ -71,7 +75,7 @@ return (
 
                 {onFocusConflict ? (
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 2, marginLeft: 4, backgroundColor: "rgba(92, 255, 137, 0.12)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 }}>
-                    <Text style={{ color: "#8effab", fontSize: 11, fontWeight: "900" }}>Fix</Text>
+                    <Text style={{ color: "#8effab", fontSize: 11, fontWeight: "900" }}>{t("fixMyGardenText.fix")}</Text>
                     <Text style={{ color: "#8effab", fontSize: 13, fontWeight: "900" }}>›</Text>
                   </View>
                 ) : (
@@ -96,8 +100,8 @@ return (
                     </Text>
                     <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "800", lineHeight: 19, marginTop: 4 }}>
                       {c.suggestion
-                        ? `✅ Fix: move ${c.suggestion.move} to ${c.suggestion.toAreaName} — it has room and no conflicts there.`
-                        : `✅ Fix: move ${c.plantA} or ${c.plantB} to a different bed to give them space.`}
+                        ? `✅ ${t("fixMyGardenText.fixMoveTo", { plant: c.suggestion.move, bed: c.suggestion.toAreaName })}`
+                        : `✅ ${t("fixMyGardenText.fixMoveEither", { a: c.plantA, b: c.plantB })}`}
                     </Text>
                   </View>
                 </>

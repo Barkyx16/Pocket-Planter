@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { getTodayKey, tapHaptic } from "../core";
-import { formatDate } from "../lib/i18n";
+import { formatDate, useTranslation } from "../lib/i18n";
 import { SkeletonSection } from "./Skeleton";
 import { touchSlop } from "../lib/a11y";
 
@@ -23,6 +23,7 @@ const toC = (f) => Math.round(((f - 32) * 5) / 9);
 const cToF = (c) => (c * 9) / 5 + 32;
 
 export const SoilTempSection = memo(function SoilTempSection({ theme }) {
+  const { t } = useTranslation();
   const [data, setData] = useState({ unit: "F", readings: [] }); // readings: {id,date,tempF}
   const [loaded, setLoaded] = useState(false);
   const [draft, setDraft] = useState("");
@@ -80,7 +81,7 @@ export const SoilTempSection = memo(function SoilTempSection({ theme }) {
   return (
     <View style={{ marginTop: 18, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 16 }}>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-        <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900", letterSpacing: 0.8 }}>🌡️ SOIL TEMPERATURE</Text>
+        <Text style={{ color: "#6bc7ff", fontSize: 12, fontWeight: "900", letterSpacing: 0.8 }}>🌡️ {t("soilTempText.heading")}</Text>
         <View style={{ flexDirection: "row", gap: 4 }}>
           {["F", "C"].map((u) => (
             <Pressable key={u} onPress={() => setUnit(u)} style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: data.unit === u ? "#6bc7ff" : "rgba(255,255,255,0.06)" }}>
@@ -90,25 +91,25 @@ export const SoilTempSection = memo(function SoilTempSection({ theme }) {
         </View>
       </View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18 }}>
-        Push a thermometer 2–3″ into the bed mid-morning and log it — it tells you what's actually safe to sow.
+        {t("soilTempText.intro")}
       </Text>
 
       {latest ? (
         <View style={{ marginTop: 12, backgroundColor: `${tempColor}14`, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: `${tempColor}33` }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <Text style={{ color: tempColor, fontSize: 24, fontWeight: "900" }}>{disp(tempF)}{unitLabel}</Text>
-            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>latest soil temp</Text>
+            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>{t("soilTempText.latest")}</Text>
           </View>
           {ready.length ? (
             <Text style={{ color: theme.text, fontSize: 12, fontWeight: "700", lineHeight: 18, marginTop: 6 }}>
-              ✅ Warm enough to sow: <Text style={{ color: tempColor, fontWeight: "900" }}>{ready.slice(0, 8).join(", ")}</Text>
+              ✅ {t("soilTempText.warmEnough")} <Text style={{ color: tempColor, fontWeight: "900" }}>{ready.slice(0, 8).join(", ")}</Text>
             </Text>
           ) : (
-            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 6 }}>Still cold — wait for it to warm before direct sowing.</Text>
+            <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 6 }}>{t("soilTempText.stillCold")}</Text>
           )}
           {nextGate ? (
             <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", marginTop: 4 }}>
-              At {disp(nextGate.temp)}{unitLabel}: {nextGate.crops.slice(0, 3).join(", ")} unlock.
+              {t("soilTempText.nextGate", { temp: `${disp(nextGate.temp)}${unitLabel}`, crops: nextGate.crops.slice(0, 3).join(", ") })}
             </Text>
           ) : null}
         </View>
@@ -120,11 +121,11 @@ export const SoilTempSection = memo(function SoilTempSection({ theme }) {
           onChangeText={(txt) => setDraft(txt.replace(/[^0-9.]/g, ""))}
           onSubmitEditing={add}
           keyboardType="decimal-pad"
-          placeholder={`Soil temp (${unitLabel})`}
+          placeholder={t("soilTempText.placeholder", { unit: unitLabel })}
           placeholderTextColor="#8fbf9d"
           style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.16)", color: theme.text, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontWeight: "700" }}
         />
-        <Pressable onPress={add} accessibilityRole="button" accessibilityLabel="Add soil temperature reading" style={{ backgroundColor: "#6bc7ff", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
+        <Pressable onPress={add} accessibilityRole="button" accessibilityLabel={t("soilTempText.a11yAdd")} style={{ backgroundColor: "#6bc7ff", borderRadius: 12, paddingHorizontal: 16, justifyContent: "center" }}>
           <Text style={{ color: "#07120b", fontSize: 14, fontWeight: "900" }}>＋</Text>
         </Pressable>
       </View>
@@ -137,7 +138,7 @@ export const SoilTempSection = memo(function SoilTempSection({ theme }) {
               <Text style={{ flex: 1, color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>
                 {formatDate(new Date(r.date + "T12:00:00"), { month: "short", day: "numeric" })}
               </Text>
-              <Pressable onPress={() => remove(r.id)} hitSlop={touchSlop(14)} accessibilityRole="button" accessibilityLabel="Remove reading">
+              <Pressable onPress={() => remove(r.id)} hitSlop={touchSlop(14)} accessibilityRole="button" accessibilityLabel={t("soilTempText.a11yRemove")}>
                 <Text style={{ color: theme.secondaryText, fontSize: 14, fontWeight: "900" }}>✕</Text>
               </Pressable>
             </View>

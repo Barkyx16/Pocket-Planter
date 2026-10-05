@@ -2,7 +2,7 @@ import { memo, useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import produceData from "../data/produceData";
 import { buildGardenTimeline, daysBetweenKeys, getDateKey, getTimelineMonthRecap, getTimelineOnThisDay, getTodayKey, resolvePlantImageSource } from "../core";
-import { useTranslation } from "../lib/i18n";
+import { formatDate, t, useTranslation } from "../lib/i18n";
 
 // One unified, auto-generated feed of the garden's life — plantings, sowings,
 // photos, harvests, care, waterings, and badges — plus a monthly recap and an
@@ -11,12 +11,12 @@ function relTime(ts) {
   // Both ends via the shared day count: subtracting midnights and flooring loses
   // a day across a clock change, so yesterday's entries read "Today".
   const days = daysBetweenKeys(getDateKey(new Date(ts)), getTodayKey());
-  if (days <= 0) return "Today";
-  if (days === 1) return "Yesterday";
-  if (days < 7) return `${days}d ago`;
-  if (days < 30) return `${Math.floor(days / 7)}w ago`;
-  if (days < 365) return `${Math.floor(days / 30)}mo ago`;
-  return `${Math.floor(days / 365)}y ago`;
+  if (days <= 0) return t("gardenTimelineText.today");
+  if (days === 1) return t("gardenTimelineText.yesterday");
+  if (days < 7) return t("gardenTimelineText.daysAgo", { n: days });
+  if (days < 30) return t("gardenTimelineText.weeksAgo", { n: Math.floor(days / 7) });
+  if (days < 365) return t("gardenTimelineText.monthsAgo", { n: Math.floor(days / 30) });
+  return t("gardenTimelineText.yearsAgo", { n: Math.floor(days / 365) });
 }
 
 const plantThumb = (name) => {
@@ -26,6 +26,7 @@ const plantThumb = (name) => {
 };
 
 const EventRow = memo(function EventRow({ ev, theme, onOpenPlant, isLast }) {
+  useTranslation(); // re-render on language change: relTime() reads the active locale
   const img = ev.imageUri ? { uri: ev.imageUri } : plantThumb(ev.plantName);
   const tappable = !!ev.plantName;
   const Wrap = tappable ? Pressable : View;
@@ -56,7 +57,7 @@ const EventRow = memo(function EventRow({ ev, theme, onOpenPlant, isLast }) {
 });
 
 export const GardenTimelineCard = memo(function GardenTimelineCard({ theme, journalEntries, harvestLog, wateringHistory, careLog, sowLog, plantSaveDates, badgeEarnedDates, achievementBadges, onOpenPlant }) {
-  const { t } = useTranslation();
+  const { tn } = useTranslation();
   const [visible, setVisible] = useState(8);
 
   const events = useMemo(
@@ -70,38 +71,38 @@ export const GardenTimelineCard = memo(function GardenTimelineCard({ theme, jour
     return (
       <View style={{ alignItems: "center", paddingVertical: 22, paddingHorizontal: 12 }}>
         <Text style={{ fontSize: 34, marginBottom: 8 }}>📖</Text>
-        <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900", textAlign: "center" }}>Your garden's story starts here</Text>
+        <Text style={{ color: theme.text, fontSize: 15, fontWeight: "900", textAlign: "center" }}>{t("gardenTimelineText.emptyTitle")}</Text>
         <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "600", textAlign: "center", marginTop: 6, lineHeight: 19 }}>
-          Add a photo, log a harvest, water a plant, or save something new — it all shows up here as a living timeline.
+          {t("gardenTimelineText.emptyBody")}
         </Text>
       </View>
     );
   }
 
   const recapChips = [
-    { kind: "plant", icon: "🌱", label: "planted" },
-    { kind: "sow", icon: "🌾", label: "sown" },
-    { kind: "water", icon: "💧", label: "waterings" },
-    { kind: "harvest", icon: "🎉", label: "harvests" },
-    { kind: "photo", icon: "📸", label: "photos" },
-    { kind: "care", icon: "🌿", label: "care logs" },
-    { kind: "badge", icon: "🏆", label: "badges" },
+    { kind: "plant", icon: "🌱", labelKey: "gardenTimelineText.recapPlanted" },
+    { kind: "sow", icon: "🌾", labelKey: "gardenTimelineText.recapSown" },
+    { kind: "water", icon: "💧", labelKey: "gardenTimelineText.recapWaterings" },
+    { kind: "harvest", icon: "🎉", labelKey: "gardenTimelineText.recapHarvests" },
+    { kind: "photo", icon: "📸", labelKey: "gardenTimelineText.recapPhotos" },
+    { kind: "care", icon: "🌿", labelKey: "gardenTimelineText.recapCareLogs" },
+    { kind: "badge", icon: "🏆", labelKey: "gardenTimelineText.recapBadges" },
   ].filter((c) => recap[c.kind]);
 
-  const monthName = new Date().toLocaleDateString(undefined, { month: "long" });
+  const monthName = formatDate(new Date(), { month: "long" });
 
   return (
     <View>
       {/* Monthly recap */}
       {recapChips.length ? (
         <View style={{ backgroundColor: "rgba(92, 255, 137, 0.06)", borderRadius: 16, borderWidth: 1, borderColor: "rgba(92, 255, 137, 0.18)", padding: 14, marginBottom: 16 }}>
-          <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 10 }}>📅 YOUR {monthName.toUpperCase()}</Text>
+          <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 10 }}>📅 {t("gardenTimelineText.yourMonth", { month: monthName.toUpperCase() })}</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             {recapChips.map((c) => (
               <View key={c.kind} style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "rgba(255, 255, 255, 0.05)", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 }}>
                 <Text style={{ fontSize: 13 }}>{c.icon}</Text>
                 <Text style={{ color: theme.text, fontSize: 13, fontWeight: "900" }}>{recap[c.kind]}</Text>
-                <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "600" }}>{c.label}</Text>
+                <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "600" }}>{tn(c.labelKey, recap[c.kind])}</Text>
               </View>
             ))}
           </View>
@@ -111,7 +112,7 @@ export const GardenTimelineCard = memo(function GardenTimelineCard({ theme, jour
       {/* On this day */}
       {onThisDay.length ? (
         <View style={{ backgroundColor: "rgba(255, 216, 107, 0.08)", borderRadius: 16, borderWidth: 1, borderColor: "rgba(255, 216, 107, 0.24)", padding: 14, marginBottom: 16 }}>
-          <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 8 }}>⏳ ON THIS DAY</Text>
+          <Text style={{ color: "#ffd86b", fontSize: 12, fontWeight: "900", letterSpacing: 0.5, marginBottom: 8 }}>⏳ {t("gardenTimelineText.onThisDay")}</Text>
           {onThisDay.slice(0, 3).map((ev, i) => (
             <Text key={`otd-${i}`} style={{ color: theme.text, fontSize: 13, fontWeight: "700", marginTop: i ? 4 : 0 }}>
               {ev.icon} {ev.title} <Text style={{ color: theme.secondaryText, fontWeight: "600" }}>· {relTime(ev.ts)}</Text>
@@ -130,7 +131,7 @@ export const GardenTimelineCard = memo(function GardenTimelineCard({ theme, jour
           onPress={() => setVisible((c) => c + 12)}
           style={{ marginTop: 4, backgroundColor: "rgba(107, 199, 255, 0.1)", borderRadius: 16, paddingVertical: 13, alignItems: "center", borderWidth: 1, borderColor: "rgba(107, 199, 255, 0.24)" }}
         >
-          <Text style={{ color: "#6bc7ff", fontWeight: "900", fontSize: 14 }}>Show more history ({events.length - visible})</Text>
+          <Text style={{ color: "#6bc7ff", fontWeight: "900", fontSize: 14 }}>{t("gardenTimelineText.showMore", { count: events.length - visible })}</Text>
         </Pressable>
       ) : null}
     </View>

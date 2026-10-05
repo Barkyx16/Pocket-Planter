@@ -9,23 +9,24 @@ const imgFor = (name) => {
   return item ? resolvePlantImageSource(item) : null;
 };
 
-// Keyword → quick recipe ideas for common crops.
+// Keyword → quick recipe ideas for common crops. `ideas` are ids under recipesText.idea_*.
+// `match` keywords are matched against plant names and never shown.
 const RECIPES = [
-  { match: ["tomato"], icon: "🍅", ideas: ["Fresh caprese salad", "Slow-roasted tomato sauce", "Bruschetta"] },
-  { match: ["pepper"], icon: "🫑", ideas: ["Stuffed peppers", "Fajita strips", "Roasted red pepper dip"] },
-  { match: ["cucumber"], icon: "🥒", ideas: ["Quick refrigerator pickles", "Cucumber tzatziki", "Smashed cucumber salad"] },
-  { match: ["lettuce", "arugula", "spinach", "kale", "chard", "green"], icon: "🥬", ideas: ["Garden salad", "Sautéed greens with garlic", "Green smoothie"] },
-  { match: ["zucchini", "squash"], icon: "🥒", ideas: ["Zucchini bread", "Grilled squash", "Zoodles with pesto"] },
-  { match: ["bean"], icon: "🫘", ideas: ["Garlic green beans", "Three-bean salad", "Blistered beans"] },
-  { match: ["carrot"], icon: "🥕", ideas: ["Honey-roasted carrots", "Carrot ginger soup", "Carrot slaw"] },
-  { match: ["potato"], icon: "🥔", ideas: ["Crispy roast potatoes", "Potato salad", "Mashed potatoes"] },
-  { match: ["strawberry", "berry", "raspberry", "blackberry", "blueberry"], icon: "🍓", ideas: ["Berry crumble", "Fresh jam", "Smoothie bowl"] },
-  { match: ["basil"], icon: "🌿", ideas: ["Classic pesto", "Caprese skewers", "Infused olive oil"] },
-  { match: ["mint"], icon: "🌱", ideas: ["Mint tea", "Cucumber-mint water", "Tabbouleh"] },
-  { match: ["onion", "garlic"], icon: "🧅", ideas: ["Caramelized onions", "Roasted garlic spread", "French onion soup"] },
-  { match: ["cabbage", "broccoli", "cauliflower"], icon: "🥦", ideas: ["Roasted florets", "Slaw", "Stir-fry"] },
-  { match: ["corn"], icon: "🌽", ideas: ["Grilled street corn", "Corn salsa", "Corn chowder"] },
-  { match: ["herb", "parsley", "cilantro", "thyme", "oregano", "rosemary"], icon: "🌿", ideas: ["Fresh herb chimichurri", "Compound butter", "Garnish anything"] },
+  { match: ["tomato"], icon: "🍅", ideas: ["freshCapreseSalad", "slowRoastedTomatoSauce", "bruschetta"] },
+  { match: ["pepper"], icon: "🫑", ideas: ["stuffedPeppers", "fajitaStrips", "roastedRedPepperDip"] },
+  { match: ["cucumber"], icon: "🥒", ideas: ["quickRefrigeratorPickles", "cucumberTzatziki", "smashedCucumberSalad"] },
+  { match: ["lettuce", "arugula", "spinach", "kale", "chard", "green"], icon: "🥬", ideas: ["gardenSalad", "sauteedGreensWithGarlic", "greenSmoothie"] },
+  { match: ["zucchini", "squash"], icon: "🥒", ideas: ["zucchiniBread", "grilledSquash", "zoodlesWithPesto"] },
+  { match: ["bean"], icon: "🫘", ideas: ["garlicGreenBeans", "threeBeanSalad", "blisteredBeans"] },
+  { match: ["carrot"], icon: "🥕", ideas: ["honeyRoastedCarrots", "carrotGingerSoup", "carrotSlaw"] },
+  { match: ["potato"], icon: "🥔", ideas: ["crispyRoastPotatoes", "potatoSalad", "mashedPotatoes"] },
+  { match: ["strawberry", "berry", "raspberry", "blackberry", "blueberry"], icon: "🍓", ideas: ["berryCrumble", "freshJam", "smoothieBowl"] },
+  { match: ["basil"], icon: "🌿", ideas: ["classicPesto", "capreseSkewers", "infusedOliveOil"] },
+  { match: ["mint"], icon: "🌱", ideas: ["mintTea", "cucumberMintWater", "tabbouleh"] },
+  { match: ["onion", "garlic"], icon: "🧅", ideas: ["caramelizedOnions", "roastedGarlicSpread", "frenchOnionSoup"] },
+  { match: ["cabbage", "broccoli", "cauliflower"], icon: "🥦", ideas: ["roastedFlorets", "slaw", "stirFry"] },
+  { match: ["corn"], icon: "🌽", ideas: ["grilledStreetCorn", "cornSalsa", "cornChowder"] },
+  { match: ["herb", "parsley", "cilantro", "thyme", "oregano", "rosemary"], icon: "🌿", ideas: ["freshHerbChimichurri", "compoundButter", "garnishAnything"] },
 ];
 
 const recipeFor = (name) => {
@@ -57,7 +58,7 @@ export const HarvestRecipesCard = memo(function HarvestRecipesCard({ theme, save
   return (
     <View>
       <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 19, marginTop: 2 }}>
-        {t("harvestRecipes.freshFromYourGardenQuick")} {harvestedNames.length ? "harvesting" : "growing"}{t("harvestRecipes.tapToFindRecipes")}
+        {t(harvestedNames.length ? "recipesText.introHarvesting" : "recipesText.introGrowing")}
       </Text>
 
       <View style={{ gap: 8, marginTop: 14 }}>
@@ -84,7 +85,7 @@ export const HarvestRecipesCard = memo(function HarvestRecipesCard({ theme, save
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
               {r.ideas.map((idea) => (
                 <View key={idea} style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 }}>
-                  <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>{idea}</Text>
+                  <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700" }}>{t(`recipesText.idea_${idea}`)}</Text>
                 </View>
               ))}
             </View>

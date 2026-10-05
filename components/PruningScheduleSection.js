@@ -3,40 +3,48 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View } from "react-native";
 import { careWindowKey, flipMonth, getMonthKey, tapHaptic } from "../core";
 import { SkeletonSection } from "./Skeleton";
+import { formatDate, getLocale, useTranslation } from "../lib/i18n";
 
 export const PRUNING_STORAGE_KEY = "pp_pruningDone";
 
 const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+// English keeps its familiar three-letter months; other languages get Intl's.
+function monthShort(month) {
+  if (getLocale() === "en") return MONTH_SHORT[month - 1];
+  return formatDate(new Date(2000, month - 1, 1), { month: "short" }) || MONTH_SHORT[month - 1];
+}
+
 // Curated northern-hemisphere pruning windows (month numbers) with a short why.
-// Localised for the southern hemisphere via flipMonth at render time.
+// Localised for the southern hemisphere via flipMonth at render time. `tip` is a
+// translation key, resolved at render.
 const PRUNE_WINDOWS = {
-  apple: { months: [1, 2], tip: "Prune when fully dormant to shape the tree and open the canopy." },
+  apple: { months: [1, 2], tip: "pruningText.tipDormantShape" },
   // Compound names do not contain their base word as far as whole-word matching
   // is concerned, so the true relatives have to be listed in their own right.
   // Without these, Crabapple, Peppermint and Spearmint showed no pruning window.
-  crabapple: { months: [1, 2], tip: "Prune when fully dormant to shape the tree and open the canopy." },
-  pear: { months: [1, 2], tip: "Dormant-prune to remove crossing branches and encourage fruiting spurs." },
-  fig: { months: [2], tip: "Prune late winter before new growth to control size." },
-  grape: { months: [2, 3], tip: "Prune hard while dormant — grapes fruit on new wood." },
-  blueberry: { months: [2, 3], tip: "Remove old, twiggy wood in late winter for bigger berries." },
-  rose: { months: [3], tip: "Cut back to strong outward-facing buds as growth begins." },
-  lemon: { months: [3, 4], tip: "Tidy citrus after the main harvest; remove deadwood." },
-  orange: { months: [3, 4], tip: "Light-prune citrus in spring; thin crowded branches." },
-  rosemary: { months: [4, 5], tip: "Trim lightly in spring — never cut into old bare wood." },
-  thyme: { months: [4, 5], tip: "Shear back by a third in spring to keep it bushy." },
-  sage: { months: [4, 5], tip: "Prune in spring to remove woody, leggy stems." },
-  peach: { months: [6, 7], tip: "Prune stone fruit in summer to reduce disease risk." },
-  plum: { months: [6, 7], tip: "Summer-prune stone fruit to avoid silver leaf infection." },
-  cherry: { months: [6, 7], tip: "Prune after fruiting in dry weather to limit disease." },
-  tomato: { months: [6, 7, 8], tip: "Pinch out side-shoots weekly on cordon (indeterminate) types." },
-  basil: { months: [6, 7, 8, 9], tip: "Pinch the growing tips often to keep it bushy and delay flowering." },
-  mint: { months: [6, 7, 8], tip: "Cut back regularly to force fresh, tender leaves." },
-  peppermint: { months: [6, 7, 8], tip: "Cut back regularly to force fresh, tender leaves." },
-  spearmint: { months: [6, 7, 8], tip: "Cut back regularly to force fresh, tender leaves." },
-  raspberry: { months: [8, 9], tip: "Cut out canes that just fruited; tie in this year's new canes." },
-  blackberry: { months: [8, 9], tip: "Remove fruited canes after harvest to make room for new growth." },
-  lavender: { months: [8], tip: "Trim after flowering, staying above the woody base." },
+  crabapple: { months: [1, 2], tip: "pruningText.tipDormantShape" },
+  pear: { months: [1, 2], tip: "pruningText.tipPear" },
+  fig: { months: [2], tip: "pruningText.tipFig" },
+  grape: { months: [2, 3], tip: "pruningText.tipGrape" },
+  blueberry: { months: [2, 3], tip: "pruningText.tipBlueberry" },
+  rose: { months: [3], tip: "pruningText.tipRose" },
+  lemon: { months: [3, 4], tip: "pruningText.tipLemon" },
+  orange: { months: [3, 4], tip: "pruningText.tipOrange" },
+  rosemary: { months: [4, 5], tip: "pruningText.tipRosemary" },
+  thyme: { months: [4, 5], tip: "pruningText.tipThyme" },
+  sage: { months: [4, 5], tip: "pruningText.tipSage" },
+  peach: { months: [6, 7], tip: "pruningText.tipPeach" },
+  plum: { months: [6, 7], tip: "pruningText.tipPlum" },
+  cherry: { months: [6, 7], tip: "pruningText.tipCherry" },
+  tomato: { months: [6, 7, 8], tip: "pruningText.tipTomato" },
+  basil: { months: [6, 7, 8, 9], tip: "pruningText.tipBasil" },
+  mint: { months: [6, 7, 8], tip: "pruningText.tipMint" },
+  peppermint: { months: [6, 7, 8], tip: "pruningText.tipMint" },
+  spearmint: { months: [6, 7, 8], tip: "pruningText.tipMint" },
+  raspberry: { months: [8, 9], tip: "pruningText.tipRaspberry" },
+  blackberry: { months: [8, 9], tip: "pruningText.tipBlackberry" },
+  lavender: { months: [8], tip: "pruningText.tipLavender" },
 };
 
 function pruneFor(name) {
@@ -45,6 +53,7 @@ function pruneFor(name) {
 }
 
 export const PruningScheduleSection = memo(function PruningScheduleSection({ theme, savedPlants }) {
+  const { t } = useTranslation();
   const [done, setDone] = useState({}); // { monthKey: { plantName: true } }
   const [loaded, setLoaded] = useState(false);
 
@@ -98,7 +107,7 @@ export const PruningScheduleSection = memo(function PruningScheduleSection({ the
   return (
     <View style={{ marginTop: 20, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 18 }}>
       <Text style={{ color: "#8effab", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, marginBottom: 4 }}>
-        ✂️ PRUNING THIS MONTH
+        ✂️ {t("pruningText.title")}
       </Text>
 
       {thisMonth.length ? (
@@ -118,7 +127,7 @@ export const PruningScheduleSection = memo(function PruningScheduleSection({ the
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: isDone ? theme.secondaryText : theme.text, fontSize: 14, fontWeight: "900", textDecorationLine: isDone ? "line-through" : "none" }}>{m.name}</Text>
-                  <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", lineHeight: 16, marginTop: 2 }}>{m.tip}</Text>
+                  <Text style={{ color: theme.secondaryText, fontSize: 11, fontWeight: "700", lineHeight: 16, marginTop: 2 }}>{t(m.tip)}</Text>
                 </View>
               </Pressable>
             );
@@ -127,8 +136,9 @@ export const PruningScheduleSection = memo(function PruningScheduleSection({ the
       ) : (
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", lineHeight: 18, marginTop: 6 }}>
           {matched.length
-            ? `Nothing to prune in ${MONTH_SHORT[currentMonth - 1]}.${upcoming ? ` Next: ${upcoming.name} in ${MONTH_SHORT[upcoming.month - 1]}.` : ""}`
-            : "Save some fruit trees, berries, or herbs and their pruning windows will show up here."}
+            ? t("pruningText.nothingThisMonth", { month: monthShort(currentMonth) }) +
+              (upcoming ? ` ${t("pruningText.nextUp", { plant: upcoming.name, month: monthShort(upcoming.month) })}` : "")
+            : t("pruningText.empty")}
         </Text>
       )}
     </View>
