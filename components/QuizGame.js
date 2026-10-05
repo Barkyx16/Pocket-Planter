@@ -19,6 +19,7 @@ export function QuizGame({ theme, onExit, title, emoji, accent = "#5cff89", tota
   const [picked, setPicked] = useState(null); // index of the chosen option
   const [timeLeft, setTimeLeft] = useState(timePerQuestion);
   const [finished, setFinished] = useState(false);
+  const [newBest, setNewBest] = useState(false);
   const [best, setBest] = useState(0);
   const [earned, setEarned] = useState(0); // XP earned this run
   const timerRef = useRef(null);
@@ -68,6 +69,10 @@ export function QuizGame({ theme, onExit, title, emoji, accent = "#5cff89", tota
       if (onAwardXp) onAwardXp(completionBonus);
       setEarned((e) => e + completionBonus);
       setFinished(true);
+      // Decided here, against the best before this run: once best is updated,
+      // `score >= best` also held for a tie, which said "New best!" without
+      // saving anything.
+      setNewBest(finalScore > best && finalScore > 0);
       if (finalScore > best) { setBest(finalScore); AsyncStorage.setItem(storageKey, String(finalScore)).catch(() => {}); }
       return;
     }
@@ -81,17 +86,16 @@ export function QuizGame({ theme, onExit, title, emoji, accent = "#5cff89", tota
   function restart() {
     answeredRef.current = false; advancingRef.current = false;
     setRound(0); setScore(0); setPicked(null); setTimeLeft(timePerQuestion);
-    setEarned(0); setQuestion(makeQuestion?.() ?? null); setFinished(false);
+    setEarned(0); setQuestion(makeQuestion?.() ?? null); setFinished(false); setNewBest(false);
   }
 
   if (finished) {
-    const isRecord = score >= best && score > 0;
     return (
       <View style={{ alignItems: "center", paddingVertical: 30 }}>
         <Text style={{ fontSize: 52 }}>{score >= totalRounds * 0.8 ? "🏆" : score >= totalRounds * 0.5 ? "🌱" : "🌧️"}</Text>
         <Text style={{ color: theme.text, fontSize: 24, fontWeight: "900", marginTop: 10 }}>{t("games.youScored", { score, total: totalRounds })}</Text>
         <Text style={{ color: accent, fontSize: 16, fontWeight: "900", marginTop: 8 }}>{t("games.xpEarned", { xp: earned })}</Text>
-        {isRecord ? <Text style={{ color: accent, fontSize: 14, fontWeight: "900", marginTop: 6 }}>{t("games.newBest")}</Text> : (
+        {newBest ? <Text style={{ color: accent, fontSize: 14, fontWeight: "900", marginTop: 6 }}>{t("games.newBest")}</Text> : (
           <Text style={{ color: theme.secondaryText, fontSize: 13, fontWeight: "700", marginTop: 6 }}>{t("games.best", { score: best, total: totalRounds })}</Text>
         )}
         <Pressable onPress={restart} style={{ marginTop: 24, backgroundColor: accent, borderRadius: 16, paddingVertical: 14, paddingHorizontal: 40 }}>

@@ -1428,3 +1428,10 @@ describe("the journal's general garden photos", () => {
     ok(/new Set\(journalEntries\.map\(plantOf\)\.filter\(Boolean\)\)\.size/.test(card));
   });
 });
+
+describe("the games' results screen", () => {
+  it("says New best only when the score beat the old best", () => {
+    const quiz = fs.readFileSync(path.join(ROOT, "components/QuizGame.js"), "utf8");
+    ok(/setNewBest\(finalScore > best && finalScore > 0\)/.test(quiz) && !/score >= best/.test(quiz));
+  });
+});
