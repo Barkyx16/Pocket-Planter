@@ -2906,14 +2906,7 @@ function formatInchesShort(value) {
 
 // Sowing depths are authored as fractions of an inch. "0.25 inches" reads like a
 // measurement error; a quarter inch reads like an instruction.
-function formatInches(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return "";
-  if (n >= 36) { const ft = n / 12; return `${Number.isInteger(ft) ? ft : ft.toFixed(1)} ft`; }
-  const fractions = { 0.125: "an eighth of an inch", 0.25: "a quarter inch", 0.5: "half an inch", 0.75: "three quarters of an inch" };
-  if (fractions[n]) return fractions[n];
-  return `${Number.isInteger(n) ? n : n.toFixed(1)} inch${n === 1 ? "" : "es"}`;
-}
+const STEP_INCH_FRACTIONS = { 0.125: "eighthInch", 0.25: "quarterInch", 0.5: "halfInch", 0.75: "threeQuarterInch" };
 
 export function getWhereToPlantText(item, units) {
   // This used to answer from the plant's type alone, which gave 387 of the 612
@@ -2957,7 +2950,7 @@ export function getPlantSpecificTip(item, zone, weather) {
   return t("adviceText.tipLater");
 }
 
-export function getPlantingSteps(item) {
+export function getPlantingSteps(item, units) {
   if (Array.isArray(item.plantingSteps) && item.plantingSteps.length) return item.plantingSteps;
 
   const name = String(item?.name || "").toLowerCase();
@@ -3356,49 +3349,42 @@ export function getPlantingSteps(item) {
   const sun = getPlantSunNeed(item);
   const depth = typeof authored.plantingDepthInches === "number" ? authored.plantingDepthInches : null;
   const spacing = typeof authored.spacingInches === "number" ? authored.spacingInches : null;
-  const window = getPlantingWindowText(item);
+  // Lengths go in already in the gardener's units: localizeAdvice can only find
+  // "18 inches" inside English, not inside a translated sentence.
+  const length = (n) => {
+    if (units === "metric") return metricLengthText(n);
+    if (n >= 36) return t("adviceText.feet", { count: Math.round(n / 12) });
+    if (STEP_INCH_FRACTIONS[n]) return t(`plantingStepsText.${STEP_INCH_FRACTIONS[n]}`);
+    return tn("plantingStepsText.inches", Number.isInteger(n) ? n : Number(n.toFixed(1)));
+  };
   const steps = [];
 
-  steps.push(
-    sun.need === "shade"
-      ? "Pick a spot out of direct midday sun, and work compost into the soil before planting."
-      : sun.need === "partial"
-        ? "Pick a spot with morning sun and afternoon shade, and work compost into the soil before planting."
-        : "Pick the sunniest spot you have, and work compost into the soil before planting."
-  );
-  // Left exactly as written: the window is a list of month abbreviations, and
-  // lower-casing the first one turned "Mar" into "mar".
-  if (window && window !== "Check your zone") steps.push(`Plant during its window: ${window}.`);
+  steps.push(t(sun.need === "shade" ? "plantingStepsText.siteShade" : sun.need === "partial" ? "plantingStepsText.sitePartial" : "plantingStepsText.siteFull"));
+  // Asked of the months directly: this used to compare the window text against
+  // "Check your zone", which stopped matching once that text was translated, and
+  // plants with no window were told "Plant during its window: Best months vary
+  // by zone…".
+  if (localPlantMonths(item).length) steps.push(t("plantingStepsText.window", { window: getPlantingWindowText(item) }));
   if (depth != null) {
     steps.push(depth === 0
-      ? "Press the seed onto the surface and leave it uncovered — it needs light to germinate."
-      : `Sow ${formatInches(depth)} deep${spacing ? `, ${formatInches(spacing)} apart` : ""}.`);
+      ? t("plantingStepsText.surfaceSow")
+      : spacing
+        ? t("plantingStepsText.sowDepthSpacing", { depth: length(depth), spacing: length(spacing) })
+        : t("plantingStepsText.sowDepth", { depth: length(depth) }));
   } else if (spacing != null) {
     // Past a couple of feet this is a tree or a cane, and "so the leaves can dry"
     // is the wrong reason to be talking about spacing.
-    steps.push(spacing >= 60
-      ? `Leave ${formatInches(spacing)} around it — that is what it will fill when mature.`
-      : `Set plants ${formatInches(spacing)} apart so the leaves can dry after rain.`);
+    steps.push(t(spacing >= 60 ? "plantingStepsText.spaceTree" : "plantingStepsText.spacePlants", { spacing: length(spacing) }));
   }
-  steps.push(
-    authored.waterNeeds === "high"
-      ? "Water deeply two or three times a week — it wilts quickly once the soil dries out."
-      : authored.waterNeeds === "low"
-        ? "Let the top of the soil dry between waterings; it resents sitting wet."
-        : "Water when the top inch of soil feels dry, at the base rather than over the leaves."
-  );
-  steps.push("Mulch around the base to hold moisture in and keep weeds down.");
-  steps.push(
-    authored.perennial === true
-      ? "Feed in spring and cut back spent growth at the end of the season — this one comes back next year."
-      : "Feed every few weeks once it is growing away strongly."
-  );
+  steps.push(t(authored.waterNeeds === "high" ? "plantingStepsText.waterHigh" : authored.waterNeeds === "low" ? "plantingStepsText.waterLow" : "plantingStepsText.waterMedium"));
+  steps.push(t("plantingStepsText.mulch"));
+  steps.push(t(authored.perennial === true ? "plantingStepsText.feedPerennial" : "plantingStepsText.feedAnnual"));
   if (typeof authored.daysToMaturity === "number" && authored.daysToMaturity > 0) {
     steps.push(authored.daysToMaturity >= 365
-      ? "Expect to wait a year or more for the first real crop — check on it through the seasons."
-      : `Expect it to be ready about ${authored.daysToMaturity} days from planting; watch for pests before then.`);
+      ? t("plantingStepsText.readyYear")
+      : tn("plantingStepsText.readyDays", authored.daysToMaturity));
   } else {
-    steps.push("Check it over for pests and disease as it grows, and deal with them early.");
+    steps.push(t("plantingStepsText.checkPests"));
   }
   return steps;
 }

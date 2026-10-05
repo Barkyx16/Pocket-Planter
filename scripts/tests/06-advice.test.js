@@ -265,6 +265,19 @@ describe("getPlantingSteps", () => {
     ok(/morning sun and afternoon shade/.test(bok), "partial-shade plant not told so");
     ok(/50 days/.test(bok), "days to maturity missing");
   });
+  it("writes lengths in the gardener's units", () => {
+    // localizeAdvice can only convert "8 inches" inside English text, so the
+    // generated steps carry their lengths already converted.
+    const metric = core.getPlantingSteps(plantOf("Bok Choy"), "metric").join(" ");
+    ok(/20 cm apart/.test(metric), metric);
+    ok(!/inch/.test(metric), metric);
+  });
+  it("does not offer a planting window it does not have", () => {
+    // The step compared its text against "Check your zone", which stopped
+    // matching once the text was translated.
+    const bad = items.filter((i) => core.getPlantingSteps(i).some((x) => /window: Best months vary/.test(x)));
+    eq(bad.map((i) => i.name), []);
+  });
   it("describes a tree's spacing as the room it will fill", () => {
     ok(/30 ft/.test(steps("Mango")), "tree spacing in feet");
     ok(!/leaves can dry/.test(steps("Mango")), "wrong reason for a tree's spacing");

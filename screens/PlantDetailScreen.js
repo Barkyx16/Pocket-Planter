@@ -30,7 +30,7 @@ export function PlantDetailScreen({
     const quickFacts = getPlantQuickFacts(selectedPlant, unitSystem);
     const plantHealth = getPlantHealth(selectedPlant);
     const plantingWindow = getPlantingWindowText(selectedPlant);
-    const plantingSteps = getPlantingSteps(selectedPlant);
+    const plantingSteps = getPlantingSteps(selectedPlant, unitSystem);
     const isSaved = savedPlants.includes(selectedPlant.name);
     const isFollowed = followedPlants.includes(selectedPlant.name);
     const wateringCompletedToday = wateredPlants[selectedPlant.name] === getTodayKey();
