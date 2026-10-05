@@ -112,6 +112,25 @@ describe("getCompanionInfo", () => {
       eq(core.getCompanionInfo(n), generic, n);
     }
   });
+  it("does not hand a look-alike the chart of the plant its name borrows", () => {
+    const generic = core.getCompanionInfo("Definitely Not A Real Plant");
+    for (const n of [
+      "Corn Salad (Mache)", "Lemon Balm", "Lemon Verbena", "Sichuan Pepper", "Custard Apple",
+      "Sugar Apple", "Star Apple", "Rose Apple", "Wax Apple", "Bael (Wood Apple)",
+      "Samphire (Sea Bean)", "Sweet Potato", "Malabar Spinach", "Tamarillo (Tree Tomato)",
+    ]) {
+      eq(core.getCompanionInfo(n), generic, n);
+    }
+    eq(core.getCompatibilityScore("Corn Salad (Mache)", "Tomato").label, "Neutral");
+  });
+  it("still gives real varieties their crop's chart", () => {
+    const same = (a, b) => eq(core.getCompanionInfo(a), core.getCompanionInfo(b), `${a} vs ${b}`);
+    same("Cherry Tomato", "Tomato");
+    same("Meyer Lemon", "Lemon");
+    same("Bell Pepper", "Pepper");
+    same("Holy Basil (Tulsi)", "Basil");
+    same("Ramps (Wild Leek)", "Leek");
+  });
   it("is stable when asked twice (the cache returns equal values)", () => {
     const unstable = names.filter((n) => {
       const first = JSON.stringify(core.getCompanionInfo(n));

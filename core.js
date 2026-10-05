@@ -1519,7 +1519,22 @@ const COMPANION_ALIASES = {
   peppermint: "Mint",
   spearmint: "Mint",
   crabapple: "Apple",
+  ramps: "Leek",
 };
+
+// And names that do contain a chart's word but are a different plant entirely:
+// Corn Salad is a winter leaf, so it was told to keep away from tomatoes; Lemon
+// Balm and Lemon Verbena are herbs, not citrus trees; Sichuan Pepper is a prickly
+// ash; the tropical "apples" are custard-apple and myrtle relatives; Sweet Potato
+// is a morning glory; Malabar, New Zealand, Water and Mustard "spinach" are
+// vines and a brassica. Borrowing those charts is worse than the generic advice.
+// Parenthetical glosses ("Bael (Wood Apple)", "Samphire (Sea Bean)") are dropped
+// before matching rather than listed here.
+const COMPANION_LOOKALIKES = [
+  "corn salad", "lemon balm", "lemon verbena", "sichuan pepper",
+  "custard apple", "sugar apple", "star apple", "rose apple", "wax apple",
+  "sweet potato", "malabar spinach", "new zealand spinach", "water spinach", "mustard spinach",
+];
 
 // Companion lookups are the hot path behind the garden screen: findGardenConflicts
 // and getPowerPairs both compare every plant in a bed against every other, so a
@@ -1545,11 +1560,13 @@ function computeCompanionInfo(plantName) {
   // "Apple" claimed Pineapple. Twenty plants were handed another plant's
   // companions and pest notes. Whole words only, and the most specific key wins
   // so declaration order stops mattering.
-  const name = String(plantName || "");
-  const alias = COMPANION_ALIASES[name.toLowerCase()];
-  const match = alias || Object.keys(COMPANION_PLANTING_DATA)
+  const name = String(plantName || "").replace(/\s*\([^)]*\)/g, " ").trim();
+  const lower = name.toLowerCase();
+  const alias = COMPANION_ALIASES[lower];
+  const lookalike = !COMPANION_PLANTING_DATA[name] && COMPANION_LOOKALIKES.some((l) => lower.includes(l));
+  const match = alias || (!lookalike && Object.keys(COMPANION_PLANTING_DATA)
     .filter((key) => plantNameMatchesKey(name, key))
-    .sort((a, b) => b.length - a.length)[0];
+    .sort((a, b) => b.length - a.length)[0]);
   return COMPANION_PLANTING_DATA[match] || {
     excellent: ["Basil", "Marigold", "Nasturtium"],
     neutral: ["Lettuce", "Spinach"],
