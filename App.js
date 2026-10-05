@@ -574,6 +574,10 @@ const [wateringReminderTime, setWateringReminderTime] = useState({ hour: 9, minu
 const [plantOfDayOn, setPlantOfDayOn] = useState(false);
 const [weeklyRecapOn, setWeeklyRecapOn] = useState(false); // Sunday-evening garden summary
 const [streakFreeze, setStreakFreeze] = useState({ available: true, lastUsed: null, weekKey: null });
+// updateDailyStreak runs from the launch load and the cloud load, both of which
+// hold an early render's closure — read the freeze through this instead.
+const streakFreezeRef = useRef(streakFreeze);
+streakFreezeRef.current = streakFreeze;
 const [refreshing, setRefreshing] = useState(false);
 const [weatherRefreshToken, setWeatherRefreshToken] = useState(0);
 const [homeBannerDismissedDate, setHomeBannerDismissedDate] = useState(null);
@@ -1068,8 +1072,21 @@ if (typeof data?.weekly_recap_on === "boolean")
   if (data?.watering_history)
     setWateringHistory(data.watering_history);
 
-  if (data?.streak_data)
-    setStreakData(data.streak_data);
+  // The cloud copy can be older than the local one: the launch load already
+  // counted today, and that bump can't have been saved before this load
+  // finished. Keep whichever copy was opened more recently, then roll it to
+  // today, or a signed-in gardener's streak never grew past 1.
+  if (data?.streak_data) {
+    const cloudStreak = data.streak_data;
+    setStreakData((current) => {
+      const localLast = current?.lastOpened || "";
+      const cloudLast = cloudStreak?.lastOpened || "";
+      if (localLast > cloudLast) return current;
+      if (localLast === cloudLast && (current?.count || 0) >= (cloudStreak?.count || 0)) return current;
+      return cloudStreak;
+    });
+    updateDailyStreak();
+  }
 
   if (data?.plant_notes)
     setPlantNotes(data.plant_notes);
@@ -1907,6 +1924,7 @@ useEffect(() => {
         "pp_plantPickDismissedDate",
         "pp_gettingStartedDismissed",
         "pp_whatsNewSeen",
+        "pp_streakFreeze",
         "pp_gardenAreas",
       ]);
       const map = Object.fromEntries(values);
@@ -2014,7 +2032,11 @@ if (map[STORAGE_KEYS.harvestTrackers])
         if (map["pp_plantPickDismissedDate"]) setPlantPickDismissedDate(map["pp_plantPickDismissedDate"]);
         if (map["pp_gettingStartedDismissed"]) setGettingStartedDismissed(true);
         if (map["pp_whatsNewSeen"] !== WHATS_NEW_VERSION) setShowWhatsNew(true);
-        updateDailyStreak();
+        // The freeze is hydrated separately and may not be in state yet; a
+        // gap it covers would otherwise reset the streak on a cold start.
+        let storedFreeze = null;
+        try { storedFreeze = JSON.parse(map["pp_streakFreeze"] || "null"); } catch { storedFreeze = null; }
+        updateDailyStreak(storedFreeze?.lastUsed ?? null);
         checkHarvestNotifications();
       } catch (error) {
         console.log("Storage load error", error);
@@ -2907,7 +2929,9 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
     }
   }
 
- async function updateDailyStreak() {
+  // `freezeLastUsed` lets the launch load pass the freeze it read from storage,
+  // which the streakFreeze state may not hold yet.
+  async function updateDailyStreak(freezeLastUsed = streakFreezeRef.current?.lastUsed ?? null) {
     const today = getTodayKey();
     // A state updater has to be pure — React may run it more than once for a
     // single update — so anything that buzzes, alerts, or schedules is recorded
@@ -2918,7 +2942,7 @@ await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
       // The decision lives in core (nextStreakState) so the awkward cases — a
       // clock that moved backwards, a gap covered by a freeze — are testable
       // without a device. Everything that buzzes or prompts stays here.
-      const outcome = nextStreakState(current, today, streakFreeze.lastUsed);
+      const outcome = nextStreakState(current, today, freezeLastUsed);
       if (outcome.milestone) {
         const reached = outcome.milestone;
         celebrate = () => {

@@ -100,3 +100,21 @@ describe("a new day while the app is open", () => {
     ok(xp("2026-10-05").xp > xp("2026-10-06").xp, "a watering counts only on its own day");
   });
 });
+
+describe("the streak at launch", () => {
+  const app = require("fs").readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("reads the streak freeze from storage on a cold start", () => {
+    // The freeze state is hydrated separately; the launch used the initial
+    // { lastUsed: null }, so a gap the freeze covered reset the streak anyway.
+    ok(/"pp_streakFreeze",/.test(app), "the launch load reads the freeze");
+    ok(/updateDailyStreak\(storedFreeze\?\.lastUsed \?\? null\)/.test(app));
+    ok(/nextStreakState\(current, today, freezeLastUsed\)/.test(app));
+  });
+  it("keeps the newer streak when the cloud profile arrives, then rolls it to today", () => {
+    // The cloud row can't hold today's bump yet; applying it blindly reset a
+    // signed-in gardener's streak to yesterday's every launch.
+    ok(/if \(localLast > cloudLast\) return current;/.test(app));
+    const cloudBlock = app.slice(app.indexOf("if (data?.streak_data) {"), app.indexOf("if (data?.streak_data) {") + 900);
+    ok(/updateDailyStreak\(\);/.test(cloudBlock));
+  });
+});
