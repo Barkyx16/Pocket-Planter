@@ -99,7 +99,7 @@ export const OnThisDayCard = memo(function OnThisDayCard({ theme, journalEntries
                   <Text style={{ color: "#ffffff", fontSize: 12, fontWeight: "900" }}>🕐 {m.match.label}</Text>
                 </View>
                 <View style={{ padding: 12 }}>
-                  <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{m.entry.plantName || "Garden"}</Text>
+                  <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{m.entry.plantName || t("shortLabels.garden")}</Text>
                   {m.entry.growthStage ? (
                     <Text style={{ color: "#d8c8ff", fontSize: 12, fontWeight: "800", marginTop: 2 }}>{growthStageLabel(m.entry.growthStage)}</Text>
                   ) : null}

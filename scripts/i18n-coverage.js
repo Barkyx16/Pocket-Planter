@@ -72,6 +72,17 @@ function walk(dir, out = []) {
   return out;
 }
 
+// A string that ends up as a JSX child, directly or through ?: / && / ||, is
+// shown on screen however short it is: isProse lets "Save" and "Saved" through
+// because a lone word looks like an identifier anywhere else.
+function renderedAsChild(p) {
+  let cur = p;
+  while (cur.parentPath && (cur.parent.type === "ConditionalExpression" && cur.parent.test !== cur.node || cur.parent.type === "LogicalExpression")) {
+    cur = cur.parentPath;
+  }
+  return cur.parent.type === "JSXExpressionContainer" && cur.parentPath.parent.type === "JSXElement";
+}
+
 function analyse(file) {
   let ast;
   const src = fs.readFileSync(file, "utf8");
@@ -111,7 +122,7 @@ function analyse(file) {
         return;
       }
       if (parent.type === "JSXAttribute" && /^(accessibilityRole|testID|storageKey|nativeID|autoComplete|textContentType|keyboardType|autoCapitalize|resizeMode|animationType)$/.test(parent.name?.name)) return;
-      if (isProse(p.node.value)) {
+      if (isProse(p.node.value) || (renderedAsChild(p) && /[A-Za-z]{2}/.test(p.node.value) && p.node.value !== "pH")) {
         hardcoded.push({ line: p.node.loc.start.line, text: p.node.value });
       }
     },

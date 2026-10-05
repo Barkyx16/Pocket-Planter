@@ -58,7 +58,7 @@ export const AdaptiveWateringCard = memo(function AdaptiveWateringCard({ theme, 
                 </Text>
               </View>
               <View style={{ alignItems: "flex-end" }}>
-                <Text style={{ color: accent, fontSize: 12, fontWeight: "900" }}>{next.daysUntil <= 0 ? t("adaptiveWatering.dueNow") : next.daysUntil === 1 ? "Tomorrow" : `${next.daysUntil}d`}</Text>
+                <Text style={{ color: accent, fontSize: 12, fontWeight: "900" }}>{next.daysUntil <= 0 ? t("adaptiveWatering.dueNow") : next.daysUntil === 1 ? t("shortLabels.tomorrow") : `${next.daysUntil}d`}</Text>
                 {next.rainSoon ? <IconText label={t("adaptiveWatering.checkSoil")} style={{
   color: "#8effab",
   fontSize: 10,

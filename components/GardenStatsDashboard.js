@@ -198,7 +198,7 @@ return (
             {harvestsReady > 0 ? `${harvestsReady} Ready!` : harvestsTracking}
           </Text>
           <Text style={[styles.dashMainCardLabel, { color: theme.secondaryText }]}>
-            {harvestsReady > 0 ? t("gardenStatsDashboard.toHarvest") : "Tracking"}
+            {harvestsReady > 0 ? t("gardenStatsDashboard.toHarvest") : t("shortLabels.tracking")}
           </Text>
           <View style={styles.dashMainCardDivider} />
           <Text style={[styles.dashMainCardSub, { color: theme.secondaryText }]}>

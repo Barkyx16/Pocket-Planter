@@ -63,7 +63,7 @@ export const SunlightMismatchCard = memo(function SunlightMismatchCard({ theme, 
                   <Text style={{ color: theme.text, fontSize: 14, fontWeight: "900" }}>{m.plant.name}</Text>
                   <View style={{ backgroundColor: `${levelColor[m.level]}22`, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 }}>
                     <Text style={{ color: levelColor[m.level], fontSize: 10, fontWeight: "900" }}>
-                      {m.level === "high" ? t("sunlightMismatch.needsFixing") : m.level === "medium" ? "WATCH" : "MINOR"}
+                      {m.level === "high" ? t("sunlightMismatch.needsFixing") : m.level === "medium" ? t("shortLabels.watch") : t("shortLabels.minor")}
                     </Text>
                   </View>
                 </View>

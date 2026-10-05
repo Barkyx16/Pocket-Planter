@@ -96,7 +96,7 @@ return (
                 >
                   <Text style={{ color: isToday ? "#6bc7ff" : theme.secondaryText, fontSize: 10, fontWeight: "800" }}>{weekdayFmt(d.date, d.offset)}</Text>
                   <Text style={{ color: count === 0 ? theme.secondaryText : "#ffffff", fontSize: 18, fontWeight: "900", marginTop: 4 }}>{count}</Text>
-                  <Text style={{ color: theme.secondaryText, fontSize: 8, fontWeight: "700" }}>{count === 1 ? "plant" : "plants"}</Text>
+                  <Text style={{ color: theme.secondaryText, fontSize: 8, fontWeight: "700" }}>{tn("shortLabels.plants", count)}</Text>
                 </Pressable>
               );
             })}

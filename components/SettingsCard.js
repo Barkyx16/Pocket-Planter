@@ -390,7 +390,7 @@ async function choosePlan(plan) {
           styles.premiumDevToggleText,
           { color: premiumUnlocked ? "#07120b" : "#d7ebdc" }
         ]}>
-          {premiumUnlocked ? "ON" : "OFF"}
+          {premiumUnlocked ? t("shortLabels.on") : t("shortLabels.off")}
         </Text>
       </View>
     </Pressable>

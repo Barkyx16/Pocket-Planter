@@ -501,7 +501,7 @@ zone={zone}
       style={{ backgroundColor: streakFreeze.available ? "#a3d5ff" : "rgba(255, 255, 255, 0.08)", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12 }}
     >
       <Text style={{ color: streakFreeze.available ? "#07120b" : "#8fbf9d", fontSize: 12, fontWeight: "900" }}>
-        {streakFreeze.available ? "Use" : "Used"}
+        {streakFreeze.available ? t("shortLabels.use") : t("shortLabels.used")}
       </Text>
     </Pressable>
   </View>
