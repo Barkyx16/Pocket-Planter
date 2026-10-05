@@ -1838,6 +1838,22 @@ useEffect(() => {
   })();
 }, [user]);
 
+// The banner shown after a failed save promises the changes "will retry
+// automatically", but the debounced save below only runs when some state
+// changes — a gardener who stopped editing never synced, and closing the app
+// left the cloud behind. While a save is failing, retry every 30 seconds and
+// whenever the app comes back to the foreground. Through a ref, so each retry
+// saves the latest state rather than the state from when it was scheduled.
+const saveProfileRef = useRef(null);
+saveProfileRef.current = saveProfileToSupabase;
+useEffect(() => {
+  if (!user || !cloudProfileLoaded || !syncFailed) return;
+  const retry = () => { saveProfileRef.current?.(); };
+  const timer = setInterval(retry, 30000);
+  const sub = AppState.addEventListener("change", (state) => { if (state === "active") retry(); });
+  return () => { clearInterval(timer); sub?.remove?.(); };
+}, [user, cloudProfileLoaded, syncFailed]);
+
 useEffect(() => {
   if (!user) return;
   if (!cloudProfileLoaded) return;
@@ -4577,7 +4593,11 @@ async function onPullRefresh() {
     setZipCoords(null);
     setWeatherRefreshToken((value) => value + 1);
     if (user && cloudProfileLoaded) {
-      await loadProfileFromSupabase();
+      // With a failed save outstanding, the cloud copy is older than what's
+      // on screen; loading it would throw away the unsynced changes. Push
+      // them instead.
+      if (syncFailed) await saveProfileToSupabase();
+      else await loadProfileFromSupabase();
     }
   } catch (error) {
     console.log("Refresh error:", error);

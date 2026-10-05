@@ -1367,3 +1367,14 @@ describe("the premium entitlement check", () => {
     ok(/return active;/.test(fn) && /return null;/.test(fn));
   });
 });
+
+describe("a failed cloud save", () => {
+  const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+  it("is retried on a timer and on returning to the app", () => {
+    ok(/if \(!user \|\| !cloudProfileLoaded \|\| !syncFailed\) return;/.test(app));
+    ok(/setInterval\(retry, 30000\)/.test(app) && /state === "active"\) retry\(\)/.test(app));
+  });
+  it("isn't overwritten by pull-to-refresh", () => {
+    ok(/if \(syncFailed\) await saveProfileToSupabase\(\);\s*else await loadProfileFromSupabase\(\);/.test(app));
+  });
+});
