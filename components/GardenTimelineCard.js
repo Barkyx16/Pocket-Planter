@@ -28,10 +28,14 @@ const plantThumb = (name) => {
 const EventRow = memo(function EventRow({ ev, theme, onOpenPlant, isLast }) {
   useTranslation(); // re-render on language change: relTime() reads the active locale
   const img = ev.imageUri ? { uri: ev.imageUri } : plantThumb(ev.plantName);
-  const tappable = !!ev.plantName;
+  // onOpenPlant takes the catalog item, not a name: given "Tomato" the plant
+  // page opened blank, with "zones undefined–undefined" and every action keyed
+  // on undefined.
+  const plantItem = ev.plantName ? produceData.find((p) => p.name === ev.plantName) : null;
+  const tappable = !!plantItem;
   const Wrap = tappable ? Pressable : View;
   return (
-    <Wrap onPress={tappable ? () => onOpenPlant && onOpenPlant(ev.plantName) : undefined} style={{ flexDirection: "row", gap: 12 }}>
+    <Wrap onPress={tappable ? () => onOpenPlant && onOpenPlant(plantItem) : undefined} style={{ flexDirection: "row", gap: 12 }}>
       {/* timeline rail */}
       <View style={{ width: 34, alignItems: "center" }}>
         <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: `${ev.color}22`, borderWidth: 1, borderColor: `${ev.color}55`, alignItems: "center", justifyContent: "center" }}>

@@ -1403,3 +1403,10 @@ describe("a failed forecast request", () => {
     ok(/if \(!paintedFromCache\) setWeather\(null\);/.test(catchBlock), "an offline error keeps this place's cached paint");
   });
 });
+
+describe("the garden timeline", () => {
+  it("opens a plant with its catalog item, not its name", () => {
+    const card = fs.readFileSync(path.join(ROOT, "components/GardenTimelineCard.js"), "utf8");
+    ok(/onOpenPlant\(plantItem\)/.test(card) && !/onOpenPlant\(ev\.plantName\)/.test(card));
+  });
+});
