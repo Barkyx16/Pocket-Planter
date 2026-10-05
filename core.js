@@ -2962,7 +2962,7 @@ export function getPlantSpecificTip(item, zone, weather) {
 // "inches" would otherwise sit untranslated inside the sentence. English is
 // returned as written; the plant screen converts it for metric itself.
 const GUIDE_MEASURE = /(\d+(?:\/\d+)?(?:–\d+)?)\s?(inches|inch|feet|foot|°F)/g;
-export function localizeGuideStep(key, english, units) {
+export function localizeMeasuredText(key, english, units) {
   if (getLocale() === DEFAULT_LOCALE) return english;
   const translated = t(key);
   if (translated === key) return english;
@@ -2979,7 +2979,7 @@ export function getPlantingSteps(item, units) {
   if (Array.isArray(item.plantingSteps) && item.plantingSteps.length) return item.plantingSteps;
 
   const name = String(item?.name || "").toLowerCase();
-  const guide = (id, list) => list.map((english, i) => localizeGuideStep(`plantingGuide.${id}_${i + 1}`, english, units));
+  const guide = (id, list) => list.map((english, i) => localizeMeasuredText(`plantingGuide.${id}_${i + 1}`, english, units));
 
   // VEGETABLES
   if (matchesCrop(name, "tomato")) return guide("tomato", [
@@ -4733,6 +4733,18 @@ export function getFrameColor(level) {
   if (level >= 25) return "#6bc7ff";
   if (level >= 10) return "#ff9f43";
   return "#5cff89";
+}
+
+// PEST_WATCH_DATA is English; pest.name stays the identifier (images, lookups,
+// authored plant profiles) and each shown field is translated under
+// pestText.<pest>_<field>, measurements and all, via localizeMeasuredText.
+const pestSlug = (name) =>
+  String(name || "").replace(/['’]/g, "").split(/[^A-Za-z0-9]+/).filter(Boolean)
+    .map((w, i) => (i ? w[0].toUpperCase() + w.slice(1).toLowerCase() : w.toLowerCase())).join("");
+export function pestText(pest, field, units) {
+  const english = pest?.[field];
+  if (typeof english !== "string") return english;
+  return localizeMeasuredText(`pestText.${pestSlug(pest.name)}_${field}`, english, units);
 }
 
 export const PEST_WATCH_DATA = [

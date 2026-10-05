@@ -1,6 +1,6 @@
 import { memo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
-import { getActivePests, tapHaptic } from "../core";
+import { getActivePests, pestText, tapHaptic } from "../core";
 import { getPestImage } from "../data/pestImageMap";
 import { formatDate, useTranslation } from "../lib/i18n";
 
@@ -29,7 +29,7 @@ export const PestWatchCard = memo(function PestWatchCard({ theme, savedPlantObjs
             key={pest.name}
             onPress={() => { tapHaptic("light"); onOpenPest ? onOpenPest(pest) : null; }}
             accessibilityRole="button"
-            accessibilityLabel={t("miscCards.pestA11y", { pest: pest.name, plants: pest.affected.join(", ") })}
+            accessibilityLabel={t("miscCards.pestA11y", { pest: pestText(pest, "name"), plants: pest.affected.join(", ") })}
             style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10, paddingHorizontal: 12, backgroundColor: "rgba(255, 255, 255, 0.04)", borderRadius: 16, borderWidth: 1, borderColor: "rgba(255, 123, 123, 0.16)" }}
           >
             <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: "rgba(255, 123, 123, 0.12)", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
@@ -40,7 +40,7 @@ export const PestWatchCard = memo(function PestWatchCard({ theme, savedPlantObjs
               )}
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }}>{pest.name}</Text>
+              <Text style={{ color: theme.text, fontSize: 14, fontWeight: "800" }}>{pestText(pest, "name")}</Text>
               <Text numberOfLines={1} style={{ color: "#ff9f9f", fontSize: 12, fontWeight: "700", marginTop: 2 }}>
                 {t("miscCards.hits", { plants: pest.affected.slice(0, 2).join(", ") })}{pest.affected.length > 2 ? ` +${pest.affected.length - 2}` : ""}
               </Text>

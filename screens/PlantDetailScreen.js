@@ -6,7 +6,7 @@ import { PlantGrowthTimeline } from "../components/PlantGrowthTimeline";
 import { PremiumLockedCard } from "../components/PremiumLockedCard";
 import { PremiumLockedSection } from "../components/PremiumLockedSection";
 import { WeatherParticles } from "../components/WeatherParticles";
-import { getCompanionInfo, getPlantDifficulty, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, hasHarvestCountdown, getPestForName, getPlantHealth, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeAdvice, normalizeType, resolvePlantImageSource } from "../core";
+import { getCompanionInfo, getPlantDifficulty, getDiseaseForName, getHarvestCountdown, getHarvestDays, getHarvestDaysLeft, getLastWateredText, hasHarvestCountdown, getPestForName, getPlantHealth, pestText, getPlantQuickFacts, getPlantSeasonLabel, getPlantSpecificTip, getPlantingSteps, getPlantingWindowText, getShouldGrowText, getTodayKey, getWateringTip, getWhereToPlantText, isOrnamental, localizeAdvice, normalizeType, resolvePlantImageSource } from "../core";
 import { getDiseaseImage } from "../data/diseaseImageMap";
 import { getPestImage } from "../data/pestImageMap";
 import { difficultyLabel, formatDate, plantTypeLabel, seasonLabel, t } from "../lib/i18n";
@@ -305,7 +305,7 @@ export function PlantDetailScreen({
         {plantHealth.pests.map((pestName) => {
           const pestObj = getPestForName(pestName);
           const img = pestObj ? getPestImage(pestObj.name) : null;
-          const label = pestObj ? pestObj.name : pestName;
+          const label = pestObj ? pestText(pestObj, "name") : pestName;
           const chipStyle = [styles.companionChip, { backgroundColor: "rgba(255, 123, 123, 0.1)", borderColor: "rgba(255, 123, 123, 0.28)" }];
           const inner = (
             <>

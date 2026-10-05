@@ -2,13 +2,14 @@ import { memo } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../styles";
-import { flipMonth, localizeAdvice } from "../core";
+import { flipMonth, localizeAdvice, pestText } from "../core";
 import { getPestImage } from "../data/pestImageMap";
 import { IconText } from "./IconText";
-import { useTranslation } from "../lib/i18n";
+import { formatDate, useTranslation } from "../lib/i18n";
 
-const MONTH_ABBR = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
-const MONTH_FULL = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+// Month labels in the reader's language; these were English letters and names.
+const monthLabel = (m, style) => formatDate(new Date(2000, m - 1, 1), { month: style });
+const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, onBack, onOpenPlant, unitSystem }) {
   const { t } = useTranslation();
@@ -21,7 +22,7 @@ export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, on
   // display in the app.
   const months = (Array.isArray(pest.months) ? pest.months : []).map(flipMonth).sort((a, b) => a - b);
   const activeLabel = months.length
-    ? months.map((m) => MONTH_FULL[m - 1]).join(" · ")
+    ? months.map((m) => monthLabel(m, "short")).join(" · ")
     : t("miscCards.variesByRegion");
 
   // Affected = user's own plants this pest hits (passed from Pest Watch). Targets = general list.
@@ -54,18 +55,18 @@ export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, on
             <Text style={{ fontSize: 48 }}>{pest.emoji}</Text>
           )}
         </View>
-        <Text style={{ color: theme.text, fontSize: 24, fontWeight: "900", marginTop: 14, textAlign: "center" }}>{pest.name}</Text>
+        <Text style={{ color: theme.text, fontSize: 24, fontWeight: "900", marginTop: 14, textAlign: "center" }}>{pestText(pest, "name")}</Text>
         <Text style={{ color: theme.secondaryText, fontSize: 12, fontWeight: "700", marginTop: 4, textAlign: "center" }}>
-          {t("pestDetailScreen.gardenPestMostActive")} {months.length ? `${MONTH_FULL[months[0] - 1]}–${MONTH_FULL[months[months.length - 1] - 1]}` : "seasonally"}
+          {t("pestDetailScreen.gardenPestMostActive")} {months.length ? `${monthLabel(months[0], "short")}–${monthLabel(months[months.length - 1], "short")}` : t("pestDetailScreen.seasonally")}
         </Text>
       </View>
 
       {/* INFO SECTIONS */}
-      <Section icon="🔍" title={t("pestDetailScreen.whatItIs")} text={localizeAdvice(pest.description, unitSystem)} />
-      <Section icon="👀" title={t("pestDetailScreen.whatToLookFor")} text={localizeAdvice(pest.sign, unitSystem)} color="#ffd86b" />
-      <Section icon="💥" title={t("pestDetailScreen.damageItCauses")} text={localizeAdvice(pest.damage, unitSystem)} color="#ff9f9f" />
-      <Section icon="🛡️" title={t("pestDetailScreen.howToPreventIt")} text={localizeAdvice(pest.prevent, unitSystem)} color="#8effab" />
-      <Section icon="✅" title={t("pestDetailScreen.howToTreatIt")} text={localizeAdvice(pest.fix, unitSystem)} color="#5cff89" />
+      <Section icon="🔍" title={t("pestDetailScreen.whatItIs")} text={localizeAdvice(pestText(pest, "description", unitSystem), unitSystem)} />
+      <Section icon="👀" title={t("pestDetailScreen.whatToLookFor")} text={localizeAdvice(pestText(pest, "sign", unitSystem), unitSystem)} color="#ffd86b" />
+      <Section icon="💥" title={t("pestDetailScreen.damageItCauses")} text={localizeAdvice(pestText(pest, "damage", unitSystem), unitSystem)} color="#ff9f9f" />
+      <Section icon="🛡️" title={t("pestDetailScreen.howToPreventIt")} text={localizeAdvice(pestText(pest, "prevent", unitSystem), unitSystem)} color="#8effab" />
+      <Section icon="✅" title={t("pestDetailScreen.howToTreatIt")} text={localizeAdvice(pestText(pest, "fix", unitSystem), unitSystem)} color="#5cff89" />
 
       {/* PLANTS AT RISK */}
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -103,12 +104,12 @@ export const PestDetailScreen = memo(function PestDetailScreen({ theme, pest, on
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
         <IconText label={t("pestDetailScreen.whenItsActive")} style={styles.cardEyebrow} />
         <View style={{ flexDirection: "row", gap: 4, marginTop: 12 }}>
-          {MONTH_ABBR.map((m, i) => {
+          {MONTHS.map((month, i) => {
             const on = months.includes(i + 1);
             return (
               <View key={i} style={{ flex: 1, alignItems: "center" }}>
                 <View style={{ width: "100%", height: 30, borderRadius: 8, backgroundColor: on ? "rgba(255, 123, 123, 0.3)" : "rgba(255, 255, 255, 0.06)", borderWidth: 1, borderColor: on ? "rgba(255, 123, 123, 0.5)" : "rgba(255, 255, 255, 0.08)", alignItems: "center", justifyContent: "center" }}>
-                  <Text style={{ color: on ? "#ff9f9f" : theme.secondaryText, fontSize: 10, fontWeight: "900" }}>{m}</Text>
+                  <Text style={{ color: on ? "#ff9f9f" : theme.secondaryText, fontSize: 10, fontWeight: "900" }}>{monthLabel(month, "narrow")}</Text>
                 </View>
               </View>
             );

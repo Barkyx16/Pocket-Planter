@@ -1,7 +1,7 @@
 import { memo, useState } from "react";
 import { Image, Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import produceData from "../data/produceData";
-import { PEST_WATCH_DATA, foldForSearch, resolvePlantImageSource, tapHaptic } from "../core";
+import { PEST_WATCH_DATA, foldForSearch, pestText, resolvePlantImageSource, tapHaptic } from "../core";
 import { getPestImage } from "../data/pestImageMap";
 import { FEATURE_INDEX, searchFeatures } from "../data/featureIndex";
 import { useTranslation, formatDate } from "../lib/i18n";
@@ -21,7 +21,7 @@ export const GlobalSearchModal = memo(function GlobalSearchModal({ visible, onCl
         .slice(0, 8)
     : [];
   const pests = query.length >= 1
-    ? PEST_WATCH_DATA.filter((p) => foldForSearch(p.name).includes(query)).slice(0, 5)
+    ? PEST_WATCH_DATA.filter((p) => foldForSearch(p.name).includes(query) || foldForSearch(pestText(p, "name")).includes(query)).slice(0, 5)
     : [];
   const journals = query.length >= 1
     ? (journalEntries || []).filter((e) =>
@@ -149,7 +149,7 @@ export const GlobalSearchModal = memo(function GlobalSearchModal({ visible, onCl
                     key={`pe-${pest.name}`}
                     img={getPestImage(pest.name)}
                     emoji={pest.emoji}
-                    title={pest.name}
+                    title={pestText(pest, "name")}
                     subtitle={t("globalSearchModal.openPestGuide")}
                     accent="#ff9f9f"
                     onPress={() => { close(); onOpenPest(pest); }}

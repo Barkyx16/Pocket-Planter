@@ -652,7 +652,7 @@ describe("advice temperatures follow the units setting", () => {
     ok(/<PlantDetailScreen\s+unitSystem=\{unitSystem\}/.test(app) || /<PlantDetailScreen[\s\S]{0,200}unitSystem=\{unitSystem\}/.test(app));
     ok(/<DiseaseDetailScreen[\s\S]{0,120}unitSystem=\{unitSystem\}/.test(app));
     ok(/<PestDetailScreen[\s\S]{0,120}unitSystem=\{unitSystem\}/.test(app));
-    ok(/localizeAdvice\(pest\.description, unitSystem\)/.test(read("components/PestDetailScreen.js")));
+    ok(/localizeAdvice\(pestText\(pest, "description", unitSystem\), unitSystem\)/.test(read("components/PestDetailScreen.js")));
   });
 });
 
@@ -1182,6 +1182,28 @@ describe("curated pair reasons", () => {
     } finally {
       i18n.setLocale("en");
     }
+  });
+});
+
+describe("pest guide text", () => {
+  const i18n = require(path.join(ROOT, "lib/i18n.js"));
+  const FIELDS = ["name", "sign", "fix", "description", "damage", "prevent"];
+  it("has every field of every pest in the English dictionary", () => {
+    // English is returned as written; the dictionary is what translators work
+    // from, so a pest added to core without an entry would stay English.
+    const missing = [];
+    try {
+      i18n.setLocale("de");
+      for (const p of core.PEST_WATCH_DATA) for (const f of FIELDS) {
+        if (core.pestText(p, f) === p[f]) missing.push(`${p.name}.${f}`);
+      }
+    } finally {
+      i18n.setLocale("en");
+    }
+    eq(missing, []);
+  });
+  it("leaves English untouched", () => {
+    for (const p of core.PEST_WATCH_DATA) for (const f of FIELDS) eq(core.pestText(p, f), p[f]);
   });
 });
 
