@@ -1326,3 +1326,15 @@ describe("saving several plants at once from the Plants tab", () => {
     ok(/<PlantsTab[\s\S]{0,80}onSaveMany=\{saveManyPlants\}/.test(fs.readFileSync(path.join(ROOT, "App.js"), "utf8")));
   });
 });
+
+describe("Fix My Garden's move suggestion", () => {
+  it("can send a clashing plant to an empty bed", () => {
+    const beds = [
+      { id: "a", name: "Bed A", size: 12, plots: { "slot-1": "Rosemary", "slot-2": "Basil" } },
+      { id: "b", name: "Bed B", size: 12, plots: {} },
+    ];
+    const [conflict] = core.findGardenConflicts(beds);
+    ok(conflict, "the clash is found");
+    eq(conflict.suggestion && conflict.suggestion.toAreaId, "b");
+  });
+});

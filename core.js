@@ -1732,6 +1732,10 @@ export function getPairReason(a, b) {
 
 export function findGardenConflicts(gardenAreas) {
   const areas = (gardenAreas || []).filter((a) => a.plots && Object.keys(a.plots).length);
+  // Any bed can take a moved plant — an empty one most of all. Searching only
+  // the planted beds meant a gardener who made a fresh bed to split a clash was
+  // told there was nowhere clean to move it, and got no one-tap Move.
+  const destinations = (gardenAreas || []).filter((a) => a && a.id);
 
   // Helper: does adding `plantName` to `area` create any "Avoid" pair?
   const wouldConflict = (area, plantName, ignoreSlot) => {
@@ -1770,9 +1774,10 @@ export function findGardenConflicts(gardenAreas) {
           { slot: slotA, plant: plantA, stays: plantB },
           { slot: slotB, plant: plantB, stays: plantA },
         ]) {
-          const target = areas.find(
+          const target = destinations.find(
             (dest) =>
               dest.id !== area.id &&
+              canPlantInArea(mover.plant, dest) &&
               freeSlotId(dest) !== null &&
               !wouldConflict(dest, mover.plant, null)
           );
