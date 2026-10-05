@@ -5671,6 +5671,25 @@ const jumpToTab = useCallback((tab) => {
       </View>
     ) : null}
 
+  {/* "+XP" popups and the level-up card. They were only rendered by the plant
+      page, so XP from a game, the daily bonus or Home — and any level-up it
+      caused — showed nowhere, and the level-up was gone for good. */}
+  {xpPopups.map((popup) => (
+    <View key={popup.id} style={styles.xpPopup}>
+      <Text style={styles.xpPopupText}>{typeof popup.amount === "number" ? t("plantsText.xpGain", { amount: popup.amount }) : popup.amount}</Text>
+    </View>
+  ))}
+  {showLevelUp ? (
+    <View style={styles.levelUpOverlay} pointerEvents="none">
+      <ConfettiBurst />
+      <View style={styles.levelUpCard}>
+        <Text style={styles.levelUpEmoji}>🎉</Text>
+        <Text style={styles.levelUpTitle}>{t("plantDetailScreen.levelUp")}</Text>
+        <Text style={styles.levelUpText}>{t("plantDetailScreen.levelReached", { level: gardenXP.level })}</Text>
+      </View>
+    </View>
+  ) : null}
+
   {celebrationBadge ? (
       <Pressable onPress={() => setCelebrationBadge(null)} style={styles.levelUpOverlay}>
         <ConfettiBurst />

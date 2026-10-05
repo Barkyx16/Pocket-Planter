@@ -1435,3 +1435,11 @@ describe("the games' results screen", () => {
     ok(/setNewBest\(finalScore > best && finalScore > 0\)/.test(quiz) && /\{newBest \? <Text/.test(quiz) && !/const isRecord/.test(quiz));
   });
 });
+
+describe("XP popups and the level-up card", () => {
+  it("show on every tab, not only on the plant page", () => {
+    const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    const shell = app.slice(app.lastIndexOf("{undoToast ? ("));
+    ok(/xpPopups\.map\(/.test(shell) && /\{showLevelUp \? \(/.test(shell));
+  });
+});
