@@ -1347,3 +1347,13 @@ describe("the saved plants card's Recent sort", () => {
     ok(/<SavedPlantsCard[^>]*plantSaveDates=\{plantSaveDates\}/.test(fs.readFileSync(path.join(ROOT, "screens/HomeTab.js"), "utf8")));
   });
 });
+
+describe("Home's plant-this-month pick", () => {
+  it("uses the real current month, not the Plants tab's saved browse month", () => {
+    const app = fs.readFileSync(path.join(ROOT, "App.js"), "utf8");
+    ok(/getSuggestionsForMonth\(zone, parseStoredDate\(todayKey\)\.getMonth\(\) \+ 1\)/.test(app));
+    ok(/plantPick: thisMonthSuggestions\[0\]/.test(app), "the widget");
+    ok(/monthlySuggestions=\{thisMonthSuggestions\}/.test(app), "Home");
+    ok(app.indexOf("const [todayKey, setTodayKey]") < app.indexOf("const thisMonthSuggestions"), "declared after todayKey");
+  });
+});

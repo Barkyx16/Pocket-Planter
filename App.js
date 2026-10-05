@@ -81,6 +81,7 @@ import {
   getSuccessionInterval,
   getSuggestionsForMonth,
   getTodayKey,
+  parseStoredDate,
   getTomorrowKey,
   getFrostSeasonMonths,
   formatReminderTime,
@@ -1344,6 +1345,14 @@ setDailyBonusClaimed(isSameDayKey(data?.daily_bonus_date, getTodayKey()));
 // counted, and when it finally did relaunch the gap looked like days missed and
 // the streak reset. Today's quests and counts stayed on the day it was opened.
 const [todayKey, setTodayKey] = useState(getTodayKey);
+// selectedMonth is the Plants tab's browse filter, and it's saved, so it can
+// be any month — a month the gardener tapped in March, or last month's on the
+// first launch of a new one. Home's "Plant this month" and the widget's pick
+// mean the real current month, from the day key the app already tracks.
+const thisMonthSuggestions = useMemo(() => {
+  if (!zone) return [];
+  return getSuggestionsForMonth(zone, parseStoredDate(todayKey).getMonth() + 1);
+}, [zone, todayKey]);
 const onNewDayRef = useRef(null);
 onNewDayRef.current = () => {
   updateDailyStreak();
@@ -1373,9 +1382,9 @@ useEffect(() => {
   useEffect(() => {
     syncWidgets(buildWidgetSnapshot({
       savedPlantObjs, wateredPlants, wateringHistory, snoozedPlants, weather,
-      harvestTrackers: visibleHarvestTrackers, streakData, plantPick: monthlySuggestions[0] || null, zone,
+      harvestTrackers: visibleHarvestTrackers, streakData, plantPick: thisMonthSuggestions[0] || null, zone,
     }));
-  }, [savedPlantObjs, wateredPlants, wateringHistory, snoozedPlants, weather, visibleHarvestTrackers, streakData, monthlySuggestions, zone, todayKey]);
+  }, [savedPlantObjs, wateredPlants, wateringHistory, snoozedPlants, weather, visibleHarvestTrackers, streakData, thisMonthSuggestions, zone, todayKey]);
 
   const filteredPlants = useMemo(() => {
   const DIFF_ORDER = { Easy: 0, Medium: 1, Hard: 2 };
@@ -1452,7 +1461,7 @@ useEffect(() => {
 
 const searchableGalleryPlants = useMemo(() => {
   const plantToday =
-    monthlySuggestions?.[0] ||
+    thisMonthSuggestions?.[0] ||
     compatiblePlants?.[0];
 return compatiblePlants
   .filter(
@@ -1464,7 +1473,7 @@ return compatiblePlants
   );
 }, [
   compatiblePlants,
-  monthlySuggestions,
+  thisMonthSuggestions,
 ]);
 
 const smartRecommendation = useMemo(
@@ -5926,7 +5935,7 @@ const jumpToTab = useCallback((tab) => {
   jumpToTab={jumpToTab}
   markPlantWatered={markPlantWatered}
   monthlyChecklist={monthlyChecklist}
-  monthlySuggestions={monthlySuggestions}
+  monthlySuggestions={thisMonthSuggestions}
   onOpenSearch={() => setShowSearch(true)}
   openPlantFromList={openPlantFromList}
   openPest={openPest}
